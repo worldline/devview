@@ -1,0 +1,168 @@
+[versions]
+agp = "9.0.0"
+androidTools = "32.0.0"
+androidx-activity-compose = "1.12.2"
+androidx-biometric = "1.4.0-alpha02"
+androidx-compose-bom = "2026.01.00"
+androidx-datastore = "1.2.0"
+androidx-lifecycle = "2.10.0"
+androidx-metrics = "1.0.0"
+androidx-navigation = "2.9.6"
+androidx-room = "2.8.4"
+androidx-sqlite = "2.6.2"
+androidx-test = "1.7.0"
+coil = "3.3.0"
+compose-screenshot = "0.0.1-alpha13" # Issue https://issuetracker.google.com/issues/422412664 -> Test on Mac
+compose-stability-analyzer = "0.6.6"
+detekt = "2.0.0-alpha.1"
+dokka = "2.1.0"
+jetbrains-idea-ext = "1.3"
+kermit = "2.0.8"
+koin = "4.1.1"
+konsist = "0.17.3"
+kotest = "6.0.7"
+kotlinx-collections-immutable = "0.4.0"
+kotlinx-coroutines = "1.10.2"
+kotlinx-datetime = "0.7.1-0.6.x-compat"
+kotlinx-io = "0.8.2"
+kotlinx-serialization-json = "1.9.0"
+ksp = "2.3.4"
+ktor = "3.3.3"
+maven-publish = "0.35.0"
+mrmans0n-detekt-compose-rules = "0.5.3"
+poko = "0.21.1"
+
+# Kotlin only dependencies
+kotlin = "2.3.0"
+kover = "0.9.4"
+
+# Compose Multiplatform only dependencies
+jetbrains-androidx-lifecycle = "2.10.0-alpha07"
+jetbrains-androidx-navigation = "2.9.1"
+jetbrains-androidx-navigation3 = "1.0.0-alpha06"
+jetbrains-compose-adaptive = "1.3.0-alpha03"
+jetbrains-compose-adaptive-navigation-suite = "1.9.0"
+jetbrains-compose-material = "1.7.3"
+jetbrains-compose-material3 = "1.10.0-alpha05"
+jetbrains-compose-multiplatform = "1.10.0"
+
+[libraries]
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
+androidx-biometric = { module = "androidx.biometric:biometric-ktx", version.ref = "androidx-biometric" }
+androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "androidx-compose-bom" }
+androidx-compose-ui-test-junit4-android = { module = "androidx.compose.ui:ui-test-junit4-android" }
+androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+androidx-datastore-core-okio = { group = "androidx.datastore", name = "datastore-core-okio", version.ref = "androidx-datastore" }
+androidx-datastore-preferences-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "androidx-datastore" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle" }
+androidx-metrics-performance = { module = "androidx.metrics:metrics-performance", version.ref = "androidx-metrics" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidx-room" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidx-room" }
+androidx-room-paging = { group = "androidx.room", name = "room-paging", version.ref = "androidx-room" }
+androidx-sqlite = { module = "androidx.sqlite:sqlite-bundled", version.ref = "androidx-sqlite" }
+androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test" }
+coil = { module = "io.coil-kt.coil3:coil" }
+coil-bom = { module = "io.coil-kt.coil3:coil-bom", version.ref = "coil" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose" }
+coil-compose-core = { module = "io.coil-kt.coil3:coil-compose-core" }
+coil-svg = { module = "io.coil-kt.coil3:coil-svg" }
+detekt-api = { group = "dev.detekt", name = "detekt-api", version.ref = "detekt" }
+detekt-cli = { group = "dev.detekt", name = "detekt-cli", version.ref = "detekt" }
+detekt-compose-rules = { group = "io.nlopez.compose.rules", name = "detekt", version.ref = "mrmans0n-detekt-compose-rules" }
+detekt-ktlint = { group = "dev.detekt", name = "detekt-rules-ktlint-wrapper", version.ref = "detekt" }
+detekt-libraries = { group = "dev.detekt", name = "detekt-rules-libraries", version.ref = "detekt" }
+detekt-ruleauthors = { group = "dev.detekt", name = "detekt-rules-ruleauthors", version.ref = "detekt" }
+jetbrains-androidx-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "jetbrains-androidx-lifecycle" }
+jetbrains-androidx-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "jetbrains-androidx-lifecycle" }
+jetbrains-androidx-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "jetbrains-androidx-lifecycle" }
+jetbrains-androidx-lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "jetbrains-androidx-lifecycle" }
+jetbrains-androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "jetbrains-androidx-navigation" }
+jetbrains-androidx-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "jetbrains-androidx-navigation3" }
+jetbrains-compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "jetbrains-compose-multiplatform" }
+jetbrains-compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "jetbrains-compose-multiplatform" }
+jetbrains-compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "jetbrains-compose-material" }
+jetbrains-compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "jetbrains-compose-material3" }
+jetbrains-compose-material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "jetbrains-compose-adaptive" }
+jetbrains-compose-material3-adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "jetbrains-compose-adaptive" }
+jetbrains-compose-material3-adaptive-navigation = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation", version.ref = "jetbrains-compose-adaptive" }
+jetbrains-compose-material3-adaptive-navigation-suite = { module = "org.jetbrains.compose.material3:material3-adaptive-navigation-suite", version.ref = "jetbrains-compose-adaptive-navigation-suite" }
+jetbrains-compose-material3-adaptive-navigation3 = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation3", version.ref = "jetbrains-compose-adaptive" }
+jetbrains-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetbrains-compose-multiplatform" }
+jetbrains-compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "jetbrains-compose-multiplatform" }
+jetbrains-compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "jetbrains-compose-multiplatform" }
+jetbrains-compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "jetbrains-compose-multiplatform" }
+kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
+koin-android = { module = "io.insert-koin:koin-android" }
+koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }
+koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
+koin-core = { module = "io.insert-koin:koin-core" }
+koin-compose = { module = "io.insert-koin:koin-compose" }
+koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel" }
+koin-compose-viewmodel-navigation = { module = "io.insert-koin:koin-compose-viewmodel-navigation" }
+koin-test = { module = "io.insert-koin:koin-test" }
+konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist" }
+kotest-bom = { module = "io.kotest:kotest-bom", version.ref = "kotest" }
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core" }
+kotest-framework-engine = { module = "io.kotest:kotest-framework-engine" }
+kotest-property = { module = "io.kotest:kotest-property" }
+kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5" }
+kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections-immutable" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
+ktor-bom = { module = "io.ktor:ktor-bom", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation" }
+ktor-client-core = { module = "io.ktor:ktor-client-core" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json" }
+screenshot-validation-api = { group = "com.android.tools.screenshot", name = "screenshot-validation-api", version.ref = "compose-screenshot"}
+
+# Dependencies of the included build-logic
+android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+android-tools-common = { group = "com.android.tools", name = "common", version.ref = "androidTools" }
+compose-multiplatform-gradlePlugin = { group = "org.jetbrains.compose", name = "org.jetbrains.compose.gradle.plugin", version.ref = "jetbrains-compose-multiplatform" }
+detekt-gradlePlugin = { group = "dev.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
+kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+kover-gradlePlugin = { group = "org.jetbrains.kotlinx", name = "kover-gradle-plugin", version.ref = "kover" }
+ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plugin", version.ref = "androidx-room" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+android-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "jetbrains-compose-multiplatform" }
+compose-screenshot = { id = "com.android.compose.screenshot", version.ref = "compose-screenshot" }
+compose-stability-analyzer = { id = "com.github.skydoves.compose.stability.analyzer", version.ref = "compose-stability-analyzer" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+kotest-multiplatform = { id = "io.kotest", version.ref = "kotest" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }
+poko = { id = "dev.drewhamilton.poko", version.ref = "poko" }
+room = { id = "androidx.room", version.ref = "androidx-room" }
+
+# Plugins defined by this project
+convention-android-application = { id = "convention.android.application", version = "unspecified" }
+convention-compose-multiplatform = { id = "convention.compose.multiplatform", version = "unspecified" }
+convention-datastore = { id = "convention.datastore", version = "unspecified" }
+convention-koin = { id = "convention.koin", version = "unspecified" }
+convention-koin-compose = { id = "convention.koin.compose", version = "unspecified" }
+convention-konsist = { id = "convention.konsist", version = "unspecified" }
+convention-ktor = { id = "convention.ktor", version = "unspecified" }
+convention-kover = { id = "convention.kover", version = "unspecified" }
+convention-multiplatform-library = { id = "convention.multiplatform.library", version = "unspecified" }
+convention-room = { id = "convention.room", version = "unspecified" }
+convention-unitTest = { id = "convention.unitTest", version = "unspecified" }
