@@ -85,7 +85,7 @@ ktlint:
     autoCorrect: true
     indentSize: 4
   Filename:
-    active: true
+    active: false
   FinalNewline:
     active: true
     autoCorrect: true

@@ -1,4 +1,4 @@
-package com.worldline.devview
+package com.worldline.devview.core
 
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)
