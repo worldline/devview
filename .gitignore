@@ -163,3 +163,10 @@ captures/
 !/.idea/detekt.xml
 !/.idea/codeStyles/
 !/.idea/file.template.settings.xml
+
+# Docs
+site/
+.cache/
+docs/api
+docs/sample
+docs/changelog.md
