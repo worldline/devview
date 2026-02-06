@@ -27,6 +27,7 @@ dependencies {
     implementation(projects.sample.shared)
     implementation(projects.devview)
     implementation(projects.devviewFeatureflip)
+    implementation(projects.devviewAnalytics)
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.jetbrains.compose.foundation)
