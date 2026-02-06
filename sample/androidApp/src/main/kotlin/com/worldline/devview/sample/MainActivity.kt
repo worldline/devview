@@ -17,6 +17,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
 import com.worldline.devview.DevView
+import com.worldline.devview.analytics.Analytics
+import com.worldline.devview.analytics.AnalyticsLogger
+import com.worldline.devview.analytics.LocalAnalytics
 import com.worldline.devview.core.rememberModules
 import com.worldline.devview.featureflip.FeatureFlip
 import com.worldline.devview.featureflip.model.Feature
@@ -42,8 +45,11 @@ class MainActivity : ComponentActivity() {
                 )
             )
 
+            val analytics = remember { AnalyticsLogger.logs }
+
             CompositionLocalProvider(
-                 LocalFeatureHandler provides featureHandler
+                 LocalFeatureHandler provides featureHandler,
+                LocalAnalytics provides analytics
             ) {
                 val localFeatureHandler = LocalFeatureHandler.current
 
@@ -66,8 +72,9 @@ class MainActivity : ComponentActivity() {
                     )
 
                     val modules = rememberModules {
-                        module(FeatureFlip)
-                        module(TestModule)
+                        module(module = FeatureFlip)
+                        module(module = Analytics)
+                        module(module = TestModule)
                     }
 
                     DevView(

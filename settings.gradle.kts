@@ -34,6 +34,7 @@ rootProject.name = "devview-root"
 
 include(
     ":devview",
+    ":devview-analytics",
     ":devview-featureflip",
     ":internal:dokka",
     ":sample:androidApp",
