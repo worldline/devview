@@ -28,6 +28,7 @@ dependencies {
     implementation(projects.devview)
     implementation(projects.devviewFeatureflip)
     implementation(projects.devviewAnalytics)
+    implementation(projects.devviewNetworkmock)
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.jetbrains.compose.foundation)
