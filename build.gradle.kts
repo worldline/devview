@@ -19,3 +19,14 @@ plugins {
     alias(libs.plugins.poko) apply false
     alias(libs.plugins.room) apply false
 }
+
+tasks.register("detektFull") {
+    group = "verification"
+    description = "Runs detekt on all modules"
+
+    dependsOn(subprojects.map {
+        it.tasks.matching { task ->
+            task.name == "detektMainAndroid" || task.name == "detektIosMainSourceSet"
+        }
+    })
+}

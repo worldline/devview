@@ -1,3 +1,5 @@
+@file:Suppress("MatchingDeclarationName")
+
 package com.worldline.devview.sample
 
 import android.os.Build

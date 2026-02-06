@@ -24,7 +24,13 @@ android {
 
 dependencies {
     implementation(projects.sample.shared)
+    implementation(projects.devview)
+
     implementation(libs.androidx.activity.compose)
+    implementation(libs.jetbrains.compose.foundation)
+    implementation(libs.jetbrains.compose.material3)
+
+    implementation(libs.kotlinx.collections.immutable)
 
     debugImplementation(libs.jetbrains.compose.ui.tooling)
     debugImplementation(libs.jetbrains.compose.ui.tooling.preview)
