@@ -14,6 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
+import com.worldline.devview.core.Module
+import com.worldline.devview.core.Section
+import com.worldline.devview.core.previewModule
 import com.worldline.devview.internal.components.ModuleItem
 import com.worldline.devview.internal.components.ModulePosition
 import kotlinx.serialization.Serializable
@@ -91,11 +94,11 @@ public data object Home : NavKey
 private fun HomeScreenPreview() {
     HomeScreen(
         modules = listOf(
-            Module.AppInfo,
-            Module.FeatureFlip,
-            Module.Console,
-            Module.Analytics,
-            Module.AppSpecific
+            previewModule(section = Section.SETTINGS, name = "AppInfo"),
+            previewModule(section = Section.FEATURES, name = "FeatureFlip"),
+            previewModule(section = Section.LOGGING, name = "Console"),
+            previewModule(section = Section.LOGGING, name = "Analytics"),
+            previewModule(section = Section.CUSTOM, name = "AppSpecific")
         ),
         openModule = {}
     )

@@ -23,7 +23,9 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.worldline.devview.Module
+import com.worldline.devview.core.Module
+import com.worldline.devview.core.Section
+import com.worldline.devview.core.previewModule
 
 @Composable
 internal fun ModuleItem(
@@ -65,7 +67,7 @@ internal fun ModuleItem(
             if (position.hasDivider) {
                 HorizontalDivider(
                     modifier = Modifier
-                        .padding(start = 44.dp) // 24 (icon size) + 12 (padding end) + 8 (padding horizontal)
+                        .padding(start = 44.dp) // 20 (icon size) + 12 (padding end) + 12 (padding horizontal)
                 )
             }
             Row(
@@ -114,12 +116,18 @@ internal fun ModuleItem(
 private fun ModuleItemPreview() {
     Column {
         ModuleItem(
-            module = Module.FeatureFlip,
+            module = previewModule(
+                name = "Preview Module",
+                section = Section.SETTINGS
+            ),
             position = ModulePosition.FIRST,
             openModule = {}
         )
         ModuleItem(
-            module = Module.Console,
+            module = previewModule(
+                name = "Preview Module 2",
+                section = Section.CUSTOM
+            ),
             position = ModulePosition.LAST,
             openModule = {}
         )
