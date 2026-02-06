@@ -39,6 +39,7 @@ include(
     ":devview",
     ":devview-analytics",
     ":devview-featureflip",
+    ":devview-utils",
     ":internal:dokka",
     ":sample:androidApp",
     ":sample:shared"
