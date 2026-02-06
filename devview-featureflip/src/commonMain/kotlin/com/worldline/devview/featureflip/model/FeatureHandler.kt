@@ -20,13 +20,91 @@ import kotlinx.coroutines.flow.map
 import okio.IOException
 
 /**
- * Internal handler for managing feature flag state persistence.
+ * Handler for managing feature flag state persistence and retrieval.
  *
- * This class handles storing and retrieving feature flag states using DataStore.
- * It maintains a registry of features and their associated preference keys.
+ * This class provides the core functionality for the FeatureFlip module, handling:
+ * - Registration of feature flags
+ * - Persistent storage using DataStore
+ * - State queries (both Flow and Compose State)
+ * - State updates with validation
  *
- * @property dataStore The DataStore instance used for persistence
- * @param initialFeatures The initial list of features to register and manage
+ * ## Architecture
+ * The handler maintains an internal registry mapping each [Feature] to its corresponding
+ * DataStore preference key:
+ * - [Feature.LocalFeature] uses `booleanPreferencesKey` to store the enabled state
+ * - [Feature.RemoteFeature] uses `intPreferencesKey` to store the state ordinal
+ *
+ * ## Usage
+ *
+ * ### Creating a Handler
+ * ```kotlin
+ * @Composable
+ * fun MyApp() {
+ *     val features = remember {
+ *         listOf(
+ *             Feature.LocalFeature(
+ *                 name = "dark_mode",
+ *                 description = "Enable dark theme",
+ *                 isEnabled = false
+ *             ),
+ *             Feature.RemoteFeature(
+ *                 name = "new_feature",
+ *                 description = "Experimental feature",
+ *                 defaultRemoteValue = true,
+ *                 state = FeatureState.REMOTE
+ *             )
+ *         )
+ *     }
+ *
+ *     val featureHandler = rememberFeatureHandler(features)
+ *
+ *     CompositionLocalProvider(LocalFeatureHandler provides featureHandler) {
+ *         Content()
+ *     }
+ * }
+ * ```
+ *
+ * ### Checking Feature State in Composables
+ * ```kotlin
+ * @Composable
+ * fun MyScreen() {
+ *     val featureHandler = LocalFeatureHandler.current
+ *     val isDarkMode by featureHandler.isFeatureEnabled("dark_mode")
+ *
+ *     if (isDarkMode) {
+ *         DarkThemeContent()
+ *     } else {
+ *         LightThemeContent()
+ *     }
+ * }
+ * ```
+ *
+ * ### Checking Feature State with Flow
+ * ```kotlin
+ * class MyViewModel(private val featureHandler: FeatureHandler) : ViewModel() {
+ *     val isDarkModeEnabled: Flow<Boolean> =
+ *         featureHandler.isFeatureEnabledFlow("dark_mode")
+ * }
+ * ```
+ *
+ * ### Updating Feature State
+ * ```kotlin
+ * viewModelScope.launch {
+ *     featureHandler.setFeatureState("new_feature", FeatureState.LOCAL_ON)
+ * }
+ * ```
+ *
+ * ## Thread Safety
+ * All operations are thread-safe. DataStore handles concurrent access internally,
+ * and the handler's internal state is protected.
+ *
+ * @property dataStore The DataStore instance used for persistence.
+ * @param initialFeatures The initial list of features to register and manage.
+ *
+ * @see Feature
+ * @see FeatureState
+ * @see rememberFeatureHandler
+ * @see LocalFeatureHandler
  */
 public class FeatureHandler(
     private val dataStore: DataStore<Preferences>,
@@ -266,11 +344,76 @@ public class FeatureHandler(
 /**
  * Remembers and returns a [FeatureHandler] instance for the current composition.
  *
- * This composable creates a FeatureHandler backed by a platform-specific DataStore.
- * The instance is remembered across recompositions.
+ * This composable creates a FeatureHandler backed by a platform-specific DataStore
+ * and automatically initializes it with the provided features. The instance is
+ * remembered across recompositions and tied to the composition lifecycle.
  *
- * @param features The list of features to initialize the handler with
- * @return A remembered [FeatureHandler] instance
+ * ## Platform-Specific Storage
+ * - **Android**: Stored in `{appFilesDir}/feature_flip_datastore.preferences_pb`
+ * - **iOS**: Stored in `{documentDirectory}/feature_flip_datastore.preferences_pb`
+ *
+ * ## Usage
+ *
+ * ### Basic Setup
+ * ```kotlin
+ * @Composable
+ * fun App() {
+ *     val features = remember {
+ *         listOf(
+ *             Feature.LocalFeature(
+ *                 name = "dark_mode",
+ *                 description = "Enable dark theme",
+ *                 isEnabled = false
+ *             ),
+ *             Feature.RemoteFeature(
+ *                 name = "new_checkout",
+ *                 description = "New checkout flow",
+ *                 defaultRemoteValue = true,
+ *                 state = FeatureState.REMOTE
+ *             )
+ *         )
+ *     }
+ *
+ *     val featureHandler = rememberFeatureHandler(features)
+ *
+ *     CompositionLocalProvider(LocalFeatureHandler provides featureHandler) {
+ *         NavigationHost()
+ *     }
+ * }
+ * ```
+ *
+ * ### With Dynamic Features
+ * ```kotlin
+ * @Composable
+ * fun App(remoteConfig: RemoteConfig) {
+ *     val features = remember(remoteConfig) {
+ *         buildList {
+ *             add(Feature.LocalFeature("dark_mode", null, false))
+ *
+ *             // Add remote features based on remote config
+ *             remoteConfig.getAllKeys().forEach { key ->
+ *                 add(Feature.RemoteFeature(
+ *                     name = key,
+ *                     description = null,
+ *                     defaultRemoteValue = remoteConfig.getBoolean(key),
+ *                     state = FeatureState.REMOTE
+ *                 ))
+ *             }
+ *         }
+ *     }
+ *
+ *     val handler = rememberFeatureHandler(features)
+ *     // Use handler...
+ * }
+ * ```
+ *
+ * @param features The list of features to initialize the handler with.
+ *                 These features will be registered and their initial state persisted.
+ * @return A remembered [FeatureHandler] instance bound to the composition lifecycle.
+ *
+ * @see FeatureHandler
+ * @see LocalFeatureHandler
+ * @see rememberDataStore
  */
 @Composable
 public fun rememberFeatureHandler(features: List<Feature>): FeatureHandler {
@@ -287,11 +430,50 @@ public fun rememberFeatureHandler(features: List<Feature>): FeatureHandler {
 /**
  * CompositionLocal providing access to the current [FeatureHandler].
  *
- * Components can use this to obtain the FeatureHandler instance
- * for managing feature flags within the composition.
+ * This allows components deep in the composition tree to access the FeatureHandler
+ * instance for checking and managing feature flags without explicit parameter passing.
  *
- * Must be provided by the parent composable before use.
- * Throws an error if accessed without being initialized.
+ * ## Usage
+ *
+ * ### Providing the Handler
+ * ```kotlin
+ * @Composable
+ * fun App() {
+ *     val features = remember { /* your features */ }
+ *     val featureHandler = rememberFeatureHandler(features)
+ *
+ *     CompositionLocalProvider(LocalFeatureHandler provides featureHandler) {
+ *         Content()
+ *     }
+ * }
+ * ```
+ *
+ * ### Consuming the Handler
+ * ```kotlin
+ * @Composable
+ * fun MyScreen() {
+ *     val featureHandler = LocalFeatureHandler.current
+ *     val isDarkMode by featureHandler.isFeatureEnabled("dark_mode")
+ *
+ *     // Use the feature state...
+ * }
+ * ```
+ *
+ * ### In ViewModels (via dependency injection)
+ * ```kotlin
+ * class MyViewModel(
+ *     private val featureHandler: FeatureHandler
+ * ) : ViewModel() {
+ *     val newFeatureEnabled = featureHandler
+ *         .isFeatureEnabledFlow("new_feature")
+ *         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+ * }
+ * ```
+ *
+ * @throws IllegalStateException if accessed without being provided in the composition tree.
+ *
+ * @see FeatureHandler
+ * @see rememberFeatureHandler
  */
 public val LocalFeatureHandler: ProvidableCompositionLocal<FeatureHandler> =
     staticCompositionLocalOf {

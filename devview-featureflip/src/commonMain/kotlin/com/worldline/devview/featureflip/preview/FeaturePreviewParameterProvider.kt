@@ -9,8 +9,33 @@ import com.worldline.devview.featureflip.model.FeatureState
 /**
  * Preview parameter provider for [Feature] instances.
  *
- * Provides various states of both [Feature.LocalFeature] and [Feature.RemoteFeature]
- * for Compose preview purposes.
+ * Provides sample instances of both [Feature.LocalFeature] and [Feature.RemoteFeature]
+ * in various states for Compose preview purposes. This allows developers to visualize
+ * how different feature configurations appear in the UI during development.
+ *
+ * ## Provided Samples
+ * - Remote features with enabled/disabled default values
+ * - Remote features with local overrides (ON/OFF)
+ * - Local features in enabled/disabled states
+ *
+ * ## Usage
+ * ```kotlin
+ * @Preview
+ * @Composable
+ * fun FeatureItemPreview(
+ *     @PreviewParameter(FeaturePreviewParameterProvider::class) feature: Feature
+ * ) {
+ *     FeatureItem(
+ *         feature = feature,
+ *         onStateChange = { }
+ *     )
+ * }
+ * ```
+ *
+ * @see Feature
+ * @see Feature.LocalFeature
+ * @see Feature.RemoteFeature
+ * @see com.worldline.devview.featureflip.model.FeatureState
  */
 internal class FeaturePreviewParameterProvider : PreviewParameterProvider<Feature> {
     override val values: Sequence<Feature>
@@ -55,8 +80,33 @@ internal class FeaturePreviewParameterProvider : PreviewParameterProvider<Featur
 /**
  * Preview parameter provider specifically for [Feature.RemoteFeature] instances.
  *
- * Provides remote features in all possible states (REMOTE, LOCAL_OFF, LOCAL_ON)
- * with both enabled and disabled default remote values.
+ * Provides remote features in all possible [FeatureState] combinations with both
+ * enabled and disabled default remote values. This comprehensive set allows developers
+ * to preview all variations of remote feature states.
+ *
+ * ## Provided Samples
+ * - REMOTE state with enabled default value
+ * - REMOTE state with disabled default value
+ * - LOCAL_OFF state override
+ * - LOCAL_ON state override
+ *
+ * ## Usage
+ * ```kotlin
+ * @Preview
+ * @Composable
+ * fun RemoteFeatureSwitchPreview(
+ *     @PreviewParameter(RemoteFeaturePreviewParameterProvider::class) feature: RemoteFeature
+ * ) {
+ *     FeatureTriStateSwitch(
+ *         feature = feature,
+ *         onStateChange = { }
+ *     )
+ * }
+ * ```
+ *
+ * @see Feature.RemoteFeature
+ * @see com.worldline.devview.featureflip.model.FeatureState
+ * @see com.worldline.devview.featureflip.components.FeatureTriStateSwitch
  */
 internal class RemoteFeaturePreviewParameterProvider : PreviewParameterProvider<RemoteFeature> {
     override val values: Sequence<RemoteFeature>
@@ -91,7 +141,28 @@ internal class RemoteFeaturePreviewParameterProvider : PreviewParameterProvider<
 /**
  * Preview parameter provider specifically for [Feature.LocalFeature] instances.
  *
- * Provides local features in both enabled and disabled states for previews.
+ * Provides local features in both enabled and disabled states to facilitate
+ * previewing of local feature UI components.
+ *
+ * ## Provided Samples
+ * - Enabled local feature
+ * - Disabled local feature
+ *
+ * ## Usage
+ * ```kotlin
+ * @Preview
+ * @Composable
+ * fun LocalFeatureItemPreview(
+ *     @PreviewParameter(LocalFeaturePreviewParameterProvider::class) feature: LocalFeature
+ * ) {
+ *     FeatureItem(
+ *         feature = feature,
+ *         onStateChange = { }
+ *     )
+ * }
+ * ```
+ *
+ * @see Feature.LocalFeature
  */
 internal class LocalFeaturePreviewParameterProvider : PreviewParameterProvider<LocalFeature> {
     override val values: Sequence<LocalFeature>
