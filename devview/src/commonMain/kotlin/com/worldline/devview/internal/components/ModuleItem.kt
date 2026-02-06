@@ -27,6 +27,53 @@ import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
 import com.worldline.devview.core.previewModule
 
+/**
+ * Internal composable that displays a single module as a card in the home screen.
+ *
+ * This component renders a tappable Material card containing:
+ * - A circular icon with customizable colors
+ * - Module name
+ * - Optional subtitle
+ * - Conditional divider (for middle/last positions)
+ *
+ * The card shape adapts based on its position within a section group to create
+ * a visually connected appearance.
+ *
+ * ## Layout Structure
+ * ```
+ * Card (shape varies by position)
+ * └── Column
+ *     ├── HorizontalDivider (if hasDivider)
+ *     └── Row
+ *         ├── Icon (circular background)
+ *         └── Column (module info)
+ *             ├── Text (module name)
+ *             └── Text (subtitle, optional)
+ * ```
+ *
+ * ## Shape Adaptation
+ * The card shape changes based on [position] to create grouped appearance:
+ * - [ModulePosition.SINGLE]: All corners rounded (standalone module)
+ * - [ModulePosition.FIRST]: Top rounded, bottom squared (start of group)
+ * - [ModulePosition.MIDDLE]: All squared with top divider (middle of group)
+ * - [ModulePosition.LAST]: Bottom rounded, top squared with divider (end of group)
+ *
+ * ## Icon Styling
+ * - Background: [Module.containerColor] in a circle
+ * - Icon: [Module.icon] tinted with [Module.contentColor]
+ * - Size: 20dp icon in 32dp circular container
+ *
+ * ## Usage
+ * This is an internal component used by the [HomeScreen][com.worldline.devview.HomeScreen]. Not intended for direct use.
+ *
+ * @param module The module to display.
+ * @param position The position of this module within its section group.
+ * @param openModule Callback invoked when the module card is tapped.
+ * @param modifier Optional [Modifier] to apply to the card.
+ *
+ * @see ModulePosition
+ * @see Module
+ */
 @Composable
 internal fun ModuleItem(
     module: Module,
@@ -134,9 +181,72 @@ private fun ModuleItemPreview() {
     }
 }
 
+/**
+ * Defines the position of a module within a section group.
+ *
+ * This enum is used to determine the visual styling of module cards in the
+ * home screen, specifically:
+ * - Card shape (which corners are rounded vs squared)
+ * - Whether to show a divider at the top
+ *
+ * The positioning creates a visually grouped appearance for modules within
+ * the same section.
+ *
+ * ## Visual Effect
+ * ```
+ * ┌─────────┐  SINGLE (or FIRST)
+ * │ Module  │  Rounded top corners
+ * ├─────────┤
+ * │ Module  │  MIDDLE - Squared, has divider
+ * ├─────────┤
+ * │ Module  │  LAST - Rounded bottom, has divider
+ * └─────────┘
+ * ```
+ *
+ * ## Usage
+ * ```kotlin
+ * ModuleItem(
+ *     module = myModule,
+ *     position = when {
+ *         modulesInSection.size == 1 -> ModulePosition.SINGLE
+ *         index == 0 -> ModulePosition.FIRST
+ *         index == modulesInSection.lastIndex -> ModulePosition.LAST
+ *         else -> ModulePosition.MIDDLE
+ *     },
+ *     openModule = { }
+ * )
+ * ```
+ *
+ * @property hasDivider Whether this position requires a top divider line.
+ *
+ * @see ModuleItem
+ */
 public enum class ModulePosition(public val hasDivider: Boolean) {
+    /**
+     * Single module in a section (not part of a group).
+     *
+     * Visual: All corners rounded, no divider.
+     */
     SINGLE(false),
+
+    /**
+     * First module in a section group.
+     *
+     * Visual: Top corners rounded, bottom corners squared, no divider.
+     */
     FIRST(false),
+
+    /**
+     * Middle module in a section group.
+     *
+     * Visual: All corners squared, has top divider.
+     */
     MIDDLE(true),
+
+    /**
+     * Last module in a section group.
+     *
+     * Visual: Top corners squared, bottom corners rounded, has top divider.
+     */
     LAST(true)
 }
