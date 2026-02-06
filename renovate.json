@@ -1,0 +1,31 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "group:all",
+    "mergeConfidence:all-badges"
+  ],
+  "osvVulnerabilityAlerts": true,
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 40,
+  "commitMessagePrefix": ":arrow_up:",
+  "rebaseWhen": "conflicted",
+  "packageRules": [
+    {
+      "groupName": "kotlin",
+      "matchPackageNames": [
+        "/androidx.compose.compiler:compiler/",
+        "/org.jetbrains.kotlin.*/",
+        "/dev.mokkery.*/",
+        "/com.github.skydoves.compose.stability.analyzer/"
+      ]
+    },
+    {
+      "groupName": "compose-multiplatform",
+      "matchPackageNames": [
+        "/org.jetbrains.compose.*/",
+        "/org.jetbrains.androidx.*/"
+      ]
+    }
+  ]
+}
