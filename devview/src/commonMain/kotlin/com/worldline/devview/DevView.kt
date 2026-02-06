@@ -18,12 +18,159 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 
 /**
- * Main entry point for DevView.
+ * Main entry point for the DevView developer tools UI.
  *
- * @param openDevView Callback that returns true when DevView should be shown
- * @param closeDevView Callback to close DevView
- * @param modules List of modules to display (use [com.worldline.devview.core.rememberModules] to build)
- * @param modifier Optional modifier
+ * DevView provides an in-app developer menu that displays a collection of modules
+ * for debugging, testing, and development. It uses an animated visibility wrapper
+ * and manages its own navigation stack with type-safe navigation.
+ *
+ * ## Features
+ * - **Modular Architecture**: Display any combination of modules
+ * - **Type-Safe Navigation**: Uses Navigation3 with kotlinx.serialization
+ * - **Animated Transitions**: Smooth show/hide animations
+ * - **Persistent State**: Navigation state survives configuration changes
+ * - **Section-Based Organization**: Modules grouped by logical sections
+ *
+ * ## Architecture
+ *
+ * DevView manages a navigation backstack that includes:
+ * 1. **Home screen** ([Home]): Displays all modules grouped by section
+ * 2. **Module destinations**: Screens registered by individual modules
+ *
+ * When a user:
+ * - Opens DevView → Shows the home screen
+ * - Taps a module → Navigates to that module's first destination
+ * - Navigates back from home → Closes DevView
+ * - Navigates within a module → Uses module-specific navigation
+ *
+ * ## Usage
+ *
+ * ### Basic Setup
+ * ```kotlin
+ * @Composable
+ * fun App() {
+ *     var isDevViewOpen by remember { mutableStateOf(false) }
+ *
+ *     val modules = rememberModules {
+ *         module(AppInfo)
+ *         module(FeatureFlip)
+ *         module(Analytics)
+ *     }
+ *
+ *     Box {
+ *         // Your main app content
+ *         MainAppContent()
+ *
+ *         // DevView overlay
+ *         DevView(
+ *             devViewIsOpen = isDevViewOpen,
+ *             closeDevView = { isDevViewOpen = false },
+ *             modules = modules
+ *         )
+ *
+ *         // Trigger to open DevView (e.g., debug button)
+ *         if (BuildConfig.DEBUG) {
+ *             FloatingActionButton(
+ *                 onClick = { isDevViewOpen = true }
+ *             ) {
+ *                 Icon(Icons.Default.DeveloperMode, "DevView")
+ *             }
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ * ### With Gesture Detection
+ * ```kotlin
+ * @Composable
+ * fun App() {
+ *     var isDevViewOpen by remember { mutableStateOf(false) }
+ *     var tapCount by remember { mutableStateOf(0) }
+ *
+ *     val modules = rememberModules {
+ *         module(FeatureFlip)
+ *         module(Analytics)
+ *     }
+ *
+ *     Box(
+ *         modifier = Modifier
+ *             .fillMaxSize()
+ *             .pointerInput(Unit) {
+ *                 detectTapGestures(
+ *                     onDoubleTap = {
+ *                         tapCount++
+ *                         if (tapCount >= 3) {
+ *                             isDevViewOpen = true
+ *                             tapCount = 0
+ *                         }
+ *                     }
+ *                 )
+ *             }
+ *     ) {
+ *         MainContent()
+ *
+ *         DevView(
+ *             devViewIsOpen = isDevViewOpen,
+ *             closeDevView = { isDevViewOpen = false },
+ *             modules = modules
+ *         )
+ *     }
+ * }
+ * ```
+ *
+ * ### Conditional Module Loading
+ * ```kotlin
+ * @Composable
+ * fun App() {
+ *     val modules = rememberModules {
+ *         // Always include these
+ *         module(AppInfo)
+ *
+ *         // Debug-only modules
+ *         if (BuildConfig.DEBUG) {
+ *             modules(DebugConsole, NetworkMonitor)
+ *         }
+ *
+ *         // Feature-flag controlled
+ *         if (isFeatureEnabled("dev_tools")) {
+ *             module(FeatureFlip)
+ *         }
+ *     }
+ *
+ *     DevView(
+ *         devViewIsOpen = devViewState,
+ *         closeDevView = { devViewState = false },
+ *         modules = modules
+ *     )
+ * }
+ * ```
+ *
+ * ## Navigation Behavior
+ *
+ * - **Opening**: Displays with animation when [devViewIsOpen] becomes true
+ * - **Module Selection**: Navigates to the module's first destination
+ * - **Back Navigation**: Pops the backstack; closes DevView when at home
+ * - **State Persistence**: Navigation state survives configuration changes
+ *
+ * ## Performance Notes
+ *
+ * - DevView uses [AnimatedVisibility], so content is composed/decomposed
+ * - Module list should be remembered to avoid recreating on recomposition
+ * - Navigation state is automatically saved and restored
+ *
+ * @param devViewIsOpen Whether DevView should be visible. Control this state
+ *        from your app to show/hide DevView.
+ * @param closeDevView Callback invoked when DevView should be closed, typically
+ *        when navigating back from the home screen. Set [devViewIsOpen] to false
+ *        in this callback.
+ * @param modules The list of modules to display in DevView. Use the rememberModules
+ *        function to build this list in a Composable, or buildModules for non-Composable contexts.
+ * @param modifier Optional [Modifier] to apply to the root DevView container.
+ *
+ * @see Module
+ * @see com.worldline.devview.core.rememberModules
+ * @see com.worldline.devview.core.buildModules
+ * @see Home
  */
 @Composable
 public fun DevView(

@@ -43,10 +43,68 @@ import kotlinx.coroutines.launch
 /**
  * Main screen for managing feature flags.
  *
- * Displays a searchable, filterable list of feature flags with controls to modify their state.
- * Features can be filtered by type (local/remote) and state (on/off), and searched by name.
+ * Displays a searchable, filterable list of feature flags with interactive controls
+ * to modify their state. The screen provides a comprehensive interface for managing
+ * both local and remote features during development and testing.
  *
- * @param modifier Modifier to be applied to the root container
+ * ## Features
+ * - **Search**: Filter features by name using the search bar
+ * - **Filters**: Filter by type (Local/Remote) and state (On/Off)
+ * - **Local Features**: Simple on/off switch control
+ * - **Remote Features**: Tri-state control (Remote/Off/On)
+ * - **Persistent State**: All changes are automatically saved using DataStore
+ * - **Real-time Updates**: UI updates immediately when feature states change
+ *
+ * ## Usage
+ *
+ * ### Basic Usage with FeatureHandler
+ * ```kotlin
+ * val features = listOf(
+ *     Feature.LocalFeature(
+ *         name = "dark_mode",
+ *         description = "Enable dark theme",
+ *         isEnabled = false
+ *     ),
+ *     Feature.RemoteFeature(
+ *         name = "new_feature",
+ *         description = "New experimental feature",
+ *         defaultRemoteValue = true,
+ *         state = FeatureState.REMOTE
+ *     )
+ * )
+ *
+ * val featureHandler = rememberFeatureHandler(features)
+ * CompositionLocalProvider(LocalFeatureHandler provides featureHandler) {
+ *     FeatureFlipScreen()
+ * }
+ * ```
+ *
+ * ### Standalone Usage
+ * ```kotlin
+ * Scaffold { paddingValues ->
+ *     FeatureFlipScreen(
+ *         modifier = Modifier
+ *             .fillMaxSize()
+ *             .padding(paddingValues)
+ *     )
+ * }
+ * ```
+ *
+ * ## UI Components
+ * - Search bar with clear button
+ * - Filter chips for Local/Remote/On/Off states
+ * - Grouped feature cards with adaptive shapes
+ * - Switches for local features
+ * - Tri-state segmented buttons for remote features
+ *
+ * @param modifier Modifier to be applied to the root container.
+ *
+ * @throws IllegalStateException if [LocalFeatureHandler] is not provided in the composition.
+ *
+ * @see com.worldline.devview.featureflip.model.Feature
+ * @see com.worldline.devview.featureflip.model.FeatureHandler
+ * @see com.worldline.devview.featureflip.model.LocalFeatureHandler
+ * @see com.worldline.devview.featureflip.model.rememberFeatureHandler
  */
 @Composable
 public fun FeatureFlipScreen(modifier: Modifier = Modifier) {
@@ -192,25 +250,33 @@ public fun FeatureFlipScreen(modifier: Modifier = Modifier) {
 
 /**
  * Internal enum representing the available filter options for features.
+ *
+ * These filters allow users to narrow down the feature list by type
+ * (local vs remote) and state (enabled vs disabled).
  */
 private enum class FeatureFilter {
-    /** Filter for local features */
+    /** Filter to show only local features */
     LOCAL,
 
-    /** Filter for remote features */
+    /** Filter to show only remote features */
     REMOTE,
 
-    /** Filter for enabled features */
+    /** Filter to show only enabled features */
     ON,
 
-    /** Filter for disabled features */
+    /** Filter to show only disabled features */
     OFF;
 
     companion object {
         /**
-         * Returns the available filter entries based on the feature list.
-         * If all features are remote, only ON/OFF filters are shown.
-         * Otherwise, all filter types are available.
+         * Returns the available filter entries based on the feature list composition.
+         *
+         * If all features are remote features, only ON/OFF filters are shown
+         * (since LOCAL/REMOTE filtering would be redundant). Otherwise, all
+         * filter types are available.
+         *
+         * @param features The list of features to analyze
+         * @return List of applicable filter options
          */
         fun availableEntries(features: List<Feature>): List<FeatureFilter> =
             if (features.filterIsInstance<Feature.RemoteFeature>().size == features.size) {

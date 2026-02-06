@@ -30,15 +30,40 @@ import com.worldline.devview.featureflip.model.FeatureState
 import com.worldline.devview.featureflip.preview.FeaturePreviewParameterProvider
 
 /**
- * Adds feature items to a LazyList.
+ * Adds feature items to a LazyList with optimized performance.
  *
- * Creates a list of feature cards with appropriate styling and dividers.
- * Each feature is rendered with animation support and proper item keys for efficient recomposition.
+ * Creates a visually grouped list of feature cards with appropriate styling, dividers,
+ * and animations. Each feature is rendered with:
+ * - Stable item keys for efficient recomposition
+ * - Content type hints for recycling optimization
+ * - Item animations for smooth transitions
+ * - Proper spacing and dividers
  *
- * @param features List of features to display
+ * The cards are styled to appear as a cohesive group with connected corners between
+ * adjacent items (first item has bottom corners squared, middle items have all corners
+ * squared, last item has top corners squared).
+ *
+ * ## Usage
+ * ```kotlin
+ * LazyColumn {
+ *     featureItems(
+ *         features = myFeatureList,
+ *         onStateChange = { featureName, newState ->
+ *             // Handle state change
+ *             featureHandler.setFeatureState(featureName, newState)
+ *         }
+ *     )
+ * }
+ * ```
+ *
+ * @param features List of features to display in the list.
  * @param onStateChange Callback invoked when a feature's state changes.
- *        Parameters are the feature name and the new state.
- * @param modifier Modifier to apply to each feature item
+ *        Receives the feature name and the new [FeatureState].
+ * @param modifier Modifier to apply to each feature item card.
+ *
+ * @see FeatureItem
+ * @see com.worldline.devview.featureflip.model.Feature
+ * @see com.worldline.devview.featureflip.model.FeatureState
  */
 internal fun LazyListScope.featureItems(
     features: List<Feature>,
@@ -71,20 +96,44 @@ internal fun LazyListScope.featureItems(
 }
 
 /**
- * Displays a single feature item card.
+ * Displays a single feature item card with interactive controls.
  *
- * Renders a feature with its name, description, and appropriate control:
- * - [Feature.LocalFeature] shows a simple on/off Switch
- * - [Feature.RemoteFeature] shows a tri-state switch (Remote/Off/On)
+ * Renders a Material Design card containing the feature's information and
+ * appropriate control widget based on the feature type:
+ * - [Feature.LocalFeature]: Displays a Material [Switch] for simple on/off toggling
+ * - [Feature.RemoteFeature]: Displays a [FeatureTriStateSwitch] for Remote/Off/On selection
  *
- * The card shape adapts based on its position in a list to create a grouped appearance.
+ * The card's shape automatically adapts based on its position in a list to create
+ * a visually connected group of items:
+ * - First item: Rounded top corners, squared bottom corners
+ * - Middle items: All corners squared
+ * - Last item: Squared top corners, rounded bottom corners
+ * - Single item: All corners rounded
  *
- * @param feature The feature to display
- * @param totalFeatures Total number of features in the list (for shape calculations)
- * @param index The index of this feature in the list
- * @param isLastIndex Whether this is the last item in the list
- * @param onStateChange Callback invoked when the feature's state changes
- * @param modifier Modifier to apply to the card
+ * ## Layout Structure
+ * ```
+ * Card
+ * └── Row
+ *     ├── Column (feature info, weighted)
+ *     │   ├── Text (feature name, bold)
+ *     │   └── Text (description, optional)
+ *     └── Control Widget
+ *         ├── Switch (for LocalFeature)
+ *         └── FeatureTriStateSwitch (for RemoteFeature)
+ * └── HorizontalDivider (if not last item)
+ * ```
+ *
+ * @param feature The feature to display.
+ * @param totalFeatures Total number of features in the list (used for shape calculations).
+ * @param index The zero-based index of this feature in the list.
+ * @param isLastIndex Whether this is the last item in the list.
+ * @param onStateChange Callback invoked when the feature's state changes via user interaction.
+ * @param modifier Modifier to apply to the card container.
+ *
+ * @see Feature.LocalFeature
+ * @see Feature.RemoteFeature
+ * @see FeatureTriStateSwitch
+ * @see com.worldline.devview.featureflip.model.FeatureState
  */
 @Composable
 private fun FeatureItem(

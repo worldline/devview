@@ -9,92 +9,320 @@ import kotlinx.serialization.modules.PolymorphicModuleBuilder
 
 /**
  * Base interface for all DevView modules.
- * Modules are metadata containers and don't participate in navigation directly.
- * Navigation is handled through the module's destinations.
+ *
+ * A module represents a self-contained feature or tool within the DevView developer
+ * tools suite. Each module provides:
+ * - Metadata (name, icon, section)
+ * - Navigation destinations (screens)
+ * - UI content registration
+ * - Serialization configuration for type-safe navigation
+ *
+ * ## Architecture
+ *
+ * Modules are **metadata containers** that don't participate in navigation directly.
+ * Instead, they:
+ * 1. Define navigable [destinations] (NavKey objects)
+ * 2. Register serializers for those destinations via [registerSerializers]
+ * 3. Provide composable content via [registerContent]
+ *
+ * The DevView framework uses this information to:
+ * - Display modules in the home screen grouped by [section]
+ * - Enable type-safe navigation to module screens
+ * - Render module content when navigated to
+ *
+ * ## Creating a Module
+ *
+ * ### 1. Define Navigation Destinations
+ * ```kotlin
+ * sealed interface MyModuleDestination : NavKey {
+ *     @Serializable
+ *     data object Main : MyModuleDestination
+ *
+ *     @Serializable
+ *     data class Detail(val id: String) : MyModuleDestination
+ * }
+ * ```
+ *
+ * ### 2. Implement the Module Interface
+ * ```kotlin
+ * object MyModule : Module {
+ *     override val section: Section = Section.FEATURES
+ *
+ *     override val destinations: ImmutableList<NavKey> = persistentListOf(
+ *         MyModuleDestination.Main,
+ *         MyModuleDestination.Detail::class
+ *     )
+ *
+ *     override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit = {
+ *         subclass(MyModuleDestination.Main::class, MyModuleDestination.Main.serializer())
+ *         // Register other destinations...
+ *     }
+ *
+ *     override fun EntryProviderScope<NavKey>.registerContent(
+ *         onNavigateBack: () -> Unit,
+ *         onNavigate: (NavKey) -> Unit
+ *     ) {
+ *         entry<MyModuleDestination.Main> {
+ *             MainScreen(
+ *                 onNavigateBack = onNavigateBack,
+ *                 onItemClick = { id -> onNavigate(MyModuleDestination.Detail(id)) }
+ *             )
+ *         }
+ *
+ *         entry<MyModuleDestination.Detail> {
+ *             DetailScreen(onNavigateBack = onNavigateBack)
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ * ### 3. Register with DevView
+ * ```kotlin
+ * @Composable
+ * fun App() {
+ *     val modules = rememberModules {
+ *         module(MyModule)
+ *         module(FeatureFlip)
+ *         module(Analytics)
+ *     }
+ *
+ *     DevView(
+ *         devViewIsOpen = isDevViewOpen,
+ *         closeDevView = { isDevViewOpen = false },
+ *         modules = modules
+ *     )
+ * }
+ * ```
+ *
+ * ## Customization
+ *
+ * Modules can customize their appearance by overriding:
+ * - [moduleName]: Display name in the module list
+ * - [icon]: Icon displayed in the module card
+ * - [containerColor]: Background color of the icon container
+ * - [contentColor]: Color of the icon itself
+ * - [subtitle]: Optional descriptive text below the module name
+ *
+ * ## See Also
+ * - [Section]: For grouping related modules
+ * - [com.worldline.devview.DevView]: Main entry point
+ * - [rememberModules]: Helper for building module lists
+ * - Navigation3 library for navigation concepts
+ *
+ * @see Section
+ * @see com.worldline.devview.DevView
+ * @see com.worldline.devview.core.rememberModules
  */
 public interface Module {
     /**
-     * The name displayed in the module list.
-     * Defaults to the class simple name.
+     * The name displayed in the module list on the DevView home screen.
+     *
+     * By default, this uses the class's simple name (e.g., "FeatureFlip", "Analytics").
+     * Override this to provide a custom display name.
+     *
+     * ## Examples
+     * - Default: "FeatureFlip" (from class name)
+     * - Custom: "Feature Flags" or "Feature Toggle Manager"
+     *
+     * ```kotlin
+     * override val moduleName: String = "Feature Flags"
+     * ```
+     *
+     * @return The display name of the module.
      */
     public val moduleName: String
         get() = this::class.simpleName ?: "UnknownModule"
 
     /**
-     * The section this module belongs to (for grouping).
+     * The section this module belongs to for organizational grouping.
+     *
+     * Modules are grouped by section on the DevView home screen, making it
+     * easier to find related functionality. Choose the section that best
+     * describes your module's purpose.
+     *
+     * ## Available Sections
+     * - [Section.SETTINGS]: Configuration and app information
+     * - [Section.FEATURES]: Feature flags and development tools
+     * - [Section.LOGGING]: Debugging, analytics, and logging
+     * - [Section.CUSTOM]: Application-specific modules
+     *
+     * ```kotlin
+     * override val section: Section = Section.FEATURES
+     * ```
+     *
+     * @see Section
      */
     public val section: Section
 
     /**
-     * Icon displayed for this module.
-     * Defaults to the section icon.
+     * Icon displayed for this module in the module list.
+     *
+     * By default, uses the icon associated with the module's [section].
+     * Override this to provide a custom icon specific to your module.
+     *
+     * ## Default Behavior
+     * Returns [Section.icon] based on the module's section.
+     *
+     * ## Custom Icon Example
+     * ```kotlin
+     * override val icon: ImageVector = Icons.Rounded.BugReport
+     * ```
+     *
+     * @see Section.icon
      */
     public val icon: ImageVector
         get() = section.icon
 
     /**
-     * Background color of the icon container.
+     * Background color of the icon container in the module list.
+     *
+     * This creates the circular colored background behind the icon.
+     * Override to match your module's branding or to differentiate it visually.
+     *
+     * ## Default
+     * A blue color (0xFF326EE6)
+     *
+     * ## Custom Color Example
+     * ```kotlin
+     * override val containerColor: Color = Color(0xFFFF5722) // Orange
+     * ```
      */
     public val containerColor: Color
         get() = Color(color = 0xFF326EE6)
 
     /**
-     * Color of the icon itself.
+     * Color of the icon itself within the container.
+     *
+     * This should contrast well with [containerColor] for visibility.
+     * Override to customize the icon color.
+     *
+     * ## Default
+     * A light gray color (0xFFE6E6E6)
+     *
+     * ## Custom Color Example
+     * ```kotlin
+     * override val contentColor: Color = Color.White
+     * ```
      */
     public val contentColor: Color
         get() = Color(color = 0xFFE6E6E6)
 
     /**
-     * Optional subtitle displayed below the module name.
+     * Optional subtitle displayed below the module name in the module list.
+     *
+     * Use this to provide additional context about what the module does.
+     * Returns null by default (no subtitle).
+     *
+     * ## Example
+     * ```kotlin
+     * override val subtitle: String = "Manage feature flags"
+     * ```
+     *
+     * @return The subtitle text, or null if no subtitle should be displayed.
      */
     public val subtitle: String?
         get() = null
 
     /**
      * List of all navigable destinations within this module.
-     * These are the NavKey objects that represent screens in this module.
+     *
+     * These [NavKey] objects represent the screens that belong to this module.
+     * When a user opens a module from the home screen, DevView navigates to
+     * the first destination in this list.
+     *
+     * ## Example
+     * ```kotlin
+     * override val destinations: ImmutableList<NavKey> = persistentListOf(
+     *     MyModuleDestination.Main,
+     *     MyModuleDestination.Detail::class
+     * )
+     * ```
+     *
+     * ## Best Practices
+     * - Always include at least one destination (typically a "Main" screen)
+     * - List destinations in a logical navigation order
+     * - Use immutable lists for thread safety
+     *
+     * @see NavKey
      */
     public val destinations: ImmutableList<NavKey>
 
     /**
-     * Register all destination serializers for navigation.
-     * Required for kotlinx.serialization polymorphism.
+     * Registers all destination serializers for type-safe navigation.
      *
-     * Example:
-     * ```
+     * This property provides a lambda that registers kotlinx.serialization
+     * serializers for all destination types in this module. This is required
+     * for the Navigation3 library to properly serialize and deserialize
+     * navigation state.
+     *
+     * ## Implementation Pattern
+     * ```kotlin
      * override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit = {
      *     subclass(MyDestination.Main::class, MyDestination.Main.serializer())
      *     subclass(MyDestination.Detail::class, MyDestination.Detail.serializer())
+     *     // Register all destination types here
      * }
      * ```
+     *
+     * ## Why This is Needed
+     * Navigation3 uses kotlinx.serialization to save and restore navigation state
+     * across process death. Each destination type must be registered as a subclass
+     * of the NavKey polymorphic base class.
+     *
+     * @see destinations
+     * @see registerContent
      */
     public val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit
 
     /**
-     * Register this module's composable content with the navigation entry provider.
+     * Registers this module's composable content with the navigation entry provider.
      *
-     * @param onNavigateBack Callback to navigate back (close current screen)
-     * @param onNavigate Callback to navigate forward to a destination
+     * This function defines what UI is displayed when navigating to each destination
+     * in this module. It's called once during DevView initialization to set up the
+     * navigation graph.
      *
-     * Example:
-     * ```
+     * ## Implementation Pattern
+     * ```kotlin
      * override fun EntryProviderScope<NavKey>.registerContent(
      *     onNavigateBack: () -> Unit,
      *     onNavigate: (NavKey) -> Unit
      * ) {
+     *     // Register each destination
      *     entry<MyDestination.Main> {
      *         MainScreen(
      *             onNavigateBack = onNavigateBack,
-     *             onItemClick = { id -> onNavigate(MyDestination.Detail(id)) }
+     *             onItemClick = { id ->
+     *                 onNavigate(MyDestination.Detail(id))
+     *             }
      *         )
      *     }
-     *     entry<MyDestination.Detail> {
+     *
+     *     entry<MyDestination.Detail> { destination ->
      *         DetailScreen(
+     *             id = destination.id,
      *             onNavigateBack = onNavigateBack
      *         )
      *     }
      * }
      * ```
+     *
+     * ## Navigation Callbacks
+     * - **onNavigateBack**: Call this to navigate back (pop the backstack)
+     * - **onNavigate**: Call this with a NavKey to navigate forward to a new destination
+     *
+     * ## Best Practices
+     * - Register an entry for every destination in [destinations]
+     * - Always provide a way to navigate back (use onNavigateBack)
+     * - Use type-safe destination objects instead of string routes
+     * - Wrap content in Scaffold if needed for consistent padding
+     *
+     * @param onNavigateBack Callback to navigate back to the previous screen.
+     *                       Typically pops the current screen from the backstack.
+     * @param onNavigate Callback to navigate forward to a new destination.
+     *                   Pass a NavKey instance to specify the target screen.
+     *
+     * @see destinations
+     * @see registerSerializers
      */
     public fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
@@ -103,8 +331,38 @@ public interface Module {
 }
 
 /**
- * Helper function for creating preview modules.
- * Internal use only for previews and testing.
+ * Helper function for creating preview modules for UI previews and testing.
+ *
+ * This internal function creates a minimal [Module] implementation suitable for
+ * Compose previews and testing scenarios. The created module has no actual
+ * destinations or content registration.
+ *
+ * ## Usage in Previews
+ * ```kotlin
+ * @Preview
+ * @Composable
+ * fun ModuleListPreview() {
+ *     HomeScreen(
+ *         modules = listOf(
+ *             previewModule(name = "FeatureFlip", section = Section.FEATURES),
+ *             previewModule(name = "Analytics", section = Section.LOGGING),
+ *             previewModule(name = "Settings", section = Section.SETTINGS)
+ *         ),
+ *         openModule = {}
+ *     )
+ * }
+ * ```
+ *
+ * ## Note
+ * This is an internal function and should not be used in production code.
+ * For production, implement the [Module] interface properly.
+ *
+ * @param name The display name for the preview module.
+ * @param section The section to assign the preview module to.
+ * @return A minimal [Module] implementation for preview/testing purposes.
+ *
+ * @see Module
+ * @see Section
  */
 internal fun previewModule(
     name: String = "PreviewModule",
