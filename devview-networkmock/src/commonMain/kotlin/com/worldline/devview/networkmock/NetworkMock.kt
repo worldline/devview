@@ -8,10 +8,12 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
+import com.worldline.devview.networkmock.repository.MockStateRepository
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 /**
  * Navigation destinations for the NetworkMock module.
@@ -32,8 +34,14 @@ public sealed interface NetworkMockDestination : NavKey {
 /**
  * NetworkMock module - manages network request/response mocking for development and testing.
  * This is a regular object, not serializable.
+ *
+ * @property resourceLoader Function to load resource bytes, must be provided by integrator
+ * @property stateRepository MockStateRepository instance for state management
  */
-public object NetworkMock : Module {
+public class NetworkMock(
+    private val resourceLoader: suspend (String) -> ByteArray,
+    private val stateRepository: MockStateRepository
+) : Module {
     override val section: Section
         get() = Section.LOGGING
 
@@ -49,6 +57,7 @@ public object NetworkMock : Module {
             )
         }
 
+    @OptIn(ExperimentalResourceApi::class)
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
         onNavigate: (NavKey) -> Unit
@@ -58,7 +67,9 @@ public object NetworkMock : Module {
                 NetworkMockScreen(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues = paddingValues)
+                        .padding(paddingValues = paddingValues),
+                    resourceLoader = resourceLoader,
+                    stateRepository = stateRepository
                 )
             }
         }

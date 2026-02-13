@@ -1,0 +1,16 @@
+{
+  "id": null,
+  "name": null,
+  "username": null,
+  "email": null,
+  "address": null,
+  "phone": null,
+  "website": null,
+  "company": null,
+  "error": {
+    "code": "USER_NOT_FOUND",
+    "message": "The requested user does not exist"
+  }
+}
+
+

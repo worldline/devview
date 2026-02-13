@@ -1,0 +1,12 @@
+{
+  "userId": null,
+  "id": null,
+  "title": null,
+  "body": null,
+  "error": {
+    "code": "POST_NOT_FOUND",
+    "message": "Post not found"
+  }
+}
+
+

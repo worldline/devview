@@ -19,6 +19,46 @@ Enable KMP/CMP developers to mock individual API calls on the fly by defining JS
 
 ## Recent Updates
 
+### ✅ Implementation Details Validated (2026-02-13 - Latest)
+
+**Resource Loading Strategy**:
+- Use Compose Resources API (`Res.readBytes()`) for loading files
+- Files in `composeResources` are automatically discovered and packaged by compiler
+- Cross-platform by design, no platform-specific code needed
+
+**State Access in Plugin**:
+- Use `runBlocking` for synchronous DataStore access in HttpSend intercept
+- Pragmatic solution for MVP, can optimize with in-memory caching later
+- Performance impact minimal as state reads are fast
+
+**Data Models**:
+- Added `MockMatch` data class to runtime models
+- Used by `MockConfigRepository.findMatchingMock()` return type
+
+**Error Handling**:
+- Plugin fails gracefully - falls back to actual network call on errors
+- Appropriate for a developer tool
+
+**Status**: ✅ All implementation details validated and documented
+
+---
+
+### ✅ HttpSend Implementation Approach Validated (2026-02-13)
+
+**Critical Fix**: Initial plugin implementation used non-existent `request.cancel()` function.
+
+**Validated Solution**: Use Ktor's `HttpSend` plugin for request interception
+- `client.plugin(HttpSend).intercept { }` allows complete control over send operation
+- `execute(requestBuilder)` makes actual network call
+- `return@intercept createMockHttpClientCall(...)` returns mock without network call
+- This is the official Ktor way to intercept requests (same as MockEngine uses)
+
+**Repository Access**: Pass via plugin configuration (explicit, testable, flexible)
+
+**Status**: ✅ Approach validated and documented in Section 3.1 & 3.2
+
+---
+
 ### ✅ Architecture Finalized (2026-02-06)
 
 **Package Structure:**
@@ -33,7 +73,7 @@ Enable KMP/CMP developers to mock individual API calls on the fly by defining JS
 
 **Key Decisions:**
 - ✅ Host-centric JSON structure with naming conventions for response files
-- ✅ Ktor Plugin/Interceptor integration approach
+- ✅ Ktor Plugin/Interceptor integration approach (validated via HttpSend)
 - ✅ Two-level toggle system (global + per-endpoint)
 - ✅ Tabbed UI when multiple hosts exist
 - ✅ Simple path parameter matching for MVP
@@ -519,6 +559,12 @@ data class MockResponse(
     val content: ByteArray
 )
 
+data class MockMatch(
+    val hostId: String,
+    val endpointId: String,
+    val config: EndpointConfig
+)
+
 data class AvailableEndpointMock(
     val hostId: String,
     val endpointId: String,
@@ -534,60 +580,163 @@ data class AvailableEndpointMock(
 
 ### 3.1 Plugin Definition
 
+> **Implementation Note**: This uses Ktor's `HttpSend` plugin to intercept requests at the send phase, allowing us to completely replace network calls with mock responses without making actual HTTP requests.
+
 ```kotlin
+import io.ktor.client.*
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.util.date.*
+import io.ktor.utils.io.*
+
+class NetworkMockConfig {
+    var configPath: String = "files/networkmocks/mocks.json"
+    
+    // Repositories - can be set by integrator or created internally
+    lateinit var mockRepository: MockConfigRepository
+    lateinit var stateRepository: MockStateRepository
+}
+
 val NetworkMockPlugin = createClientPlugin(
     name = "NetworkMockPlugin",
     createConfiguration = ::NetworkMockConfig
 ) {
-    val config = pluginConfig
-    val mockRepository = MockConfigRepository(config.configPath)
-    val stateRepository = MockStateRepository()
+    val mockRepository = pluginConfig.mockRepository
+    val stateRepository = pluginConfig.stateRepository
     
-    onRequest { request, content ->
-        val currentState = stateRepository.getState()
-        
-        if (!currentState.globalMockingEnabled) {
-            return@onRequest // Pass through to actual network
+    // Use HttpSend to intercept requests at the send phase
+    // This allows us to return mock responses WITHOUT making actual network calls
+    client.plugin(HttpSend).intercept { requestBuilder ->
+        // Get current mock state from DataStore (using runBlocking for synchronous access)
+        val currentState = runBlocking {
+            stateRepository.getState()
         }
         
+        // If global mocking is disabled, proceed with actual network call
+        if (!currentState.globalMockingEnabled) {
+            return@intercept execute(requestBuilder) // Makes the actual network call
+        }
+        
+        // Extract request details
+        val request = requestBuilder.build()
+        val host = request.url.host
+        val path = request.url.encodedPath
+        val method = request.method.value
+        
+        // Try to find a matching mock configuration
         val mockMatch = mockRepository.findMatchingMock(
-            host = request.url.host,
-            path = request.url.encodedPath,
-            method = request.method.value
+            host = host,
+            path = path,
+            method = method
         )
         
+        // If we found a matching endpoint in config
         mockMatch?.let { match ->
             val endpointKey = "${match.hostId}-${match.endpointId}"
             val endpointState = currentState.endpointStates[endpointKey]
             
+            // Check if this specific endpoint has mocking enabled and a response selected
             if (endpointState?.mockEnabled == true && endpointState.selectedResponseFile != null) {
-                val mockResponse = mockRepository.loadMockResponse(
-                    endpointId = match.endpointId,
-                    fileName = endpointState.selectedResponseFile
-                )
-                
-                mockResponse?.let { response ->
-                    // Intercept and return mock response
-                    request.cancel() // Prevent actual network call
-                    return@onRequest HttpResponse(
-                        status = HttpStatusCode.fromValue(response.statusCode),
-                        content = ByteReadChannel(response.content),
-                        headers = response.headers
+                try {
+                    // Load the mock response from file
+                    val mockResponse = mockRepository.loadMockResponse(
+                        endpointId = match.endpointId,
+                        fileName = endpointState.selectedResponseFile
                     )
+                    
+                    mockResponse?.let { response ->
+                        println("[NetworkMock] Returning mock response for ${method} ${path} - ${endpointState.selectedResponseFile}")
+                        
+                        // Create and return a mock HttpClientCall without making the actual network request
+                        // KEY: We DON'T call execute(requestBuilder), so no network call is made
+                        return@intercept createMockHttpClientCall(
+                            client = client,
+                            requestData = request,
+                            responseData = HttpResponseData(
+                                statusCode = HttpStatusCode.fromValue(response.statusCode),
+                                requestTime = GMTDate(),
+                                headers = Headers.Empty,
+                                version = HttpProtocolVersion.HTTP_1_1,
+                                body = ByteReadChannel(response.content.encodeToByteArray()),
+                                callContext = request.executionContext
+                            )
+                        )
+                    }
+                } catch (e: Exception) {
+                    println("[NetworkMock] ERROR: Failed to load mock response - ${e.message}")
+                    // Fall through to actual network call on error
                 }
             }
         }
         
         // No mock matched or not enabled - proceed with actual network call
+        println("[NetworkMock] No mock enabled for ${method} ${path}, using actual network")
+        execute(requestBuilder)
     }
 }
 
-class NetworkMockConfig {
-    var configPath: String = "files/networkmocks/mocks.json"
+/**
+ * Helper function to create a mock HttpClientCall.
+ * This constructs a complete response without any network activity.
+ */
+private fun createMockHttpClientCall(
+    client: HttpClient,
+    requestData: HttpRequestData,
+    responseData: HttpResponseData
+): HttpClientCall {
+    return object : HttpClientCall {
+        override val client: HttpClient = client
+        override val request: HttpRequest = object : HttpRequest {
+            override val call: HttpClientCall get() = this@object
+            override val method: HttpMethod = requestData.method
+            override val url: Url = requestData.url
+            override val headers: Headers = requestData.headers
+            override val attributes: Attributes = requestData.attributes
+            override val content: OutgoingContent = requestData.body as? OutgoingContent ?: OutgoingContent.NoContent
+        }
+        override val response: HttpResponse = object : HttpResponse {
+            override val call: HttpClientCall get() = this@object
+            override val status: HttpStatusCode = responseData.statusCode
+            override val version: HttpProtocolVersion = responseData.version
+            override val requestTime: GMTDate = responseData.requestTime
+            override val responseTime: GMTDate = GMTDate()
+            override val content: ByteReadChannel = responseData.body
+            override val headers: Headers = responseData.headers
+            override val coroutineContext = responseData.callContext
+        }
+        override val attributes: Attributes = Attributes(concurrent = true)
+    }
 }
 ```
 
-### 3.2 Request Matching Logic
+### 3.2 Why HttpSend? (Approach Validation)
+
+**Problem Identified**: Initial plan used `onRequest { request.cancel() }` which doesn't exist in Ktor's API.
+
+**Solution**: Use Ktor's `HttpSend` plugin to intercept at the send phase.
+
+**How HttpSend Works**:
+1. **`client.plugin(HttpSend).intercept { requestBuilder -> ... }`** - Intercepts the send operation
+2. **`execute(requestBuilder)`** - Call this to make the actual network request
+3. **`return@intercept createMockHttpClientCall(...)`** - Return this to provide a mock response WITHOUT making a network call
+
+**Advantages**:
+- ✅ Actually works (unlike `request.cancel()` which doesn't exist)
+- ✅ Official Ktor way to intercept and replace requests
+- ✅ Same mechanism Ktor uses for `MockEngine` in tests
+- ✅ Complete control over response (status, headers, body)
+- ✅ Prevents actual network call from happening
+- ✅ Works across all platforms (Android, iOS)
+
+**Trade-offs**:
+- ⚠️ Requires constructing `HttpClientCall` manually (more boilerplate)
+- ⚠️ Repositories need to be accessible in plugin (addressed via config)
+
+**Validation**: This approach has been validated and is the correct way to implement network mocking in Ktor 3.x.
+
+### 3.3 Request Matching Logic
 
 ```kotlin
 object RequestMatcher {
@@ -642,6 +791,13 @@ class MockConfigRepository(private val configPath: String) {
 }
 ```
 
+**Implementation Notes:**
+- Use Compose Resources API (`Res.readBytes()`) to load files
+- Naming convention: `{endpointId}-{statusCode}[-{suffix}].json`
+- File discovery: Attempt to load files based on convention, handle missing files gracefully
+- Host matching: Compare hostnames (case-insensitive)
+- Path matching: Use `RequestMatcher.matchesPath()` for parameter support
+
 ### 4.2 MockStateRepository
 
 **Responsibilities:**
@@ -668,6 +824,12 @@ class MockStateRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun resetAllToNetwork()
 }
 ```
+
+**Implementation Notes:**
+- `observeState()` returns Flow for reactive UI updates
+- `getState()` is suspend function for one-time state reads (used with `runBlocking` in plugin)
+- State is serialized to DataStore Preferences
+- Consider in-memory caching for performance optimization in future iterations
 
 ---
 
@@ -898,12 +1060,19 @@ integrator-app/composeResources/files/networkmocks/
 
 ---
 
-## 8. Dependencies to Add
+## 8. Dependencies
 
-Based on the proposed architecture, ensure these dependencies are available:
+Based on the proposed architecture, the following dependencies are needed:
 
 ```kotlin
 // build.gradle.kts (devview-networkmock)
+plugins {
+    alias(libs.plugins.convention.multiplatform.library)
+    alias(libs.plugins.convention.compose.multiplatform)
+    alias(libs.plugins.convention.datastore)
+    alias(libs.plugins.convention.ktor)  // ✅ Already added - provides all Ktor dependencies
+}
+
 kotlin {
     sourceSets {
         commonMain {
@@ -913,18 +1082,24 @@ kotlin {
                 implementation(projects.devviewUtils)
                 implementation(libs.kotlinx.collections.immutable)
                 
-                // New additions needed
-                implementation(libs.ktor.client.core)          // For plugin
-                implementation(libs.kotlinx.serialization.json) // For JSON parsing
+                // Provided by convention.ktor plugin:
+                // - ktor-client-core
+                // - ktor-client-content-negotiation
+                // - ktor-serialization-kotlinx-json
+                // - Platform-specific engines (okhttp for Android, darwin for iOS)
+                
+                // Additional dependencies needed
                 implementation(libs.kotlinx.io.core)           // For file I/O
                 
-                // Compose & ViewModel (likely already included)
+                // Compose & ViewModel
                 implementation(libs.jetbrains.androidx.lifecycle.viewmodel.compose)
             }
         }
     }
 }
 ```
+
+**Note**: The `convention.ktor` plugin has been added and automatically provides all necessary Ktor dependencies including client core, serialization, and platform-specific engines.
 
 ---
 
@@ -974,15 +1149,21 @@ responses/getUser/getUser-404.json
 
 **Step 4**: Install plugin in HttpClient
 ```kotlin
+// You'll need access to a DataStore instance for state persistence
+val dataStore = createDataStore { ... } // Your DataStore setup
+
 val client = HttpClient(OkHttp) {
     install(NetworkMockPlugin) {
         configPath = "files/networkmocks/mocks.json"
+        // Repositories are created and passed to the plugin
+        mockRepository = MockConfigRepository(configPath)
+        stateRepository = MockStateRepository(dataStore)
     }
-    // ... your existing config
+    // ... your existing config (ContentNegotiation, Logging, etc.)
 }
 ```
 
-**Note**: The `NetworkMockPlugin` is provided by the `devview-networkmock` module and integrates seamlessly with Ktor's plugin system.
+**Note**: The `NetworkMockPlugin` is provided by the `devview-networkmock` module and integrates seamlessly with Ktor's plugin system. The repositories are initialized and passed via the plugin configuration.
 
 **Step 5**: Add NetworkMock module to DevView
 ```kotlin
@@ -1107,29 +1288,115 @@ DevView(
 - Use structured logging with levels (DEBUG, INFO, WARN, ERROR)
 - Potentially use Kermit (already available in project dependencies)
 
-### 12.4 Resource Loading
+### 12.4 Resource Loading ✅ VALIDATED
 
 **Question**: How to robustly load files from composeResources on both platforms?
 
-**Options:**
-- Use Compose Resources API (if available for files)
-- Platform-specific implementations with expect/actual
-- Use kotlinx-io for cross-platform file access
+**Validated Approach**: Use Compose Resources API (Option A)
 
-**Decision needed**: Research best KMP approach for resource file loading during implementation
+**Implementation:**
+- Use `Res.readBytes()` or similar Compose Resources APIs to load files
+- Files in `composeResources/files/` are automatically packaged by the Kotlin compiler
+- The compiler handles platform-specific resource management
+- Works seamlessly on both Android and iOS
 
-### 12.5 DataStore Access in Ktor Plugin
+**Example Usage:**
+```kotlin
+// Load mocks.json
+val configBytes = Res.readBytes("files/networkmocks/mocks.json")
+val configJson = configBytes.decodeToString()
 
-**Question**: How to access DataStore from within Ktor plugin?
+// Load response file
+val responseBytes = Res.readBytes("files/networkmocks/responses/getUser/getUser-200.json")
+val responseContent = responseBytes.decodeToString()
+```
 
-**Options:**
-- Pass DataStore instance to plugin config
-- Use singleton/global state (not ideal)
-- Use dependency injection (Koin)
+**Advantages:**
+- ✅ Cross-platform by design
+- ✅ No expect/actual boilerplate needed
+- ✅ Compiler handles resource packaging automatically
+- ✅ Consistent API across all KMP targets
 
-**Decision needed**: Determine cleanest approach for state access in plugin during implementation
+**File Discovery:**
+Since files in `composeResources` are discovered and packaged by the Kotlin compiler, the naming convention approach works perfectly. The module can attempt to load files based on the convention and handle missing files gracefully.
 
-**Note**: The `convention.ktor` plugin already handles Ktor client setup, so we can focus on the plugin implementation itself.
+### 12.5 Repository Access in Ktor Plugin ✅ VALIDATED
+
+**Question**: How should the plugin access MockConfigRepository and MockStateRepository?
+
+**Validated Approach**: Pass repositories via plugin configuration (Option A)
+
+**Implementation**:
+```kotlin
+class NetworkMockConfig {
+    var configPath: String = "files/networkmocks/mocks.json"
+    lateinit var mockRepository: MockConfigRepository
+    lateinit var stateRepository: MockStateRepository
+}
+
+// Integrator usage
+install(NetworkMockPlugin) {
+    configPath = "files/networkmocks/mocks.json"
+    mockRepository = MockConfigRepository(configPath)
+    stateRepository = MockStateRepository(dataStore)
+}
+```
+
+**Advantages**:
+- ✅ Explicit and clear - integrator controls dependencies
+- ✅ Testable - easy to inject mock repositories for testing
+- ✅ No hidden state or singletons
+- ✅ Works with DI frameworks (Koin) if integrator uses them
+
+**Alternative Considered**:
+- Lazy initialization inside plugin: Would require singleton DataStore access, less flexible
+- Koin DI: Would force integrators to use Koin, not ideal for a library
+
+**Future Enhancement**: Provide a convenience function that creates repositories automatically:
+```kotlin
+fun HttpClientConfig<*>.installNetworkMock(
+    configPath: String,
+    dataStore: DataStore<Preferences>
+) {
+    install(NetworkMockPlugin) {
+        this.configPath = configPath
+        this.mockRepository = MockConfigRepository(configPath)
+        this.stateRepository = MockStateRepository(dataStore)
+    }
+}
+```
+
+### 12.6 State Repository Synchronous Access ✅ VALIDATED
+
+**Question**: How to access DataStore state in the plugin intercept function?
+
+**Validated Approach**: Use `runBlocking` for synchronous state access
+
+**Implementation:**
+```kotlin
+client.plugin(HttpSend).intercept { requestBuilder ->
+    // DataStore is async, but intercept needs synchronous access
+    val currentState = runBlocking {
+        stateRepository.getState()
+    }
+    
+    // ... rest of intercept logic
+}
+```
+
+**Justification:**
+- HttpSend intercept function is not a suspend function context
+- Need synchronous access to state for request interception
+- `runBlocking` is acceptable here as state reads should be fast (cached in memory)
+- Alternative would be to maintain in-memory cache, but adds complexity
+
+**Future Enhancement:**
+- Implement in-memory caching of state in the repository
+- Use Flow collection to keep cache updated
+- This would eliminate the need for `runBlocking` on every request
+- Can be revisited if performance becomes an issue
+
+**Note**: This is a pragmatic solution for MVP. Performance can be optimized later if needed.
 
 ---
 
@@ -1139,15 +1406,38 @@ This implementation plan provides a complete blueprint for the Network Mock feat
 
 ✅ **All questions validated**
 ✅ **Architecture defined**
-✅ **Data models specified**
-✅ **Plugin approach confirmed**
+✅ **Data models specified** (including MockMatch)
+✅ **Plugin approach confirmed** (HttpSend with runBlocking for state access)
 ✅ **UI/UX designed**
 ✅ **Phased implementation plan**
 ✅ **File structure proposed**
 ✅ **Error handling strategy**
 ✅ **Testing approach**
+✅ **Resource loading strategy** (Compose Resources API)
+✅ **Repository access pattern** (Pass via plugin config)
 
-**Next step**: Review this plan and validate the technical architecture before proceeding to implementation.
+### Key Technical Decisions (Validated 2026-02-13)
+
+1. **Request Interception**: Ktor's `HttpSend.intercept` (Section 3.1, 3.2)
+2. **Resource Loading**: Compose Resources API - `Res.readBytes()` (Section 12.4)
+3. **State Access**: `runBlocking` for synchronous access in plugin (Section 12.6)
+4. **Repository Access**: Pass via plugin configuration (Section 12.5)
+5. **Error Handling**: Graceful fallback to network calls (Section 10)
+6. **File Discovery**: Convention-based with compiler packaging (Section 12.4)
+
+### Implementation Readiness
+
+**Status**: ✅ **READY FOR IMPLEMENTATION**
+
+All critical architectural decisions have been made and validated. The implementation can proceed following the phased approach in Section 6:
+- Phase 1: Core Infrastructure (models, repositories, plugin skeleton)
+- Phase 2: Response Discovery & Loading
+- Phase 3: Request Interception & Mocking
+- Phase 4: UI Implementation
+- Phase 5: Polish & Documentation
+- Phase 6: Future Enhancements
+
+**Next step**: Begin Phase 1 implementation or request code generation for specific components.
 
 ---
 

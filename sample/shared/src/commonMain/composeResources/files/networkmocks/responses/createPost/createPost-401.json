@@ -1,0 +1,12 @@
+{
+  "id": null,
+  "title": null,
+  "body": null,
+  "userId": null,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Authentication required to create posts"
+  }
+}
+
+

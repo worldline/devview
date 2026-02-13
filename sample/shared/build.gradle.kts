@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.convention.multiplatform.library)
     alias(libs.plugins.convention.compose.multiplatform)
+    alias(libs.plugins.convention.datastore)
     alias(libs.plugins.convention.ktor)
 }
 
@@ -34,6 +35,13 @@ kotlin {
             implementation(libs.jetbrains.compose.ui.tooling.preview)
             implementation(libs.jetbrains.androidx.lifecycle.viewmodel.compose)
             implementation(libs.jetbrains.androidx.lifecycle.runtime.compose)
+
+            // DevView modules
+            implementation(projects.devview)
+            implementation(projects.devviewFeatureflip)
+            implementation(projects.devviewAnalytics)
+            implementation(projects.devviewNetworkmock)
+            implementation(projects.devviewUtils)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

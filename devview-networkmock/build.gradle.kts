@@ -21,6 +21,7 @@ kotlin {
                 api(projects.devview)
                 implementation(projects.devviewUtils)
                 implementation(libs.kotlinx.collections.immutable)
+                implementation(libs.jetbrains.androidx.lifecycle.viewmodel.compose)
             }
         }
     }

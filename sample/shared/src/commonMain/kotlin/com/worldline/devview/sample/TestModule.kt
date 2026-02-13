@@ -15,14 +15,22 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 
-public sealed interface TestModuleNavigation: NavKey {
+/**
+ * Test module navigation destinations.
+ */
+public sealed interface TestModuleNavigation : NavKey {
     @Serializable
-    data object Main: TestModuleNavigation
+    public data object Main : TestModuleNavigation
 
     @Serializable
-    data object Detail: TestModuleNavigation
+    public data object Detail : TestModuleNavigation
 }
 
+/**
+ * Sample test module for DevView demonstration.
+ *
+ * This module showcases basic navigation between two screens.
+ */
 public object TestModule : Module {
     override val section: Section
         get() = Section.CUSTOM
@@ -50,12 +58,10 @@ public object TestModule : Module {
     ) {
         entry<TestModuleNavigation.Main> {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize()
             ) {
                 Text(
-                    modifier = Modifier
-                        .align(alignment = Alignment.Center),
+                    modifier = Modifier.align(alignment = Alignment.Center),
                     text = "Main screen"
                 )
                 Button(
@@ -63,18 +69,17 @@ public object TestModule : Module {
                         onNavigate(TestModuleNavigation.Detail)
                     }
                 ) {
-                    Text("Go to Detail")
+                    Text(text = "Go to Detail")
                 }
             }
         }
+
         entry<TestModuleNavigation.Detail> {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize()
             ) {
                 Text(
-                    modifier = Modifier
-                        .align(alignment = Alignment.Center),
+                    modifier = Modifier.align(alignment = Alignment.Center),
                     text = "Detail screen"
                 )
                 Button(
@@ -82,7 +87,7 @@ public object TestModule : Module {
                         onNavigateBack()
                     }
                 ) {
-                    Text("Go Back")
+                    Text(text = "Go Back")
                 }
             }
         }

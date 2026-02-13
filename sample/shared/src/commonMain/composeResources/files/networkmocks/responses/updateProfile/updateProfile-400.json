@@ -1,0 +1,15 @@
+{
+  "success": false,
+  "message": null,
+  "profile": null,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid profile data",
+    "fields": {
+      "email": "Invalid email format",
+      "firstName": "First name must be at least 2 characters"
+    }
+  }
+}
+
+

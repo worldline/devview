@@ -19,7 +19,6 @@ internal const val NETWORK_MOCK_DATASTORE_NAME: String = "network_mock_datastore
  * @return A remembered DataStore<Preferences> instance for network mock persistence
  */
 @Composable
-internal fun rememberDataStore(): DataStore<Preferences> =
-    rememberDataStore(
-        dataStoreName = NETWORK_MOCK_DATASTORE_NAME
-    )
+internal fun rememberDataStore(): DataStore<Preferences> = rememberDataStore(
+    dataStoreName = NETWORK_MOCK_DATASTORE_NAME
+)

@@ -21,18 +21,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.worldline.devview.networkmock.repository.MockStateRepository
 import com.worldline.devview.sample.network.SampleApi
+import com.worldline.devview.sample.network.rememberHttpClientWithMocking
 import devview_root.sample.shared.generated.resources.Res
 import devview_root.sample.shared.generated.resources.compose_multiplatform
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-public fun App(modifier: Modifier = Modifier, openDevView: (Boolean) -> Unit) {
+public fun App(
+    openDevView: (Boolean) -> Unit,
+    mockStateRepository: MockStateRepository,
+    modifier: Modifier = Modifier
+) {
     var showContent by remember { mutableStateOf(value = false) }
 
     var ktorDocs by remember { mutableStateOf(value = "To be called...") }
     val coroutineScope = rememberCoroutineScope()
+
+    // Create HttpClient with Network Mock support using the shared repository
+    val httpClient = rememberHttpClientWithMocking(mockStateRepository = mockStateRepository)
+    val api = remember(key1 = httpClient) { SampleApi(client = httpClient) }
 
     Column(
         modifier = modifier
@@ -76,7 +86,7 @@ public fun App(modifier: Modifier = Modifier, openDevView: (Boolean) -> Unit) {
                     coroutineScope.launch {
                         @Suppress("TooGenericExceptionCaught")
                         ktorDocs = try {
-                            SampleApi().getKtorDocs()
+                            api.getKtorDocs()
                         } catch (e: Exception) {
                             "Error: ${e.message}"
                         }
@@ -94,6 +104,23 @@ public fun App(modifier: Modifier = Modifier, openDevView: (Boolean) -> Unit) {
                 Text(text = "Reset Ktor call")
             }
         }
+
+        // New button to test Network Mock with JSONPlaceholder
+        Button(
+            onClick = {
+                coroutineScope.launch {
+                    @Suppress("TooGenericExceptionCaught")
+                    ktorDocs = try {
+                        api.getUser(userId = 1)
+                    } catch (e: Exception) {
+                        "Error: ${e.message}"
+                    }
+                }
+            }
+        ) {
+            Text(text = "Test Network Mock (Get User)")
+        }
+
         Text(text = ktorDocs)
     }
 }
