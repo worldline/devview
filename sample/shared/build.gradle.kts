@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.convention.multiplatform.library)
     alias(libs.plugins.convention.compose.multiplatform)
+    alias(libs.plugins.convention.ktor)
 }
 
 kotlin {

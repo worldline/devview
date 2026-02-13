@@ -20,7 +20,7 @@ import com.worldline.devview.analytics.Analytics
 import com.worldline.devview.analytics.AnalyticsLogger
 import com.worldline.devview.analytics.LocalAnalytics
 import com.worldline.devview.core.rememberModules
-import com.worldline.devview.networkmock.FeatureFlip
+import com.worldline.devview.featureflip.FeatureFlip
 import com.worldline.devview.featureflip.model.Feature
 import com.worldline.devview.featureflip.model.LocalFeatureHandler
 import com.worldline.devview.featureflip.model.rememberFeatureHandler
