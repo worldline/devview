@@ -55,13 +55,17 @@ public data class AnalyticsLog(
      * @return A string representing the time in 24-hour format (e.g., "14:35:22").
      */
     internal val formattedTimestamp: String
-        get() = instantTimestamp.toLocalDateTime(timeZone = TimeZone.currentSystemDefault()).time.format(
-            LocalTime.Format {
-                hour()
-                char(value = ':')
-                minute()
-                char(value = ':')
-                second()
-            }
-        )
+        get() = instantTimestamp
+            .toLocalDateTime(
+                timeZone = TimeZone.currentSystemDefault()
+            ).time
+            .format(
+                format = LocalTime.Format {
+                    hour()
+                    char(value = ':')
+                    minute()
+                    char(value = ':')
+                    second()
+                }
+            )
 }

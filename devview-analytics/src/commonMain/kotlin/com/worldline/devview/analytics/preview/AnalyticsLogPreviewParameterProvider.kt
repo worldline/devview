@@ -32,12 +32,13 @@ internal class AnalyticsLogPreviewParameterProvider : PreviewParameterProvider<A
      * [AnalyticsLogType] variant.
      */
     override val values: Sequence<AnalyticsLog>
-        get() = AnalyticsLogType.entries.map {
-            AnalyticsLog(
-                tag = "Tag",
-                screenClass = "ScreenClass",
-                timestamp = Clock.System.now().toEpochMilliseconds(),
-                type = it
-            )
-        }.asSequence()
+        get() = AnalyticsLogType.entries
+            .map {
+                AnalyticsLog(
+                    tag = "Tag",
+                    screenClass = "ScreenClass",
+                    timestamp = Clock.System.now().toEpochMilliseconds(),
+                    type = it
+                )
+            }.asSequence()
 }

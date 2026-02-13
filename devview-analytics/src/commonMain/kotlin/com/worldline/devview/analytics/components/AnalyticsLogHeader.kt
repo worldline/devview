@@ -36,25 +36,22 @@ import androidx.compose.ui.unit.dp
  * @see com.worldline.devview.analytics.AnalyticsScreen
  */
 @Composable
-internal fun AnalyticsLogHeader(
-    modifier: Modifier = Modifier,
-    typeWidth: Int? = null
-) {
+internal fun AnalyticsLogHeader(modifier: Modifier = Modifier, typeWidth: Int? = null) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
+            .background(color = MaterialTheme.colorScheme.surface)
             .padding(vertical = 8.dp)
-            .then(modifier),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+            .then(other = modifier),
+        horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             modifier = Modifier.layout { measurable, constraints ->
-                val placeable = measurable.measure(constraints)
+                val placeable = measurable.measure(constraints = constraints)
                 val width = typeWidth ?: placeable.width
-                layout(width, placeable.height) {
-                    placeable.place(0, 0)
+                layout(width = width, height = placeable.height) {
+                    placeable.place(x = 0, y = 0)
                 }
             },
             text = "Type",
@@ -65,7 +62,7 @@ internal fun AnalyticsLogHeader(
 
         Column(
             modifier = Modifier
-                .weight(1f),
+                .weight(weight = 1f)
         ) {
             Text(
                 text = "Tag",

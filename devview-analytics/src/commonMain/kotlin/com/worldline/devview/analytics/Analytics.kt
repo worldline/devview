@@ -13,7 +13,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 
-
 /**
  * Navigation destinations for the Analytics module.
  *

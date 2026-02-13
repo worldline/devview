@@ -75,19 +75,17 @@ import com.worldline.devview.analytics.preview.AnalyticsLogListPreviewParameterP
  * @see AnalyticsLog
  */
 @Composable
-public fun AnalyticsScreen(
-    modifier: Modifier = Modifier
-) {
+public fun AnalyticsScreen(modifier: Modifier = Modifier) {
     val analytics = LocalAnalytics.current
 
-    var logTypeWidth by remember { mutableIntStateOf(0) }
+    var logTypeWidth by remember { mutableIntStateOf(value = 0) }
 
     val spacing = 8.dp
 
     LazyColumn(
         modifier = modifier
             .fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(spacing)
+        verticalArrangement = Arrangement.spacedBy(space = spacing)
     ) {
         stickyHeader {
             AnalyticsLogHeader(
@@ -101,14 +99,14 @@ public fun AnalyticsScreen(
             )
         }
         itemsIndexed(
-            analytics
+            items = analytics
         ) { index, log ->
             AnalyticsLogItem(
                 modifier = Modifier
                     .padding(horizontal = 16.dp),
                 analyticsLog = log,
                 onWidthCalculated = { width ->
-                    logTypeWidth = maxOf(width, logTypeWidth)
+                    logTypeWidth = maxOf(a = width, b = logTypeWidth)
                     logTypeWidth
                 }
             )
@@ -126,17 +124,18 @@ public fun AnalyticsScreen(
 @Preview
 @Composable
 private fun AnalyticsLogScreenPreview(
-    @PreviewParameter(AnalyticsLogListPreviewParameterProvider::class) analyticsLogs: List<AnalyticsLog>
+    @PreviewParameter(
+        AnalyticsLogListPreviewParameterProvider::class
+    ) analyticsLogs: List<AnalyticsLog>
 ) {
     MaterialTheme {
         Scaffold {
-            CompositionLocalProvider(LocalAnalytics provides analyticsLogs) {
+            CompositionLocalProvider(value = LocalAnalytics provides analyticsLogs) {
                 AnalyticsScreen(
                     modifier = Modifier
-                        .padding(it)
+                        .padding(paddingValues = it)
                 )
             }
         }
     }
 }
-

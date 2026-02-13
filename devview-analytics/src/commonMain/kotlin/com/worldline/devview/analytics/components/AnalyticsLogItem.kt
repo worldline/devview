@@ -45,23 +45,23 @@ import com.worldline.devview.analytics.preview.AnalyticsLogPreviewParameterProvi
  */
 @Composable
 internal fun AnalyticsLogItem(
-    modifier: Modifier = Modifier,
     analyticsLog: AnalyticsLog,
-    onWidthCalculated: (Int) -> Int?
+    onWidthCalculated: (Int) -> Int?,
+    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             modifier = Modifier.layout { measurable, constraints ->
-                val placeable = measurable.measure(constraints)
+                val placeable = measurable.measure(constraints = constraints)
                 val width = onWidthCalculated(placeable.width) ?: placeable.width
 
-                layout(width, placeable.height) {
-                    placeable.place(0, 0)
+                layout(width = width, height = placeable.height) {
+                    placeable.place(x = 0, y = 0)
                 }
             },
             text = analyticsLog.type.name.capitalize(),
@@ -72,7 +72,7 @@ internal fun AnalyticsLogItem(
 
         Column(
             modifier = Modifier
-                .weight(1f),
+                .weight(weight = 1f)
         ) {
             Text(
                 text = analyticsLog.tag,
@@ -103,13 +103,16 @@ internal fun AnalyticsLogItem(
  *
  * @return A new string with the first character capitalized.
  */
+@Suppress("CommentOverPrivateFunction")
 private fun String.capitalize() =
     replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 
 @Preview
 @Composable
 private fun AnalyticsLogItemPreview(
-    @PreviewParameter(AnalyticsLogPreviewParameterProvider::class) analyticsLog: AnalyticsLog
+    @PreviewParameter(
+        provider = AnalyticsLogPreviewParameterProvider::class
+    ) analyticsLog: AnalyticsLog
 ) {
     MaterialTheme {
         Surface {
