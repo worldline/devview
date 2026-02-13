@@ -19,21 +19,18 @@ import platform.Foundation.NSUserDomainMask
  * @return A configured DataStore<Preferences> instance
  */
 @OptIn(ExperimentalForeignApi::class)
-internal fun createDataStore(
-    dataStoreName: String
-): DataStore<Preferences> =
-    createDataStore(
-        producePath = {
-            val documentDirectory: NSURL? = NSFileManager.defaultManager.URLForDirectory(
-                directory = NSDocumentDirectory,
-                inDomain = NSUserDomainMask,
-                appropriateForURL = null,
-                create = false,
-                error = null
-            )
-            requireNotNull(documentDirectory).path + "/$dataStoreName"
-        }
-    )
+internal fun createDataStore(dataStoreName: String): DataStore<Preferences> = createDataStore(
+    producePath = {
+        val documentDirectory: NSURL? = NSFileManager.defaultManager.URLForDirectory(
+            directory = NSDocumentDirectory,
+            inDomain = NSUserDomainMask,
+            appropriateForURL = null,
+            create = false,
+            error = null
+        )
+        requireNotNull(documentDirectory).path + "/$dataStoreName"
+    }
+)
 
 /**
  * iOS implementation of [rememberDataStore].
@@ -44,9 +41,7 @@ internal fun createDataStore(
  * @return A remembered DataStore<Preferences> instance
  */
 @Composable
-internal actual fun rememberDataStore(
-    dataStoreName: String
-): DataStore<Preferences> = remember(
+public actual fun rememberDataStore(dataStoreName: String): DataStore<Preferences> = remember(
     key1 = dataStoreName
 ) {
     createDataStore(

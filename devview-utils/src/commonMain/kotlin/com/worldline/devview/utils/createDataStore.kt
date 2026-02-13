@@ -33,6 +33,4 @@ public fun createDataStore(producePath: () -> String): DataStore<Preferences> =
  * @return A remembered DataStore<Preferences> instance
  */
 @Composable
-public expect fun rememberDataStore(
-    dataStoreName: String
-): DataStore<Preferences>
+public expect fun rememberDataStore(dataStoreName: String): DataStore<Preferences>
