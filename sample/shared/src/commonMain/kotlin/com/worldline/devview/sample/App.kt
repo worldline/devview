@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.worldline.devview.networkmock.repository.MockConfigRepository
 import com.worldline.devview.networkmock.repository.MockStateRepository
 import com.worldline.devview.sample.network.SampleApi
 import com.worldline.devview.sample.network.rememberHttpClientWithMocking
@@ -33,6 +34,7 @@ import org.jetbrains.compose.resources.painterResource
 public fun App(
     openDevView: (Boolean) -> Unit,
     mockStateRepository: MockStateRepository,
+    mockConfigRepository: MockConfigRepository,
     modifier: Modifier = Modifier
 ) {
     var showContent by remember { mutableStateOf(value = false) }
@@ -40,8 +42,11 @@ public fun App(
     var ktorDocs by remember { mutableStateOf(value = "To be called...") }
     val coroutineScope = rememberCoroutineScope()
 
-    // Create HttpClient with Network Mock support using the shared repository
-    val httpClient = rememberHttpClientWithMocking(mockStateRepository = mockStateRepository)
+    // Create HttpClient with Network Mock support using the shared repositories
+    val httpClient = rememberHttpClientWithMocking(
+        mockStateRepository = mockStateRepository,
+        mockConfigRepository = mockConfigRepository
+    )
     val api = remember(key1 = httpClient) { SampleApi(client = httpClient) }
 
     Column(

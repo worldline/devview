@@ -8,21 +8,17 @@ import io.ktor.client.engine.HttpClientEngineConfig
 
 public fun <T : HttpClientEngineConfig> baseHttpClientConfig(
     mockStateRepository: MockStateRepository? = null,
-    resourceLoader: (suspend (String) -> ByteArray)? = null,
+    mockConfigRepository: MockConfigRepository? = null,
     config: HttpClientConfig<T>.() -> Unit = {}
 ): HttpClientConfig<T>.() -> Unit = {
     baseHttpResponseValidator()
     baseHttpContentNegotiation()
     baseHttpLogging()
 
-    // Install Network Mock plugin if both repository and resourceLoader are provided
-    if (mockStateRepository != null && resourceLoader != null) {
+    // Install Network Mock plugin if both repositories are provided
+    if (mockStateRepository != null && mockConfigRepository != null) {
         install(plugin = NetworkMockPlugin) {
-            configPath = "files/networkmocks/mocks.json"
-            mockRepository = MockConfigRepository(
-                configPath = configPath,
-                resourceLoader = resourceLoader
-            )
+            mockRepository = mockConfigRepository
             stateRepository = mockStateRepository
         }
     }

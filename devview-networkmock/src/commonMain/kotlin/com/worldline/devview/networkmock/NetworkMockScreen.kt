@@ -28,7 +28,6 @@ import com.worldline.devview.networkmock.components.GlobalMockToggle
 import com.worldline.devview.networkmock.repository.MockConfigRepository
 import com.worldline.devview.networkmock.repository.MockStateRepository
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 /**
  * Main screen for the Network Mock module.
@@ -40,20 +39,15 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
  * - Reset all mocks to use actual network
  *
  * @param modifier Optional modifier for the screen
- * @param resourceLoader Function to load resource bytes from a path (integrator's Res.readBytes)
+ * @param configRepository Repository for loading mock configuration. Should be the shared
+ *   instance constructed by [NetworkMock] so that the plugin and UI use the same cache.
  * @param stateRepository Repository for managing mock state (shared instance from integrator)
- * @param configRepository Repository for loading mock configuration (injected for testing)
  */
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 public fun NetworkMockScreen(
-    resourceLoader: suspend (String) -> ByteArray,
+    configRepository: MockConfigRepository,
     stateRepository: MockStateRepository,
     modifier: Modifier = Modifier,
-    configRepository: MockConfigRepository = MockConfigRepository(
-        configPath = "files/networkmocks/mocks.json",
-        resourceLoader = resourceLoader
-    ),
     viewModel: NetworkMockViewModel = viewModel {
         NetworkMockViewModel(
             configRepository = configRepository,

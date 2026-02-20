@@ -59,12 +59,11 @@ import okio.IOException
  * }
  * ```
  *
- * ### Using in Plugin (with runBlocking)
+ * ### Using in Plugin
  * ```kotlin
  * client.plugin(HttpSend).intercept { requestBuilder ->
- *     val currentState = runBlocking {
- *         stateRepository.getState()
- *     }
+ *     // HttpSend.intercept is a suspend lambda, so getState() can be called directly
+ *     val currentState = stateRepository.getState()
  *
  *     if (!currentState.globalMockingEnabled) {
  *         return@intercept execute(requestBuilder)
@@ -284,35 +283,44 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
     }
 
     /**
-     * Resets all endpoint mocks to use the actual network.
+     * Overwrites the stored endpoint states with the provided map.
      *
-     * This sets all endpoint states to disabled (mockEnabled = false) while
-     * preserving the global mocking toggle state. It's useful for quickly
-     * disabling all mocks without losing the configuration of which responses
-     * were selected.
-     *
-     * Note: The selected response files are cleared (`selectedResponseFile = null`).
-     * Users will need to re-select responses if they re-enable mocking.
-     *
-     * ## Usage
-     * ```kotlin
-     * // Reset button in UI
-     * Button(onClick = {
-     *     scope.launch {
-     *         repository.resetAllToNetwork()
-     *     }
-     * }) {
-     *     Text("Reset All to Network")
-     * }
-     * ```
+     * This is used by the ViewModel's reset operation to write a disabled state
+     * for **every endpoint in the configuration**, including those that have never
+     * been touched by the user and therefore have no existing DataStore entry.
      *
      * ## Behavior
      * - Global mocking state: **Unchanged**
-     * - All endpoint `mockEnabled`: Set to `false`
-     * - All endpoint `selectedResponseFile`: Set to `null`
+     * - Endpoint states: Replaced entirely with the provided map
+     * - Last modified timestamp: Updated to current time
+     *
+     * @param states Map of `"{hostId}-{endpointId}"` keys to [EndpointMockState] values
+     */
+    public suspend fun setAllEndpointStates(states: Map<String, EndpointMockState>) {
+        println(message = "[NetworkMock][State] Setting all endpoint states (${states.size} entries)")
+        dataStore.edit { preferences ->
+            preferences[KEY_ENDPOINTS] = json.encodeToString(value = states)
+            preferences[KEY_LAST_MODIFIED] = Clock.System.now().toEpochMilliseconds()
+        }
+    }
+
+    /**
+     * Resets previously-persisted endpoint mocks to use the actual network.
+     *
+     * This sets all **already-stored** endpoint states to disabled (mockEnabled = false).
+     * Endpoints that have never been touched by the user are not affected (they already
+     * default to network). For a true full reset across all configured endpoints, use the
+     * ViewModel's `resetAllToNetwork()` which drives the reset from the configuration.
+     *
+     * Note: The selected response files are cleared (`selectedResponseFile = null`).
+     *
+     * ## Behavior
+     * - Global mocking state: **Unchanged**
+     * - All stored endpoint `mockEnabled`: Set to `false`
+     * - All stored endpoint `selectedResponseFile`: Set to `null`
      * - Last modified timestamp: Updated to current time
      */
-    public suspend fun resetAllToNetwork() {
+    public suspend fun resetKnownEndpointsToNetwork() {
         dataStore.edit { preferences ->
             val currentEndpoints = preferences[KEY_ENDPOINTS]?.let {
                 @Suppress("SwallowedException", "TooGenericExceptionCaught")
@@ -323,7 +331,7 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
                 }
             } ?: mutableMapOf()
 
-            // Reset all endpoints to network
+            // Reset all stored endpoints to network
             val resetEndpoints = currentEndpoints.mapValues { (_, state) ->
                 state.resetToNetwork()
             }

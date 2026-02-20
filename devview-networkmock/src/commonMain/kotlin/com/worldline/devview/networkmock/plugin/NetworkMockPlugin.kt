@@ -118,10 +118,10 @@ public data class NetworkMockPluginConfig(internal val config: NetworkMockConfig
  * ```
  *
  * ## State Management
- * The plugin uses `runBlocking` to synchronously access DataStore state during
- * request interception. This is necessary because Ktor's HttpSend intercept
- * function is not a suspend context. For better performance, consider implementing
- * in-memory caching of state in future versions.
+ * The plugin accesses DataStore state by suspending directly inside Ktor's
+ * `HttpSend.intercept` lambda, which is itself a suspend context. No `runBlocking`
+ * is required or used. For better performance, consider implementing in-memory
+ * caching of state in future versions.
  *
  * ## Error Handling
  * The plugin fails gracefully:

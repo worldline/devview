@@ -14,6 +14,7 @@ package com.worldline.devview.networkmock.model
  *   - `getUser-200.json` → status 200, display name "Success (200)"
  *   - `getUser-404-simple.json` → status 404, display name "Not Found - Simple (404)"
  *   - `getUser-500.json` → status 500, display name "Server Error (500)"
+ *   - `get-user-200.json` → status 200, hyphenated endpoint ID supported
  *
  * ## File Location
  * Files should be organized by endpoint ID:
@@ -86,6 +87,11 @@ public data class MockResponse(
          * Expected format: `{endpointId}-{statusCode}[-{suffix}].json`
          * - `getUser-200.json` → status = 200, suffix = null
          * - `getUser-404-simple.json` → status = 404, suffix = "simple"
+         * - `get-user-200.json` → status = 200 (hyphenated endpoint ID supported)
+         *
+         * The status code is located by searching from the right for a `-` followed by
+         * exactly three digits (all HTTP status codes are 3 digits), making this robust
+         * to endpoint IDs that themselves contain hyphens.
          *
          * @param fileName The response file name
          * @param content The raw JSON content as a String
@@ -95,19 +101,21 @@ public data class MockResponse(
             // Remove .json extension
             val nameWithoutExtension = fileName.removeSuffix(suffix = ".json")
 
-            // Split by '-' to get parts
-            val parts = nameWithoutExtension.split("-")
+            // Find the status code by looking for the last occurrence of -NNN (3-digit HTTP code).
+            // This is robust to endpoint IDs containing hyphens (e.g. "get-user-200.json").
+            val statusMatch = Regex(pattern = """-(\d{3})(-.+)?$""")
+                .find(input = nameWithoutExtension) ?: return null
 
-            // Need at least endpointId and statusCode
-            if (parts.size < 2) return null
+            val statusCode = statusMatch.groupValues[1].toIntOrNull() ?: return null
 
-            // Parse status code (second part)
-            val statusCode = parts[1].toIntOrNull() ?: return null
+            // Everything after the status code group is the optional suffix (strip leading '-')
+            val suffixRaw = statusMatch.groupValues[2].removePrefix(prefix = "-")
+            val suffixParts = if (suffixRaw.isNotEmpty()) suffixRaw.split("-") else emptyList()
 
             // Generate display name
             val displayName = generateDisplayName(
                 statusCode = statusCode,
-                suffixParts = parts.drop(n = 2)
+                suffixParts = suffixParts
             )
 
             return MockResponse(

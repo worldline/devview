@@ -201,10 +201,31 @@ public class NetworkMockViewModel(
 
     /**
      * Resets all endpoint mocks to use actual network.
+     *
+     * Builds a fully-disabled state for every endpoint present in the loaded configuration
+     * (not just those already stored in DataStore), then persists it in one write. This
+     * ensures that endpoints which have never been touched by the user are also explicitly
+     * reset, leaving no gaps.
      */
     public fun resetAllToNetwork() {
         viewModelScope.launch {
-            stateRepository.resetAllToNetwork()
+            val config = privateConfiguration.value
+            if (config == null) {
+                // Config not loaded yet — fall back to resetting only known stored entries
+                stateRepository.resetKnownEndpointsToNetwork()
+                return@launch
+            }
+
+            // Build a disabled state for every configured endpoint
+            val allDisabled = config.hosts
+                .flatMap { host ->
+                    host.endpoints.map { endpoint ->
+                        "${host.id}-${endpoint.id}" to EndpointMockState()
+                    }
+                }
+                .toMap()
+
+            stateRepository.setAllEndpointStates(states = allDisabled)
         }
     }
 }

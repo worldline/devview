@@ -22,6 +22,7 @@ import com.worldline.devview.featureflip.model.rememberFeatureHandler
 import com.worldline.devview.networkmock.NetworkMock
 import com.worldline.devview.sample.network.rememberMockStateRepository
 import devview_root.sample.shared.generated.resources.Res
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 /**
  * Main DevView-integrated app composable.
@@ -79,22 +80,28 @@ public fun DevViewApp() {
             // This will be used by both the HttpClient and the NetworkMock UI
             val mockStateRepository = rememberMockStateRepository()
 
-            // Main app content with shared repository
+            // Create a single NetworkMock instance so its configRepository is shared between
+            // the Ktor plugin and the DevView UI screen (fixes NM-001)
+            @OptIn(ExperimentalResourceApi::class)
+            val networkMock = remember(key1 = mockStateRepository) {
+                NetworkMock(
+                    resourceLoader = { path -> Res.readBytes(path = path) },
+                    stateRepository = mockStateRepository
+                )
+            }
+
+            // Main app content with shared repositories
             App(
                 openDevView = { devViewOpen = it },
-                mockStateRepository = mockStateRepository
+                mockStateRepository = mockStateRepository,
+                mockConfigRepository = networkMock.configRepository
             )
 
             // DevView modules configuration
             val modules = rememberModules {
                 module(module = FeatureFlip)
                 module(module = Analytics)
-                module(
-                    module = NetworkMock(
-                        resourceLoader = { path -> Res.readBytes(path = path) },
-                        stateRepository = mockStateRepository // Pass shared repository
-                    )
-                )
+                module(module = networkMock)
                 module(module = TestModule)
             }
 
