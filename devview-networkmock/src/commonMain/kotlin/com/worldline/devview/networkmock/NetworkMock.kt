@@ -3,6 +3,7 @@ package com.worldline.devview.networkmock
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
@@ -10,11 +11,12 @@ import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
 import com.worldline.devview.networkmock.repository.MockConfigRepository
 import com.worldline.devview.networkmock.repository.MockStateRepository
+import com.worldline.devview.utils.DataStoreDelegate
+import com.worldline.devview.utils.RequiresDataStore
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 /**
  * Navigation destinations for the NetworkMock module.
@@ -26,55 +28,77 @@ public sealed interface NetworkMockDestination : NavKey {
      */
     @Serializable
     public data object Main : NetworkMockDestination
-
-    // Add more destinations as needed, for example:
-    // @Serializable
-    // public data class Detail(val mockId: String) : NetworkMockDestination
 }
 
 /**
- * NetworkMock module - manages network request/response mocking for development and testing.
- * This is a regular object, not serializable.
+ * NetworkMock module — manages network request/response mocking for development and testing.
  *
- * A single [MockConfigRepository] is constructed from [configPath] and [resourceLoader]
- * and exposed via [configRepository] so the integrator can pass the **same** instance to
- * the Ktor [com.worldline.devview.networkmock.plugin.NetworkMockPlugin], ensuring both the
- * plugin and the UI share one configuration cache.
+ * Implements [RequiresDataStore] so that [com.worldline.devview.core.rememberModules]
+ * automatically initialises the shared [NetworkMockDataStoreDelegate] before
+ * [initModule] is called.
+ *
+ * The [dataStoreDelegate] points to [NetworkMockDataStoreDelegate] — the
+ * process-level singleton declared in `devview-networkmock-core`. This ensures
+ * that both this UI module and `devview-networkmock-ktor` share exactly one
+ * DataStore instance without depending on each other.
+ *
+ * [initModule] passes the initialised DataStore explicitly to
+ * [NetworkMockInitializer.initialize], which constructs [MockStateRepository]
+ * and [MockConfigRepository] once for the lifetime of the process.
  *
  * ## Usage
  * ```kotlin
- * val networkMock = NetworkMock(
- *     resourceLoader = { path -> Res.readBytes(path) },
- *     stateRepository = MockStateRepository(dataStore)
- * )
- *
- * val client = HttpClient(OkHttp) {
- *     install(NetworkMockPlugin) {
- *         mockRepository = networkMock.configRepository
- *         stateRepository = mockStateRepository
- *     }
+ * val modules = rememberModules {
+ *     module(NetworkMock(
+ *         resourceLoader = { path -> Res.readBytes(path) }
+ *     ))
  * }
  * ```
  *
- * @property resourceLoader Function to load resource bytes, must be provided by integrator
- * @property stateRepository MockStateRepository instance for state management
- * @property configPath Path to the mocks.json file relative to composeResources
+ * The Ktor plugin requires no configuration when `NetworkMock` is registered:
+ * ```kotlin
+ * val client = HttpClient(OkHttp) {
+ *     install(NetworkMockPlugin)
+ * }
+ * ```
+ *
+ * @property resourceLoader Function to load resource bytes from a path, provided
+ * by the integrator's resource system (e.g. `Res.readBytes` from Compose Resources)
+ * @property configPath Path to the `mocks.json` configuration file relative to
+ * composeResources. Defaults to `"files/networkmocks/mocks.json"`.
  */
 public class NetworkMock(
     private val resourceLoader: suspend (String) -> ByteArray,
-    private val stateRepository: MockStateRepository,
     private val configPath: String = "files/networkmocks/mocks.json"
-) : Module {
+) : Module, RequiresDataStore {
+
+    override val dataStoreName: String = NETWORK_MOCK_DATASTORE_NAME
+
     /**
-     * The shared [MockConfigRepository] instance built from [configPath] and [resourceLoader].
-     *
-     * Pass this to [com.worldline.devview.networkmock.plugin.NetworkMockPlugin] so the plugin
-     * and the UI screen use the same instance and therefore the same configuration cache.
+     * Points to [NetworkMockDataStoreDelegate] — the process-level singleton in
+     * `devview-networkmock-core`. Both this module and `devview-networkmock-ktor`
+     * reference the same delegate, guaranteeing a single DataStore instance.
      */
-    public val configRepository: MockConfigRepository = MockConfigRepository(
-        configPath = configPath,
-        resourceLoader = resourceLoader
-    )
+    override val dataStoreDelegate: DataStoreDelegate = NetworkMockDataStoreDelegate
+
+    /**
+     * Initialises the network mock repositories once the DataStore is ready.
+     *
+     * Called automatically by [com.worldline.devview.core.rememberModules] after
+     * [com.worldline.devview.utils.RequiresDataStore.initDataStore] has run.
+     * The DataStore is retrieved from [dataStoreDelegate] and passed explicitly
+     * to [NetworkMockInitializer.initialize] so the initializer remains
+     * independent and testable.
+     */
+    @Composable
+    override fun initModule() {
+        NetworkMockInitializer.initialize(
+            dataStore = dataStoreDelegate.get(),
+            configPath = configPath,
+            resourceLoader = resourceLoader
+        )
+    }
+
     override val section: Section
         get() = Section.NETWORK
 
@@ -90,7 +114,6 @@ public class NetworkMock(
             )
         }
 
-    @OptIn(ExperimentalResourceApi::class)
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
         onNavigate: (NavKey) -> Unit
@@ -101,8 +124,8 @@ public class NetworkMock(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues = paddingValues),
-                    configRepository = configRepository,
-                    stateRepository = stateRepository
+                    configRepository = NetworkMockInitializer.requireConfigRepository(),
+                    stateRepository = NetworkMockInitializer.requireStateRepository()
                 )
             }
         }

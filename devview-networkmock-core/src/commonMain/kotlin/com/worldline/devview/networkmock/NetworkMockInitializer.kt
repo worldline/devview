@@ -55,7 +55,7 @@ public object NetworkMockInitializer {
      */
     @Suppress("ComposableNaming")
     @Composable
-    internal fun initialize(
+    public fun initialize(
         dataStore: DataStore<Preferences>,
         configPath: String,
         resourceLoader: suspend (String) -> ByteArray

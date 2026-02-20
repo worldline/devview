@@ -24,7 +24,7 @@ import com.worldline.devview.utils.DataStoreDelegate
  * in `core` is the only location both modules can reference without introducing
  * a circular dependency.
  *
- * @see com.worldline.devview.utils.DataStoreDelegate
+ * @see DataStoreDelegate
  * @see NetworkMockInitializer
  */
 public val NetworkMockDataStoreDelegate: DataStoreDelegate = DataStoreDelegate()
@@ -34,4 +34,4 @@ public val NetworkMockDataStoreDelegate: DataStoreDelegate = DataStoreDelegate()
  *
  * Internal to `devview-networkmock-core` — integrators never see or set this value.
  */
-internal const val NETWORK_MOCK_DATASTORE_NAME = "network_mock_datastore.preferences_pb"
+public const val NETWORK_MOCK_DATASTORE_NAME: String = "network_mock_datastore.preferences_pb"
