@@ -17,6 +17,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(libs.kotlinx.collections.immutable)
+                api(projects.devviewUtils)
             }
         }
     }

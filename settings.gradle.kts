@@ -40,6 +40,7 @@ include(
     ":devview-analytics",
     ":devview-featureflip",
     ":devview-networkmock",
+    ":devview-networkmock-core",
     ":devview-utils",
     ":internal:dokka",
     ":sample:androidApp",

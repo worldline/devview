@@ -1,5 +1,6 @@
 package com.worldline.devview.core
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.EntryProviderScope
@@ -328,6 +329,39 @@ public interface Module {
         onNavigateBack: () -> Unit,
         onNavigate: (NavKey) -> Unit
     )
+
+    /**
+     * Called once when the module is first registered in a Composable context
+     * via [rememberModules].
+     *
+     * Override this function to perform any Composable-context initialisation
+     * this module requires — for example, setting up repositories or initialising
+     * module-specific singletons that need a Composable context.
+     *
+     * For modules that implement [com.worldline.devview.utils.RequiresDataStore],
+     * DataStore initialisation is handled automatically by [rememberModules] before
+     * this function is called, so
+     * [dataStoreDelegate][com.worldline.devview.utils.RequiresDataStore.dataStoreDelegate]
+     * is guaranteed to be ready when [initModule] runs.
+     *
+     * ## Example
+     * ```kotlin
+     * class MyModule(private val resourceLoader: suspend (String) -> ByteArray) : Module {
+     *     @Composable
+     *     override fun initModule() {
+     *         MyModuleInitializer.initialize(resourceLoader = resourceLoader)
+     *     }
+     * }
+     * ```
+     *
+     * Default implementation is a no-op.
+     *
+     * @see rememberModules
+     * @see com.worldline.devview.utils.RequiresDataStore
+     */
+    @Suppress("ComposableNaming")
+    @Composable
+    public fun initModule() {}
 }
 
 /**
