@@ -43,5 +43,6 @@ include(
     ":devview-utils",
     ":internal:dokka",
     ":sample:androidApp",
+    ":sample:network",
     ":sample:shared"
 )

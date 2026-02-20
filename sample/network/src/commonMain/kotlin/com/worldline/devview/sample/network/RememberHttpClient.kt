@@ -1,9 +1,11 @@
 package com.worldline.devview.sample.network
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import com.worldline.devview.networkmock.repository.MockConfigRepository
 import com.worldline.devview.networkmock.repository.MockStateRepository
+import devview_root.sample.network.generated.resources.Res
 import io.ktor.client.HttpClient
 
 /**

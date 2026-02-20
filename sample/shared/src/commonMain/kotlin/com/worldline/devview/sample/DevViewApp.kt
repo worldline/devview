@@ -21,7 +21,7 @@ import com.worldline.devview.featureflip.model.LocalFeatureHandler
 import com.worldline.devview.featureflip.model.rememberFeatureHandler
 import com.worldline.devview.networkmock.NetworkMock
 import com.worldline.devview.sample.network.rememberMockStateRepository
-import devview_root.sample.shared.generated.resources.Res
+import devview_root.sample.network.generated.resources.Res
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 /**

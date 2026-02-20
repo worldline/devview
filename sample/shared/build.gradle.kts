@@ -17,6 +17,8 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "shared"
             isStatic = true
+
+            export(projects.sample.network)
         }
     }
     
@@ -42,6 +44,8 @@ kotlin {
             implementation(projects.devviewAnalytics)
             implementation(projects.devviewNetworkmock)
             implementation(projects.devviewUtils)
+
+            api(projects.sample.network)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
