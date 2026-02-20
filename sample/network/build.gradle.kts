@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.convention.multiplatform.library)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.compose.multiplatform)
-    alias(libs.plugins.convention.datastore)
     alias(libs.plugins.convention.ktor)
 }
 
@@ -31,8 +30,7 @@ kotlin {
             implementation(libs.jetbrains.compose.components.resources)
 
             // DevView modules
-            implementation(projects.devviewNetworkmock)
-            implementation(projects.devviewUtils)
+            implementation(projects.devviewNetworkmockKtor)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
