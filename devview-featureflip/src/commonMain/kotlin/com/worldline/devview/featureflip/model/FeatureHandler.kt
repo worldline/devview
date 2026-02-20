@@ -14,6 +14,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.worldline.devview.featureflip.FeatureFlip
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -111,21 +112,23 @@ public class FeatureHandler(
     initialFeatures: List<Feature>
 ) {
     /**
-     * Internal registry mapping features to their corresponding DataStore preference keys.
+     * Internal registry mapping feature names to their [Feature] instance and
+     * corresponding DataStore preference key.
      *
-     * This mutable list maintains pairs of [Feature] instances and their associated
-     * [Preferences.Key]. Local features use Boolean keys, while remote features use Int keys
-     * to store their state ordinal values.
+     * Keyed by feature name for O(1) lookup — consistent with the approach used
+     * in `MockStateRepository` for endpoint keys. Local features use
+     * `booleanPreferencesKey` and remote features use `intPreferencesKey` to
+     * store their state ordinal values.
      */
-    private val featuresAndPreferenceKeys: MutableList<Pair<Feature, Preferences.Key<*>>> =
+    private val featureRegistry: MutableMap<Feature, Preferences.Key<*>> =
         initialFeatures
-            .map { feature ->
+            .associate { feature ->
                 val preferenceKey = when (feature) {
                     is Feature.LocalFeature -> booleanPreferencesKey(name = feature.name)
                     is Feature.RemoteFeature -> intPreferencesKey(name = feature.name)
                 }
                 feature to preferenceKey
-            }.toMutableList()
+            }.toMutableMap()
 
     /**
      * Checks whether a feature is currently enabled.
@@ -148,21 +151,18 @@ public class FeatureHandler(
                 throw exception
             }
         }.map { preferences ->
-            val featureAndPreferenceKey =
-                featuresAndPreferenceKeys.firstOrNull { it.first.name == featureName }
-                    ?: throw IllegalArgumentException("Feature with name $featureName not found")
+            val entry = featureRegistry.entries.firstOrNull { it.key.name == featureName }
+                ?: throw IllegalArgumentException("Feature with name $featureName not found")
 
-            when (val feature = featureAndPreferenceKey.first) {
+            when (val feature = entry.key) {
                 is Feature.LocalFeature -> {
                     @Suppress("UNCHECKED_CAST")
-                    val preferenceKey =
-                        featureAndPreferenceKey.second as Preferences.Key<Boolean>
+                    val preferenceKey = entry.value as Preferences.Key<Boolean>
                     preferences[preferenceKey] ?: false
                 }
-
                 is Feature.RemoteFeature -> {
                     @Suppress("UNCHECKED_CAST")
-                    val preferenceKey = featureAndPreferenceKey.second as Preferences.Key<Int>
+                    val preferenceKey = entry.value as Preferences.Key<Int>
                     val state = FeatureState.fromOrdinal(
                         ordinal = preferences[preferenceKey] ?: FeatureState.REMOTE.ordinal
                     )
@@ -192,11 +192,8 @@ public class FeatureHandler(
     public fun isFeatureEnabled(featureName: String): State<Boolean> =
         isFeatureEnabledFlow(featureName = featureName)
             .collectAsStateWithLifecycle(
-                initialValue = featuresAndPreferenceKeys
-                    .map { it.first }
-                    .firstOrNull { feature ->
-                        feature.name == featureName
-                    }?.isEnabled ?: false
+                initialValue = featureRegistry.keys
+                    .firstOrNull { it.name == featureName }?.isEnabled ?: false
             )
 
     /**
@@ -216,27 +213,24 @@ public class FeatureHandler(
      */
     internal suspend fun setFeatureState(featureName: String, state: FeatureState) {
         dataStore.edit { preferences ->
-            val featureAndPreferenceKey =
-                featuresAndPreferenceKeys.firstOrNull { it.first.name == featureName }
-                    ?: throw IllegalArgumentException("Feature with name $featureName not found")
+            val entry = featureRegistry.entries.firstOrNull { it.key.name == featureName }
+                ?: throw IllegalArgumentException("Feature with name $featureName not found")
 
-            when (featureAndPreferenceKey.first) {
+            when (entry.key) {
                 is Feature.LocalFeature -> {
                     @Suppress("UNCHECKED_CAST")
-                    val preferenceKey = featureAndPreferenceKey.second as Preferences.Key<Boolean>
+                    val preferenceKey = entry.value as Preferences.Key<Boolean>
                     when (state) {
                         FeatureState.REMOTE -> throw IllegalArgumentException(
                             "Cannot set remote state for local feature"
                         )
-
                         FeatureState.LOCAL_OFF -> preferences[preferenceKey] = false
                         FeatureState.LOCAL_ON -> preferences[preferenceKey] = true
                     }
                 }
-
                 is Feature.RemoteFeature -> {
                     @Suppress("UNCHECKED_CAST")
-                    val preferenceKey = featureAndPreferenceKey.second as Preferences.Key<Int>
+                    val preferenceKey = entry.value as Preferences.Key<Int>
                     preferences[preferenceKey] = state.ordinal
                 }
             }
@@ -253,19 +247,14 @@ public class FeatureHandler(
      * @param featuresToAdd The list of features to register and persist
      */
     public suspend fun addFeatures(featuresToAdd: List<Feature>) {
-        val newFeaturesAndPreferenceKeys = featuresToAdd.zip(
-            other = featuresToAdd.map {
-                when (it) {
-                    is Feature.LocalFeature -> booleanPreferencesKey(name = it.name)
-                    is Feature.RemoteFeature -> intPreferencesKey(name = it.name)
-                }
+        featuresToAdd.forEach { feature ->
+            val preferenceKey = when (feature) {
+                is Feature.LocalFeature -> booleanPreferencesKey(name = feature.name)
+                is Feature.RemoteFeature -> intPreferencesKey(name = feature.name)
             }
-        )
 
-        newFeaturesAndPreferenceKeys.forEach { (feature, preferenceKey) ->
-            if (!featuresAndPreferenceKeys.any { feature.name == it.first.name }) {
-                featuresAndPreferenceKeys.add(element = feature to preferenceKey)
-            }
+            // Register if not already present — map guarantees uniqueness by Feature key
+            featureRegistry.getOrPut(key = feature) { preferenceKey }
 
             dataStore.edit { preferences ->
                 when (feature) {
@@ -274,7 +263,6 @@ public class FeatureHandler(
                         val castPreferenceKey = preferenceKey as Preferences.Key<Boolean>
                         preferences[castPreferenceKey] = feature.isEnabled
                     }
-
                     is Feature.RemoteFeature -> {
                         @Suppress("UNCHECKED_CAST")
                         val castPreferenceKey = preferenceKey as Preferences.Key<Int>
@@ -301,7 +289,7 @@ public class FeatureHandler(
                 throw exception
             }
         }.map { preferences ->
-            featuresAndPreferenceKeys.map { (feature, preferenceKey) ->
+            featureRegistry.entries.map { (feature, preferenceKey) ->
                 when (feature) {
                     is Feature.LocalFeature -> {
                         @Suppress("UNCHECKED_CAST")
@@ -310,7 +298,6 @@ public class FeatureHandler(
                             isEnabled = preferences[castPreferenceKey] ?: feature.isEnabled
                         )
                     }
-
                     is Feature.RemoteFeature -> {
                         @Suppress("UNCHECKED_CAST")
                         val castPreferenceKey = preferenceKey as Preferences.Key<Int>
@@ -337,7 +324,7 @@ public class FeatureHandler(
     internal val features: State<List<Feature>>
         @Composable get() = getFeatures()
             .collectAsStateWithLifecycle(
-                initialValue = featuresAndPreferenceKeys.map { it.first }
+                initialValue = featureRegistry.keys.toList()
             )
 }
 
@@ -413,11 +400,10 @@ public class FeatureHandler(
  *
  * @see FeatureHandler
  * @see LocalFeatureHandler
- * @see rememberDataStore
  */
 @Composable
 public fun rememberFeatureHandler(features: List<Feature>): FeatureHandler {
-    val dataStore = rememberDataStore()
+    val dataStore = FeatureFlip.dataStoreDelegate.get()
 
     return remember(key1 = dataStore) {
         FeatureHandler(
