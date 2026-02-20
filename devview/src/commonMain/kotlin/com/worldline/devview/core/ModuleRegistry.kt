@@ -239,11 +239,15 @@ public fun buildModules(block: ModuleRegistry.() -> Unit): ImmutableList<Module>
  * @see ModuleRegistry
  */
 @Composable
-public fun rememberModules(block: ModuleRegistry.() -> Unit): ImmutableList<Module> = remember {
-    buildModules(block = block)
-}.also { modules ->
+public fun rememberModules(block: ModuleRegistry.() -> Unit): ImmutableList<Module> {
+    val modules = buildModules(block = block)
+
     modules.forEach { module ->
         if (module is RequiresDataStore) module.initDataStore()
         module.initModule()
+    }
+
+    return remember {
+        modules
     }
 }
