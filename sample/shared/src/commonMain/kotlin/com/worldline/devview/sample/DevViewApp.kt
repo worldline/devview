@@ -21,7 +21,6 @@ import com.worldline.devview.featureflip.model.LocalFeatureHandler
 import com.worldline.devview.featureflip.model.rememberFeatureHandler
 import com.worldline.devview.networkmock.NetworkMock
 import devview_root.sample.network.generated.resources.Res
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 /**
  * Main DevView-integrated app composable.
@@ -36,6 +35,18 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
  */
 @Composable
 public fun DevViewApp() {
+    // DevView modules configuration
+    val modules = rememberModules {
+        module(module = FeatureFlip)
+        module(module = Analytics)
+        module(
+            module = NetworkMock(
+                resourceLoader = { path -> Res.readBytes(path = path) }
+            )
+        )
+        module(module = TestModule)
+    }
+
     val darkTheme = isSystemInDarkTheme()
 
     // Initialize feature handler with dark mode feature
@@ -75,23 +86,8 @@ public fun DevViewApp() {
             // DevView open/close state
             var devViewOpen by remember { mutableStateOf(value = false) }
 
-            @OptIn(ExperimentalResourceApi::class)
-            val networkMock = remember {
-                NetworkMock(
-                    resourceLoader = { path -> Res.readBytes(path = path) }
-                )
-            }
-
             // Main app content
             App(openDevView = { devViewOpen = it })
-
-            // DevView modules configuration
-            val modules = rememberModules {
-                module(module = FeatureFlip)
-                module(module = Analytics)
-                module(module = networkMock)
-                module(module = TestModule)
-            }
 
             // DevView overlay
             DevView(
