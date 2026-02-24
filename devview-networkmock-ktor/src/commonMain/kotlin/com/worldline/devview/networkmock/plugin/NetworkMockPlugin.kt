@@ -183,7 +183,8 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                     }
 
                     println(
-                        message = "$LOG_PREFIX Endpoint state: enabled=${endpointState.mockEnabled}, " +
+                        message =
+                        "$LOG_PREFIX Endpoint state: enabled=${endpointState.mockEnabled}, " +
                             "file=${endpointState.selectedResponseFile}"
                     )
 

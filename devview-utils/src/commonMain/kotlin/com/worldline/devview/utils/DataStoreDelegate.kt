@@ -78,9 +78,7 @@ public class DataStoreDelegate {
      */
     public fun get(): DataStore<Preferences> = instance
         ?: error(
-            "DataStore not initialised. " +
+            message = "DataStore not initialised. " +
                 "Ensure the module is registered via rememberModules { }."
         )
 }
-
-

@@ -70,8 +70,8 @@ public sealed interface NetworkMockDestination : NavKey {
 public class NetworkMock(
     private val resourceLoader: suspend (String) -> ByteArray,
     private val configPath: String = "files/networkmocks/mocks.json"
-) : Module, RequiresDataStore {
-
+) : Module,
+    RequiresDataStore {
     override val dataStoreName: String = NETWORK_MOCK_DATASTORE_NAME
 
     /**

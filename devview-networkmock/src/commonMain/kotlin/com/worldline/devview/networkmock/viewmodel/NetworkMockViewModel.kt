@@ -222,8 +222,7 @@ public class NetworkMockViewModel(
                     host.endpoints.map { endpoint ->
                         "${host.id}-${endpoint.id}" to EndpointMockState()
                     }
-                }
-                .toMap()
+                }.toMap()
 
             stateRepository.setAllEndpointStates(states = allDisabled)
         }

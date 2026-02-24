@@ -193,7 +193,8 @@ public class FeatureHandler(
         isFeatureEnabledFlow(featureName = featureName)
             .collectAsStateWithLifecycle(
                 initialValue = featureRegistry.keys
-                    .firstOrNull { it.name == featureName }?.isEnabled ?: false
+                    .firstOrNull { it.name == featureName }
+                    ?.isEnabled ?: false
             )
 
     /**

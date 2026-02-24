@@ -112,6 +112,7 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
      * Populated as endpoints are written to DataStore. Used to enumerate all
      * known endpoints without scanning all DataStore keys.
      */
+    @Suppress("CommentOverPrivateProperty")
     private val endpointKeys: MutableMap<String, Preferences.Key<String>> = mutableMapOf()
 
     private companion object {
@@ -130,6 +131,7 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
      * @param endpointId The endpoint identifier
      * @return The [Preferences.Key] for this endpoint's [EndpointMockState]
      */
+    @Suppress("CommentOverPrivateFunction")
     private fun endpointKey(hostId: String, endpointId: String): Preferences.Key<String> {
         val compositeKey = "$hostId-$endpointId"
         return endpointKeys.getOrPut(key = compositeKey) {
@@ -178,7 +180,7 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
                             EndpointMockState()
                         }
                     } ?: EndpointMockState()
-                )
+                    )
             }
             NetworkMockState(
                 globalMockingEnabled = preferences[KEY_GLOBAL_ENABLED] ?: false,
@@ -275,7 +277,9 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
      * @param states Map of `"{hostId}-{endpointId}"` keys to [EndpointMockState] values
      */
     public suspend fun setAllEndpointStates(states: Map<String, EndpointMockState>) {
-        println(message = "[NetworkMock][State] Setting all endpoint states (${states.size} entries)")
+        println(
+            message = "[NetworkMock][State] Setting all endpoint states (${states.size} entries)"
+        )
         dataStore.edit { preferences ->
             states.forEach { (compositeKey, state) ->
                 val (hostId, endpointId) = compositeKey.split("-", limit = 2)

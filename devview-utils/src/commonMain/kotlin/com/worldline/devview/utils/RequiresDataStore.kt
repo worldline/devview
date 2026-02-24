@@ -71,7 +71,6 @@ import androidx.compose.runtime.Composable
  * @see DataStoreDelegate
  */
 public interface RequiresDataStore {
-
     /**
      * The filename used for this module's DataStore preferences file.
      *

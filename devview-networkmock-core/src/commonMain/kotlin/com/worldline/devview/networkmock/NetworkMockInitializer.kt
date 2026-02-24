@@ -81,7 +81,7 @@ public object NetworkMockInitializer {
      */
     public fun requireStateRepository(): MockStateRepository = stateRepository
         ?: error(
-            "NetworkMockInitializer not initialised. " +
+            message = "NetworkMockInitializer not initialised. " +
                 "Ensure NetworkMock is registered via rememberModules { }."
         )
 
@@ -96,7 +96,7 @@ public object NetworkMockInitializer {
      */
     public fun requireConfigRepository(): MockConfigRepository = configRepository
         ?: error(
-            "NetworkMockInitializer not initialised. " +
+            message = "NetworkMockInitializer not initialised. " +
                 "Ensure NetworkMock is registered via rememberModules { }."
         )
 }

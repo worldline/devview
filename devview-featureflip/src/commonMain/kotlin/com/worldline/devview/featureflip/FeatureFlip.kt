@@ -121,7 +121,6 @@ public sealed interface FeatureFlipDestination : NavKey {
  * @see FeatureFlipScreen
  */
 public object FeatureFlip : Module, RequiresDataStore {
-
     override val dataStoreName: String = FEATURE_FLIP_DATASTORE_NAME
 
     /**
@@ -133,6 +132,7 @@ public object FeatureFlip : Module, RequiresDataStore {
      * Compose context.
      */
     override val dataStoreDelegate: DataStoreDelegate = DataStoreDelegate()
+
     /**
      * The section this module belongs to in the DevView menu.
      *

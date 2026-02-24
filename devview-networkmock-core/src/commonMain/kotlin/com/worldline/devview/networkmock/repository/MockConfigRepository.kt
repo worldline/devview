@@ -283,7 +283,8 @@ public class MockConfigRepository(
         }
 
         println(
-            message = "[NetworkMock][Matching] SUCCESS: Matched endpoint '${matchingEndpoint.id}' " +
+            message =
+            "[NetworkMock][Matching] SUCCESS: Matched endpoint '${matchingEndpoint.id}' " +
                 "on host '${matchingHost.id}'"
         )
 
@@ -326,7 +327,7 @@ public class MockConfigRepository(
         val responses = mutableListOf<MockResponse>()
         val basePath = "files/networkmocks/responses/$endpointId"
 
-        // TODO: Consider making suffixes configurable if needed by integrators
+        // TODO - Consider making suffixes configurable if needed by integrators
         val suffixesToTry = listOf(
             "",
             "-simple",
@@ -420,4 +421,3 @@ public class MockConfigRepository(
         return hostname
     }
 }
-

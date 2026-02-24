@@ -29,10 +29,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-public fun App(
-    openDevView: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
-) {
+public fun App(openDevView: (Boolean) -> Unit, modifier: Modifier = Modifier) {
     var showContent by remember { mutableStateOf(value = false) }
     var ktorDocs by remember { mutableStateOf(value = "To be called...") }
     val coroutineScope = rememberCoroutineScope()
