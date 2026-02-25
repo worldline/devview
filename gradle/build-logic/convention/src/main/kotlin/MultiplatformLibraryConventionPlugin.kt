@@ -65,7 +65,6 @@ fun KotlinMultiplatformExtension.addDefaultDevViewTargets() {
         withJava()
     }
 
-    iosX64()
     iosArm64()
     iosSimulatorArm64()
 }
