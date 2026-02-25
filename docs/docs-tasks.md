@@ -14,7 +14,7 @@ This file tracks the progress and outstanding tasks for the documentation overha
 ## Section Progress
 
 ### Home
-- [ ] index.md (Overview, key features, badges, screenshots, What's New/Release Highlights)
+- [x] index.md (Overview, key features, badges, screenshots, What's New/Release Highlights)
 
 ### Getting Started
 - [ ] index.md
@@ -77,4 +77,3 @@ This file tracks the progress and outstanding tasks for the documentation overha
 - After completing each file, pause for review and approval.
 - Update this file as tasks are completed or new tasks are identified.
 - Refer to documentation-plan.md for detailed process and structure.
-
