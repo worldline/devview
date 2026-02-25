@@ -95,11 +95,10 @@ ios/build/artifacts
 *.xcodeproj/*
 !*.xcodeproj/project.pbxproj
 !*.xcodeproj/xcshareddata/
-!*.xcworkspace/contents.xcworkspacedata
+!*.xcworkspace/contents.xcworkspacedata/
 /*.gcno
 
 ### Projects ###
-*.xcodeproj
 *.xcworkspace
 
 ### Tuist derived files ###
