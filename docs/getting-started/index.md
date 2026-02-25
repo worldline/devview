@@ -2,25 +2,35 @@
 
 Welcome to DevView! This guide will help you get up and running with the framework in your Kotlin Multiplatform project.
 
+---
+
+> _[Placeholder: Insert screenshot of DevView overlay or a key module UI in a sample app. Use a device frame if possible for clarity.]_
+
+---
+
 ## Prerequisites
 
 Before you begin, make sure you have:
 
-- ✅ **Kotlin Multiplatform Project** - A working KMP project targeting Android and/or iOS
-- ✅ **Compose Multiplatform** - Compose Multiplatform configured in your project
+- ✅ **Kotlin Multiplatform Project** – A working KMP project targeting Android and/or iOS
+- ✅ **Compose Multiplatform** – Compose Multiplatform configured in your project
 - ✅ **Minimum Versions**:
     - Kotlin 2.3.0+
     - Compose Multiplatform 1.10.0+
     - Android: API 21 (Lollipop) or higher
     - iOS: iOS 14.0 or higher
 
+---
+
 ## Setup Overview
 
 Setting up DevView involves three main steps:
 
-1. **[Installation](installation.md)** - Add dependencies to your project
-2. **[Quick Start](quick-start.md)** - Integrate DevView into your app
-3. **[Configuration](configuration.md)** - Customize modules and settings
+1. **[Installation](installation.md)** – Add dependencies to your project
+2. **[Quick Start](quick-start.md)** – Integrate DevView into your app
+3. **[Configuration](configuration.md)** – Customise modules and settings
+
+---
 
 ## What You'll Learn
 
@@ -35,27 +45,27 @@ Follow a step-by-step tutorial to integrate DevView into your application with w
 [Go to Quick Start →](quick-start.md){ .md-button }
 
 ### Configuration
-Discover advanced configuration options, module selection, and customization techniques.
+Discover advanced configuration options, module selection, and customisation techniques.
 
 [Go to Configuration →](configuration.md){ .md-button }
 
+---
+
 ## Quick Preview
 
-Here's a minimal example of what DevView integration looks like:
+Here's a minimal example of what DevView integration looks like (including all core modules):
 
 ```kotlin
 @Composable
 fun App() {
     var isDevViewOpen by remember { mutableStateOf(false) }
-    
     val modules = rememberModules {
         module(FeatureFlip)
         module(Analytics)
+        module(NetworkMock)
     }
-    
     Box {
         MainAppContent()
-        
         DevView(
             devViewIsOpen = isDevViewOpen,
             closeDevView = { isDevViewOpen = false },
@@ -65,6 +75,10 @@ fun App() {
 }
 ```
 
+> **Tip:** Start with the core modules (FeatureFlip, Analytics, NetworkMock) and add custom modules as your project grows. Integrate DevView early for the best developer and QA experience.
+
+---
+
 ## Next Steps
 
 Ready to get started? Head to the [Installation Guide](installation.md) to begin!
@@ -73,6 +87,6 @@ Ready to get started? Head to the [Installation Guide](installation.md) to begin
 
 If you encounter any issues:
 
-- 📖 Check the [troubleshooting section](configuration.md#troubleshooting)
+- 📖 Check the [troubleshooting section](troubleshooting-faq.md)
 - 💬 Ask in [GitHub Discussions](https://github.com/worldline/devview/discussions)
 - 🐛 Report bugs in [GitHub Issues](https://github.com/worldline/devview/issues)
