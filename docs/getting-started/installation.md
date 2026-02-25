@@ -102,6 +102,9 @@ DevView is modular, so you only include what you need:
 | **devview-core** | Core framework, module system, navigation | ✅ Always required |
 | **devview-featureflip** | Feature flag management with DataStore | When you need feature toggles |
 | **devview-analytics** | Analytics event monitoring | When you need analytics debugging |
+| **devview-networkmock** | Network mocking for Ktor and other platforms | When you need to simulate network responses |
+
+> _[Placeholder: Insert screenshot of DevView module selection UI or a dependency diagram. Use a device frame if relevant.]_
 
 ## Sync Your Project
 
@@ -123,6 +126,18 @@ Verify the installation by adding this simple import:
 import com.worldline.devview.DevView
 import com.worldline.devview.core.*
 ```
+
+## Custom Modules
+
+> _[Placeholder: Describe how to add custom DevView modules. This section will be expanded in future updates.]_
+
+## Troubleshooting
+
+If you encounter issues during installation:
+- Ensure all repositories are correctly configured in your Gradle files.
+- For dependency resolution errors, run `./gradlew --refresh-dependencies` in the terminal.
+- If Compose Multiplatform is not detected, verify plugin versions and compatibility.
+- For further help, consult the [troubleshooting section](troubleshooting-faq.md).
 
 ## Next Steps
 

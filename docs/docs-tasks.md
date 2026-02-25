@@ -17,7 +17,7 @@ This file tracks the progress and outstanding tasks for the documentation overha
 - [x] index.md (Overview, key features, badges, screenshots, What's New/Release Highlights)
 
 ### Getting Started
-- [ ] index.md
+- [x] index.md
 - [ ] prerequisites.md
 - [ ] installation.md
 - [ ] quick-start.md
