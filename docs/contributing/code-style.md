@@ -1,24 +1,46 @@
 ﻿# Code Style Guide
+
 Code style guidelines for DevView.
-## Kotlin Coding Conventions
-Follow [Kotlin Coding Conventions](https://kotlinlang.org/docs/coding-conventions.html).
-## Detekt
-We use detekt for static code analysis:
+
+> _[Placeholder: Insert screenshot or diagram of code style checks in action. Use a device frame if relevant.]_
+
+## Formatting
+- Use Kotlin's official style guide
+- Indent with 4 spaces
+- Limit lines to 120 characters
+- Use blank lines to separate logical sections
+
+## Naming Conventions
+- Use camelCase for variables and functions
+- Use PascalCase for classes and objects
+- Use UPPER_SNAKE_CASE for constants
+- Prefix private fields with an underscore if needed
+- Use descriptive names and be consistent
+
+## Linting & Static Analysis
+- Run ktlint and detekt before submitting changes
 ```bash
+./gradlew ktlintCheck
 ./gradlew detekt
 ```
-## ktlint
-Format code with ktlint:
-```bash
-./gradlew ktlintFormat
-```
+- Fix all reported issues before opening a pull request
+
 ## Documentation
-- Document all public APIs with KDoc
-- Include code examples
-- Use proper formatting
-## Naming
-- Use descriptive names
-- Follow Kotlin conventions
-- Be consistent
-## See Also
-[Pull Request Guidelines](pull-requests.md)
+- Use KDoc for all public classes, functions, and properties
+- Document module interfaces and key architectural decisions
+- Add comments for complex logic and non-obvious code
+- Include code examples and use proper formatting
+
+## Best Practices
+- Write clear, descriptive commit messages
+- Refactor code for readability and maintainability
+- Remove unused code and imports
+- Prefer immutable data structures
+
+## Next Steps
+- See [Development Setup](development.md) for environment configuration
+- Review [Pull Requests](pull-requests.md) for contribution process
+
+---
+
+_If you have questions about code style, open an issue or start a discussion on GitHub._
