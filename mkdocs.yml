@@ -15,22 +15,30 @@ nav:
   - "Home": index.md
   - "Getting Started":
       - getting-started/index.md
+      - "Prerequisites": getting-started/prerequisites.md
       - "Installation": getting-started/installation.md
       - "Quick Start": getting-started/quick-start.md
       - "Configuration": getting-started/configuration.md
+      - "Troubleshooting & FAQ": getting-started/troubleshooting-faq.md
   - "Modules":
       - modules/index.md
-      - "Core Module": modules/core.md
       - "FeatureFlip": modules/featureflip.md
       - "Analytics": modules/analytics.md
+      - "NetworkMock":
+          - "Overview": modules/networkmock.md
+          - "Core": modules/networkmock-core.md
+          - "UI": modules/networkmock-ui.md
+          - "Ktor Plugin": modules/networkmock-ktor.md
+          - "Workflows": modules/networkmock-workflows.md
       - "Creating Custom Modules": modules/custom-modules.md
   - "Guides":
       - guides/index.md
-      - "Integration Guide": guides/integration.md
+      - "Integration Guide": guides/integration-guide.md
       - "Module Development": guides/module-development.md
       - "Navigation": guides/navigation.md
       - "Theming": guides/theming.md
       - "Best Practices": guides/best-practices.md
+      - "Common Pitfalls": guides/common-pitfalls.md
   - "API Reference": api/index.html
   - "Examples":
       - examples/index.md
@@ -38,11 +46,12 @@ nav:
       - "iOS Setup": examples/ios.md
       - "Feature Flags": examples/feature-flags.md
       - "Analytics Tracking": examples/analytics-tracking.md
-  - "Contributing":
+      - "Advanced Examples": examples/advanced-examples.md
       - contributing/index.md
       - "Development Setup": contributing/development.md
       - "Code Style": contributing/code-style.md
       - "Pull Requests": contributing/pull-requests.md
+      - "Code of Conduct": contributing/code-of-conduct.md
   - "Changelog": changelog.md
   - "License": license.md
 
@@ -59,7 +68,7 @@ theme:
     - media: "(prefers-color-scheme: light)"
       scheme: default
       primary: teal
-      accent: light-green
+      accent: teal
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
@@ -67,7 +76,7 @@ theme:
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: teal
-      accent: light-green
+      accent: teal
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -79,7 +88,6 @@ theme:
     - navigation.tracking
     - navigation.tabs
     - navigation.tabs.sticky
-    - navigation.sections
     - navigation.expand
     - navigation.path
     - navigation.indexes
