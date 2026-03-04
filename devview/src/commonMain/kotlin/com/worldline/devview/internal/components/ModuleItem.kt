@@ -140,7 +140,7 @@ internal fun ModuleItem(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "${module::class.simpleName}",
+                        text = module.moduleName,
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Normal
                         )
@@ -159,7 +159,7 @@ internal fun ModuleItem(
     }
 }
 
-@Preview
+@Preview(locale = "en")
 @Composable
 private fun ModuleItemPreview() {
     Column {

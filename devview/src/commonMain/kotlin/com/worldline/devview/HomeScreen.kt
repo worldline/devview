@@ -156,7 +156,7 @@ internal fun HomeScreen(
 @Serializable
 public data object Home : NavKey
 
-@Preview
+@Preview(locale = "en")
 @Composable
 private fun HomeScreenPreview() {
     HomeScreen(

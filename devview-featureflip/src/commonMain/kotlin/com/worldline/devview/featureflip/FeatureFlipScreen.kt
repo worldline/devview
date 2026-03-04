@@ -290,7 +290,7 @@ private enum class FeatureFilter {
     }
 }
 
-@Preview
+@Preview(locale = "en")
 @Composable
 private fun FeaturesScreenPreview() {
     val featureHandler = rememberFeatureHandler(

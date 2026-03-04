@@ -107,7 +107,7 @@ internal fun AnalyticsLogItem(
 private fun String.capitalize() =
     replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 
-@Preview
+@Preview(locale = "en")
 @Composable
 private fun AnalyticsLogItemPreview(
     @PreviewParameter(

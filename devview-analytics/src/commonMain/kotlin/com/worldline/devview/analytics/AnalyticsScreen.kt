@@ -121,7 +121,7 @@ public fun AnalyticsScreen(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview
+@Preview(locale = "en")
 @Composable
 private fun AnalyticsLogScreenPreview(
     @PreviewParameter(

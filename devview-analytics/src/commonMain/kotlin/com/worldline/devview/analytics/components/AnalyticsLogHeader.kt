@@ -85,7 +85,7 @@ internal fun AnalyticsLogHeader(modifier: Modifier = Modifier, typeWidth: Int? =
     }
 }
 
-@Preview
+@Preview(locale = "en")
 @Composable
 private fun AnalyticsLogHeaderPreview() {
     MaterialTheme {

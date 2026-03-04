@@ -214,7 +214,7 @@ private fun FeatureItem(
     }
 }
 
-@Preview
+@Preview(locale = "en")
 @Composable
 private fun FeatureItemPreview(
     @PreviewParameter(provider = FeaturePreviewParameterProvider::class) feature: Feature

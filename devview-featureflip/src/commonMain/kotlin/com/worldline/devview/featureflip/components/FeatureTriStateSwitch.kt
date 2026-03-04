@@ -447,7 +447,7 @@ internal fun ColorScheme.applyTonalElevation(backgroundColor: Color, elevation: 
 
 // endregion
 
-@Preview
+@Preview(locale = "en")
 @Composable
 private fun FeatureTriStateSwitchPreview(
     @PreviewParameter(RemoteFeaturePreviewParameterProvider::class) feature: RemoteFeature
