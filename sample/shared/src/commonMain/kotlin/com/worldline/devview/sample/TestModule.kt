@@ -8,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.worldline.devview.core.HasTitle
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
 import kotlinx.collections.immutable.ImmutableList
@@ -20,10 +21,16 @@ import kotlinx.serialization.modules.PolymorphicModuleBuilder
  */
 public sealed interface TestModuleNavigation : NavKey {
     @Serializable
-    public data object Main : TestModuleNavigation
+    public data object Main : TestModuleNavigation, HasTitle {
+        override val title: String
+            get() = "Test Module"
+    }
 
     @Serializable
-    public data object Detail : TestModuleNavigation
+    public data object Detail : TestModuleNavigation {
+//        override val title: String
+//            get() = "Detail Screen"
+    }
 }
 
 /**

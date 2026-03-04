@@ -103,7 +103,7 @@ internal fun AnalyticsLogItem(
  *
  * @return A new string with the first character capitalized.
  */
-@Suppress("CommentOverPrivateFunction")
+@Suppress("DocumentationOverPrivateFunction")
 private fun String.capitalize() =
     replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 

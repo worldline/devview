@@ -1,4 +1,4 @@
-@file:Suppress("TooManyFunctions", "CommentOverPrivateFunction")
+@file:Suppress("TooManyFunctions", "DocumentationOverPrivateFunction")
 
 package com.worldline.devview.featureflip.components
 
@@ -228,10 +228,10 @@ private fun SingleChoiceSegmentedButtonRowScope.FeatureSegmentedButton(
                 .surface(
                     shape = shape,
                     backgroundColor =
-                    surfaceColorAtElevation(
-                        color = containerColor,
-                        elevation = absoluteElevation
-                    ),
+                        surfaceColorAtElevation(
+                            color = containerColor,
+                            elevation = absoluteElevation
+                        ),
                     border = border,
                     shadowElevation = 0f
                 ).selectable(

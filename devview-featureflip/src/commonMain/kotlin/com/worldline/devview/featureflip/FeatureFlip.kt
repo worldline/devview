@@ -6,6 +6,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.worldline.devview.core.HasTitle
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
 import com.worldline.devview.utils.DataStoreDelegate
@@ -27,7 +28,7 @@ internal const val FEATURE_FLIP_DATASTORE_NAME = "feature_flip_datastore.prefere
  *
  * @see FeatureFlip
  */
-public sealed interface FeatureFlipDestination : NavKey {
+public sealed interface FeatureFlipDestination : HasTitle {
     /**
      * Main feature flip management screen destination.
      *
@@ -43,7 +44,10 @@ public sealed interface FeatureFlipDestination : NavKey {
      * @see FeatureFlipScreen
      */
     @Serializable
-    public data object Main : FeatureFlipDestination
+    public data object Main : FeatureFlipDestination {
+        override val title: String
+            get() = "Feature Flip"
+    }
 
     // Add more destinations as needed, for example:
     // @Serializable

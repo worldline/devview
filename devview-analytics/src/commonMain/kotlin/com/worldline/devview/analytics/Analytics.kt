@@ -6,6 +6,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.worldline.devview.core.HasTitle
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
 import kotlinx.collections.immutable.ImmutableList
@@ -22,7 +23,7 @@ import kotlinx.serialization.modules.PolymorphicModuleBuilder
  *
  * @see Analytics
  */
-public sealed interface AnalyticsDestination : NavKey {
+public sealed interface AnalyticsDestination : HasTitle {
     /**
      * Main analytics dashboard screen destination.
      *
@@ -38,7 +39,10 @@ public sealed interface AnalyticsDestination : NavKey {
      * @see AnalyticsScreen
      */
     @Serializable
-    public data object Main : AnalyticsDestination
+    public data object Main : AnalyticsDestination {
+        override val title: String
+            get() = "Analytics"
+    }
 
     // Add more destinations as needed, for example:
     // @Serializable

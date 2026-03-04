@@ -1,4 +1,4 @@
-@file:Suppress("CommentOverPrivateFunction", "CommentOverPrivateProperty")
+@file:Suppress("DocumentationOverPrivateFunction", "DocumentationOverPrivateProperty")
 
 package com.worldline.devview.featureflip.model
 

@@ -154,7 +154,7 @@ public data class MockResponse(
          * @param statusTextProvider Lambda that maps a status code to its display text
          * @return A formatted display name
          */
-        @Suppress("CommentOverPrivateFunction")
+        @Suppress("DocumentationOverPrivateFunction")
         private fun generateDisplayName(
             statusCode: Int,
             suffixParts: List<String>,
@@ -177,7 +177,7 @@ public data class MockResponse(
          * @param statusCode The HTTP status code
          * @return The status text (e.g., "Success", "Not Found", "Server Error")
          */
-        @Suppress("CyclomaticComplexMethod", "CommentOverPrivateFunction")
+        @Suppress("CyclomaticComplexMethod", "DocumentationOverPrivateFunction")
         private fun getStatusText(statusCode: Int): String = when (statusCode) {
             // 2xx Success
             200 -> "Success"

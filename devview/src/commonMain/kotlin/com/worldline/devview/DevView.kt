@@ -1,9 +1,23 @@
 package com.worldline.devview
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults.exitUntilCollapsedScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -12,6 +26,7 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationEventHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.worldline.devview.core.HasTitle
 import com.worldline.devview.core.Module
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.serialization.modules.SerializersModule
@@ -172,6 +187,7 @@ import kotlinx.serialization.modules.polymorphic
  * @see com.worldline.devview.core.buildModules
  * @see Home
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 public fun DevView(
     devViewIsOpen: Boolean,
@@ -206,13 +222,52 @@ public fun DevView(
         }
     )
 
+    val scrollBehaviour = exitUntilCollapsedScrollBehavior()
+
+    val title: String? by remember(key1 = backstack) {
+        derivedStateOf {
+            if (backstack.last() is HasTitle) {
+                (backstack.last() as HasTitle).title
+            } else {
+                null
+            }
+        }
+    }
+
     AnimatedVisibility(
         visible = devViewIsOpen
     ) {
         Scaffold(
-            modifier = modifier
-        ) {
+            modifier = modifier,
+            topBar = {
+                AnimatedVisibility(
+                    visible = title != null
+                ) {
+                    title?.let {
+                        MediumTopAppBar(
+                            title = {
+                                Text(text = it)
+                            },
+                            scrollBehavior = scrollBehaviour
+                        )
+                    }
+                }
+            }
+        ) { padding ->
+            val layoutDirection = LocalLayoutDirection.current
+            val newPaddingValues = PaddingValues(
+                start = padding.calculateStartPadding(layoutDirection = layoutDirection),
+                top = padding.calculateTopPadding(),
+                end = padding.calculateEndPadding(layoutDirection = layoutDirection)
+            )
+
             NavDisplay(
+                modifier = Modifier
+                    .padding(
+                        paddingValues = newPaddingValues
+                    ).consumeWindowInsets(
+                        paddingValues = newPaddingValues
+                    ).nestedScroll(connection = scrollBehaviour.nestedScrollConnection),
                 backStack = backstack,
                 entryProvider = entryProvider {
                     // Home screen entry

@@ -108,7 +108,7 @@ public class NetworkMockViewModel(
     /**
      * Loads the mock configuration from resources and discovers response files.
      */
-    @Suppress("CommentOverPrivateFunction")
+    @Suppress("DocumentationOverPrivateFunction")
     private fun loadConfiguration() {
         viewModelScope.launch {
             privateLoadingState.value = LoadingState.Loading

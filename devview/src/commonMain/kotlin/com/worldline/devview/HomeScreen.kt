@@ -13,7 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.runtime.NavKey
+import com.worldline.devview.core.HasTitle
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
 import com.worldline.devview.core.previewModule
@@ -154,7 +154,10 @@ internal fun HomeScreen(
  * @see Module
  */
 @Serializable
-public data object Home : NavKey
+public data object Home : HasTitle {
+    override val title: String
+        get() = "DevView"
+}
 
 @Preview(locale = "en")
 @Composable

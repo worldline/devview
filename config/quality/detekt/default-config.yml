@@ -36,12 +36,11 @@ comments:
   active: true
   AbsentOrWrongFileLicense:
     active: false
-    licenseTemplateFile: 'license.template'
-    licenseTemplateIsRegex: false
-  CommentOverPrivateFunction:
+    licenseTemplate: ''
+  DocumentationOverPrivateFunction:
     active: true
     ignoreAnnotated: ['Composable']
-  CommentOverPrivateProperty:
+  DocumentationOverPrivateProperty:
     active: true
   DeprecatedBlockTag:
     active: false
@@ -635,8 +634,8 @@ style:
     allowedPatterns: ''
   ForbiddenImport:
     active: false
-    imports: []
-    forbiddenPatterns: ''
+    allowedImports: [ ]
+    forbiddenImports: [ ]
   ForbiddenMethodCall:
     active: false
     methods:
@@ -773,8 +772,6 @@ style:
     active: true
     acceptableLength: 4
     allowNonStandardGrouping: false
-  UnnecessaryAnnotationUseSiteTarget:
-    active: true
   UnnecessaryAny:
     active: false
   UnnecessaryApply:

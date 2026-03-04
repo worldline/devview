@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.worldline.devview.core.HasTitle
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
 import com.worldline.devview.networkmock.repository.MockConfigRepository
@@ -22,12 +23,15 @@ import kotlinx.serialization.modules.PolymorphicModuleBuilder
  * Navigation destinations for the NetworkMock module.
  * All screens within NetworkMock are defined here.
  */
-public sealed interface NetworkMockDestination : NavKey {
+public sealed interface NetworkMockDestination : HasTitle {
     /**
      * Main network mock list screen
      */
     @Serializable
-    public data object Main : NetworkMockDestination
+    public data object Main : NetworkMockDestination {
+        override val title: String
+            get() = "Network Mock"
+    }
 }
 
 /**

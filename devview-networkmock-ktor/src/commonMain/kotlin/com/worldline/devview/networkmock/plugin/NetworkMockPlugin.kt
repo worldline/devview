@@ -184,8 +184,8 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
 
                     println(
                         message =
-                        "$LOG_PREFIX Endpoint state: enabled=${endpointState.mockEnabled}, " +
-                            "file=${endpointState.selectedResponseFile}"
+                            "$LOG_PREFIX Endpoint state: enabled=${endpointState.mockEnabled}, " +
+                                "file=${endpointState.selectedResponseFile}"
                     )
 
                     if (endpointState.shouldUseMock()) {
@@ -281,7 +281,7 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
  * @param content The response body content as a string
  * @return A mock [HttpClientCall] that appears as a real HTTP call to the application
  */
-@Suppress("CommentOverPrivateFunction")
+@Suppress("DocumentationOverPrivateFunction")
 private fun createMockHttpClientCall(
     client: HttpClient,
     requestData: HttpRequestData,

@@ -112,7 +112,7 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
      * Populated as endpoints are written to DataStore. Used to enumerate all
      * known endpoints without scanning all DataStore keys.
      */
-    @Suppress("CommentOverPrivateProperty")
+    @Suppress("DocumentationOverPrivateProperty")
     private val endpointKeys: MutableMap<String, Preferences.Key<String>> = mutableMapOf()
 
     private companion object {
@@ -131,7 +131,7 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
      * @param endpointId The endpoint identifier
      * @return The [Preferences.Key] for this endpoint's [EndpointMockState]
      */
-    @Suppress("CommentOverPrivateFunction")
+    @Suppress("DocumentationOverPrivateFunction")
     private fun endpointKey(hostId: String, endpointId: String): Preferences.Key<String> {
         val compositeKey = "$hostId-$endpointId"
         return endpointKeys.getOrPut(key = compositeKey) {

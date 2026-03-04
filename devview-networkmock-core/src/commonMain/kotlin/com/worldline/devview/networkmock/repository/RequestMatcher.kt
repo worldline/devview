@@ -147,7 +147,7 @@ public object RequestMatcher {
      * @param segment The path segment to check
      * @return `true` if the segment is a parameter, `false` otherwise
      */
-    @Suppress("CommentOverPrivateFunction")
+    @Suppress("DocumentationOverPrivateFunction")
     private fun isParameterSegment(segment: String): Boolean =
         segment.startsWith(prefix = "{") && segment.endsWith(suffix = "}") && segment.length > 2
 
@@ -168,7 +168,7 @@ public object RequestMatcher {
      * @param segment The parameter segment (must start with `{` and end with `}`)
      * @return The parameter name without braces, or the original segment if not a parameter
      */
-    @Suppress("CommentOverPrivateFunction", "UnusedPrivateFunction")
+    @Suppress("DocumentationOverPrivateFunction", "UnusedPrivateFunction")
     private fun extractParameterName(segment: String): String = if (isParameterSegment(
             segment = segment
         )
