@@ -37,12 +37,12 @@ internal class AnalyticsLogListPreviewParameterProvider :
      */
     override val values: Sequence<List<AnalyticsLog>>
         get() = sequenceOf(
-            element = AnalyticsLogType.entries.map {
+            element = AnalyticsLogType.allTypes().mapIndexed { index, type ->
                 AnalyticsLog(
-                    tag = "Tag",
-                    screenClass = "ScreenClass",
+                    tag = "Tag $index",
+                    screenClass = "ScreenClass $index",
                     timestamp = Clock.System.now().toEpochMilliseconds(),
-                    type = it
+                    type = type
                 )
             }
         )

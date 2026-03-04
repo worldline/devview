@@ -22,7 +22,7 @@ import com.worldline.devview.analytics.model.AnalyticsLog
  *         tag = "user_login",
  *         screenClass = "LoginScreen",
  *         timestamp = System.currentTimeMillis(),
- *         type = AnalyticsLogType.EVENT
+ *         type = AnalyticsLogCategory.Session.Login
  *     )
  * )
  * ```
@@ -60,7 +60,7 @@ public object AnalyticsLogger {
      *         tag = "HomeScreen",
      *         screenClass = "com.example.ui.HomeScreen",
      *         timestamp = System.currentTimeMillis(),
-     *         type = AnalyticsLogType.SCREEN
+     *         type = AnalyticsLogCategory.Screen.View
      *     )
      * )
      * ```

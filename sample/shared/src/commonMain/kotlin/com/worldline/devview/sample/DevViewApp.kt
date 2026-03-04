@@ -38,7 +38,7 @@ public fun DevViewApp() {
     // DevView modules configuration
     val modules = rememberModules {
         module(module = FeatureFlip)
-        module(module = Analytics)
+        module(module = Analytics())
         module(
             module = NetworkMock(
                 resourceLoader = { path -> Res.readBytes(path = path) }
