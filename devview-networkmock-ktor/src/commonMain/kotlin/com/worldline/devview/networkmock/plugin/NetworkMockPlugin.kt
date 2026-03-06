@@ -2,6 +2,7 @@
 
 package com.worldline.devview.networkmock.plugin
 
+import com.worldline.devview.networkmock.model.EndpointMockState
 import io.ktor.client.HttpClient
 import io.ktor.client.call.HttpClientCall
 import io.ktor.client.plugins.HttpClientPlugin
@@ -184,74 +185,82 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
 
                     println(
                         message =
-                            "$LOG_PREFIX Endpoint state: enabled=${endpointState.mockEnabled}, " +
-                                "file=${endpointState.selectedResponseFile}"
+                            "$LOG_PREFIX Endpoint state: ${
+                                when (endpointState) {
+                                    is EndpointMockState.Network -> "network"
+                                    is EndpointMockState.Mock ->
+                                        "mock, file=${endpointState.responseFile}, " +
+                                            "status=${endpointState.statusCode}"
+                                }
+                            }"
                     )
 
-                    if (endpointState.shouldUseMock()) {
-                        println(
-                            message = "$LOG_PREFIX Mock is enabled with file: " +
-                                "${endpointState.selectedResponseFile}"
-                        )
+                    when (endpointState) {
+                        is EndpointMockState.Network -> {
+                            println(
+                                message = "$LOG_PREFIX Endpoint mock not enabled"
+                            )
+                            println(message = "$LOG_PREFIX Using actual network")
+                            println(
+                                message = "$LOG_PREFIX ========================================"
+                            )
+                        }
+                        is EndpointMockState.Mock -> {
+                            println(
+                                message = "$LOG_PREFIX Mock is enabled with file: " +
+                                    endpointState.responseFile
+                            )
 
-                        @Suppress("TooGenericExceptionCaught")
-                        try {
-                            val mockResponse = endpointState.selectedResponseFile?.let {
-                                mockRepository.loadMockResponse(
+                            @Suppress("TooGenericExceptionCaught")
+                            try {
+                                val mockResponse = mockRepository.loadMockResponse(
                                     endpointId = match.endpointId,
-                                    fileName = it
-                                )
-                            }
-
-                            mockResponse?.let { response ->
-                                println(
-                                    message = "$LOG_PREFIX Successfully loaded mock response " +
-                                        "(status ${response.statusCode})"
-                                )
-                                println(
-                                    message = "$LOG_PREFIX Returning MOCK response - " +
-                                        "NO network call will be made"
-                                )
-                                println(
-                                    message = "$LOG_PREFIX ========================================"
+                                    fileName = endpointState.responseFile
                                 )
 
-                                return@intercept createMockHttpClientCall(
-                                    client = scope,
-                                    requestData = request,
-                                    statusCode = HttpStatusCode.fromValue(
-                                        value = response.statusCode
-                                    ),
-                                    content = response.content
-                                )
-                            }
+                                mockResponse?.let { response ->
+                                    println(
+                                        message = "$LOG_PREFIX Successfully loaded mock response " +
+                                            "(status ${response.statusCode})"
+                                    )
+                                    println(
+                                        message = "$LOG_PREFIX Returning MOCK response - " +
+                                            "NO network call will be made"
+                                    )
+                                    println(
+                                        message = "$LOG_PREFIX ========================================"
+                                    )
 
-                            if (mockResponse == null) {
-                                println(message = "$LOG_PREFIX ERROR: Mock response loaded as null")
+                                    return@intercept createMockHttpClientCall(
+                                        client = scope,
+                                        requestData = request,
+                                        statusCode = HttpStatusCode.fromValue(
+                                            value = response.statusCode
+                                        ),
+                                        content = response.content
+                                    )
+                                }
+
+                                if (mockResponse == null) {
+                                    println(
+                                        message = "$LOG_PREFIX ERROR: Mock response loaded as null"
+                                    )
+                                    println(message = "$LOG_PREFIX Falling back to actual network")
+                                    println(
+                                        message = "$LOG_PREFIX ========================================"
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                println(
+                                    message = "$LOG_PREFIX ERROR: Exception loading mock response - ${e.message}"
+                                )
+                                e.printStackTrace()
                                 println(message = "$LOG_PREFIX Falling back to actual network")
                                 println(
                                     message = "$LOG_PREFIX ========================================"
                                 )
                             }
-                        } catch (e: Exception) {
-                            println(
-                                message = "$LOG_PREFIX ERROR: Exception loading mock response - ${e.message}"
-                            )
-                            e.printStackTrace()
-                            println(message = "$LOG_PREFIX Falling back to actual network")
-                            println(
-                                message = "$LOG_PREFIX ========================================"
-                            )
                         }
-                    } else {
-                        println(
-                            message = "$LOG_PREFIX Endpoint mock not enabled or no response selected"
-                        )
-                        println(
-                            message = "$LOG_PREFIX   shouldUseMock() = ${endpointState.shouldUseMock()}"
-                        )
-                        println(message = "$LOG_PREFIX Using actual network")
-                        println(message = "$LOG_PREFIX ========================================")
                     }
                 }
 

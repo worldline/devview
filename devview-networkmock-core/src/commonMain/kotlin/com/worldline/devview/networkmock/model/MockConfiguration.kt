@@ -1,5 +1,6 @@
 package com.worldline.devview.networkmock.model
 
+import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 
 /**
@@ -137,6 +138,7 @@ public data class HostConfig(val id: String, val url: String, val endpoints: Lis
  * @see HostConfig
  * @see MockResponse
  */
+@Immutable
 @Serializable
 public data class EndpointConfig(
     val id: String,

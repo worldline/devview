@@ -5,14 +5,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import com.worldline.devview.utils.preview.BooleanPreviewParameterProvider
 
 /**
  * Global mock toggle card component.
@@ -26,18 +31,24 @@ import androidx.compose.ui.unit.dp
  * @param modifier Optional modifier for the card
  */
 @Composable
-public fun GlobalMockToggle(
+internal fun GlobalMockToggle(
     enabled: Boolean,
     onToggle: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth()
+    ElevatedCard(
+        modifier = modifier
+            .fillMaxWidth(),
+        elevation = CardDefaults.elevatedCardElevation(),
+        shape = MaterialTheme.shapes.small
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(all = 16.dp),
+                .padding(
+                    vertical = 8.dp,
+                    horizontal = 12.dp
+                ),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -50,9 +61,9 @@ public fun GlobalMockToggle(
                 )
                 Text(
                     text = if (enabled) {
-                        "Mock responses enabled - network calls will be intercepted"
+                        "Mock responses enabled\nNetwork calls will be intercepted"
                     } else {
-                        "Mocking disabled - all requests use actual network"
+                        "Mocking disabled\nAll requests use actual network"
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -62,6 +73,21 @@ public fun GlobalMockToggle(
             Switch(
                 checked = enabled,
                 onCheckedChange = onToggle
+            )
+        }
+    }
+}
+
+@Preview(locale = "en")
+@Composable
+private fun GlobalMockToggleEnabledPreview(
+    @PreviewParameter(BooleanPreviewParameterProvider::class) enabled: Boolean
+) {
+    MaterialTheme {
+        Surface {
+            GlobalMockToggle(
+                enabled = enabled,
+                onToggle = {}
             )
         }
     }

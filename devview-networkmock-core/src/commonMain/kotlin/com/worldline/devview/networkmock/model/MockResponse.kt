@@ -1,5 +1,8 @@
 package com.worldline.devview.networkmock.model
 
+import androidx.compose.runtime.Immutable
+import com.worldline.devview.networkmock.utils.parseStatusCode
+
 /**
  * Represents a loaded mock response that can be returned by the network mock plugin.
  *
@@ -70,6 +73,7 @@ package com.worldline.devview.networkmock.model
  * @see EndpointConfig
  * @see com.worldline.devview.networkmock.repository.MockConfigRepository
  */
+@Immutable
 public data class MockResponse(
     val statusCode: Int,
     val fileName: String,
@@ -89,9 +93,9 @@ public data class MockResponse(
          * - `getUser-404-simple.json` → status = 404, suffix = "simple"
          * - `get-user-200.json` → status = 200 (hyphenated endpoint ID supported)
          *
-         * The status code is located by searching from the right for a `-` followed by
-         * exactly three digits (all HTTP status codes are 3 digits), making this robust
-         * to endpoint IDs that themselves contain hyphens.
+         * Status code extraction is delegated to
+         * [parseStatusCode][com.worldline.devview.networkmock.utils.parseStatusCode], which is the
+         * single source of truth for this parsing logic.
          *
          * ## Custom Status Text
          * By default, status codes are mapped to human-readable text using the built-in
@@ -117,18 +121,15 @@ public data class MockResponse(
             content: String,
             statusTextProvider: (Int) -> String = ::getStatusText
         ): MockResponse? {
-            // Remove .json extension
+            // Delegate status code extraction to the shared utility — single source of truth.
+            val statusCode = fileName.parseStatusCode() ?: return null
+
+            // Derive the optional suffix that follows the status code in the file name
+            // (e.g. "simple" from "getUser-404-simple.json") for display name generation.
             val nameWithoutExtension = fileName.removeSuffix(suffix = ".json")
-
-            // Find the status code by looking for the last occurrence of -NNN (3-digit HTTP code).
-            // This is robust to endpoint IDs containing hyphens (e.g. "get-user-200.json").
-            val statusMatch = Regex(pattern = """-(\d{3})(-.+)?$""")
-                .find(input = nameWithoutExtension) ?: return null
-
-            val statusCode = statusMatch.groupValues[1].toIntOrNull() ?: return null
-
-            // Everything after the status code group is the optional suffix (strip leading '-')
-            val suffixRaw = statusMatch.groupValues[2].removePrefix(prefix = "-")
+            val suffixRaw = nameWithoutExtension
+                .substringAfterLast(delimiter = "-$statusCode", missingDelimiterValue = "")
+                .removePrefix(prefix = "-")
             val suffixParts = if (suffixRaw.isNotEmpty()) suffixRaw.split("-") else emptyList()
 
             // Generate display name
@@ -256,69 +257,39 @@ public data class MockResponse(
  * @see EndpointConfig
  * @see com.worldline.devview.networkmock.repository.MockConfigRepository.findMatchingMock
  */
+@Immutable
 public data class MockMatch(val hostId: String, val endpointId: String, val config: EndpointConfig)
 
 /**
- * Represents an available endpoint with its mock responses and current state.
+ * Represents the static descriptor for an available endpoint and its mock responses.
  *
- * This data class combines endpoint configuration, discovered response files,
- * and current runtime state to provide a complete view of an endpoint's
- * mocking capabilities. It's primarily used by the UI layer to display
- * available endpoints and their configurations.
+ * This data class combines endpoint configuration and discovered response files
+ * to provide a complete, immutable view of an endpoint's mocking capabilities.
+ * It is primarily used by the UI layer to display available endpoints and their
+ * configurations.
+ *
+ * Runtime selection state is intentionally excluded from this model. It changes
+ * on every user interaction and belongs in the UI layer paired with this descriptor,
+ * keeping this class safe to snapshot, store, and pass freely without going stale.
  *
  * ## UI Usage
  * The UI uses this model to display:
  * - Endpoint name and path
- * - List of available mock responses (dropdown)
- * - Current state (network vs mock, which response selected)
- * - Toggle controls
- *
- * ## Usage Example
- * ```kotlin
- * @Composable
- * fun EndpointCard(endpoint: AvailableEndpointMock) {
- *     Card {
- *         Text("${endpoint.config.method} ${endpoint.config.path}")
- *         Text(endpoint.config.name)
- *
- *         // Toggle between network and mock
- *         Switch(
- *             checked = endpoint.currentState.mockEnabled,
- *             onCheckedChange = { enabled ->
- *                 viewModel.setEndpointMockEnabled(endpoint, enabled)
- *             }
- *         )
- *
- *         // Response selector (only when mock enabled)
- *         if (endpoint.currentState.mockEnabled) {
- *             DropdownMenu {
- *                 endpoint.availableResponses.forEach { response ->
- *                     DropdownMenuItem(
- *                         text = { Text(response.displayName) },
- *                         onClick = {
- *                             viewModel.selectResponse(endpoint, response.fileName)
- *                         }
- *                     )
- *                 }
- *             }
- *         }
- *     }
- * }
- * ```
+ * - List of available mock responses
  *
  * @property hostId The host identifier this endpoint belongs to
  * @property endpointId The endpoint identifier
  * @property config The endpoint configuration from mocks.json
  * @property availableResponses List of discovered mock response files
- * @property currentState The current runtime state for this endpoint
  * @see MockResponse
  * @see EndpointConfig
- * @see EndpointMockState
  */
-public data class AvailableEndpointMock(
+@Immutable
+public data class EndpointDescriptor(
     val hostId: String,
     val endpointId: String,
     val config: EndpointConfig,
-    val availableResponses: List<MockResponse>,
-    val currentState: EndpointMockState
-)
+    val availableResponses: List<MockResponse>
+) {
+    public companion object
+}
