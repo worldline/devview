@@ -3,9 +3,11 @@ package com.worldline.devview.core
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.Dp
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
-import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 
 /**
@@ -49,9 +51,9 @@ import kotlinx.serialization.modules.PolymorphicModuleBuilder
  * object MyModule : Module {
  *     override val section: Section = Section.FEATURES
  *
- *     override val destinations: ImmutableList<NavKey> = persistentListOf(
- *         MyModuleDestination.Main,
- *         MyModuleDestination.Detail::class
+ *     override val destinations = persistentMapOf(
+ *         MyModuleDestination.Main.withTitle("Overview"),
+ *         MyModuleDestination.Detail.asDestination()
  *     )
  *
  *     override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit = {
@@ -61,7 +63,8 @@ import kotlinx.serialization.modules.PolymorphicModuleBuilder
  *
  *     override fun EntryProviderScope<NavKey>.registerContent(
  *         onNavigateBack: () -> Unit,
- *         onNavigate: (NavKey) -> Unit
+ *         onNavigate: (NavKey) -> Unit,
+ *         bottomPadding: Dp,
  *     ) {
  *         entry<MyModuleDestination.Main> {
  *             MainScreen(
@@ -112,7 +115,7 @@ import kotlinx.serialization.modules.PolymorphicModuleBuilder
  *
  * @see Section
  * @see com.worldline.devview.DevView
- * @see com.worldline.devview.core.rememberModules
+ * @see rememberModules
  */
 public interface Module {
     /**
@@ -225,28 +228,77 @@ public interface Module {
         get() = null
 
     /**
-     * List of all navigable destinations within this module.
+     * Maps each navigable destination in this module to its [DestinationMetadata].
      *
-     * These [NavKey] objects represent the screens that belong to this module.
-     * When a user opens a module from the home screen, DevView navigates to
-     * the first destination in this list.
+     * The **keys** of this map are the [NavKey] objects representing every screen
+     * that belongs to this module. DevView uses the key set to:
+     * - Determine which module is currently active (by matching the backstack top).
+     * - Navigate to the first key when the user opens this module from the home screen.
      *
-     * ## Example
+     * The **values** are [DestinationMetadata] instances that describe, per destination:
+     * - An optional [title][DestinationMetadata.title] for the top app bar
+     *   (`null` falls back to [moduleName]).
+     * - An ordered list of [actions][DestinationMetadata.actions] rendered as icon
+     *   buttons in the top app bar while that destination is active.
+     *
+     * ## Declaration
+     *
+     * Prefer the [NavKey] extension functions for a concise declaration:
+     *
      * ```kotlin
-     * override val destinations: ImmutableList<NavKey> = persistentListOf(
-     *     MyModuleDestination.Main,
-     *     MyModuleDestination.Detail::class
+     * // One screen, static title, no actions
+     * override val destinations = persistentMapOf(
+     *     MyDestination.Main.withTitle("My Screen")
+     * )
+     *
+     * // One screen, static title, one action with confirmation popup
+     * override val destinations = persistentMapOf(
+     *     MyDestination.Main.withTitle("Logs") {
+     *         action(
+     *             icon = Icons.Rounded.Delete,
+     *             popup = ModuleDestinationActionPopup(
+     *                 title = "Clear Logs",
+     *                 confirmButton = "Clear",
+     *                 dismissButton = "Cancel"
+     *             )
+     *         ) {
+     *             logger.clear()
+     *         }
+     *     }
+     * )
+     *
+     * // Multiple screens with mixed metadata
+     * override val destinations = persistentMapOf(
+     *     MyDestination.Main.withTitle("Overview"),
+     *     MyDestination.Detail.asDestination()
+     * )
+     * ```
+     *
+     * You can also use the explicit form when you need full control:
+     *
+     * ```kotlin
+     * override val destinations = persistentMapOf(
+     *     MyDestination.Main to DestinationMetadata(
+     *         title = "My Screen",
+     *         actions = persistentListOf(
+     *             ModuleDestinationAction(
+     *                 icon = Icons.Rounded.Delete,
+     *                 action = { logger.clear() }
+     *             )
+     *         )
+     *     )
      * )
      * ```
      *
      * ## Best Practices
-     * - Always include at least one destination (typically a "Main" screen)
-     * - List destinations in a logical navigation order
-     * - Use immutable lists for thread safety
+     * - Always include at least one destination (typically a `Main` screen).
+     * - The first key is used as the initial navigation target when the module is opened.
+     * - Use [asDestination] for screens that need no title override and no actions.
      *
+     * @see DestinationMetadata
      * @see NavKey
      */
-    public val destinations: ImmutableList<NavKey>
+    public val destinations: PersistentMap<NavKey, DestinationMetadata>
 
     /**
      * Registers all destination serializers for type-safe navigation.
@@ -286,7 +338,8 @@ public interface Module {
      * ```kotlin
      * override fun EntryProviderScope<NavKey>.registerContent(
      *     onNavigateBack: () -> Unit,
-     *     onNavigate: (NavKey) -> Unit
+     *     onNavigate: (NavKey) -> Unit,
+     *     bottomPadding: Dp,
      * ) {
      *     // Register each destination
      *     entry<MyDestination.Main> {
@@ -311,6 +364,20 @@ public interface Module {
      * - **onNavigateBack**: Call this to navigate back (pop the backstack)
      * - **onNavigate**: Call this with a NavKey to navigate forward to a new destination
      *
+     * ## Bottom Padding
+     * [bottomPadding] carries the inset from the DevView [Scaffold][androidx.compose.material3.Scaffold]'s
+     * bottom padding (e.g. navigation bar insets). Pass it down to any scrollable content or
+     * lazy lists inside your screen so that the last item is not obscured by system UI.
+     *
+     * ```kotlin
+     * entry<MyDestination.Main> {
+     *     MyScreen(
+     *         modifier = Modifier.fillMaxSize(),
+     *         bottomPadding = bottomPadding
+     *     )
+     * }
+     * ```
+     *
      * ## Best Practices
      * - Register an entry for every destination in [destinations]
      * - Always provide a way to navigate back (use onNavigateBack)
@@ -318,16 +385,20 @@ public interface Module {
      * - Wrap content in Scaffold if needed for consistent padding
      *
      * @param onNavigateBack Callback to navigate back to the previous screen.
-     *                       Typically pops the current screen from the backstack.
+     *   Typically pops the current screen from the backstack.
      * @param onNavigate Callback to navigate forward to a new destination.
-     *                   Pass a NavKey instance to specify the target screen.
+     *   Pass a [NavKey] instance to specify the target screen.
+     * @param bottomPadding The bottom inset padding provided by the DevView Scaffold.
+     *   Apply this to your screen's scrollable content to avoid content being hidden
+     *   behind system navigation bars.
      *
      * @see destinations
      * @see registerSerializers
      */
     public fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
-        onNavigate: (NavKey) -> Unit
+        onNavigate: (NavKey) -> Unit,
+        bottomPadding: Dp
     )
 
     /**
@@ -361,7 +432,8 @@ public interface Module {
      */
     @Suppress("ComposableNaming")
     @Composable
-    public fun initModule() {}
+    public fun initModule() {
+    }
 }
 
 /**
@@ -404,12 +476,13 @@ internal fun previewModule(
 ): Module = object : Module {
     override val section: Section = section
     override val moduleName: String = name
-    override val destinations: ImmutableList<NavKey> = kotlinx.collections.immutable
-        .persistentListOf()
+    override val destinations: PersistentMap<NavKey, DestinationMetadata> = persistentMapOf()
     override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit = {}
 
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
-        onNavigate: (NavKey) -> Unit
-    ) {}
+        onNavigate: (NavKey) -> Unit,
+        bottomPadding: Dp
+    ) {
+    }
 }

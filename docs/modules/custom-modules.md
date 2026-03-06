@@ -31,7 +31,8 @@ object MyTool : Module {
     }
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
-        onNavigate: (NavKey) -> Unit
+        onNavigate: (NavKey) -> Unit,
+        bottomPadding: Dp,
     ) {
         entry<MyToolDestination.Main> {
             MyToolMainScreen(

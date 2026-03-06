@@ -6,13 +6,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
-import com.worldline.devview.core.HasTitle
+import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
+import com.worldline.devview.core.asDestination
+import com.worldline.devview.core.withTitle
+import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 
@@ -21,16 +24,10 @@ import kotlinx.serialization.modules.PolymorphicModuleBuilder
  */
 public sealed interface TestModuleNavigation : NavKey {
     @Serializable
-    public data object Main : TestModuleNavigation, HasTitle {
-        override val title: String
-            get() = "Test Module"
-    }
+    public data object Main : TestModuleNavigation
 
     @Serializable
-    public data object Detail : TestModuleNavigation {
-//        override val title: String
-//            get() = "Detail Screen"
-    }
+    public data object Detail : TestModuleNavigation
 }
 
 /**
@@ -42,9 +39,9 @@ public object TestModule : Module {
     override val section: Section
         get() = Section.CUSTOM
 
-    override val destinations: ImmutableList<NavKey> = persistentListOf(
-        TestModuleNavigation.Main,
-        TestModuleNavigation.Detail
+    override val destinations: PersistentMap<NavKey, DestinationMetadata> = persistentMapOf(
+        TestModuleNavigation.Main.withTitle(title = "Test Module"),
+        TestModuleNavigation.Detail.asDestination()
     )
 
     override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit
@@ -61,7 +58,8 @@ public object TestModule : Module {
 
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
-        onNavigate: (NavKey) -> Unit
+        onNavigate: (NavKey) -> Unit,
+        bottomPadding: Dp
     ) {
         entry<TestModuleNavigation.Main> {
             Box(

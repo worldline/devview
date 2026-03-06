@@ -121,7 +121,7 @@ import kotlinx.coroutines.launch
 public fun AnalyticsScreen(
     highlightedAnalyticsLogTypes: PersistentList<AnalyticsLogType>,
     modifier: Modifier = Modifier,
-    bottomPadding: Dp
+    bottomPadding: Dp = 0.dp
 ) {
     val analytics = LocalAnalytics.current
 

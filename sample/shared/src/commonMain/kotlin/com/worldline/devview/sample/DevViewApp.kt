@@ -14,6 +14,8 @@ import com.worldline.devview.DevView
 import com.worldline.devview.analytics.Analytics
 import com.worldline.devview.analytics.AnalyticsLogger
 import com.worldline.devview.analytics.LocalAnalytics
+import com.worldline.devview.analytics.model.AnalyticsLog
+import com.worldline.devview.analytics.model.AnalyticsLogType
 import com.worldline.devview.core.rememberModules
 import com.worldline.devview.featureflip.FeatureFlip
 import com.worldline.devview.featureflip.model.Feature
@@ -21,6 +23,7 @@ import com.worldline.devview.featureflip.model.LocalFeatureHandler
 import com.worldline.devview.featureflip.model.rememberFeatureHandler
 import com.worldline.devview.networkmock.NetworkMock
 import devview_root.sample.network.generated.resources.Res
+import kotlin.time.Clock
 
 /**
  * Main DevView-integrated app composable.
@@ -62,6 +65,17 @@ public fun DevViewApp() {
 
     // Initialize analytics logger
     val analytics = remember { AnalyticsLogger.logs }
+
+    AnalyticsLogType.allTypes().forEachIndexed { index, type ->
+        AnalyticsLogger.log(
+            log = AnalyticsLog(
+                tag = "Sample Event $index",
+                screenClass = "MainScreen $index",
+                timestamp = Clock.System.now().toEpochMilliseconds(),
+                type = type
+            )
+        )
+    }
 
     CompositionLocalProvider(
         LocalFeatureHandler provides featureHandler,

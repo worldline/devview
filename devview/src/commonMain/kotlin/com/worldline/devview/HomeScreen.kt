@@ -19,10 +19,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.worldline.devview.core.HasTitle
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
 import com.worldline.devview.core.previewModule
+import com.worldline.devview.internal.HasTitle
 import com.worldline.devview.internal.components.ModuleItem
 import com.worldline.devview.internal.components.ModulePosition
 import kotlinx.serialization.Serializable

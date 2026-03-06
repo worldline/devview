@@ -6,15 +6,22 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults.exitUntilCollapsedScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -26,8 +33,8 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationEventHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.savedstate.serialization.SavedStateConfiguration
-import com.worldline.devview.core.HasTitle
 import com.worldline.devview.core.Module
+import com.worldline.devview.internal.HasTitle
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -224,15 +231,43 @@ public fun DevView(
 
     val scrollBehaviour = exitUntilCollapsedScrollBehavior()
 
-    val title: String? by remember(key1 = backstack) {
+    val currentModule: Module? by remember(key1 = modules) {
         derivedStateOf {
-            if (backstack.last() is HasTitle) {
-                (backstack.last() as HasTitle).title
-            } else {
-                null
+            modules.find { module ->
+                module.destinations.containsKey(key = backstack.last())
             }
         }
     }
+
+    val title: String by remember(key1 = backstack) {
+        derivedStateOf {
+            val current = backstack.last()
+            when {
+                // Framework-level screens (Home, future settings, etc.) carry their own title
+                current is HasTitle -> current.title
+                // Module screens: use metadata title if set, otherwise fall back to module name
+                else ->
+                    currentModule
+                        ?.let { module ->
+                            module.destinations[current]?.title ?: module.moduleName
+                        }.orEmpty()
+            }
+        }
+    }
+
+    // Actions for the current destination, resolved from its DestinationMetadata
+    val currentActions by remember(key1 = backstack) {
+        derivedStateOf {
+            currentModule
+                ?.destinations
+                ?.get(key = backstack.last())
+                ?.actions
+                .orEmpty()
+        }
+    }
+
+    // Tracks which action's confirmation popup (if any) is currently shown
+    var activePopupIndex by rememberSaveable { mutableStateOf<Int?>(value = null) }
 
     AnimatedVisibility(
         visible = devViewIsOpen
@@ -240,18 +275,30 @@ public fun DevView(
         Scaffold(
             modifier = modifier,
             topBar = {
-                AnimatedVisibility(
-                    visible = title != null
-                ) {
-                    title?.let {
-                        MediumTopAppBar(
-                            title = {
-                                Text(text = it)
-                            },
-                            scrollBehavior = scrollBehaviour
-                        )
+                MediumTopAppBar(
+                    title = {
+                        Text(text = title)
+                    },
+                    scrollBehavior = scrollBehaviour,
+                    actions = {
+                        currentActions.forEachIndexed { index, action ->
+                            IconButton(
+                                onClick = {
+                                    if (action.popup != null) {
+                                        activePopupIndex = index
+                                    } else {
+                                        action.action()
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = action.icon,
+                                    contentDescription = null
+                                )
+                            }
+                        }
                     }
-                }
+                )
             }
         ) { padding ->
             val layoutDirection = LocalLayoutDirection.current
@@ -260,6 +307,36 @@ public fun DevView(
                 top = padding.calculateTopPadding(),
                 end = padding.calculateEndPadding(layoutDirection = layoutDirection)
             )
+
+            // Confirmation popup for the active action — rendered at Scaffold level so that
+            // it overlays the full screen rather than being constrained to the TopAppBar slot
+            activePopupIndex?.let { index ->
+                val action = currentActions[index]
+                action.popup?.let { popup ->
+                    AlertDialog(
+                        onDismissRequest = { activePopupIndex = null },
+                        title = { Text(text = popup.title) },
+                        text = popup.subtitle?.let { { Text(text = it) } },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    action.action()
+                                    activePopupIndex = null
+                                }
+                            ) {
+                                Text(text = popup.confirmButton)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = { activePopupIndex = null }
+                            ) {
+                                Text(text = popup.dismissButton)
+                            }
+                        }
+                    )
+                }
+            }
 
             NavDisplay(
                 modifier = Modifier
@@ -276,9 +353,8 @@ public fun DevView(
                             modules = modules,
                             openModule = { module ->
                                 // Navigate to the module's first destination
-                                val firstDestination = module.destinations.firstOrNull()
-                                if (firstDestination != null) {
-                                    backstack.add(element = firstDestination)
+                                module.destinations.keys.firstOrNull()?.let { first ->
+                                    backstack.add(element = first)
                                 }
                             }
                         )
@@ -293,7 +369,8 @@ public fun DevView(
                                 },
                                 onNavigate = { destination ->
                                     backstack.add(element = destination)
-                                }
+                                },
+                                bottomPadding = padding.calculateBottomPadding()
                             )
                         }
                     }

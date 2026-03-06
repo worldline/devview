@@ -20,7 +20,8 @@ interface Module {
     val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit
     fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
-        onNavigate: (NavKey) -> Unit
+        onNavigate: (NavKey) -> Unit,
+        bottomPadding: Dp,
     )
 }
 ```
@@ -45,7 +46,8 @@ object MyModule : Module {
     }
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
-        onNavigate: (NavKey) -> Unit
+        onNavigate: (NavKey) -> Unit,
+        bottomPadding: Dp,
     ) {
         entry<MyDestination.Main> {
             MyScreen(onNavigateBack = onNavigateBack)

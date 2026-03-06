@@ -5,17 +5,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
-import com.worldline.devview.core.HasTitle
+import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
+import com.worldline.devview.core.withTitle
 import com.worldline.devview.networkmock.repository.MockConfigRepository
 import com.worldline.devview.networkmock.repository.MockStateRepository
 import com.worldline.devview.utils.DataStoreDelegate
 import com.worldline.devview.utils.RequiresDataStore
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 
@@ -23,15 +25,12 @@ import kotlinx.serialization.modules.PolymorphicModuleBuilder
  * Navigation destinations for the NetworkMock module.
  * All screens within NetworkMock are defined here.
  */
-public sealed interface NetworkMockDestination : HasTitle {
+public sealed interface NetworkMockDestination : NavKey {
     /**
      * Main network mock list screen
      */
     @Serializable
-    public data object Main : NetworkMockDestination {
-        override val title: String
-            get() = "Network Mock"
-    }
+    public data object Main : NetworkMockDestination
 }
 
 /**
@@ -106,8 +105,8 @@ public class NetworkMock(
     override val section: Section
         get() = Section.NETWORK
 
-    override val destinations: ImmutableList<NavKey> = persistentListOf(
-        NetworkMockDestination.Main
+    override val destinations: PersistentMap<NavKey, DestinationMetadata> = persistentMapOf(
+        NetworkMockDestination.Main.withTitle(title = "Network Mock")
     )
 
     override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit
@@ -120,7 +119,8 @@ public class NetworkMock(
 
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
-        onNavigate: (NavKey) -> Unit
+        onNavigate: (NavKey) -> Unit,
+        bottomPadding: Dp
     ) {
         entry<NetworkMockDestination.Main> {
             Scaffold { paddingValues ->

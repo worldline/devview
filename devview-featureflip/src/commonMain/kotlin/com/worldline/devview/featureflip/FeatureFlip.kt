@@ -4,15 +4,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
-import com.worldline.devview.core.HasTitle
+import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
+import com.worldline.devview.core.withTitle
 import com.worldline.devview.utils.DataStoreDelegate
 import com.worldline.devview.utils.RequiresDataStore
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 
@@ -28,7 +30,7 @@ internal const val FEATURE_FLIP_DATASTORE_NAME = "feature_flip_datastore.prefere
  *
  * @see FeatureFlip
  */
-public sealed interface FeatureFlipDestination : HasTitle {
+public sealed interface FeatureFlipDestination : NavKey {
     /**
      * Main feature flip management screen destination.
      *
@@ -44,10 +46,7 @@ public sealed interface FeatureFlipDestination : HasTitle {
      * @see FeatureFlipScreen
      */
     @Serializable
-    public data object Main : FeatureFlipDestination {
-        override val title: String
-            get() = "Feature Flip"
-    }
+    public data object Main : FeatureFlipDestination
 
     // Add more destinations as needed, for example:
     // @Serializable
@@ -147,12 +146,12 @@ public object FeatureFlip : Module, RequiresDataStore {
         get() = Section.FEATURES
 
     /**
-     * List of all navigation destinations provided by this module.
+     * Maps each navigation destination in this module to its [DestinationMetadata].
      *
      * Currently includes only the main feature management screen.
      */
-    override val destinations: ImmutableList<NavKey> = persistentListOf(
-        FeatureFlipDestination.Main
+    override val destinations: PersistentMap<NavKey, DestinationMetadata> = persistentMapOf(
+        FeatureFlipDestination.Main.withTitle(title = "Feature Flip")
     )
 
     /**
@@ -179,7 +178,8 @@ public object FeatureFlip : Module, RequiresDataStore {
      */
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
-        onNavigate: (NavKey) -> Unit
+        onNavigate: (NavKey) -> Unit,
+        bottomPadding: Dp
     ) {
         entry<FeatureFlipDestination.Main> {
             Scaffold { paddingValues ->
