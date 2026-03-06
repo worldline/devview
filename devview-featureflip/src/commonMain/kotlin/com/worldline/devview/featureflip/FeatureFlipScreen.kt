@@ -1,23 +1,31 @@
 package com.worldline.devview.featureflip
 
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -28,14 +36,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateMap
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.worldline.devview.featureflip.components.featureItems
+import com.worldline.devview.featureflip.components.FeatureItem
 import com.worldline.devview.featureflip.model.Feature
+import com.worldline.devview.featureflip.model.FeatureHandler
 import com.worldline.devview.featureflip.model.LocalFeatureHandler
-import com.worldline.devview.featureflip.model.rememberFeatureHandler
+import com.worldline.devview.utils.rememberDataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
@@ -107,14 +117,15 @@ import kotlinx.coroutines.launch
  * @see com.worldline.devview.featureflip.model.rememberFeatureHandler
  */
 @Composable
-public fun FeatureFlipScreen(modifier: Modifier = Modifier) {
+public fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 0.dp) {
     val featureHandler = LocalFeatureHandler.current
     val features by featureHandler.features
 
     @Suppress("InjectDispatcher")
     val coroutineScope = rememberCoroutineScope(getContext = { Dispatchers.IO })
+    val lazyListState = rememberLazyListState()
 
-    var query by remember { mutableStateOf(value = TextFieldValue()) }
+    var filterQuery by remember { mutableStateOf(value = "") }
 
     val selectedFilters = remember {
         FeatureFilter
@@ -123,16 +134,16 @@ public fun FeatureFlipScreen(modifier: Modifier = Modifier) {
             .toMutableStateMap()
     }
 
-    val filteredFeatures by remember(key1 = query, key2 = selectedFilters, key3 = features) {
+    val filteredFeatures by remember(key1 = filterQuery, key2 = selectedFilters, key3 = features) {
         derivedStateOf {
             when {
-                query.text.isBlank() && selectedFilters.values.all { !it } -> features
+                filterQuery.isBlank() && selectedFilters.values.all { !it } -> features
 
                 selectedFilters.values.all { !it } -> features.filter { feature ->
-                    feature.name.contains(other = query.text, ignoreCase = true)
+                    feature.name.contains(other = filterQuery, ignoreCase = true)
                 }
 
-                query.text.isBlank() -> features.filter { feature ->
+                filterQuery.isBlank() -> features.filter { feature ->
                     selectedFilters.filter { it.value }.all { (state, selected) ->
                         when (state) {
                             FeatureFilter.LOCAL -> feature is Feature.LocalFeature
@@ -145,7 +156,7 @@ public fun FeatureFlipScreen(modifier: Modifier = Modifier) {
 
                 else -> features.filter { feature ->
                     feature.name.contains(
-                        other = query.text,
+                        other = filterQuery,
                         ignoreCase = true
                     ) && selectedFilters.filter { it.value }.all { (state, selected) ->
                         when (state) {
@@ -160,90 +171,146 @@ public fun FeatureFlipScreen(modifier: Modifier = Modifier) {
         }
     }
 
-    Column(
+    Scaffold(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
-            .padding(top = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
-    ) {
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = query,
-            onValueChange = {
-                query = it
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Rounded.Search,
-                    contentDescription = "Search"
-                )
-            },
-            trailingIcon = {
-                IconButton(
-                    onClick = {
-                        query = TextFieldValue()
+            .imePadding(),
+        bottomBar = {
+            Surface(
+                modifier = Modifier
+                    .padding(bottom = bottomPadding)
+            ) {
+                Column {
+                    HorizontalDivider()
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        contentPadding = PaddingValues(horizontal = 16.dp)
+                    ) {
+                        selectedFilters
+                            .entries
+                            .sortedBy { it.key.ordinal } // .toSortedMap doesn't exist in KMP
+                            .forEach { (state, selected) ->
+                                item {
+                                    FilterChip(
+                                        selected = selected,
+                                        label = {
+                                            Text(
+                                                text = when (state) {
+                                                    FeatureFilter.LOCAL -> "Local"
+                                                    FeatureFilter.REMOTE -> "Remote"
+                                                    FeatureFilter.ON -> "On"
+                                                    FeatureFilter.OFF -> "Off"
+                                                }
+                                            )
+                                        },
+                                        onClick = {
+                                            selectedFilters[state] = !selected
+                                        },
+                                        leadingIcon = {
+                                            if (selected) {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.Done,
+                                                    contentDescription = null
+                                                )
+                                            }
+                                        }
+                                    )
+                                }
+                            }
                     }
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Close,
-                        contentDescription = "Reset"
+                    HorizontalDivider()
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .padding(all = 8.dp)
+                            .fillMaxWidth(),
+                        value = filterQuery,
+                        onValueChange = {
+                            filterQuery = it
+                        },
+                        placeholder = { Text(text = "Filter features") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Rounded.Search,
+                                contentDescription = "Search"
+                            )
+                        },
+                        trailingIcon = {
+                            AnimatedVisibility(visible = filterQuery.isNotEmpty()) {
+                                IconButton(onClick = { filterQuery = "" }) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Close,
+                                        contentDescription = "Clear filter"
+                                    )
+                                }
+                            }
+                        },
+                        singleLine = true,
+                        shape = MaterialTheme.shapes.medium
                     )
                 }
             }
-        )
-
-        FlowRow(
+        }
+    ) { paddingValues ->
+        LazyColumn(
+            state = lazyListState,
             modifier = Modifier
-                .fillMaxWidth()
-                .animateContentSize(),
-            horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(space = 8.dp)
         ) {
-            selectedFilters
-                .entries
-                .sortedBy { it.key.ordinal } // .toSortedMap doesn't exist in KMP
-                .forEach { (state, selected) ->
-                    FilterChip(
-                        selected = selected,
-                        label = {
-                            Text(
-                                text = when (state) {
-                                    FeatureFilter.LOCAL -> "Local"
-                                    FeatureFilter.REMOTE -> "Remote"
-                                    FeatureFilter.ON -> "On"
-                                    FeatureFilter.OFF -> "Off"
-                                }
-                            )
-                        },
-                        onClick = {
-                            selectedFilters[state] = !selected
-                        },
-                        leadingIcon = {
-                            if (selected) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Done,
-                                    contentDescription = null
+            item(
+                key = "top_spacer"
+            ) {
+                Spacer(
+                    modifier = Modifier
+                        .height(
+                            height = 0.dp
+                        )
+                )
+            }
+            itemsIndexed(
+                items = filteredFeatures,
+                key = { _, feature -> feature.hashCode() },
+                contentType = { _, feature -> feature::class.simpleName }
+            ) { index, feature ->
+                Column(
+                    modifier = Modifier
+                        .animateItem()
+                ) {
+                    FeatureItem(
+                        modifier = Modifier
+                            .animateItem(),
+                        feature = feature,
+                        onStateChange = { state ->
+                            coroutineScope.launch {
+                                featureHandler.setFeatureState(
+                                    featureName = feature.name,
+                                    state = state
                                 )
                             }
                         }
                     )
-                }
-        }
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            featureItems(
-                features = filteredFeatures,
-                onStateChange = { featureName, state ->
-                    coroutineScope.launch {
-                        featureHandler.setFeatureState(
-                            featureName = featureName,
-                            state = state
+                    if (index != filteredFeatures.lastIndex) {
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .padding(top = 8.dp)
                         )
                     }
                 }
-            )
+            }
+            item(
+                key = "bottom_spacer"
+            ) {
+                Spacer(
+                    modifier = Modifier
+                        .height(
+                            height = paddingValues.calculateBottomPadding()
+                        )
+                )
+            }
         }
     }
 }
@@ -293,9 +360,14 @@ private enum class FeatureFilter {
 @Preview(locale = "en")
 @Composable
 private fun FeaturesScreenPreview() {
-    val featureHandler = rememberFeatureHandler(
-        features = Feature.fake()
-    )
+    val dataStore = rememberDataStore(dataStoreName = "preview_datastore")
+
+    val featureHandler = remember(key1 = dataStore) {
+        FeatureHandler(
+            dataStore = dataStore,
+            initialFeatures = Feature.fake()
+        )
+    }
     CompositionLocalProvider(value = LocalFeatureHandler provides featureHandler) {
         MaterialTheme {
             Scaffold {

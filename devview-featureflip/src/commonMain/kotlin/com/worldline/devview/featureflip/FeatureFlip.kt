@@ -1,8 +1,6 @@
 package com.worldline.devview.featureflip
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.navigation3.runtime.EntryProviderScope
@@ -182,13 +180,11 @@ public object FeatureFlip : Module, RequiresDataStore {
         bottomPadding: Dp
     ) {
         entry<FeatureFlipDestination.Main> {
-            Scaffold { paddingValues ->
-                FeatureFlipScreen(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues = paddingValues)
-                )
-            }
+            FeatureFlipScreen(
+                modifier = Modifier
+                    .fillMaxSize(),
+                bottomPadding = bottomPadding
+            )
         }
     }
 }
