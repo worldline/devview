@@ -13,8 +13,8 @@ class DatastoreConventionPlugin : Plugin<Project> {
                 sourceSets {
                     commonMain {
                         dependencies {
-                            implementation(libs.findLibrary("androidx.datastore.preferences.core").get())
-                            implementation(libs.findLibrary("androidx.datastore.core.okio").get())
+                            api(libs.findLibrary("androidx.datastore.preferences.core").get())
+                            api(libs.findLibrary("androidx.datastore.core.okio").get())
                         }
                     }
                 }

@@ -12,7 +12,7 @@ Compose:
   CompositionLocalAllowlist:
     active: true
     # -- You can optionally define a list of CompositionLocals that are allowed here
-    allowedCompositionLocals: LocalLoading, LocalSharedTransitionScope, LocalAnimatedVisibilityScope, LocalWindowSizeClass, LocalFeatureHandler
+    allowedCompositionLocals: LocalLoading, LocalSharedTransitionScope, LocalAnimatedVisibilityScope, LocalWindowSizeClass, LocalFeatureHandler, LocalAnalytics
   CompositionLocalNaming:
     active: true
   ContentEmitterReturningValues:
@@ -95,7 +95,7 @@ Compose:
     # -- You can optionally have a list of types to be treated as lambdas (e.g. typedefs or fun interfaces not picked up automatically)
     # treatAsLambda: MyLambdaType
     # -- You can optionally add your allowed lambda names (e.g., usages from the past found in the official Compose code)
-    allowedLambdaParameterNames: onSizeChanged, onGloballyPositioned, onRouteSelected, onEmailChanged, onPasswordChanged, onConfirmPasswordChanged, onLoginClicked, onRegisterClicked
+    allowedLambdaParameterNames: onSizeChanged, onGloballyPositioned, onRouteSelected, onEmailChanged, onPasswordChanged, onConfirmPasswordChanged, onLoginClicked, onRegisterClicked, onWidthCalculated
   PreviewAnnotationNaming:
     active: true
   PreviewNaming:

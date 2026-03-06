@@ -8,10 +8,15 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
+import com.worldline.devview.utils.DataStoreDelegate
+import com.worldline.devview.utils.RequiresDataStore
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
+
+/** The filename used for the FeatureFlip DataStore preferences file. */
+internal const val FEATURE_FLIP_DATASTORE_NAME = "feature_flip_datastore.preferences_pb"
 
 /**
  * Navigation destinations for the FeatureFlip module.
@@ -115,7 +120,19 @@ public sealed interface FeatureFlipDestination : NavKey {
  * @see com.worldline.devview.featureflip.model.FeatureHandler
  * @see FeatureFlipScreen
  */
-public object FeatureFlip : Module {
+public object FeatureFlip : Module, RequiresDataStore {
+    override val dataStoreName: String = FEATURE_FLIP_DATASTORE_NAME
+
+    /**
+     * The [DataStoreDelegate] instance for the FeatureFlip module.
+     *
+     * Initialised automatically by [com.worldline.devview.core.rememberModules]
+     * before any call to `rememberFeatureHandler`. Accessed internally by
+     * `rememberFeatureHandler` to obtain the DataStore instance without requiring
+     * Compose context.
+     */
+    override val dataStoreDelegate: DataStoreDelegate = DataStoreDelegate()
+
     /**
      * The section this module belongs to in the DevView menu.
      *

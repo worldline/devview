@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.convention.multiplatform.library)
     alias(libs.plugins.convention.compose.multiplatform)
+    alias(libs.plugins.convention.datastore)
+    alias(libs.plugins.convention.ktor)
 }
 
 kotlin {
@@ -15,6 +17,8 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "shared"
             isStatic = true
+
+            export(projects.sample.network)
         }
     }
     
@@ -33,6 +37,15 @@ kotlin {
             implementation(libs.jetbrains.compose.ui.tooling.preview)
             implementation(libs.jetbrains.androidx.lifecycle.viewmodel.compose)
             implementation(libs.jetbrains.androidx.lifecycle.runtime.compose)
+
+            // DevView modules
+            implementation(projects.devview)
+            implementation(projects.devviewFeatureflip)
+            implementation(projects.devviewAnalytics)
+            implementation(projects.devviewNetworkmock)
+            implementation(projects.devviewUtils)
+
+            api(projects.sample.network)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

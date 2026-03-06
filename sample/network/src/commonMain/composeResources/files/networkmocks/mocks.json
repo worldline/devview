@@ -1,0 +1,53 @@
+{
+  "hosts": [
+    {
+      "id": "jsonplaceholder",
+      "url": "https://jsonplaceholder.typicode.com",
+      "endpoints": [
+        {
+          "id": "getUser",
+          "name": "Get User by ID",
+          "path": "/users/{userId}",
+          "method": "GET"
+        },
+        {
+          "id": "listUsers",
+          "name": "List All Users",
+          "path": "/users",
+          "method": "GET"
+        },
+        {
+          "id": "createPost",
+          "name": "Create Post",
+          "path": "/posts",
+          "method": "POST"
+        },
+        {
+          "id": "getPost",
+          "name": "Get Post by ID",
+          "path": "/posts/{postId}",
+          "method": "GET"
+        }
+      ]
+    },
+    {
+      "id": "staging",
+      "url": "https://staging.api.example.com",
+      "endpoints": [
+        {
+          "id": "getUserProfile",
+          "name": "Get User Profile",
+          "path": "/api/v1/profile/{userId}",
+          "method": "GET"
+        },
+        {
+          "id": "updateProfile",
+          "name": "Update Profile",
+          "path": "/api/v1/profile",
+          "method": "PUT"
+        }
+      ]
+    }
+  ]
+}
+

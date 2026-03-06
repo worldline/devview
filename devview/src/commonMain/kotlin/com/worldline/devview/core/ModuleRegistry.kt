@@ -2,6 +2,7 @@ package com.worldline.devview.core
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import com.worldline.devview.utils.RequiresDataStore
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
@@ -177,6 +178,12 @@ public fun buildModules(block: ModuleRegistry.() -> Unit): ImmutableList<Module>
  * Use this when building the module list within a Composable function to avoid
  * recreating the list on every recomposition.
  *
+ * After building the module list, this function calls [Module.initModule] on each
+ * registered module. This gives every module a chance to perform Composable-context
+ * initialisation (e.g. repository setup). For modules that implement
+ * [RequiresDataStore][com.worldline.devview.utils.RequiresDataStore], DataStore initialisation is also
+ * triggered automatically before [Module.initModule] is called.
+ *
  * ## Basic Usage
  * ```kotlin
  * @Composable
@@ -232,6 +239,15 @@ public fun buildModules(block: ModuleRegistry.() -> Unit): ImmutableList<Module>
  * @see ModuleRegistry
  */
 @Composable
-public fun rememberModules(block: ModuleRegistry.() -> Unit): ImmutableList<Module> = remember {
-    buildModules(block = block)
+public fun rememberModules(block: ModuleRegistry.() -> Unit): ImmutableList<Module> {
+    val modules = buildModules(block = block)
+
+    modules.forEach { module ->
+        if (module is RequiresDataStore) module.initDataStore()
+        module.initModule()
+    }
+
+    return remember {
+        modules
+    }
 }

@@ -163,6 +163,7 @@ private fun HomeScreenPreview() {
         modules = listOf(
             previewModule(section = Section.SETTINGS, name = "AppInfo"),
             previewModule(section = Section.FEATURES, name = "FeatureFlip"),
+            previewModule(section = Section.NETWORK, name = "Mocks"),
             previewModule(section = Section.LOGGING, name = "Console"),
             previewModule(section = Section.LOGGING, name = "Analytics"),
             previewModule(section = Section.CUSTOM, name = "AppSpecific")

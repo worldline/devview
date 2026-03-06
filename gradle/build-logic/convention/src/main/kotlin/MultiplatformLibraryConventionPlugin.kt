@@ -4,6 +4,7 @@ import com.worldline.buildlogic.convention.configureAndroidMultiplatformLibrary
 import com.worldline.buildlogic.convention.configureDetekt
 import com.worldline.buildlogic.convention.configureJava
 import com.worldline.buildlogic.convention.configureKotlinCompiler
+import com.worldline.buildlogic.convention.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
@@ -36,6 +37,11 @@ class MultiplatformLibraryConventionPlugin : Plugin<Project> {
                 explicitApi()
 
                 sourceSets {
+                    commonMain {
+                        dependencies {
+                            implementation(libs.findLibrary("kermit").get())
+                        }
+                    }
                     commonTest {
                         dependencies {
                             implementation(kotlin("test"))

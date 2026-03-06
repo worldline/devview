@@ -29,18 +29,21 @@ import kotlin.time.Clock
  * @see AnalyticsLogType
  * @see com.worldline.devview.analytics.AnalyticsScreen
  */
-internal class AnalyticsLogListPreviewParameterProvider : PreviewParameterProvider<List<AnalyticsLog>> {
+internal class AnalyticsLogListPreviewParameterProvider :
+    PreviewParameterProvider<List<AnalyticsLog>> {
     /**
      * Provides a sequence containing a single list of sample [AnalyticsLog] instances,
      * with one log entry for each [AnalyticsLogType] variant.
      */
     override val values: Sequence<List<AnalyticsLog>>
-        get() = sequenceOf(element = AnalyticsLogType.entries.map {
-            AnalyticsLog(
-                tag = "Tag",
-                screenClass = "ScreenClass",
-                timestamp = Clock.System.now().toEpochMilliseconds(),
-                type = it
-            )
-        })
+        get() = sequenceOf(
+            element = AnalyticsLogType.entries.map {
+                AnalyticsLog(
+                    tag = "Tag",
+                    screenClass = "ScreenClass",
+                    timestamp = Clock.System.now().toEpochMilliseconds(),
+                    type = it
+                )
+            }
+        )
 }

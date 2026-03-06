@@ -64,7 +64,8 @@ import com.worldline.devview.core.previewModule
  * - Size: 20dp icon in 32dp circular container
  *
  * ## Usage
- * This is an internal component used by the [HomeScreen][com.worldline.devview.HomeScreen]. Not intended for direct use.
+ * This is an internal component used by the [HomeScreen][com.worldline.devview.HomeScreen].
+ * Not intended for direct use.
  *
  * @param module The module to display.
  * @param position The position of this module within its section group.

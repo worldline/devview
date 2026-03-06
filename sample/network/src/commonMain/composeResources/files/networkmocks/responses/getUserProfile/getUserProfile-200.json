@@ -1,0 +1,18 @@
+{
+  "userId": "user-123",
+  "profile": {
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "avatarUrl": "https://example.com/avatars/user-123.jpg",
+    "bio": "Software developer and tech enthusiast",
+    "location": "San Francisco, CA",
+    "joinedDate": "2024-01-15T10:00:00Z"
+  },
+  "settings": {
+    "emailNotifications": true,
+    "pushNotifications": false,
+    "theme": "dark"
+  }
+}
+

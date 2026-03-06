@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DeveloperMode
 import androidx.compose.material.icons.rounded.Extension
 import androidx.compose.material.icons.rounded.FormatListNumbered
+import androidx.compose.material.icons.rounded.NetworkCheck
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -61,6 +62,16 @@ public enum class Section {
     FEATURES,
 
     /**
+     * Section for network-related modules.
+     *
+     * Use this section for modules that monitor, log, or debug network requests and responses.
+     * This can include tools that display network traffic, analyze API calls, or simulate network conditions.
+     *
+     * **Typical modules**: NetworkMonitor, API Inspector, NetworkMock
+     */
+    NETWORK,
+
+    /**
      * Section for logging, analytics, and debugging modules.
      *
      * Use this section for modules that display logs, track analytics events,
@@ -112,6 +123,7 @@ public val Section.icon: ImageVector
     get() = when (this) {
         Section.SETTINGS -> Icons.Rounded.Settings
         Section.FEATURES -> Icons.Rounded.DeveloperMode
+        Section.NETWORK -> Icons.Rounded.NetworkCheck
         Section.LOGGING -> Icons.Rounded.FormatListNumbered
         Section.CUSTOM -> Icons.Rounded.Extension
     }

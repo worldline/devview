@@ -1,0 +1,16 @@
+{
+  "id": null,
+  "title": null,
+  "body": null,
+  "userId": null,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Title and body are required fields",
+    "validationErrors": {
+      "title": "Title cannot be empty",
+      "body": "Body cannot be empty"
+    }
+  }
+}
+
+

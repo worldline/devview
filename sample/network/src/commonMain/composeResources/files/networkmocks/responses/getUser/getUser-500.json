@@ -1,0 +1,16 @@
+{
+  "id": null,
+  "name": null,
+  "username": null,
+  "email": null,
+  "address": null,
+  "phone": null,
+  "website": null,
+  "company": null,
+  "error": {
+    "code": "INTERNAL_SERVER_ERROR",
+    "message": "An unexpected error occurred while processing your request"
+  }
+}
+
+

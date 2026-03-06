@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "message": "Profile updated successfully",
+  "profile": {
+    "userId": "user-123",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "updatedAt": "2026-02-13T10:30:00Z"
+  }
+}
+

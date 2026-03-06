@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "USER_NOT_FOUND",
+    "message": "No user exists with ID {userId}",
+    "details": "The user may have been deleted or the ID is invalid",
+    "timestamp": "2026-02-13T10:30:00Z"
+  }
+}
+
