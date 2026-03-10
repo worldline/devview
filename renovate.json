@@ -10,7 +10,7 @@
   "prConcurrentLimit": 40,
   "commitMessagePrefix": ":arrow_up:",
   "rebaseWhen": "conflicted",
-  "schedule": ["0 6 * * 1"],
+  "schedule": ["* 22-23,0-4 * * *", "* * * * 0,6"],
   "packageRules": [
     {
       "groupName": "kotlin",
