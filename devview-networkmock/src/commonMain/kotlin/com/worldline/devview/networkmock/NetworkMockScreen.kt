@@ -1,33 +1,49 @@
 package com.worldline.devview.networkmock
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryScrollableTabRow
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.worldline.devview.networkmock.components.EmptyState
 import com.worldline.devview.networkmock.components.EndpointCard
+import com.worldline.devview.networkmock.components.ErrorState
 import com.worldline.devview.networkmock.components.GlobalMockToggle
+import com.worldline.devview.networkmock.components.LoadingState
+import com.worldline.devview.networkmock.model.EndpointDescriptor
+import com.worldline.devview.networkmock.model.EndpointMockState
+import com.worldline.devview.networkmock.preview.NetworkMockUiStatePreviewParameterProvider
 import com.worldline.devview.networkmock.repository.MockConfigRepository
 import com.worldline.devview.networkmock.repository.MockStateRepository
+import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
+import kotlinx.coroutines.flow.SharedFlow
 
 /**
  * Main screen for the Network Mock module.
@@ -47,136 +63,66 @@ import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
 public fun NetworkMockScreen(
     configRepository: MockConfigRepository,
     stateRepository: MockStateRepository,
+    resetToNetworkSharedFlow: SharedFlow<Unit>,
     modifier: Modifier = Modifier,
     viewModel: NetworkMockViewModel = viewModel {
         NetworkMockViewModel(
             configRepository = configRepository,
             stateRepository = stateRepository
         )
-    }
+    },
+    bottomPadding: Dp = 0.dp
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val selectedDescriptor by viewModel.selectedEndpointDescriptor.collectAsStateWithLifecycle()
+    val selectedEndpointState by viewModel.selectedEndpointState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(key1 = Unit) {
+        resetToNetworkSharedFlow.collect {
+            viewModel.resetAllToNetwork()
+        }
+    }
 
     NetworkMockScreenContent(
         uiState = uiState,
         onGlobalToggle = viewModel::setGlobalMockingEnabled,
-        onEndpointToggle = { hostId, endpointId, enabled ->
-            viewModel.setEndpointMockEnabled(
-                hostId = hostId,
-                endpointId = endpointId,
-                enabled = enabled
-            )
-        },
-        onSelectResponse = { hostId, endpointId, fileName ->
-            viewModel.selectResponse(
-                hostId = hostId,
-                endpointId = endpointId,
-                responseFileName = fileName
-            )
-        },
-        onResetAll = viewModel::resetAllToNetwork,
-        modifier = modifier
+        setEndpointMockState = viewModel::setEndpointMockState,
+        selectEndpoint = viewModel::selectEndpoint,
+        clearSelectedEndpoint = viewModel::clearSelectedEndpoint,
+        selectedDescriptor = selectedDescriptor,
+        selectedEndpointState = selectedEndpointState,
+        modifier = modifier,
+        bottomPadding = bottomPadding
     )
 }
 
 @Composable
 private fun NetworkMockScreenContent(
-    uiState: com.worldline.devview.networkmock.viewmodel.NetworkMockUiState,
+    uiState: NetworkMockUiState,
     onGlobalToggle: (Boolean) -> Unit,
-    onEndpointToggle: (String, String, Boolean) -> Unit,
-    onSelectResponse: (String, String, String) -> Unit,
-    onResetAll: () -> Unit,
-    modifier: Modifier = Modifier
+    setEndpointMockState: (String, String, String?) -> Unit,
+    selectEndpoint: (String, String) -> Unit,
+    clearSelectedEndpoint: () -> Unit,
+    selectedDescriptor: EndpointDescriptor?,
+    selectedEndpointState: EndpointMockState,
+    modifier: Modifier = Modifier,
+    bottomPadding: Dp = 0.dp
 ) {
     when (uiState) {
-        is com.worldline.devview.networkmock.viewmodel.NetworkMockUiState.Loading -> {
-            LoadingState(modifier = modifier)
-        }
-        is com.worldline.devview.networkmock.viewmodel.NetworkMockUiState.Error -> {
-            ErrorState(
-                message = uiState.message,
-                modifier = modifier
-            )
-        }
-        is com.worldline.devview.networkmock.viewmodel.NetworkMockUiState.Empty -> {
-            EmptyState(modifier = modifier)
-        }
-        is com.worldline.devview.networkmock.viewmodel.NetworkMockUiState.Content -> {
+        is NetworkMockUiState.Loading -> LoadingState(modifier = modifier)
+        is NetworkMockUiState.Error -> ErrorState(message = uiState.message, modifier = modifier)
+        is NetworkMockUiState.Empty -> EmptyState(modifier = modifier)
+        is NetworkMockUiState.Content -> {
             ContentState(
                 uiState = uiState,
                 onGlobalToggle = onGlobalToggle,
-                onEndpointToggle = onEndpointToggle,
-                onSelectResponse = onSelectResponse,
-                onResetAll = onResetAll,
-                modifier = modifier
-            )
-        }
-    }
-}
-
-@Composable
-private fun LoadingState(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(space = 16.dp)
-        ) {
-            CircularProgressIndicator()
-            Text(
-                text = "Loading mock configuration...",
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-    }
-}
-
-@Composable
-private fun ErrorState(message: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(space = 8.dp),
-            modifier = Modifier.padding(all = 32.dp)
-        ) {
-            Text(
-                text = "Error Loading Configuration",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.error
-            )
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-@Composable
-private fun EmptyState(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(space = 8.dp),
-            modifier = Modifier.padding(all = 32.dp)
-        ) {
-            Text(
-                text = "📄 No Mocks Configured",
-                style = MaterialTheme.typography.titleLarge
-            )
-            Text(
-                text = "Add a mocks.json file to:\ncomposeResources/files/networkmocks/",
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center
+                setEndpointMockState = setEndpointMockState,
+                selectEndpoint = selectEndpoint,
+                clearSelectedEndpoint = clearSelectedEndpoint,
+                selectedDescriptor = selectedDescriptor,
+                selectedEndpointState = selectedEndpointState,
+                modifier = modifier,
+                bottomPadding = bottomPadding
             )
         }
     }
@@ -184,74 +130,124 @@ private fun EmptyState(modifier: Modifier = Modifier) {
 
 @Composable
 private fun ContentState(
-    uiState: com.worldline.devview.networkmock.viewmodel.NetworkMockUiState.Content,
+    uiState: NetworkMockUiState.Content,
     onGlobalToggle: (Boolean) -> Unit,
-    onEndpointToggle: (String, String, Boolean) -> Unit,
-    onSelectResponse: (String, String, String) -> Unit,
-    onResetAll: () -> Unit,
-    modifier: Modifier = Modifier
+    setEndpointMockState: (String, String, String?) -> Unit,
+    selectEndpoint: (String, String) -> Unit,
+    clearSelectedEndpoint: () -> Unit,
+    selectedDescriptor: EndpointDescriptor?,
+    selectedEndpointState: EndpointMockState,
+    modifier: Modifier = Modifier,
+    bottomPadding: Dp = 0.dp
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(all = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(space = 16.dp)
+    var selectedTabIndex by remember { mutableIntStateOf(value = 0) }
+
+    val pagerState = rememberPagerState(pageCount = { uiState.hosts.size })
+
+    LaunchedEffect(key1 = selectedTabIndex) {
+        pagerState.animateScrollToPage(page = selectedTabIndex)
+    }
+
+    LaunchedEffect(key1 = pagerState.currentPage) {
+        selectedTabIndex = pagerState.currentPage
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
     ) {
-        // Global toggle
-        item {
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceContainer
+        ) {
             GlobalMockToggle(
+                modifier = Modifier
+                    .padding(
+                        horizontal = 16.dp,
+                        vertical = 8.dp
+                    ),
                 enabled = uiState.globalMockingEnabled,
                 onToggle = onGlobalToggle
             )
         }
 
-        // Reset all button
-        if (uiState.globalMockingEnabled) {
-            item {
-                TextButton(
-                    onClick = onResetAll,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "Reset All to Network")
+        PrimaryScrollableTabRow(
+            selectedTabIndex = selectedTabIndex,
+            edgePadding = 0.dp
+        ) {
+            uiState.hosts.forEachIndexed { index, host ->
+                Tab(
+                    selected = selectedTabIndex == index,
+                    onClick = { selectedTabIndex = index },
+                    text = { Text(text = host.name) }
+                )
+            }
+        }
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.Top
+        ) { pageIndex ->
+            val host = uiState.hosts.getOrNull(index = pageIndex) ?: return@HorizontalPager
+            LazyColumn(
+                modifier = Modifier
+                    .weight(weight = 1f),
+                verticalArrangement = Arrangement.spacedBy(space = 0.dp)
+            ) {
+                itemsIndexed(
+                    items = host.endpoints,
+                    key = { _, endpoint -> "${host.id}-${endpoint.descriptor.endpointId}" }
+                ) { index, endpoint ->
+                    EndpointCard(
+                        endpoint = endpoint,
+                        openEndpointBottomSheet = {
+                            selectEndpoint(
+                                endpoint.descriptor.hostId,
+                                endpoint.descriptor.endpointId
+                            )
+                        },
+                        showFileName = true
+                    )
+                    if (index != host.endpoints.lastIndex) {
+                        HorizontalDivider()
+                    }
                 }
             }
         }
+    }
 
-        // Hosts and endpoints
-        uiState.hosts.forEach { host ->
-            // Host header (if multiple hosts)
-            if (uiState.hosts.size > 1) {
-                item(key = "host-${host.id}") {
-                    Column {
-                        Spacer(modifier = Modifier.height(height = 8.dp))
-                        Text(
-                            text = host.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = host.url,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-
-            // Endpoint cards
-            items(
-                items = host.endpoints,
-                key = { "${host.id}-${it.endpointId}" }
-            ) { endpoint ->
-                EndpointCard(
-                    endpoint = endpoint,
-                    onToggleMock = { enabled ->
-                        onEndpointToggle(host.id, endpoint.endpointId, enabled)
-                    },
-                    onSelectResponse = { fileName ->
-                        onSelectResponse(host.id, endpoint.endpointId, fileName)
-                    }
+    selectedDescriptor?.let { descriptor ->
+        NetworkMockEndpointBottomSheet(
+            descriptor = descriptor,
+            currentState = selectedEndpointState,
+            onDismissRequest = { clearSelectedEndpoint() },
+            onSelectResponse = { fileName ->
+                setEndpointMockState(
+                    descriptor.hostId,
+                    descriptor.endpointId,
+                    fileName
                 )
             }
+        )
+    }
+}
+
+@Preview(locale = "en")
+@Composable
+private fun NetworkMockScreenPreview(
+    @PreviewParameter(NetworkMockUiStatePreviewParameterProvider::class) uiState: NetworkMockUiState
+) {
+    MaterialTheme {
+        Scaffold {
+            NetworkMockScreenContent(
+                uiState = uiState,
+                onGlobalToggle = {},
+                setEndpointMockState = { _, _, _ -> },
+                selectEndpoint = { _, _ -> },
+                clearSelectedEndpoint = {},
+                selectedDescriptor = null,
+                selectedEndpointState = EndpointMockState.Network
+            )
         }
     }
 }

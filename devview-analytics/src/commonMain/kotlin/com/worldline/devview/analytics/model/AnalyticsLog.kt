@@ -25,6 +25,7 @@ import kotlinx.datetime.toLocalDateTime
  * @property type The category of this analytics event.
  *
  * @see AnalyticsLogType
+ * @see AnalyticsLogCategory
  * @see com.worldline.devview.analytics.AnalyticsLogger
  *
  * @sample
@@ -33,7 +34,7 @@ import kotlinx.datetime.toLocalDateTime
  *     tag = "HomeScreen",
  *     screenClass = "com.example.ui.HomeScreen",
  *     timestamp = System.currentTimeMillis(),
- *     type = AnalyticsLogType.SCREEN
+ *     type = AnalyticsLogCategory.Screen.View
  * )
  * ```
  */

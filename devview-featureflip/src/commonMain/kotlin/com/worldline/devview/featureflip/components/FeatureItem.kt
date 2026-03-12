@@ -3,15 +3,10 @@ package com.worldline.devview.featureflip.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.shape.ZeroCornerSize
-import androidx.compose.material3.Card
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -28,72 +23,6 @@ import com.worldline.devview.featureflip.model.Feature.LocalFeature
 import com.worldline.devview.featureflip.model.Feature.RemoteFeature
 import com.worldline.devview.featureflip.model.FeatureState
 import com.worldline.devview.featureflip.preview.FeaturePreviewParameterProvider
-
-/**
- * Adds feature items to a LazyList with optimized performance.
- *
- * Creates a visually grouped list of feature cards with appropriate styling, dividers,
- * and animations. Each feature is rendered with:
- * - Stable item keys for efficient recomposition
- * - Content type hints for recycling optimization
- * - Item animations for smooth transitions
- * - Proper spacing and dividers
- *
- * The cards are styled to appear as a cohesive group with connected corners between
- * adjacent items (first item has bottom corners squared, middle items have all corners
- * squared, last item has top corners squared).
- *
- * ## Usage
- * ```kotlin
- * LazyColumn {
- *     featureItems(
- *         features = myFeatureList,
- *         onStateChange = { featureName, newState ->
- *             // Handle state change
- *             featureHandler.setFeatureState(featureName, newState)
- *         }
- *     )
- * }
- * ```
- *
- * @param features List of features to display in the list.
- * @param onStateChange Callback invoked when a feature's state changes.
- *        Receives the feature name and the new [FeatureState].
- * @param modifier Modifier to apply to each feature item card.
- *
- * @see FeatureItem
- * @see com.worldline.devview.featureflip.model.Feature
- * @see com.worldline.devview.featureflip.model.FeatureState
- */
-internal fun LazyListScope.featureItems(
-    features: List<Feature>,
-    onStateChange: (String, FeatureState) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    features.forEachIndexed { index, feature ->
-        item(
-            key = feature.name,
-            contentType = feature::class.simpleName
-        ) {
-            FeatureItem(
-                modifier = modifier
-                    .animateItem(),
-                feature = feature,
-                totalFeatures = features.size,
-                index = index,
-                isLastIndex = index == features.lastIndex,
-                onStateChange = { state ->
-                    onStateChange(feature.name, state)
-                }
-            )
-        }
-    }
-    item {
-        Spacer(
-            modifier = Modifier.padding(all = 16.dp)
-        )
-    }
-}
 
 /**
  * Displays a single feature item card with interactive controls.
@@ -136,85 +65,54 @@ internal fun LazyListScope.featureItems(
  * @see com.worldline.devview.featureflip.model.FeatureState
  */
 @Composable
-private fun FeatureItem(
+internal fun FeatureItem(
     feature: Feature,
-    totalFeatures: Int,
-    index: Int,
-    isLastIndex: Boolean,
     onStateChange: (FeatureState) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val baseShape = MaterialTheme.shapes.medium
-
-    val shape = when (totalFeatures) {
-        1 -> baseShape
-        else -> when (index) {
-            0 -> baseShape.copy(
-                bottomStart = ZeroCornerSize,
-                bottomEnd = ZeroCornerSize
-            )
-
-            totalFeatures - 1 -> baseShape.copy(
-                topStart = ZeroCornerSize,
-                topEnd = ZeroCornerSize
-            )
-
-            else -> RoundedCornerShape(percent = 0)
-        }
-    }
-
-    Card(
-        modifier = modifier
+    Row(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
             .fillMaxWidth(),
-        shape = shape
+        horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
+        Column(
             modifier = Modifier
-                .padding(all = 16.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .weight(weight = 1f),
+            verticalArrangement = Arrangement.spacedBy(space = 4.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .weight(weight = 1f),
-                verticalArrangement = Arrangement.spacedBy(space = 4.dp)
-            ) {
+            Text(
+                text = feature.name,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = FontWeight.Bold
+                )
+            )
+            feature.description?.let {
                 Text(
-                    text = feature.name,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-                feature.description?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-            }
-
-            when (feature) {
-                is LocalFeature -> Switch(
-                    checked = feature.isEnabled,
-                    onCheckedChange = {
-                        onStateChange(if (it) FeatureState.LOCAL_ON else FeatureState.LOCAL_OFF)
-                    }
-                )
-
-                is RemoteFeature -> FeatureTriStateSwitch(
-                    feature = feature,
-                    onStateChange = onStateChange
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
         }
-        if (!isLastIndex) {
-            HorizontalDivider(modifier = Modifier.padding(start = 16.dp))
+
+        when (feature) {
+            is LocalFeature -> Switch(
+                checked = feature.isEnabled,
+                onCheckedChange = {
+                    onStateChange(if (it) FeatureState.LOCAL_ON else FeatureState.LOCAL_OFF)
+                }
+            )
+
+            is RemoteFeature -> FeatureTriStateSwitch(
+                feature = feature,
+                onStateChange = onStateChange
+            )
         }
     }
 }
 
-@Preview
+@Preview(locale = "en")
 @Composable
 private fun FeatureItemPreview(
     @PreviewParameter(provider = FeaturePreviewParameterProvider::class) feature: Feature
@@ -222,10 +120,14 @@ private fun FeatureItemPreview(
     MaterialTheme {
         Surface {
             LazyColumn {
-                featureItems(
-                    features = listOf(element = feature),
-                    onStateChange = { _, _ -> }
-                )
+                items(
+                    items = listOf(element = feature)
+                ) {
+                    FeatureItem(
+                        feature = it,
+                        onStateChange = {}
+                    )
+                }
             }
         }
     }

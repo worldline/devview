@@ -73,6 +73,9 @@ class ComposeMultiplatformConventionPlugin : Plugin<Project> {
                 sourceSets {
                     all {
                         languageSettings.optIn("kotlin.RequiresOptIn")
+                        languageSettings.optIn("androidx.compose.material3.ExperimentalMaterial3Api")
+                        languageSettings.optIn("androidx.compose.material3.ExperimentalMaterial3ExpressiveApi")
+                        languageSettings.optIn("androidx.compose.foundation.layout.ExperimentalGridApi")
                     }
 
                     commonMain {

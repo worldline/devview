@@ -1,20 +1,25 @@
 package com.worldline.devview.networkmock
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
+import com.worldline.devview.core.withTitle
 import com.worldline.devview.networkmock.repository.MockConfigRepository
 import com.worldline.devview.networkmock.repository.MockStateRepository
 import com.worldline.devview.utils.DataStoreDelegate
 import com.worldline.devview.utils.RequiresDataStore
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 
@@ -85,7 +90,7 @@ public class NetworkMock(
      * Initialises the network mock repositories once the DataStore is ready.
      *
      * Called automatically by [com.worldline.devview.core.rememberModules] after
-     * [com.worldline.devview.utils.RequiresDataStore.initDataStore] has run.
+     * [initDataStore] has run.
      * The DataStore is retrieved from [dataStoreDelegate] and passed explicitly
      * to [NetworkMockInitializer.initialize] so the initializer remains
      * independent and testable.
@@ -102,8 +107,12 @@ public class NetworkMock(
     override val section: Section
         get() = Section.NETWORK
 
-    override val destinations: ImmutableList<NavKey> = persistentListOf(
-        NetworkMockDestination.Main
+    override val destinations: PersistentMap<NavKey, DestinationMetadata> = persistentMapOf(
+        NetworkMockDestination.Main.withTitle(title = "Network Mock") {
+            action(icon = Icons.Rounded.Restore) {
+                onResetToNetwork.tryEmit(value = Unit)
+            }
+        }
     )
 
     override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit
@@ -114,20 +123,25 @@ public class NetworkMock(
             )
         }
 
+    private val onResetToNetwork = MutableSharedFlow<Unit>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
-        onNavigate: (NavKey) -> Unit
+        onNavigate: (NavKey) -> Unit,
+        bottomPadding: Dp
     ) {
         entry<NetworkMockDestination.Main> {
-            Scaffold { paddingValues ->
-                NetworkMockScreen(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues = paddingValues),
-                    configRepository = NetworkMockInitializer.requireConfigRepository(),
-                    stateRepository = NetworkMockInitializer.requireStateRepository()
-                )
-            }
+            NetworkMockScreen(
+                modifier = Modifier
+                    .fillMaxSize(),
+                configRepository = NetworkMockInitializer.requireConfigRepository(),
+                stateRepository = NetworkMockInitializer.requireStateRepository(),
+                bottomPadding = bottomPadding,
+                resetToNetworkSharedFlow = onResetToNetwork
+            )
         }
     }
 }

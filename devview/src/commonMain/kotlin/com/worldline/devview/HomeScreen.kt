@@ -1,22 +1,28 @@
 package com.worldline.devview
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.runtime.NavKey
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
 import com.worldline.devview.core.previewModule
+import com.worldline.devview.internal.HasTitle
 import com.worldline.devview.internal.components.ModuleItem
 import com.worldline.devview.internal.components.ModulePosition
 import kotlinx.serialization.Serializable
@@ -98,7 +104,28 @@ internal fun HomeScreen(
                     )
                 )
             }
-            mappedModules.values.forEachIndexed { mappedModulesIndex, modulesPerSection ->
+
+            mappedModules.entries.forEachIndexed {
+                    mappedModulesIndex,
+                    (section, modulesPerSection)
+                ->
+                stickyHeader(
+                    key = section
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = MaterialTheme.colorScheme.background
+                            ).padding(start = 16.dp + 16.dp)
+                            .padding(vertical = 8.dp),
+                        text = section.name.replace(oldChar = '_', newChar = ' '),
+                        style = MaterialTheme.typography.bodySmallEmphasized.copy(
+                            color = MaterialTheme.colorScheme.outline,
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                }
                 itemsIndexed(
                     items = modulesPerSection,
                     key = { _, module -> module.hashCode() },
@@ -154,9 +181,12 @@ internal fun HomeScreen(
  * @see Module
  */
 @Serializable
-public data object Home : NavKey
+public data object Home : HasTitle {
+    override val title: String
+        get() = "DevView"
+}
 
-@Preview
+@Preview(locale = "en")
 @Composable
 private fun HomeScreenPreview() {
     HomeScreen(

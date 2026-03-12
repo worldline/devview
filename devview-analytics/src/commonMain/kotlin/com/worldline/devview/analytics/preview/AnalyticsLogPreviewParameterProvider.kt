@@ -32,7 +32,8 @@ internal class AnalyticsLogPreviewParameterProvider : PreviewParameterProvider<A
      * [AnalyticsLogType] variant.
      */
     override val values: Sequence<AnalyticsLog>
-        get() = AnalyticsLogType.entries
+        get() = AnalyticsLogType
+            .allTypes()
             .map {
                 AnalyticsLog(
                     tag = "Tag",
@@ -41,4 +42,7 @@ internal class AnalyticsLogPreviewParameterProvider : PreviewParameterProvider<A
                     type = it
                 )
             }.asSequence()
+
+    override fun getDisplayName(index: Int): String =
+        AnalyticsLogType.allTypes().get(index = index).displayName
 }

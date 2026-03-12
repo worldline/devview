@@ -284,8 +284,8 @@ public class MockConfigRepository(
 
         println(
             message =
-            "[NetworkMock][Matching] SUCCESS: Matched endpoint '${matchingEndpoint.id}' " +
-                "on host '${matchingHost.id}'"
+                "[NetworkMock][Matching] SUCCESS: Matched endpoint '${matchingEndpoint.id}' " +
+                    "on host '${matchingHost.id}'"
         )
 
         return MockMatch(
@@ -390,7 +390,7 @@ public class MockConfigRepository(
      * @param fileName The filename (used for parsing and display)
      * @return A [MockResponse] if successful, or `null` on error
      */
-    @Suppress("CommentOverPrivateFunction")
+    @Suppress("DocumentationOverPrivateFunction")
     private suspend fun loadMockResponseFromPath(
         filePath: String,
         fileName: String
@@ -413,7 +413,7 @@ public class MockConfigRepository(
      * @param url The full URL string
      * @return The hostname portion, or the original string if parsing fails
      */
-    @Suppress("CommentOverPrivateFunction")
+    @Suppress("DocumentationOverPrivateFunction")
     private fun extractHostname(url: String): String {
         var hostname = url.removePrefix(prefix = "http://").removePrefix(prefix = "https://")
         hostname = hostname.substringBefore(delimiter = ":")

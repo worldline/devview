@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.ZeroCornerSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -136,11 +138,12 @@ internal fun ModuleItem(
                 )
                 Column(
                     modifier = Modifier
-                        .padding(vertical = 12.dp),
+                        .padding(vertical = 16.dp)
+                        .weight(weight = 1f),
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "${module::class.simpleName}",
+                        text = module.moduleName,
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Normal
                         )
@@ -154,12 +157,17 @@ internal fun ModuleItem(
                         )
                     }
                 }
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.outline
+                )
             }
         }
     }
 }
 
-@Preview
+@Preview(locale = "en")
 @Composable
 private fun ModuleItemPreview() {
     Column {

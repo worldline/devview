@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import okio.IOException
 
@@ -84,10 +85,7 @@ import okio.IOException
  * repository.setEndpointMockState(
  *     hostId = "staging",
  *     endpointId = "getUser",
- *     state = EndpointMockState(
- *         mockEnabled = true,
- *         selectedResponseFile = "getUser-200.json"
- *     )
+ *     state = EndpointMockState.Mock(responseFile = "getUser-200.json")
  * )
  *
  * // Reset all to network
@@ -103,7 +101,10 @@ import okio.IOException
  * @see EndpointMockState
  */
 public class MockStateRepository(private val dataStore: DataStore<Preferences>) {
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json = Json {
+        ignoreUnknownKeys = true
+        classDiscriminator = "type"
+    }
 
     /**
      * In-memory registry of known endpoint preference keys.
@@ -112,7 +113,7 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
      * Populated as endpoints are written to DataStore. Used to enumerate all
      * known endpoints without scanning all DataStore keys.
      */
-    @Suppress("CommentOverPrivateProperty")
+    @Suppress("DocumentationOverPrivateProperty")
     private val endpointKeys: MutableMap<String, Preferences.Key<String>> = mutableMapOf()
 
     private companion object {
@@ -131,7 +132,7 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
      * @param endpointId The endpoint identifier
      * @return The [Preferences.Key] for this endpoint's [EndpointMockState]
      */
-    @Suppress("CommentOverPrivateFunction")
+    @Suppress("DocumentationOverPrivateFunction")
     private fun endpointKey(hostId: String, endpointId: String): Preferences.Key<String> {
         val compositeKey = "$hostId-$endpointId"
         return endpointKeys.getOrPut(key = compositeKey) {
@@ -170,18 +171,36 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
                 throw exception
             }
         }.map { preferences ->
-            val endpointStates = endpointKeys.entries.associate { (compositeKey, prefKey) ->
-                compositeKey to (
-                    preferences[prefKey]?.let {
+            // Scan ALL keys stored in DataStore that match our endpoint prefix.
+            // This replaces the previous approach of iterating over the in-memory
+            // `endpointKeys` registry, which is empty on a cold start because it
+            // is only populated when a write operation is performed in the current
+            // session. Without this change, all persisted endpoint states were
+            // silently ignored on startup and every endpoint appeared as Network.
+            val endpointStates = preferences
+                .asMap()
+                .entries
+                .filter { (key, _) -> key.name.startsWith(prefix = ENDPOINT_KEY_PREFIX) }
+                .associate { (key, rawValue) ->
+                    val compositeKey = key.name.removePrefix(prefix = ENDPOINT_KEY_PREFIX)
+                    // Keep the in-memory registry in sync so write-side helpers
+                    // (setEndpointMockState, resetKnownEndpointsToNetwork, etc.)
+                    // remain consistent for the rest of the session.
+                    endpointKeys.getOrPut(key = compositeKey) {
+                        stringPreferencesKey(name = key.name)
+                    }
+                    compositeKey to
                         @Suppress("SwallowedException", "TooGenericExceptionCaught")
                         try {
-                            json.decodeFromString<EndpointMockState>(string = it)
-                        } catch (e: Exception) {
-                            EndpointMockState()
+                            json.decodeFromString<EndpointMockState>(
+                                string = rawValue as String
+                            )
+                        } catch (e: SerializationException) {
+                            EndpointMockState.Network
+                        } catch (e: IllegalArgumentException) {
+                            EndpointMockState.Network
                         }
-                    } ?: EndpointMockState()
-                    )
-            }
+                }
             NetworkMockState(
                 globalMockingEnabled = preferences[KEY_GLOBAL_ENABLED] ?: false,
                 endpointStates = endpointStates,
@@ -233,10 +252,7 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
      * repository.setEndpointMockState(
      *     hostId = "staging",
      *     endpointId = "getUser",
-     *     state = EndpointMockState(
-     *         mockEnabled = true,
-     *         selectedResponseFile = "getUser-200.json"
-     *     )
+     *     state = EndpointMockState.Mock(responseFile = "getUser-200.json")
      * )
      * ```
      *
@@ -249,9 +265,12 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
         endpointId: String,
         state: EndpointMockState
     ) {
+        val stateDescription = when (state) {
+            is EndpointMockState.Network -> "network"
+            is EndpointMockState.Mock -> "mock, file=${state.responseFile}, status=${state.statusCode}"
+        }
         println(
-            message = "[NetworkMock][State] Setting endpoint state: $hostId-$endpointId, " +
-                "enabled=${state.mockEnabled}, file=${state.selectedResponseFile}"
+            message = "[NetworkMock][State] Setting endpoint state: $hostId-$endpointId, $stateDescription"
         )
         val key = endpointKey(hostId = hostId, endpointId = endpointId)
         dataStore.edit { preferences ->
@@ -294,8 +313,8 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
      * Resets all known endpoint mocks to use the actual network.
      *
      * Iterates over all keys in the in-memory [endpointKeys] registry and sets
-     * each endpoint's state to disabled. Endpoints that have never been written
-     * to DataStore are not affected — they already default to network.
+     * each endpoint's state to [EndpointMockState.Network]. Endpoints that have
+     * never been written to DataStore are not affected — they already default to network.
      *
      * For a full reset across all configured endpoints (including untouched ones),
      * use the ViewModel's `resetAllToNetwork()` which drives the reset from the
@@ -303,16 +322,42 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
      *
      * ## Behavior
      * - Global mocking state: **Unchanged**
-     * - All stored endpoint `mockEnabled`: Set to `false`
-     * - All stored endpoint `selectedResponseFile`: Set to `null`
+     * - All stored endpoint states: Set to [EndpointMockState.Network]
      * - Last modified timestamp: Updated to current time
      */
     public suspend fun resetKnownEndpointsToNetwork() {
         dataStore.edit { preferences ->
             endpointKeys.values.forEach { key ->
-                preferences[key] = json.encodeToString(value = EndpointMockState())
+                preferences[key] = json.encodeToString(value = EndpointMockState.Network)
             }
             preferences[KEY_LAST_MODIFIED] = Clock.System.now().toEpochMilliseconds()
+        }
+    }
+
+    /**
+     * Pre-registers a set of endpoint identifiers into the in-memory [endpointKeys]
+     * registry without performing any DataStore I/O.
+     *
+     * ## Why this exists
+     * The [endpointKeys] registry is normally populated lazily on the first write
+     * for each endpoint. If the screen is opened before any write has occurred in
+     * the current session (i.e. on every cold start), the registry is empty.
+     * Although [observeState] was updated to scan `preferences.asMap()` to work
+     * around this, pre-registering keys here is a belt-and-suspenders measure that
+     * ensures consistency: once the configuration is loaded, the [endpointKeys]
+     * map always reflects the full set of configured endpoints, so all write-side
+     * helpers ([resetKnownEndpointsToNetwork], etc.) operate on the complete set
+     * rather than only the subset that happened to be written this session.
+     *
+     * Call this once, immediately after the mock configuration has been loaded
+     * (before any writes).
+     *
+     * @param endpoints List of `(hostId, endpointId)` pairs from the loaded
+     *   [com.worldline.devview.networkmock.model.MockConfiguration]
+     */
+    public fun registerEndpoints(endpoints: List<Pair<String, String>>) {
+        endpoints.forEach { (hostId, endpointId) ->
+            endpointKey(hostId = hostId, endpointId = endpointId)
         }
     }
 }

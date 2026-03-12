@@ -75,6 +75,13 @@ internal class FeaturePreviewParameterProvider : PreviewParameterProvider<Featur
                 isEnabled = false
             )
         )
+
+    override fun getDisplayName(index: Int): String? =
+        when (val feature = values.elementAtOrNull(index = index)) {
+            is RemoteFeature,
+            is LocalFeature -> feature.name
+            else -> null
+        }
 }
 
 /**
@@ -136,6 +143,12 @@ internal class RemoteFeaturePreviewParameterProvider : PreviewParameterProvider<
                 state = FeatureState.LOCAL_ON
             )
         )
+
+    override fun getDisplayName(index: Int): String? =
+        when (val feature = values.elementAtOrNull(index = index)) {
+            is RemoteFeature -> feature.name
+            else -> null
+        }
 }
 
 /**
@@ -178,4 +191,10 @@ internal class LocalFeaturePreviewParameterProvider : PreviewParameterProvider<L
                 isEnabled = false
             )
         )
+
+    override fun getDisplayName(index: Int): String? =
+        when (val feature = values.elementAtOrNull(index = index)) {
+            is LocalFeature -> feature.name
+            else -> null
+        }
 }

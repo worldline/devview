@@ -27,7 +27,8 @@ interface Module {
     val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit
     fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
-        onNavigate: (NavKey) -> Unit
+        onNavigate: (NavKey) -> Unit,
+        bottomPadding: Dp,
     )
 }
 ```

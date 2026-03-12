@@ -1,14 +1,15 @@
 package com.worldline.devview.networkmock.viewmodel
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.worldline.devview.networkmock.model.AvailableEndpointMock
+import com.worldline.devview.networkmock.model.EndpointDescriptor
 import com.worldline.devview.networkmock.model.EndpointMockState
 import com.worldline.devview.networkmock.model.MockConfiguration
 import com.worldline.devview.networkmock.repository.MockConfigRepository
 import com.worldline.devview.networkmock.repository.MockStateRepository
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -47,9 +48,10 @@ public class NetworkMockViewModel(
 ) : ViewModel() {
     private val privateConfiguration = MutableStateFlow<MockConfiguration?>(value = null)
     private val privateLoadingState = MutableStateFlow<LoadingState>(value = LoadingState.Loading)
-    private val privateEndpointMocks = MutableStateFlow<Map<String, AvailableEndpointMock>>(
+    private val privateEndpointMocks = MutableStateFlow<Map<String, EndpointDescriptor>>(
         value = emptyMap()
     )
+    private val selectedEndpointId = MutableStateFlow<Pair<String, String>?>(value = null)
 
     /**
      * Combined UI state for the Network Mock screen.
@@ -76,21 +78,23 @@ public class NetworkMockViewModel(
                             .map { host ->
                                 HostUiModel(
                                     id = host.id,
-                                    name = host.id, // Use ID as name for now
+                                    name = host.id,
                                     url = host.url,
                                     endpoints = host.endpoints
                                         .mapNotNull { endpoint ->
                                             val key = "${host.id}-${endpoint.id}"
-                                            endpointMocks[key]?.copy(
-                                                currentState = runtimeState.getEndpointState(
-                                                    hostId = host.id,
-                                                    endpointId = endpoint.id
+                                            endpointMocks[key]?.let { descriptor ->
+                                                EndpointUiModel(
+                                                    descriptor = descriptor,
+                                                    currentState = runtimeState.getEndpointState(
+                                                        hostId = host.id,
+                                                        endpointId = endpoint.id
+                                                    ) ?: EndpointMockState.Network
                                                 )
-                                                    ?: EndpointMockState()
-                                            )
-                                        }.toImmutableList()
+                                            }
+                                        }.toPersistentList()
                                 )
-                            }.toImmutableList()
+                            }.toPersistentList()
                     )
                 }
             }
@@ -101,6 +105,39 @@ public class NetworkMockViewModel(
         initialValue = NetworkMockUiState.Loading
     )
 
+    /**
+     * The [EndpointDescriptor] for the currently selected endpoint, or `null` when no
+     * endpoint is selected. Drives bottom sheet visibility — non-null means open.
+     */
+    public val selectedEndpointDescriptor: StateFlow<EndpointDescriptor?> = combine(
+        flow = selectedEndpointId,
+        flow2 = privateEndpointMocks
+    ) { id, endpointMocks ->
+        id?.let { (hostId, endpointId) -> endpointMocks["$hostId-$endpointId"] }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(stopTimeoutMillis = WHILE_SUBSCRIBED_TIMEOUT_MS),
+        initialValue = null
+    )
+
+    /**
+     * The live [EndpointMockState] for the currently selected endpoint.
+     * Updates reactively whenever the user selects a response, keeping the
+     * bottom sheet highlight in sync without any UI-side lookup.
+     */
+    public val selectedEndpointState: StateFlow<EndpointMockState> = combine(
+        flow = selectedEndpointId,
+        flow2 = stateRepository.observeState()
+    ) { id, runtimeState ->
+        id?.let { (hostId, endpointId) ->
+            runtimeState.getEndpointState(hostId = hostId, endpointId = endpointId)
+        } ?: EndpointMockState.Network
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(stopTimeoutMillis = WHILE_SUBSCRIBED_TIMEOUT_MS),
+        initialValue = EndpointMockState.Network
+    )
+
     init {
         loadConfiguration()
     }
@@ -108,7 +145,7 @@ public class NetworkMockViewModel(
     /**
      * Loads the mock configuration from resources and discovers response files.
      */
-    @Suppress("CommentOverPrivateFunction")
+    @Suppress("DocumentationOverPrivateFunction")
     private fun loadConfiguration() {
         viewModelScope.launch {
             privateLoadingState.value = LoadingState.Loading
@@ -116,10 +153,16 @@ public class NetworkMockViewModel(
             configRepository
                 .loadConfiguration()
                 .onSuccess { config ->
+                    stateRepository.registerEndpoints(
+                        endpoints = config.hosts.flatMap { host ->
+                            host.endpoints.map { endpoint -> host.id to endpoint.id }
+                        }
+                    )
+
                     privateConfiguration.value = config
 
                     // Discover response files for all endpoints
-                    val mocks = mutableMapOf<String, AvailableEndpointMock>()
+                    val mocks = mutableMapOf<String, EndpointDescriptor>()
                     config.hosts.forEach { host ->
                         host.endpoints.forEach { endpoint ->
                             val key = "${host.id}-${endpoint.id}"
@@ -127,12 +170,11 @@ public class NetworkMockViewModel(
                                 endpointId = endpoint.id
                             )
 
-                            mocks[key] = AvailableEndpointMock(
+                            mocks[key] = EndpointDescriptor(
                                 hostId = host.id,
                                 endpointId = endpoint.id,
                                 config = endpoint,
-                                availableResponses = responses,
-                                currentState = EndpointMockState() // Will be updated from runtime state
+                                availableResponses = responses
                             )
                         }
                     }
@@ -157,44 +199,31 @@ public class NetworkMockViewModel(
     }
 
     /**
-     * Toggles mocking for a specific endpoint.
+     * Sets the mock state for a specific endpoint.
+     *
+     * When [responseFileName] is `null`, the endpoint state is set to
+     * [EndpointMockState.Network], effectively disabling mocking for that endpoint.
+     *
+     * When [responseFileName] is non-null, the endpoint transitions to
+     * [EndpointMockState.Mock] with the given file, replacing any previous state.
+     *
+     * @param hostId The ID of the host that owns the endpoint.
+     * @param endpointId The ID of the endpoint to update.
+     * @param responseFileName The response file to use for mocking, or `null` to use
+     * the actual network.
      */
-    public fun setEndpointMockEnabled(hostId: String, endpointId: String, enabled: Boolean) {
+    public fun setEndpointMockState(hostId: String, endpointId: String, responseFileName: String?) {
         viewModelScope.launch {
-            val currentState = stateRepository.getState()
-            val endpointState = currentState.getEndpointState(
-                hostId = hostId,
-                endpointId = endpointId
-            )
-                ?: EndpointMockState()
+            val newState = if (responseFileName != null) {
+                EndpointMockState.Mock(responseFile = responseFileName)
+            } else {
+                EndpointMockState.Network
+            }
 
             stateRepository.setEndpointMockState(
                 hostId = hostId,
                 endpointId = endpointId,
-                state = endpointState.copy(mockEnabled = enabled)
-            )
-        }
-    }
-
-    /**
-     * Selects which response file to use for an endpoint.
-     */
-    public fun selectResponse(hostId: String, endpointId: String, responseFileName: String) {
-        viewModelScope.launch {
-            val currentState = stateRepository.getState()
-            val endpointState = currentState.getEndpointState(
-                hostId = hostId,
-                endpointId = endpointId
-            )
-                ?: EndpointMockState()
-
-            stateRepository.setEndpointMockState(
-                hostId = hostId,
-                endpointId = endpointId,
-                state = endpointState.copy(
-                    mockEnabled = true, // Auto-enable when selecting a response
-                    selectedResponseFile = responseFileName
-                )
+                state = newState
             )
         }
     }
@@ -202,10 +231,10 @@ public class NetworkMockViewModel(
     /**
      * Resets all endpoint mocks to use actual network.
      *
-     * Builds a fully-disabled state for every endpoint present in the loaded configuration
-     * (not just those already stored in DataStore), then persists it in one write. This
-     * ensures that endpoints which have never been touched by the user are also explicitly
-     * reset, leaving no gaps.
+     * Builds a [EndpointMockState.Network] state for every endpoint present in
+     * the loaded configuration (not just those already stored in DataStore), then
+     * persists it in one write. This ensures that endpoints which have never been
+     * touched by the user are also explicitly reset, leaving no gaps.
      */
     public fun resetAllToNetwork() {
         viewModelScope.launch {
@@ -216,45 +245,90 @@ public class NetworkMockViewModel(
                 return@launch
             }
 
-            // Build a disabled state for every configured endpoint
-            val allDisabled = config.hosts
+            // Build a Network state for every configured endpoint
+            val allNetwork = config.hosts
                 .flatMap { host ->
                     host.endpoints.map { endpoint ->
-                        "${host.id}-${endpoint.id}" to EndpointMockState()
+                        "${host.id}-${endpoint.id}" to EndpointMockState.Network
                     }
                 }.toMap()
 
-            stateRepository.setAllEndpointStates(states = allDisabled)
+            stateRepository.setAllEndpointStates(states = allNetwork)
         }
+    }
+
+    /**
+     * Marks the given endpoint as selected, opening the bottom sheet.
+     *
+     * Triggers reactive updates to [selectedEndpointDescriptor] and
+     * [selectedEndpointState] so the UI requires no manual lookup.
+     *
+     * @param hostId The ID of the host that owns the endpoint.
+     * @param endpointId The ID of the selected endpoint.
+     */
+    public fun selectEndpoint(hostId: String, endpointId: String) {
+        selectedEndpointId.value = hostId to endpointId
+    }
+
+    /**
+     * Clears the current endpoint selection, closing the bottom sheet.
+     */
+    public fun clearSelectedEndpoint() {
+        selectedEndpointId.value = null
     }
 }
 
 /**
  * UI state for the Network Mock screen.
  */
+@Immutable
 public sealed interface NetworkMockUiState {
     /**
      * Loading configuration.
      */
+    @Immutable
     public data object Loading : NetworkMockUiState
 
     /**
      * Error loading configuration.
      */
+    @Immutable
     public data class Error(val message: String) : NetworkMockUiState
 
     /**
      * No mocks configured.
      */
+    @Immutable
     public data object Empty : NetworkMockUiState
 
     /**
      * Content loaded successfully.
      */
+    @Immutable
     public data class Content(
         val globalMockingEnabled: Boolean,
-        val hosts: ImmutableList<HostUiModel>
+        val hosts: PersistentList<HostUiModel>
     ) : NetworkMockUiState
+}
+
+/**
+ * UI model pairing a static [EndpointDescriptor] with its live [EndpointMockState].
+ *
+ * Constructed fresh on every emission of [NetworkMockViewModel.uiState], ensuring
+ * that [currentState] always reflects the latest persisted value without any
+ * UI-side snapshot or lookup.
+ *
+ * @property descriptor The immutable endpoint configuration and available responses.
+ * @property currentState The current runtime mock state for this endpoint.
+ * @see EndpointDescriptor
+ * @see EndpointMockState
+ */
+@Immutable
+public data class EndpointUiModel(
+    val descriptor: EndpointDescriptor,
+    val currentState: EndpointMockState
+) {
+    public companion object
 }
 
 /**
@@ -264,8 +338,10 @@ public data class HostUiModel(
     val id: String,
     val name: String,
     val url: String,
-    val endpoints: ImmutableList<AvailableEndpointMock>
-)
+    val endpoints: PersistentList<EndpointUiModel>
+) {
+    public companion object
+}
 
 /**
  * Internal loading state.

@@ -1,7 +1,12 @@
 package com.worldline.devview.networkmock.model
 
+import androidx.compose.runtime.Immutable
+import com.worldline.devview.networkmock.utils.parseStatusCode
 import kotlin.time.Clock
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonClassDiscriminator
 
 /**
  * Represents the complete state of network mocking, persisted in DataStore.
@@ -28,10 +33,7 @@ import kotlinx.serialization.Serializable
  * repository.setEndpointMockState(
  *     hostId = "staging",
  *     endpointId = "getUser",
- *     state = EndpointMockState(
- *         mockEnabled = true,
- *         selectedResponseFile = "getUser-200.json"
- *     )
+ *     state = EndpointMockState.Mock(responseFile = "getUser-200.json")
  * )
  * ```
  *
@@ -95,14 +97,15 @@ public data class NetworkMockState(
     }
 
     /**
-     * Creates a new state with all endpoint mocks disabled (reset to network).
+     * Creates a new state with all endpoint mocks reset to use the actual network.
      *
-     * @return A new [NetworkMockState] with all endpoints set to use actual network
+     * Each endpoint state is replaced with [EndpointMockState.Network], regardless
+     * of its previous value.
+     *
+     * @return A new [NetworkMockState] with all endpoints set to [EndpointMockState.Network]
      */
     public fun resetAllToNetwork(): NetworkMockState = copy(
-        endpointStates = endpointStates.mapValues { (_, state) ->
-            state.copy(mockEnabled = false, selectedResponseFile = null)
-        },
+        endpointStates = endpointStates.mapValues { EndpointMockState.Network },
         lastModified = Clock.System.now().toEpochMilliseconds()
     )
 }
@@ -110,36 +113,37 @@ public data class NetworkMockState(
 /**
  * Represents the mocking state for a single API endpoint.
  *
- * Each endpoint can be individually configured to either use the actual network
- * or return a specific mock response. This allows granular control over which
- * APIs are mocked during development and testing.
+ * Each endpoint is either passing traffic through to the actual network or
+ * returning a specific mock response. The two variants are represented as
+ * distinct types, eliminating any ambiguous state combinations that existed
+ * in the previous boolean-flag approach.
  *
- * ## State Combinations
+ * ## Variants
  *
- * | mockEnabled | selectedResponseFile | Behavior |
- * |-------------|---------------------|----------|
- * | `false`     | `null`              | Use actual network (default) |
- * | `false`     | `"getUser-200.json"`| Use actual network (selection ignored) |
- * | `true`      | `null`              | Use actual network (no response selected) |
- * | `true`      | `"getUser-200.json"`| Return mock response from file |
+ * | Variant | Behavior | [displayName] |
+ * |---------|----------|---------------|
+ * | [Network] | All requests pass through to the actual network (default) | `"Network"` |
+ * | [Mock] | Requests return the mock response loaded from [Mock.responseFile] | [Mock.responseFile] without `.json` |
  *
  * ## Usage Example
  * ```kotlin
- * // Configure endpoint to use mock
- * val state = EndpointMockState(
- *     mockEnabled = true,
- *     selectedResponseFile = "getUser-200.json"
- * )
+ * // Configure endpoint to use a mock response
+ * val state = EndpointMockState.Mock(responseFile = "getUser-200.json")
  *
- * // Configure endpoint to use actual network
- * val state = EndpointMockState(
- *     mockEnabled = false,
- *     selectedResponseFile = null
- * )
+ * // Configure endpoint to use the actual network
+ * val state = EndpointMockState.Network
  * ```
  *
- * ## Response File Selection
- * The [selectedResponseFile] should match one of the available response files
+ * ## Checking the state
+ * ```kotlin
+ * when (state) {
+ *     is EndpointMockState.Network -> { /* use real network */ }
+ *     is EndpointMockState.Mock    -> { /* load mock from state.responseFile */ }
+ * }
+ * ```
+ *
+ * ## Response File Naming Convention
+ * The [Mock.responseFile] should match one of the available response files
  * for the endpoint, following the naming convention:
  * - `{endpointId}-{statusCode}.json`
  * - `{endpointId}-{statusCode}-{suffix}.json`
@@ -150,33 +154,68 @@ public data class NetworkMockState(
  * - `getUser-404-detailed.json`
  * - `getUser-500.json`
  *
- * @property mockEnabled Whether to use mock response (true) or actual network (false)
- * @property selectedResponseFile The response file name to use when mocking, or null for network
  * @see NetworkMockState
- * @see MockResponse
  */
+@Immutable
 @Serializable
-public data class EndpointMockState(
-    val mockEnabled: Boolean = false,
-    val selectedResponseFile: String? = null
-) {
+@OptIn(ExperimentalSerializationApi::class)
+@JsonClassDiscriminator("type")
+public sealed interface EndpointMockState {
     /**
-     * Checks if this endpoint should return a mock response.
+     * A human-readable display name for this state, suitable for use in UI labels.
      *
-     * For mocking to be active, both [mockEnabled] must be true AND
-     * [selectedResponseFile] must be non-null.
-     *
-     * @return true if a mock response should be returned, false otherwise
+     * - [Network]: always `"Network"`
+     * - [Mock]: the [Mock.responseFile] name without its `.json` extension
+     *   (e.g. `"getUser-200"` for `"getUser-200.json"`)
      */
-    public fun shouldUseMock(): Boolean = mockEnabled && selectedResponseFile != null
+    public val displayName: String
 
     /**
-     * Creates a new state with mocking disabled (reset to network).
+     * The endpoint will pass all requests through to the actual network.
      *
-     * @return A new [EndpointMockState] configured to use actual network
+     * This is the default state for every endpoint. No mock response will be
+     * loaded or returned.
      */
-    public fun resetToNetwork(): EndpointMockState = EndpointMockState(
-        mockEnabled = false,
-        selectedResponseFile = null
-    )
+    @Immutable
+    @Serializable
+    @SerialName("network")
+    public data object Network : EndpointMockState {
+        override val displayName: String = "Network"
+    }
+
+    /**
+     * The endpoint will return a mock response loaded from [responseFile].
+     *
+     * @property responseFile The file name of the selected mock response
+     *   (e.g. `"getUser-200.json"`). Used as the key to load the response via
+     *   [com.worldline.devview.networkmock.repository.MockConfigRepository.loadMockResponse].
+     *   The status code and display name are derived from this name at runtime —
+     *   they are not stored here to avoid redundancy with [MockResponse].
+     */
+    @Immutable
+    @Serializable
+    @SerialName("mock")
+    public data class Mock(val responseFile: String) : EndpointMockState {
+        /**
+         * The response file name without its `.json` extension, used as a
+         * concise UI label (e.g. `"getUser-200"` for `"getUser-200.json"`).
+         */
+        override val displayName: String get() = responseFile.removeSuffix(suffix = ".json")
+
+        /**
+         * The HTTP status code parsed from [responseFile], or `null` if the file
+         * name does not match the expected `{endpointId}-{statusCode}[-{suffix}].json`
+         * format.
+         *
+         * Computed on each access by delegating to
+         * [com.worldline.devview.networkmock.utils.parseStatusCode] — the single
+         * source of truth for status-code extraction from response file names.
+         *
+         * ```kotlin
+         * val state = EndpointMockState.Mock(responseFile = "getUser-404-simple.json")
+         * println(state.statusCode) // 404
+         * ```
+         */
+        public val statusCode: Int? get() = responseFile.parseStatusCode()
+    }
 }

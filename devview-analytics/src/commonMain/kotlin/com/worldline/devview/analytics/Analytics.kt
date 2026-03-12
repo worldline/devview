@@ -1,15 +1,23 @@
 package com.worldline.devview.analytics
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.worldline.devview.analytics.model.AnalyticsLogCategory.Action.Click
+import com.worldline.devview.analytics.model.AnalyticsLogCategory.Performance.Error
+import com.worldline.devview.analytics.model.AnalyticsLogType
+import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
+import com.worldline.devview.core.ModuleDestinationActionPopup
 import com.worldline.devview.core.Section
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
+import com.worldline.devview.core.withTitle
+import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 
@@ -92,7 +100,11 @@ public sealed interface AnalyticsDestination : NavKey {
  * @see AnalyticsLogger
  * @see AnalyticsScreen
  */
-public object Analytics : Module {
+public class Analytics(
+    public val highlightedLogType1: AnalyticsLogType? = Click,
+    public val highlightedLogType2: AnalyticsLogType? = Error,
+    public val highlightedLogType3: AnalyticsLogType? = null
+) : Module {
     /**
      * The section this module belongs to in the DevView menu.
      *
@@ -103,12 +115,26 @@ public object Analytics : Module {
         get() = Section.LOGGING
 
     /**
-     * List of all navigation destinations provided by this module.
+     * Maps each navigation destination in this module to its [DestinationMetadata].
      *
-     * Currently includes only the main analytics dashboard screen.
+     * The main analytics screen carries a "Clear" action that removes all logged
+     * events from the in-memory store, with a confirmation popup to prevent
+     * accidental data loss.
      */
-    override val destinations: ImmutableList<NavKey> = persistentListOf(
-        AnalyticsDestination.Main
+    override val destinations: PersistentMap<NavKey, DestinationMetadata> = persistentMapOf(
+        AnalyticsDestination.Main.withTitle(title = "Analytics") {
+            action(
+                icon = Icons.Rounded.Delete,
+                popup = ModuleDestinationActionPopup(
+                    title = "Clear Logs",
+                    subtitle = "Remove all logged analytics events from the dashboard",
+                    confirmButton = "Clear",
+                    dismissButton = "Cancel"
+                )
+            ) {
+                AnalyticsLogger.clear()
+            }
+        }
     )
 
     /**
@@ -135,16 +161,20 @@ public object Analytics : Module {
      */
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
-        onNavigate: (NavKey) -> Unit
+        onNavigate: (NavKey) -> Unit,
+        bottomPadding: Dp
     ) {
         entry<AnalyticsDestination.Main> {
-            Scaffold { paddingValues ->
-                AnalyticsScreen(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues = paddingValues)
-                )
-            }
+            AnalyticsScreen(
+                modifier = Modifier
+                    .fillMaxSize(),
+                highlightedAnalyticsLogTypes = listOfNotNull(
+                    highlightedLogType1,
+                    highlightedLogType2,
+                    highlightedLogType3
+                ).toPersistentList(),
+                bottomPadding = bottomPadding
+            )
         }
     }
 }
