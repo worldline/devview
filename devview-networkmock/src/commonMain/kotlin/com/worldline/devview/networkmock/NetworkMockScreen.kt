@@ -37,6 +37,7 @@ import com.worldline.devview.networkmock.components.ErrorState
 import com.worldline.devview.networkmock.components.GlobalMockToggle
 import com.worldline.devview.networkmock.components.LoadingState
 import com.worldline.devview.networkmock.model.EndpointDescriptor
+import com.worldline.devview.networkmock.model.EndpointKey
 import com.worldline.devview.networkmock.model.EndpointMockState
 import com.worldline.devview.networkmock.preview.NetworkMockUiStatePreviewParameterProvider
 import com.worldline.devview.networkmock.repository.MockConfigRepository
@@ -100,8 +101,8 @@ public fun NetworkMockScreen(
 private fun NetworkMockScreenContent(
     uiState: NetworkMockUiState,
     onGlobalToggle: (Boolean) -> Unit,
-    setEndpointMockState: (String, String, String?) -> Unit,
-    selectEndpoint: (String, String) -> Unit,
+    setEndpointMockState: (EndpointKey, String?) -> Unit,
+    selectEndpoint: (EndpointKey) -> Unit,
     clearSelectedEndpoint: () -> Unit,
     selectedDescriptor: EndpointDescriptor?,
     selectedEndpointState: EndpointMockState,
@@ -132,8 +133,8 @@ private fun NetworkMockScreenContent(
 private fun ContentState(
     uiState: NetworkMockUiState.Content,
     onGlobalToggle: (Boolean) -> Unit,
-    setEndpointMockState: (String, String, String?) -> Unit,
-    selectEndpoint: (String, String) -> Unit,
+    setEndpointMockState: (EndpointKey, String?) -> Unit,
+    selectEndpoint: (EndpointKey) -> Unit,
     clearSelectedEndpoint: () -> Unit,
     selectedDescriptor: EndpointDescriptor?,
     selectedEndpointState: EndpointMockState,
@@ -142,7 +143,7 @@ private fun ContentState(
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(value = 0) }
 
-    val pagerState = rememberPagerState(pageCount = { uiState.hosts.size })
+    val pagerState = rememberPagerState(pageCount = { uiState.groups.size })
 
     LaunchedEffect(key1 = selectedTabIndex) {
         pagerState.animateScrollToPage(page = selectedTabIndex)
@@ -174,11 +175,11 @@ private fun ContentState(
             selectedTabIndex = selectedTabIndex,
             edgePadding = 0.dp
         ) {
-            uiState.hosts.forEachIndexed { index, host ->
+            uiState.groups.forEachIndexed { index, group ->
                 Tab(
                     selected = selectedTabIndex == index,
                     onClick = { selectedTabIndex = index },
-                    text = { Text(text = host.name) }
+                    text = { Text(text = group.name) }
                 )
             }
         }
@@ -188,27 +189,24 @@ private fun ContentState(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.Top
         ) { pageIndex ->
-            val host = uiState.hosts.getOrNull(index = pageIndex) ?: return@HorizontalPager
+            val group = uiState.groups.getOrNull(index = pageIndex) ?: return@HorizontalPager
             LazyColumn(
                 modifier = Modifier
                     .weight(weight = 1f),
                 verticalArrangement = Arrangement.spacedBy(space = 0.dp)
             ) {
                 itemsIndexed(
-                    items = host.endpoints,
-                    key = { _, endpoint -> "${host.id}-${endpoint.descriptor.endpointId}" }
+                    items = group.endpoints,
+                    key = { _, endpoint -> endpoint.descriptor.key.compositeKey }
                 ) { index, endpoint ->
                     EndpointCard(
                         endpoint = endpoint,
                         openEndpointBottomSheet = {
-                            selectEndpoint(
-                                endpoint.descriptor.hostId,
-                                endpoint.descriptor.endpointId
-                            )
+                            selectEndpoint(endpoint.descriptor.key)
                         },
                         showFileName = true
                     )
-                    if (index != host.endpoints.lastIndex) {
+                    if (index != group.endpoints.lastIndex) {
                         HorizontalDivider()
                     }
                 }
@@ -222,11 +220,7 @@ private fun ContentState(
             currentState = selectedEndpointState,
             onDismissRequest = { clearSelectedEndpoint() },
             onSelectResponse = { fileName ->
-                setEndpointMockState(
-                    descriptor.hostId,
-                    descriptor.endpointId,
-                    fileName
-                )
+                setEndpointMockState(descriptor.key, fileName)
             }
         )
     }
@@ -242,8 +236,8 @@ private fun NetworkMockScreenPreview(
             NetworkMockScreenContent(
                 uiState = uiState,
                 onGlobalToggle = {},
-                setEndpointMockState = { _, _, _ -> },
-                selectEndpoint = { _, _ -> },
+                setEndpointMockState = { _, _ -> },
+                selectEndpoint = {},
                 clearSelectedEndpoint = {},
                 selectedDescriptor = null,
                 selectedEndpointState = EndpointMockState.Network

@@ -12,51 +12,58 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.worldline.devview.networkmock.model.EndpointConfig
 import com.worldline.devview.networkmock.model.EndpointDescriptor
+import com.worldline.devview.networkmock.model.EndpointKey
 import com.worldline.devview.networkmock.model.EndpointMockState
 import com.worldline.devview.networkmock.model.MockResponse
 import com.worldline.devview.networkmock.viewmodel.EndpointUiModel
-import com.worldline.devview.networkmock.viewmodel.HostUiModel
+import com.worldline.devview.networkmock.viewmodel.GroupEnvironmentUiModel
 import kotlinx.collections.immutable.toPersistentList
 
-internal fun HostUiModel.Companion.fake(amount: Int = 5): List<HostUiModel> =
-    List(size = amount) { index ->
-        HostUiModel(
-            id = "host-$index",
-            name = "Host $index",
-            url = "https://api.host$index.com",
-            endpoints = EndpointUiModel.fake().toPersistentList()
-        )
-    }
+internal fun GroupEnvironmentUiModel.Companion.fake(
+    amount: Int = 3
+): List<GroupEnvironmentUiModel> = List(size = amount) { index ->
+    GroupEnvironmentUiModel(
+        groupId = "group-$index",
+        environmentId = "staging",
+        name = "Group $index \u2014 Staging",
+        url = "https://staging.api.host$index.com",
+        endpoints = EndpointUiModel.fake().toPersistentList()
+    )
+}
 
 internal fun EndpointDescriptor.Companion.fake(
     amount: Int = 7,
     availableResponsesAmount: Int = 3,
-    hostId: String = "host"
+    groupId: String = "group",
+    environmentId: String = "staging"
 ): List<EndpointDescriptor> = List(size = amount) { index ->
     EndpointDescriptor(
-        hostId = hostId,
-        endpointId = "endpoint-$index",
+        key = EndpointKey(
+            groupId = groupId,
+            environmentId = environmentId,
+            endpointId = "endpoint-$index"
+        ),
         config = EndpointConfig(
             id = "endpoint-$index",
             name = "Endpoint $index",
             method = "GET",
             path = "/endpoint$index"
         ),
-        availableResponses = MockResponse.fake(
-            amount = availableResponsesAmount
-        )
+        availableResponses = MockResponse.fake(amount = availableResponsesAmount)
     )
 }
 
 internal fun EndpointUiModel.Companion.fake(
     amount: Int = 7,
     availableResponsesAmount: Int = 3,
-    hostId: String = "host"
+    groupId: String = "group",
+    environmentId: String = "staging"
 ): List<EndpointUiModel> = EndpointDescriptor
     .fake(
         amount = amount,
         availableResponsesAmount = availableResponsesAmount,
-        hostId = hostId
+        groupId = groupId,
+        environmentId = environmentId
     ).mapIndexed { index, descriptor ->
         EndpointUiModel(
             descriptor = descriptor,
@@ -68,12 +75,9 @@ internal fun EndpointUiModel.Companion.fake(
     }
 
 internal val EndpointMockState.icon: ImageVector
-    get() {
-        return when (this) {
-            is EndpointMockState.Mock -> iconForStatusCode(statusCode = statusCode)
-
-            EndpointMockState.Network -> Icons.Rounded.Wifi
-        }
+    get() = when (this) {
+        is EndpointMockState.Mock -> iconForStatusCode(statusCode = statusCode)
+        EndpointMockState.Network -> Icons.Rounded.Wifi
     }
 
 internal fun iconForStatusCode(statusCode: Int?): ImageVector = when (statusCode) {
@@ -86,12 +90,9 @@ internal fun iconForStatusCode(statusCode: Int?): ImageVector = when (statusCode
 }
 
 internal val EndpointMockState.contentColor: Color
-    get() {
-        return when (this) {
-            is EndpointMockState.Mock -> contentColorForStatusCode(statusCode = statusCode)
-
-            EndpointMockState.Network -> Color(color = 0xFF0D1F3A)
-        }
+    get() = when (this) {
+        is EndpointMockState.Mock -> contentColorForStatusCode(statusCode = statusCode)
+        EndpointMockState.Network -> Color(color = 0xFF0D1F3A)
     }
 
 internal fun contentColorForStatusCode(statusCode: Int?): Color = when (statusCode) {
@@ -104,12 +105,9 @@ internal fun contentColorForStatusCode(statusCode: Int?): Color = when (statusCo
 }
 
 internal val EndpointMockState.containerColor: Color
-    get() {
-        return when (this) {
-            is EndpointMockState.Mock -> containerColorForStatusCode(statusCode = statusCode)
-
-            EndpointMockState.Network -> Color(color = 0xFFABC4ED)
-        }
+    get() = when (this) {
+        is EndpointMockState.Mock -> containerColorForStatusCode(statusCode = statusCode)
+        EndpointMockState.Network -> Color(color = 0xFFABC4ED)
     }
 
 internal fun containerColorForStatusCode(statusCode: Int?): Color = when (statusCode) {
