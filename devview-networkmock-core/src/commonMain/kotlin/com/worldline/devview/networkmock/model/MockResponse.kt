@@ -2,6 +2,7 @@ package com.worldline.devview.networkmock.model
 
 import androidx.compose.runtime.Immutable
 import com.worldline.devview.networkmock.utils.parseStatusCode
+import kotlinx.serialization.Serializable
 
 /**
  * Represents a loaded mock response that can be returned by the network mock plugin.
@@ -74,6 +75,7 @@ import com.worldline.devview.networkmock.utils.parseStatusCode
  * @see com.worldline.devview.networkmock.repository.MockConfigRepository
  */
 @Immutable
+@Serializable
 public data class MockResponse(
     val statusCode: Int,
     val fileName: String,

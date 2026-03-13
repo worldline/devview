@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.worldline.devview.networkmock.model.EndpointDescriptor
 import com.worldline.devview.networkmock.model.EndpointKey
 import com.worldline.devview.networkmock.model.EndpointMockState
+import com.worldline.devview.networkmock.model.EndpointUiModel
+import com.worldline.devview.networkmock.model.GroupEnvironmentUiModel
 import com.worldline.devview.networkmock.model.MockConfiguration
 import com.worldline.devview.networkmock.model.effectiveEndpoints
 import com.worldline.devview.networkmock.repository.MockConfigRepository
@@ -358,49 +360,6 @@ public sealed interface NetworkMockUiState {
         val globalMockingEnabled: Boolean,
         val groups: PersistentList<GroupEnvironmentUiModel>
     ) : NetworkMockUiState
-}
-
-/**
- * UI model pairing a static [EndpointDescriptor] with its live [EndpointMockState].
- *
- * Constructed fresh on every emission of [NetworkMockViewModel.uiState], ensuring
- * that [currentState] always reflects the latest persisted value without any
- * UI-side snapshot or lookup.
- *
- * @property descriptor The immutable endpoint configuration and available responses.
- * @property currentState The current runtime mock state for this endpoint.
- * @see EndpointDescriptor
- * @see EndpointMockState
- */
-@Immutable
-public data class EndpointUiModel(
-    val descriptor: EndpointDescriptor,
-    val currentState: EndpointMockState
-) {
-    public companion object
-}
-
-/**
- * UI model for a single API group + environment combination.
- *
- * Each tab in the Network Mock screen represents one [GroupEnvironmentUiModel],
- * showing the resolved endpoints for that specific group and environment.
- *
- * @property groupId The [com.worldline.devview.networkmock.model.ApiGroupConfig] identifier
- * @property environmentId The [com.worldline.devview.networkmock.model.EnvironmentConfig] identifier
- * @property name Human-readable display name, e.g. `"My Backend — Staging"`
- * @property url The base URL for this group in this environment
- * @property endpoints The resolved endpoints with their current mock states
- */
-@Immutable
-public data class GroupEnvironmentUiModel(
-    val groupId: String,
-    val environmentId: String,
-    val name: String,
-    val url: String,
-    val endpoints: PersistentList<EndpointUiModel>
-) {
-    public companion object
 }
 
 /**

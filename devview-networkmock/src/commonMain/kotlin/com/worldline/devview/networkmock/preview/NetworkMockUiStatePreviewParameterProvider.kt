@@ -1,8 +1,8 @@
 package com.worldline.devview.networkmock.preview
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.worldline.devview.networkmock.model.GroupEnvironmentUiModel
 import com.worldline.devview.networkmock.utils.fake
-import com.worldline.devview.networkmock.viewmodel.GroupEnvironmentUiModel
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import kotlinx.collections.immutable.toPersistentList
 

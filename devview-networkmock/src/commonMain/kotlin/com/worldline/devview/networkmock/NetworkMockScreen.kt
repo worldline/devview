@@ -2,6 +2,7 @@ package com.worldline.devview.networkmock
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -30,7 +31,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.worldline.devview.networkmock.components.EmptyState
 import com.worldline.devview.networkmock.components.EndpointCard
 import com.worldline.devview.networkmock.components.ErrorState
@@ -40,8 +40,6 @@ import com.worldline.devview.networkmock.model.EndpointDescriptor
 import com.worldline.devview.networkmock.model.EndpointKey
 import com.worldline.devview.networkmock.model.EndpointMockState
 import com.worldline.devview.networkmock.preview.NetworkMockUiStatePreviewParameterProvider
-import com.worldline.devview.networkmock.repository.MockConfigRepository
-import com.worldline.devview.networkmock.repository.MockStateRepository
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
 import kotlinx.coroutines.flow.SharedFlow
@@ -55,23 +53,24 @@ import kotlinx.coroutines.flow.SharedFlow
  * - Select which mock response to return for each endpoint
  * - Reset all mocks to use actual network
  *
- * @param modifier Optional modifier for the screen
- * @param configRepository Repository for loading mock configuration. Should be the shared
- *   instance constructed by [NetworkMock] so that the plugin and UI use the same cache.
- * @param stateRepository Repository for managing mock state (shared instance from integrator)
+ * @param resetToNetworkSharedFlow Shared flow emitted by [NetworkMock] when the user triggers
+ *   the "Reset to Network" toolbar action. Collected here to call [NetworkMockViewModel.resetAllToNetwork].
+ * @param navigateToEndpointScreen Callback invoked when the user taps an [EndpointCard],
+ *   passing the corresponding [EndpointKey] so the caller can push [NetworkMockDestination.Endpoint]
+ *   onto the backstack.
+ * @param viewModel The [NetworkMockViewModel] instance. Constructed and provided by
+ *   [NetworkMock.registerContent] via the `viewModel { }` factory so that it is scoped to the
+ *   navigation entry.
+ * @param modifier Optional modifier for the screen.
+ * @param bottomPadding Bottom inset padding provided by the DevView [androidx.compose.material3.Scaffold].
+ *   Applied to the endpoint list so the last item is not obscured by system navigation bars.
  */
 @Composable
 public fun NetworkMockScreen(
-    configRepository: MockConfigRepository,
-    stateRepository: MockStateRepository,
     resetToNetworkSharedFlow: SharedFlow<Unit>,
+    navigateToEndpointScreen: (EndpointKey) -> Unit,
+    viewModel: NetworkMockViewModel,
     modifier: Modifier = Modifier,
-    viewModel: NetworkMockViewModel = viewModel {
-        NetworkMockViewModel(
-            configRepository = configRepository,
-            stateRepository = stateRepository
-        )
-    },
     bottomPadding: Dp = 0.dp
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -88,7 +87,7 @@ public fun NetworkMockScreen(
         uiState = uiState,
         onGlobalToggle = viewModel::setGlobalMockingEnabled,
         setEndpointMockState = viewModel::setEndpointMockState,
-        selectEndpoint = viewModel::selectEndpoint,
+        navigateToEndpointScreen = navigateToEndpointScreen,
         clearSelectedEndpoint = viewModel::clearSelectedEndpoint,
         selectedDescriptor = selectedDescriptor,
         selectedEndpointState = selectedEndpointState,
@@ -102,7 +101,7 @@ private fun NetworkMockScreenContent(
     uiState: NetworkMockUiState,
     onGlobalToggle: (Boolean) -> Unit,
     setEndpointMockState: (EndpointKey, String?) -> Unit,
-    selectEndpoint: (EndpointKey) -> Unit,
+    navigateToEndpointScreen: (EndpointKey) -> Unit,
     clearSelectedEndpoint: () -> Unit,
     selectedDescriptor: EndpointDescriptor?,
     selectedEndpointState: EndpointMockState,
@@ -118,7 +117,7 @@ private fun NetworkMockScreenContent(
                 uiState = uiState,
                 onGlobalToggle = onGlobalToggle,
                 setEndpointMockState = setEndpointMockState,
-                selectEndpoint = selectEndpoint,
+                openEndpointDetails = navigateToEndpointScreen,
                 clearSelectedEndpoint = clearSelectedEndpoint,
                 selectedDescriptor = selectedDescriptor,
                 selectedEndpointState = selectedEndpointState,
@@ -134,7 +133,7 @@ private fun ContentState(
     uiState: NetworkMockUiState.Content,
     onGlobalToggle: (Boolean) -> Unit,
     setEndpointMockState: (EndpointKey, String?) -> Unit,
-    selectEndpoint: (EndpointKey) -> Unit,
+    openEndpointDetails: (EndpointKey) -> Unit,
     clearSelectedEndpoint: () -> Unit,
     selectedDescriptor: EndpointDescriptor?,
     selectedEndpointState: EndpointMockState,
@@ -201,8 +200,8 @@ private fun ContentState(
                 ) { index, endpoint ->
                     EndpointCard(
                         endpoint = endpoint,
-                        openEndpointBottomSheet = {
-                            selectEndpoint(endpoint.descriptor.key)
+                        openEndpointDetails = {
+                            openEndpointDetails(endpoint.descriptor.key)
                         },
                         showFileName = true
                     )
@@ -210,20 +209,24 @@ private fun ContentState(
                         HorizontalDivider()
                     }
                 }
+
+                item {
+                    Spacer(modifier = Modifier.padding(bottom = bottomPadding))
+                }
             }
         }
     }
 
-    selectedDescriptor?.let { descriptor ->
-        NetworkMockEndpointBottomSheet(
-            descriptor = descriptor,
-            currentState = selectedEndpointState,
-            onDismissRequest = { clearSelectedEndpoint() },
-            onSelectResponse = { fileName ->
-                setEndpointMockState(descriptor.key, fileName)
-            }
-        )
-    }
+//    selectedDescriptor?.let { descriptor ->
+//        NetworkMockEndpointScreen(
+//            descriptor = descriptor,
+//            currentState = selectedEndpointState,
+//            onDismissRequest = { clearSelectedEndpoint() },
+//            onSelectResponse = { fileName ->
+//                setEndpointMockState(descriptor.key, fileName)
+//            }
+//        )
+//    }
 }
 
 @Preview(locale = "en")
@@ -237,7 +240,7 @@ private fun NetworkMockScreenPreview(
                 uiState = uiState,
                 onGlobalToggle = {},
                 setEndpointMockState = { _, _ -> },
-                selectEndpoint = {},
+                navigateToEndpointScreen = {},
                 clearSelectedEndpoint = {},
                 selectedDescriptor = null,
                 selectedEndpointState = EndpointMockState.Network

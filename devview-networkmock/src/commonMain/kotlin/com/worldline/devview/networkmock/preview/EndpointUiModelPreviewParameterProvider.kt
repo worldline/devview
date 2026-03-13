@@ -1,8 +1,8 @@
 package com.worldline.devview.networkmock.preview
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.worldline.devview.networkmock.model.EndpointUiModel
 import com.worldline.devview.networkmock.utils.fake
-import com.worldline.devview.networkmock.viewmodel.EndpointUiModel
 
 internal class EndpointUiModelPreviewParameterProvider :
     PreviewParameterProvider<EndpointUiModel> {

@@ -18,10 +18,9 @@ import com.worldline.devview.networkmock.model.EndpointConfig
 import com.worldline.devview.networkmock.model.EndpointDescriptor
 import com.worldline.devview.networkmock.model.EndpointKey
 import com.worldline.devview.networkmock.model.EndpointMockState
+import com.worldline.devview.networkmock.model.EndpointUiModel
+import com.worldline.devview.networkmock.model.GroupEnvironmentUiModel
 import com.worldline.devview.networkmock.model.MockResponse
-import com.worldline.devview.networkmock.utils.fake
-import com.worldline.devview.networkmock.viewmodel.EndpointUiModel
-import com.worldline.devview.networkmock.viewmodel.GroupEnvironmentUiModel
 import kotlinx.collections.immutable.toPersistentList
 
 internal fun GroupEnvironmentUiModel.Companion.fake(
@@ -86,7 +85,7 @@ internal fun EndpointUiModel.Companion.fake(
         EndpointUiModel(
             descriptor = descriptor,
             currentState = when (index) {
-                in 0..5 -> EndpointMockState.Mock(responseFile = "response-${index + 1}00.json")
+                in 0..5 -> EndpointMockState.Mock(responseFile = responseFile(index = index))
                 else -> EndpointMockState.Network
             }
         )
@@ -140,9 +139,11 @@ internal fun containerColorForStatusCode(statusCode: Int?): Color = when (status
 internal fun MockResponse.Companion.fake(amount: Int = 3): List<MockResponse> =
     List(size = amount) { index ->
         MockResponse(
-            fileName = "response$index.json",
+            fileName = responseFile(index = index),
             statusCode = (index + 1) % 6 * 100,
             displayName = "Response $index",
             content = "{\n  \"message\": \"This is a mock response $index\"\n}"
         )
     }
+
+private fun responseFile(index: Int) = "response-${(index + 1) % 6 * 100 + index}.json"

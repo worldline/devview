@@ -6,9 +6,9 @@ import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
-import com.worldline.devview.Home.title
 import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
@@ -16,6 +16,8 @@ import com.worldline.devview.core.withTitle
 import com.worldline.devview.networkmock.model.EndpointKey
 import com.worldline.devview.networkmock.repository.MockConfigRepository
 import com.worldline.devview.networkmock.repository.MockStateRepository
+import com.worldline.devview.networkmock.viewmodel.NetworkMockEndpointViewModel
+import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
 import com.worldline.devview.utils.DataStoreDelegate
 import com.worldline.devview.utils.RequiresDataStore
 import kotlin.reflect.KClass
@@ -113,14 +115,15 @@ public class NetworkMock(
     override val section: Section
         get() = Section.NETWORK
 
-    override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> = persistentMapOf(
-        NetworkMockDestination.Main.withTitle(title = "Network Mock") {
-            action(icon = Icons.Rounded.Restore) {
-                onResetToNetwork.tryEmit(value = Unit)
-            }
-        },
-        NetworkMockDestination.Endpoint::class.withTitle(title = "Endpoint Details")
-    )
+    override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> =
+        persistentMapOf(
+            NetworkMockDestination.Main.withTitle(title = "Network Mock") {
+                action(icon = Icons.Rounded.Restore) {
+                    onResetToNetwork.tryEmit(value = Unit)
+                }
+            },
+            NetworkMockDestination.Endpoint::class.withTitle(title = "Endpoint Details")
+        )
 
     override val entryDestination: NavKey = NetworkMockDestination.Main
 
@@ -150,14 +153,33 @@ public class NetworkMock(
             NetworkMockScreen(
                 modifier = Modifier
                     .fillMaxSize(),
-                configRepository = NetworkMockInitializer.requireConfigRepository(),
-                stateRepository = NetworkMockInitializer.requireStateRepository(),
+                viewModel = viewModel {
+                    NetworkMockViewModel(
+                        configRepository = NetworkMockInitializer.requireConfigRepository(),
+                        stateRepository = NetworkMockInitializer.requireStateRepository()
+                    )
+                },
                 bottomPadding = bottomPadding,
-                resetToNetworkSharedFlow = onResetToNetwork
+                resetToNetworkSharedFlow = onResetToNetwork,
+                navigateToEndpointScreen = { endpointKey ->
+                    onNavigate(NetworkMockDestination.Endpoint(endpointKey = endpointKey))
+                }
             )
         }
 
         entry<NetworkMockDestination.Endpoint> {
+            NetworkMockEndpointScreen(
+                modifier = Modifier
+                    .fillMaxSize(),
+                viewModel = viewModel {
+                    NetworkMockEndpointViewModel(
+                        endpointKey = it.endpointKey,
+                        configRepository = NetworkMockInitializer.requireConfigRepository(),
+                        stateRepository = NetworkMockInitializer.requireStateRepository()
+                    )
+                },
+                bottomPadding = bottomPadding
+            )
         }
     }
 }

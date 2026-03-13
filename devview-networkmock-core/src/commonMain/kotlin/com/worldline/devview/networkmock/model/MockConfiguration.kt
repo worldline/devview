@@ -460,6 +460,7 @@ public data class MockMatch(val key: EndpointKey, val config: EndpointConfig) {
  * @see EnvironmentConfig
  */
 @Immutable
+@Serializable
 public data class EndpointDescriptor(
     val key: EndpointKey,
     val config: EndpointConfig,
