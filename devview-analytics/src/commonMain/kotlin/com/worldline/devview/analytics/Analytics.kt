@@ -15,6 +15,7 @@ import com.worldline.devview.core.Module
 import com.worldline.devview.core.ModuleDestinationActionPopup
 import com.worldline.devview.core.Section
 import com.worldline.devview.core.withTitle
+import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
@@ -121,7 +122,7 @@ public class Analytics(
      * events from the in-memory store, with a confirmation popup to prevent
      * accidental data loss.
      */
-    override val destinations: PersistentMap<NavKey, DestinationMetadata> = persistentMapOf(
+    override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> = persistentMapOf(
         AnalyticsDestination.Main.withTitle(title = "Analytics") {
             action(
                 icon = Icons.Rounded.Delete,
@@ -136,6 +137,8 @@ public class Analytics(
             }
         }
     )
+
+    override val entryDestination: NavKey = AnalyticsDestination.Main
 
     /**
      * Registers serializers for navigation destinations.

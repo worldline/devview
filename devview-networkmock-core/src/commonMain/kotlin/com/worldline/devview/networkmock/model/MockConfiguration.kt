@@ -365,6 +365,7 @@ public data class EndpointOverride(
  * @see com.worldline.devview.networkmock.repository.MockConfigRepository
  */
 @Immutable
+@Serializable
 public data class EndpointKey(
     val groupId: String,
     val environmentId: String,

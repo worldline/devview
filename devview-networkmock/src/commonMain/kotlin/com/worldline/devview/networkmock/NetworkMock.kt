@@ -8,14 +8,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.worldline.devview.Home.title
 import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
 import com.worldline.devview.core.withTitle
+import com.worldline.devview.networkmock.model.EndpointKey
 import com.worldline.devview.networkmock.repository.MockConfigRepository
 import com.worldline.devview.networkmock.repository.MockStateRepository
 import com.worldline.devview.utils.DataStoreDelegate
 import com.worldline.devview.utils.RequiresDataStore
+import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.channels.BufferOverflow
@@ -33,6 +36,9 @@ public sealed interface NetworkMockDestination : NavKey {
      */
     @Serializable
     public data object Main : NetworkMockDestination
+
+    @Serializable
+    public data class Endpoint(val endpointKey: EndpointKey) : NetworkMockDestination
 }
 
 /**
@@ -107,19 +113,26 @@ public class NetworkMock(
     override val section: Section
         get() = Section.NETWORK
 
-    override val destinations: PersistentMap<NavKey, DestinationMetadata> = persistentMapOf(
+    override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> = persistentMapOf(
         NetworkMockDestination.Main.withTitle(title = "Network Mock") {
             action(icon = Icons.Rounded.Restore) {
                 onResetToNetwork.tryEmit(value = Unit)
             }
-        }
+        },
+        NetworkMockDestination.Endpoint::class.withTitle(title = "Endpoint Details")
     )
+
+    override val entryDestination: NavKey = NetworkMockDestination.Main
 
     override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit
         get() = {
             subclass(
                 subclass = NetworkMockDestination.Main::class,
                 serializer = NetworkMockDestination.Main.serializer()
+            )
+            subclass(
+                subclass = NetworkMockDestination.Endpoint::class,
+                serializer = NetworkMockDestination.Endpoint.serializer()
             )
         }
 
@@ -142,6 +155,9 @@ public class NetworkMock(
                 bottomPadding = bottomPadding,
                 resetToNetworkSharedFlow = onResetToNetwork
             )
+        }
+
+        entry<NetworkMockDestination.Endpoint> {
         }
     }
 }

@@ -11,6 +11,7 @@ import com.worldline.devview.core.Section
 import com.worldline.devview.core.withTitle
 import com.worldline.devview.utils.DataStoreDelegate
 import com.worldline.devview.utils.RequiresDataStore
+import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.serialization.Serializable
@@ -148,9 +149,11 @@ public object FeatureFlip : Module, RequiresDataStore {
      *
      * Currently includes only the main feature management screen.
      */
-    override val destinations: PersistentMap<NavKey, DestinationMetadata> = persistentMapOf(
+    override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> = persistentMapOf(
         FeatureFlipDestination.Main.withTitle(title = "Feature Flip")
     )
+
+    override val entryDestination: NavKey = FeatureFlipDestination.Main
 
     /**
      * Registers serializers for navigation destinations.

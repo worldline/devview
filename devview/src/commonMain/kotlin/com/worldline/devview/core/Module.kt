@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
@@ -117,6 +118,7 @@ import kotlinx.serialization.modules.PolymorphicModuleBuilder
  * @see com.worldline.devview.DevView
  * @see rememberModules
  */
+@Suppress("ComplexInterface")
 public interface Module {
     /**
      * The name displayed in the module list on the DevView home screen.
@@ -292,13 +294,39 @@ public interface Module {
      *
      * ## Best Practices
      * - Always include at least one destination (typically a `Main` screen).
-     * - The first key is used as the initial navigation target when the module is opened.
      * - Use [asDestination] for screens that need no title override and no actions.
+     * - For `data class` destinations use the [KClass] extension overloads
+     *   (e.g. `MyDestination.Detail::class.withTitle("Detail")`), since no
+     *   representative instance is available at module-construction time.
      *
+     * @see entryDestination
      * @see DestinationMetadata
      * @see NavKey
      */
-    public val destinations: PersistentMap<NavKey, DestinationMetadata>
+    public val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata>
+
+    /**
+     * The [NavKey] instance pushed onto the backstack when the user opens this module
+     * from the DevView home screen.
+     *
+     * This is the concrete destination instance that is navigated to on module entry.
+     * It must correspond to one of the keys registered in [destinations] (i.e.
+     * `entryDestination::class` must be a key in the map).
+     *
+     * For modules whose root screen is a `data object`, this is simply that object:
+     * ```kotlin
+     * override val entryDestination: NavKey = MyDestination.Main
+     * ```
+     *
+     * For modules whose root screen is a `data class` (rare — the entry screen typically
+     * does not require parameters), construct the appropriate instance here:
+     * ```kotlin
+     * override val entryDestination: NavKey = MyDestination.Root(defaultParam)
+     * ```
+     *
+     * @see destinations
+     */
+    public val entryDestination: NavKey
 
     /**
      * Registers all destination serializers for type-safe navigation.
@@ -476,7 +504,10 @@ internal fun previewModule(
 ): Module = object : Module {
     override val section: Section = section
     override val moduleName: String = name
-    override val destinations: PersistentMap<NavKey, DestinationMetadata> = persistentMapOf()
+    override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> = persistentMapOf()
+    override val entryDestination: NavKey get() = error(
+        message = "previewModule has no destinations"
+    )
     override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit = {}
 
     override fun EntryProviderScope<NavKey>.registerContent(

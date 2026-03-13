@@ -14,6 +14,7 @@ import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
 import com.worldline.devview.core.asDestination
 import com.worldline.devview.core.withTitle
+import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.serialization.Serializable
@@ -39,10 +40,12 @@ public object TestModule : Module {
     override val section: Section
         get() = Section.CUSTOM
 
-    override val destinations: PersistentMap<NavKey, DestinationMetadata> = persistentMapOf(
+    override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> = persistentMapOf(
         TestModuleNavigation.Main.withTitle(title = "Test Module"),
         TestModuleNavigation.Detail.asDestination()
     )
+
+    override val entryDestination: NavKey = TestModuleNavigation.Main
 
     override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit
         get() = {
