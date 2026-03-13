@@ -1,3 +1,5 @@
+@file:Suppress("StringLiteralDuplication")
+
 package com.worldline.devview.networkmock.utils
 
 import androidx.compose.material.icons.Icons
@@ -10,24 +12,40 @@ import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.text.intl.Locale
 import com.worldline.devview.networkmock.model.EndpointConfig
 import com.worldline.devview.networkmock.model.EndpointDescriptor
 import com.worldline.devview.networkmock.model.EndpointKey
 import com.worldline.devview.networkmock.model.EndpointMockState
 import com.worldline.devview.networkmock.model.MockResponse
+import com.worldline.devview.networkmock.utils.fake
 import com.worldline.devview.networkmock.viewmodel.EndpointUiModel
 import com.worldline.devview.networkmock.viewmodel.GroupEnvironmentUiModel
 import kotlinx.collections.immutable.toPersistentList
 
 internal fun GroupEnvironmentUiModel.Companion.fake(
-    amount: Int = 3
+    amount: Int = 4
 ): List<GroupEnvironmentUiModel> = List(size = amount) { index ->
+    val groupId = "group${if (index <= 2) "" else index / 3 % 3}"
+    val environmentId = when (index % 3) {
+        0 -> "development"
+        1 -> "staging"
+        2 -> "production"
+        else -> "staging"
+    }
     GroupEnvironmentUiModel(
-        groupId = "group-$index",
-        environmentId = "staging",
-        name = "Group $index \u2014 Staging",
-        url = "https://staging.api.host$index.com",
-        endpoints = EndpointUiModel.fake().toPersistentList()
+        groupId = groupId,
+        environmentId = environmentId,
+        name = groupId.capitalize(
+            locale = Locale.current
+        ) + " - " + environmentId.capitalize(locale = Locale.current),
+        url = "https://$groupId.$environmentId.api.com",
+        endpoints = EndpointUiModel
+            .fake(
+                groupId = groupId,
+                environmentId = environmentId
+            ).toPersistentList()
     )
 }
 
@@ -41,13 +59,13 @@ internal fun EndpointDescriptor.Companion.fake(
         key = EndpointKey(
             groupId = groupId,
             environmentId = environmentId,
-            endpointId = "endpoint-$index"
+            endpointId = "endpoint-${index + 1}"
         ),
         config = EndpointConfig(
-            id = "endpoint-$index",
-            name = "Endpoint $index",
+            id = "endpoint-${index + 1}",
+            name = "Endpoint ${index + 1}",
             method = "GET",
-            path = "/endpoint$index"
+            path = "/endpoint${index + 1}"
         ),
         availableResponses = MockResponse.fake(amount = availableResponsesAmount)
     )
@@ -67,7 +85,7 @@ internal fun EndpointUiModel.Companion.fake(
     ).mapIndexed { index, descriptor ->
         EndpointUiModel(
             descriptor = descriptor,
-            currentState = when (index % 6) {
+            currentState = when (index) {
                 in 0..5 -> EndpointMockState.Mock(responseFile = "response-${index + 1}00.json")
                 else -> EndpointMockState.Network
             }

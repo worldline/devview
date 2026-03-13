@@ -38,8 +38,8 @@
       ]
     },
     {
-      "id": "example-api",
-      "name": "Example API",
+      "id": "sample-api",
+      "name": "Sample API",
       "endpoints": [
         {
           "id": "getUserProfile",
@@ -58,7 +58,18 @@
         {
           "id": "staging",
           "name": "Staging",
-          "url": "https://staging.api.example.com"
+          "url": "https://sample.api.staging.com"
+        },
+        {
+          "id": "prod",
+          "name": "Production",
+          "url": "https://sample.api.com",
+          "endpointOverrides": [
+            {
+              "id": "getUserProfile",
+              "path": "/api/v2/profile/{userId}"
+            }
+          ]
         }
       ]
     }

@@ -1,0 +1,11 @@
+{
+  "userId": null,
+  "profile": null,
+  "settings": null,
+  "error": {
+    "code": "PROFILE_NOT_FOUND-prod",
+    "message": "User profile does not exist"
+  }
+}
+
+

@@ -1,0 +1,12 @@
+{
+  "userId": null,
+  "profile": null,
+  "settings": null,
+  "error": {
+    "code": "UNAUTHORIZED-prod",
+    "message": "Invalid or expired authentication token",
+    "statusCode": 401
+  }
+}
+
+
