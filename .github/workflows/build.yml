@@ -1,0 +1,76 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+      - v1
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # Skip build if head commit contains 'skip ci'
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Assemble and check
+        run: ./gradlew check assembleDebug -Pandroidx.baselineprofile.skipgeneration
+
+      - name: Upload reports + Roborazzi outputs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports
+          path: |
+            **/build/reports/**
+            **/build/outputs/roborazzi/**
+
+  deploy:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/v1'
+
+    runs-on: macos-latest
+    needs: [ build ]
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - uses: gradle/gradle-build-action@v3
+
+      - name: Deploy to Sonatype
+        run: ./gradlew publish --no-configuration-cache
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.GPG_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_KEY_PASSWORD }}
