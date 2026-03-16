@@ -1,14 +1,11 @@
 package com.worldline.devview.networkmock
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
@@ -20,23 +17,37 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.worldline.devview.networkmock.components.EndpointStateChip
 import com.worldline.devview.networkmock.components.InlineDiffContent
 import com.worldline.devview.networkmock.components.SplitDiffContent
-import com.worldline.devview.networkmock.components.computeLineDiff
-import com.worldline.devview.networkmock.components.shouldUseInlineDiff
 import com.worldline.devview.networkmock.model.EndpointMockState
 import com.worldline.devview.networkmock.model.MockResponse
+import com.worldline.devview.networkmock.preview.PreviewSheetStatePreviewParameterProvider
 import kotlinx.coroutines.launch
 
+/**
+ * A modal bottom sheet that displays a preview of one or two [MockResponse] payloads for a
+ * network mock endpoint.
+ *
+ * When [previewSheetState] is [PreviewSheetState.Single], the sheet renders the single response
+ * content using a split-diff view with no right-hand side. When it is [PreviewSheetState.Compare],
+ * the two responses are diffed against each other: an inline diff is shown when the contents are
+ * similar enough (as determined by [PreviewSheetState.Compare.useInlineDiff]), otherwise a
+ * side-by-side split diff is used.
+ *
+ * @param previewSheetState The current state of the preview sheet, holding either one or two
+ * responses to display.
+ * @param onDismissRequest Called when the sheet should be dismissed (e.g. the user swipes it down
+ * or taps outside).
+ * @param modifier [Modifier] to be applied to the [ModalBottomSheet].
+ */
 @Composable
 internal fun NetworkMockEndpointPreviewBottomSheet(
     previewSheetState: PreviewSheetState.HasResponse,
@@ -67,96 +78,52 @@ internal fun NetworkMockEndpointPreviewBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(fraction = 0.85f)
         ) {
+            PreviewHeader(
+                previewSheetState = previewSheetState,
+                onClose = onClose
+            )
+
             when (previewSheetState) {
                 is PreviewSheetState.Single -> {
-                    SinglePreviewHeader(
-                        response = previewSheetState.response,
-                        onClose = onClose
-                    )
                     SplitDiffContent(
-                        left = previewSheetState.response,
-                        right = null,
-                        modifier = Modifier.weight(weight = 1f)
+                        first = previewSheetState.response,
+                        second = null
                     )
                 }
 
-                is PreviewSheetState.Compare -> {
-                    val first = previewSheetState.first
-                    val second = previewSheetState.second
-                    val useInlineDiff = remember(key1 = first.content, key2 = second.content) {
-                        shouldUseInlineDiff(
-                            contentLeft = first.content,
-                            contentRight = second.content
-                        )
-                    }
-
-                    ComparePreviewHeader(
-                        first = first,
-                        second = second,
-                        showLegend = useInlineDiff,
-                        onClose = onClose
+                is PreviewSheetState.Compare -> if (previewSheetState.useInlineDiff) {
+                    InlineDiffContent(
+                        diff = previewSheetState.lineDiff,
+                        leftLabel = previewSheetState.first.fileName,
+                        rightLabel = previewSheetState.second.fileName
                     )
-
-                    if (useInlineDiff) {
-                        val diff = remember(key1 = first.content, key2 = second.content) {
-                            computeLineDiff(
-                                contentLeft = first.content,
-                                contentRight = second.content
-                            )
-                        }
-                        InlineDiffContent(
-                            diff = diff,
-                            modifier = Modifier.weight(weight = 1f)
-                        )
-                    } else {
-                        SplitDiffContent(
-                            left = first,
-                            right = second,
-                            modifier = Modifier.weight(weight = 1f)
-                        )
-                    }
+                } else {
+                    SplitDiffContent(
+                        first = previewSheetState.first,
+                        second = previewSheetState.second
+                    )
                 }
             }
         }
     }
 }
 
-// ---------------------------------------------------------------------------
-// Header composables
-// ---------------------------------------------------------------------------
-
+/**
+ * Header bar displayed inside the bottom sheet for either a single preview or a comparison.
+ *
+ * When [previewSheetState] is [PreviewSheetState.Single], shows a single [EndpointStateChip] and
+ * a close button. When it is [PreviewSheetState.Compare], shows two [EndpointStateChip]s separated
+ * by a "vs" label, a close button, and a colour legend when
+ * [PreviewSheetState.Compare.useInlineDiff] is `true`.
+ *
+ * @param previewSheetState The current preview state, determining which chips are rendered.
+ * @param onClose Called when the user taps the close button.
+ * @param modifier [Modifier] to be applied to the root layout.
+ */
 @Composable
-private fun SinglePreviewHeader(
-    response: MockResponse,
-    onClose: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 8.dp),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        EndpointStateChip(
-            endpointMockState = EndpointMockState.Mock(responseFile = response.fileName),
-            label = response.displayName
-        )
-        IconButton(
-            modifier = Modifier.align(alignment = Alignment.CenterEnd),
-            onClick = onClose
-        ) {
-            Icon(imageVector = Icons.Rounded.Close, contentDescription = null)
-        }
-    }
-}
-
-@Composable
-private fun ComparePreviewHeader(
-    first: MockResponse,
-    second: MockResponse,
-    showLegend: Boolean,
+private fun PreviewHeader(
+    previewSheetState: PreviewSheetState.HasResponse,
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -174,19 +141,36 @@ private fun ComparePreviewHeader(
                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                EndpointStateChip(
-                    endpointMockState = EndpointMockState.Mock(responseFile = first.fileName),
-                    label = first.displayName
-                )
-                Text(
-                    text = "vs",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                EndpointStateChip(
-                    endpointMockState = EndpointMockState.Mock(responseFile = second.fileName),
-                    label = second.displayName
-                )
+                when (previewSheetState) {
+                    is PreviewSheetState.Single -> {
+                        EndpointStateChip(
+                            endpointMockState = EndpointMockState.Mock(
+                                responseFile = previewSheetState.response.fileName
+                            ),
+                            label = previewSheetState.response.displayName
+                        )
+                    }
+
+                    is PreviewSheetState.Compare -> {
+                        EndpointStateChip(
+                            endpointMockState = EndpointMockState.Mock(
+                                responseFile = previewSheetState.first.fileName
+                            ),
+                            label = previewSheetState.first.displayName
+                        )
+                        Text(
+                            text = "vs",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        EndpointStateChip(
+                            endpointMockState = EndpointMockState.Mock(
+                                responseFile = previewSheetState.second.fileName
+                            ),
+                            label = previewSheetState.second.displayName
+                        )
+                    }
+                }
             }
             IconButton(
                 modifier = Modifier.align(alignment = Alignment.CenterEnd),
@@ -195,134 +179,20 @@ private fun ComparePreviewHeader(
                 Icon(imageVector = Icons.Rounded.Close, contentDescription = null)
             }
         }
-
-        // Colour legend — only shown in inline diff mode
-        if (showLegend) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(space = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                LegendDot(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    label = first.displayName
-                )
-                LegendDot(
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    label = second.displayName
-                )
-            }
-        }
     }
 }
 
+@Preview(locale = "en")
 @Composable
-private fun LegendDot(
-    color: androidx.compose.ui.graphics.Color,
-    label: String,
-    modifier: Modifier = Modifier
+private fun NetworkMockEndpointPreviewBottomSheetPreview(
+    @PreviewParameter(
+        PreviewSheetStatePreviewParameterProvider::class
+    ) previewSheetState: PreviewSheetState.HasResponse
 ) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(space = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(size = 10.dp)
-                .clip(shape = MaterialTheme.shapes.extraSmall)
-                .background(color = color)
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-// ---------------------------------------------------------------------------
-// Previews
-// ---------------------------------------------------------------------------
-
-private val previewLeft = MockResponse(
-    statusCode = 200,
-    fileName = "endpoint-200.json",
-    displayName = "Success (200)",
-    content =
-        """
-        {
-          "id": 1,
-          "name": "Alice",
-          "role": "admin"
-        }
-        """.trimIndent()
-)
-
-private val previewRightSimilar = MockResponse(
-    statusCode = 200,
-    fileName = "endpoint-200-alt.json",
-    displayName = "Success Alt (200)",
-    content =
-        """
-        {
-          "id": 2,
-          "name": "Bob",
-          "role": "user"
-        }
-        """.trimIndent()
-)
-
-private val previewRightDissimilar = MockResponse(
-    statusCode = 500,
-    fileName = "endpoint-500.json",
-    displayName = "Server Error (500)",
-    content =
-        """
-        {
-          "error": "InternalServerError",
-          "message": "An unexpected error occurred.",
-          "trace": "com.example.SomeService.doThing(SomeService.kt:42)"
-        }
-        """.trimIndent()
-)
-
-@Preview(locale = "en")
-@Composable
-private fun SinglePreviewSheetPreview() {
     MaterialTheme {
         Surface {
             NetworkMockEndpointPreviewBottomSheet(
-                previewSheetState = PreviewSheetState.Single(response = previewLeft)
-            )
-        }
-    }
-}
-
-@Preview(locale = "en")
-@Composable
-private fun CompareInlinePreviewSheetPreview() {
-    MaterialTheme {
-        Surface {
-            NetworkMockEndpointPreviewBottomSheet(
-                previewSheetState = PreviewSheetState.Compare(
-                    first = previewLeft,
-                    second = previewRightSimilar
-                )
-            )
-        }
-    }
-}
-
-@Preview(locale = "en")
-@Composable
-private fun CompareSplitPreviewSheetPreview() {
-    MaterialTheme {
-        Surface {
-            NetworkMockEndpointPreviewBottomSheet(
-                previewSheetState = PreviewSheetState.Compare(
-                    first = previewLeft,
-                    second = previewRightDissimilar
-                )
+                previewSheetState = previewSheetState
             )
         }
     }
