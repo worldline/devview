@@ -31,7 +31,7 @@ poko = "0.21.3"
 
 # Kotlin only dependencies
 compose-stability-analyzer = "0.7.0"
-kotlin = "2.3.10"
+kotlin = "2.3.20"
 kover = "0.9.7"
 kotlinx-io = "0.9.0"
 kotlinx-serialization-json = "1.10.0"
