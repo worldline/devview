@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - v1
     paths-ignore:
       - '**.md'
       - 'docs/**'
@@ -28,6 +27,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v5
+
       - name: Setup JDK
         uses: actions/setup-java@v5
         with:
@@ -48,12 +50,46 @@ jobs:
             **/build/reports/**
             **/build/outputs/roborazzi/**
 
-  deploy:
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/v1'
+  detekt:
+    # Skip if head commit contains 'skip ci'
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+
+    runs-on: macos-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v5
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Run Detekt
+        run: ./gradlew detektFull
+
+      - name: Upload Detekt reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: detekt-reports
+          path: '**/build/reports/detekt/**'
+
+  coverage:
+    # Skip if head commit contains 'skip ci'
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
 
     runs-on: macos-latest
     needs: [ build ]
     timeout-minutes: 30
+    # TODO: Remove continue-on-error once the kover convention plugin is applied to modules
+    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v6
@@ -64,13 +100,14 @@ jobs:
           distribution: 'zulu'
           java-version: 21
 
-      - uses: gradle/gradle-build-action@v3
+      - uses: gradle/actions/setup-gradle@v5
 
-      - name: Deploy to Sonatype
-        run: ./gradlew publish --no-configuration-cache
-        env:
-          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY }}
-          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.GPG_KEY_ID }}
-          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_KEY_PASSWORD }}
+      - name: Generate Kover coverage report
+        run: ./gradlew koverXmlReport
+
+      - name: Upload coverage report
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: '**/build/reports/kover/**'
