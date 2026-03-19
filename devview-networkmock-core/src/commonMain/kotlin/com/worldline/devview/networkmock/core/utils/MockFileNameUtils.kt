@@ -1,13 +1,13 @@
-package com.worldline.devview.networkmock.utils
+package com.worldline.devview.networkmock.core.utils
 
 /**
  * Parses the HTTP status code from a response file name.
  *
  * This is the single source of truth for status-code extraction from mock
  * response file names. It is used by both
- * [fromFile][com.worldline.devview.networkmock.model.MockResponse.fromFile] when building
- * a [MockResponse][com.worldline.devview.networkmock.model.MockResponse] from disk, and by
- * [Mock.statusCode][com.worldline.devview.networkmock.model.EndpointMockState.Mock.statusCode]
+ * [fromFile][com.worldline.devview.networkmock.core.model.MockResponse.Companion.fromFile] when building
+ * a [MockResponse][com.worldline.devview.networkmock.core.model.MockResponse] from disk, and by
+ * [Mock.statusCode][com.worldline.devview.networkmock.core.model.EndpointMockState.Mock.statusCode]
  * when a quick status-code lookup is needed without loading the full response.
  *
  * ## File name format

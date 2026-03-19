@@ -28,9 +28,9 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.worldline.devview.networkmock.components.MockItem
 import com.worldline.devview.networkmock.components.NetworkItem
-import com.worldline.devview.networkmock.model.EndpointDescriptor
-import com.worldline.devview.networkmock.model.EndpointMockState
-import com.worldline.devview.networkmock.model.StatusCodeFamily
+import com.worldline.devview.networkmock.core.model.EndpointDescriptor
+import com.worldline.devview.networkmock.core.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.StatusCodeFamily
 import com.worldline.devview.networkmock.preview.EndpointUiModelPreviewParameterProvider
 import com.worldline.devview.networkmock.viewmodel.EndpointUiModel
 import kotlinx.coroutines.launch

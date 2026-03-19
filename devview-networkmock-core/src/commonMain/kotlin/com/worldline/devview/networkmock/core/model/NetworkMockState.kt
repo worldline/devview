@@ -1,7 +1,7 @@
-package com.worldline.devview.networkmock.model
+package com.worldline.devview.networkmock.core.model
 
 import androidx.compose.runtime.Immutable
-import com.worldline.devview.networkmock.utils.parseStatusCode
+import com.worldline.devview.networkmock.core.utils.parseStatusCode
 import kotlin.time.Clock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -22,7 +22,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
  *
  * ## Persistence
  * State is automatically saved to DataStore when changes are made through the
- * [com.worldline.devview.networkmock.repository.MockStateRepository]:
+ * [com.worldline.devview.networkmock.core.repository.MockStateRepository]:
  * ```kotlin
  * val repository = MockStateRepository(dataStore)
  *
@@ -56,7 +56,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
  * @property endpointStates Map of endpoint states, keyed by "{hostId}-{endpointId}"
  * @property lastModified Timestamp (milliseconds since epoch) of last state modification
  * @see EndpointMockState
- * @see com.worldline.devview.networkmock.repository.MockStateRepository
+ * @see com.worldline.devview.networkmock.core.repository.MockStateRepository
  */
 @Serializable
 public data class NetworkMockState(
@@ -188,7 +188,7 @@ public sealed interface EndpointMockState {
      *
      * @property responseFile The file name of the selected mock response
      *   (e.g. `"getUser-200.json"`). Used as the key to load the response via
-     *   [com.worldline.devview.networkmock.repository.MockConfigRepository.loadMockResponse].
+     *   [com.worldline.devview.networkmock.core.repository.MockConfigRepository.loadMockResponse].
      *   The status code and display name are derived from this name at runtime —
      *   they are not stored here to avoid redundancy with [MockResponse].
      */
@@ -208,7 +208,7 @@ public sealed interface EndpointMockState {
          * format.
          *
          * Computed on each access by delegating to
-         * [com.worldline.devview.networkmock.utils.parseStatusCode] — the single
+         * [parseStatusCode] — the single
          * source of truth for status-code extraction from response file names.
          *
          * ```kotlin

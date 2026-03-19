@@ -1,4 +1,4 @@
-package com.worldline.devview.networkmock.model
+package com.worldline.devview.networkmock.core.model
 
 public enum class StatusCodeFamily {
     INFORMATIONAL,

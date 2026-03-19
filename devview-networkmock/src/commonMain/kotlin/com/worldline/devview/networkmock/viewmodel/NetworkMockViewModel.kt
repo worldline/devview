@@ -3,11 +3,11 @@ package com.worldline.devview.networkmock.viewmodel
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.worldline.devview.networkmock.model.EndpointDescriptor
-import com.worldline.devview.networkmock.model.EndpointMockState
-import com.worldline.devview.networkmock.model.MockConfiguration
-import com.worldline.devview.networkmock.repository.MockConfigRepository
-import com.worldline.devview.networkmock.repository.MockStateRepository
+import com.worldline.devview.networkmock.core.model.EndpointDescriptor
+import com.worldline.devview.networkmock.core.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.MockConfiguration
+import com.worldline.devview.networkmock.core.repository.MockConfigRepository
+import com.worldline.devview.networkmock.core.repository.MockStateRepository
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow

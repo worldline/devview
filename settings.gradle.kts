@@ -44,6 +44,7 @@ include(
     ":devview-networkmock-ktor",
     ":devview-utils",
     ":internal:dokka",
+    "konsist",
     ":sample:androidApp",
     ":sample:network",
     ":sample:shared"

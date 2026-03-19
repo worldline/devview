@@ -1,4 +1,4 @@
-package com.worldline.devview.networkmock.model
+package com.worldline.devview.networkmock.core.model
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
@@ -53,7 +53,7 @@ import kotlinx.serialization.Serializable
  * @property hosts List of host configurations, each containing API endpoints
  * @see HostConfig
  * @see EndpointConfig
- * @see com.worldline.devview.networkmock.repository.MockConfigRepository
+ * @see com.worldline.devview.networkmock.core.repository.MockConfigRepository
  */
 @Serializable
 public data class MockConfiguration(val hosts: List<HostConfig>)

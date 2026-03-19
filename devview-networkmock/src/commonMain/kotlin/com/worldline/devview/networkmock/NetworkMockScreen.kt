@@ -36,11 +36,11 @@ import com.worldline.devview.networkmock.components.EndpointCard
 import com.worldline.devview.networkmock.components.ErrorState
 import com.worldline.devview.networkmock.components.GlobalMockToggle
 import com.worldline.devview.networkmock.components.LoadingState
-import com.worldline.devview.networkmock.model.EndpointDescriptor
-import com.worldline.devview.networkmock.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.EndpointDescriptor
+import com.worldline.devview.networkmock.core.model.EndpointMockState
+import com.worldline.devview.networkmock.core.repository.MockConfigRepository
+import com.worldline.devview.networkmock.core.repository.MockStateRepository
 import com.worldline.devview.networkmock.preview.NetworkMockUiStatePreviewParameterProvider
-import com.worldline.devview.networkmock.repository.MockConfigRepository
-import com.worldline.devview.networkmock.repository.MockStateRepository
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
 import kotlinx.coroutines.flow.SharedFlow

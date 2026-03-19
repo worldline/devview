@@ -33,7 +33,7 @@ import com.worldline.devview.networkmock.viewmodel.EndpointUiModel
  * @param modifier Optional modifier
  */
 @Composable
-public fun EndpointCard(
+internal fun EndpointCard(
     endpoint: EndpointUiModel,
     openEndpointBottomSheet: () -> Unit,
     modifier: Modifier = Modifier,

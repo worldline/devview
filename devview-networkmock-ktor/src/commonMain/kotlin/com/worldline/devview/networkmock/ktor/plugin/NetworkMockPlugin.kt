@@ -1,8 +1,8 @@
 @file:Suppress("StringLiteralDuplication")
 
-package com.worldline.devview.networkmock.plugin
+package com.worldline.devview.networkmock.ktor.plugin
 
-import com.worldline.devview.networkmock.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.EndpointMockState
 import io.ktor.client.HttpClient
 import io.ktor.client.call.HttpClientCall
 import io.ktor.client.plugins.HttpClientPlugin
@@ -24,6 +24,7 @@ import io.ktor.util.date.GMTDate
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.InternalAPI
 import kotlin.coroutines.CoroutineContext
+import kotlin.text.get
 
 private const val LOG_PREFIX = "[NetworkMock][Plugin]"
 

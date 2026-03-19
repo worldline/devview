@@ -1,11 +1,11 @@
-package com.worldline.devview.networkmock
+package com.worldline.devview.networkmock.core
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import com.worldline.devview.networkmock.repository.MockConfigRepository
-import com.worldline.devview.networkmock.repository.MockStateRepository
+import com.worldline.devview.networkmock.core.repository.MockConfigRepository
+import com.worldline.devview.networkmock.core.repository.MockStateRepository
 
 /**
  * Singleton initializer for the network mock module's repositories.
@@ -61,7 +61,11 @@ public object NetworkMockInitializer {
         resourceLoader: suspend (String) -> ByteArray
     ) {
         if (stateRepository != null) return
-        stateRepository = remember { MockStateRepository(dataStore = dataStore) }
+        stateRepository = remember {
+            MockStateRepository(
+                dataStore = dataStore
+            )
+        }
         configRepository = remember {
             MockConfigRepository(
                 configPath = configPath,
@@ -71,7 +75,7 @@ public object NetworkMockInitializer {
     }
 
     /**
-     * Returns the [MockStateRepository] instance.
+     * Returns the [com.worldline.devview.networkmock.core.repository.MockStateRepository] instance.
      *
      * Used by both the UI layer (`devview-networkmock`) and the Ktor plugin
      * (`devview-networkmock-ktor`) to read and update mock state.
@@ -86,7 +90,7 @@ public object NetworkMockInitializer {
         )
 
     /**
-     * Returns the [MockConfigRepository] instance.
+     * Returns the [com.worldline.devview.networkmock.core.repository.MockConfigRepository] instance.
      *
      * Used by both the UI layer (`devview-networkmock`) and the Ktor plugin
      * (`devview-networkmock-ktor`) to load mock configuration and response files.

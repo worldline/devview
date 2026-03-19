@@ -1,8 +1,8 @@
-package com.worldline.devview.networkmock.repository
+package com.worldline.devview.networkmock.core.repository
 
-import com.worldline.devview.networkmock.model.MockConfiguration
-import com.worldline.devview.networkmock.model.MockMatch
-import com.worldline.devview.networkmock.model.MockResponse
+import com.worldline.devview.networkmock.core.model.MockConfiguration
+import com.worldline.devview.networkmock.core.model.MockMatch
+import com.worldline.devview.networkmock.core.model.MockResponse
 import kotlinx.serialization.json.Json
 
 /**
@@ -102,9 +102,9 @@ import kotlinx.serialization.json.Json
  * @property statusCodesToDiscover The list of HTTP status codes to probe when
  * discovering response files. Defaults to [DEFAULT_STATUS_CODES]. Override this
  * to include non-standard status codes used by your API.
- * @see MockConfiguration
- * @see MockResponse
- * @see MockMatch
+ * @see com.worldline.devview.networkmock.core.model.MockConfiguration
+ * @see com.worldline.devview.networkmock.core.model.MockResponse
+ * @see com.worldline.devview.networkmock.core.model.MockMatch
  * @see RequestMatcher
  */
 public class MockConfigRepository(
@@ -115,7 +115,7 @@ public class MockConfigRepository(
     private val json = Json { ignoreUnknownKeys = true }
 
     // Cache the loaded configuration to avoid re-parsing
-    private var cachedConfig: MockConfiguration? = null
+    private var cachedConfig: com.worldline.devview.networkmock.core.model.MockConfiguration? = null
 
     public companion object {
         /**
@@ -186,7 +186,10 @@ public class MockConfigRepository(
         val configBytes = resourceLoader(configPath)
         val configJson = configBytes.decodeToString()
 
-        val config = json.decodeFromString<MockConfiguration>(string = configJson)
+        val config = json
+            .decodeFromString<MockConfiguration>(
+                string = configJson
+            )
         cachedConfig = config
 
         println(message = "[NetworkMock][Config] Successfully loaded configuration:")
@@ -215,7 +218,7 @@ public class MockConfigRepository(
      *
      * This method performs the following matching steps:
      * 1. Extract hostname from the host parameter
-     * 2. Find a [com.worldline.devview.networkmock.model.HostConfig] with matching hostname (case-insensitive)
+     * 2. Find a [HostConfig] with matching hostname (case-insensitive)
      * 3. For each endpoint in that host, check if the path and method match
      * 4. Use [RequestMatcher] to handle path parameters (e.g., `/users/{userId}`)
      *
@@ -397,7 +400,11 @@ public class MockConfigRepository(
     ): MockResponse? = runCatching {
         val responseBytes = resourceLoader(filePath)
         val content = responseBytes.decodeToString()
-        MockResponse.fromFile(fileName = fileName, content = content)
+        MockResponse.Companion
+            .fromFile(
+                fileName = fileName,
+                content = content
+            )
     }.getOrNull()
 
     /**
