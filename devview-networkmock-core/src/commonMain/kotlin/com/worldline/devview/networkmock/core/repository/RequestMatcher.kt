@@ -1,4 +1,4 @@
-package com.worldline.devview.networkmock.repository
+package com.worldline.devview.networkmock.core.repository
 
 /**
  * Utility object for matching HTTP request paths against configured endpoint paths.

@@ -1,4 +1,4 @@
-package com.worldline.devview.networkmock
+package com.worldline.devview.networkmock.core
 
 import com.worldline.devview.utils.DataStoreDelegate
 

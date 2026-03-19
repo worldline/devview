@@ -1,4 +1,4 @@
-package com.worldline.devview.networkmock.repository
+package com.worldline.devview.networkmock.core.repository
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -8,8 +8,8 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.worldline.devview.networkmock.model.EndpointKey
-import com.worldline.devview.networkmock.model.EndpointMockState
-import com.worldline.devview.networkmock.model.NetworkMockState
+import com.worldline.devview.networkmock.core.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.NetworkMockState
 import kotlin.time.Clock
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -386,7 +386,7 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
      * (before any writes).
      *
      * @param endpoints List of [EndpointKey] values from the loaded
-     *   [com.worldline.devview.networkmock.model.MockConfiguration]
+     *   [com.worldline.devview.networkmock.core.model.MockConfiguration]
      */
     public fun registerEndpoints(endpoints: List<EndpointKey>) {
         endpoints.forEach { key ->

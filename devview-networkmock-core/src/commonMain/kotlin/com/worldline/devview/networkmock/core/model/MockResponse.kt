@@ -1,7 +1,7 @@
-package com.worldline.devview.networkmock.model
+package com.worldline.devview.networkmock.core.model
 
 import androidx.compose.runtime.Immutable
-import com.worldline.devview.networkmock.utils.parseStatusCode
+import com.worldline.devview.networkmock.core.utils.parseStatusCode
 import kotlinx.serialization.Serializable
 
 /**
@@ -72,7 +72,7 @@ import kotlinx.serialization.Serializable
  * @property content The raw JSON response body as a String
  * @see MockConfiguration
  * @see EndpointConfig
- * @see com.worldline.devview.networkmock.repository.MockConfigRepository
+ * @see com.worldline.devview.networkmock.core.repository.MockConfigRepository
  */
 @Immutable
 @Serializable
@@ -96,7 +96,7 @@ public data class MockResponse(
          * - `get-user-200.json` → status = 200 (hyphenated endpoint ID supported)
          *
          * Status code extraction is delegated to
-         * [parseStatusCode][com.worldline.devview.networkmock.utils.parseStatusCode], which is the
+         * [parseStatusCode][com.worldline.devview.networkmock.core.utils.parseStatusCode], which is the
          * single source of truth for this parsing logic.
          *
          * ## Custom Status Text

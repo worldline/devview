@@ -1,4 +1,4 @@
-package com.worldline.devview.networkmock.model
+package com.worldline.devview.networkmock.core.model
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
@@ -71,7 +71,7 @@ import kotlinx.serialization.Serializable
  * @see ApiGroupConfig
  * @see EnvironmentConfig
  * @see EndpointConfig
- * @see com.worldline.devview.networkmock.repository.MockConfigRepository
+ * @see com.worldline.devview.networkmock.core.repository.MockConfigRepository
  */
 @Serializable
 public data class MockConfiguration(val apiGroups: List<ApiGroupConfig>)

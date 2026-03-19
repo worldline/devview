@@ -16,7 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import com.worldline.devview.networkmock.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.model.EndpointUiModel
 import com.worldline.devview.networkmock.preview.EndpointUiModelPreviewParameterProvider
 import com.worldline.devview.networkmock.utils.containerColor

@@ -1,11 +1,10 @@
-package com.worldline.devview.networkmock.repository
+package com.worldline.devview.networkmock.core.repository
 
 import com.worldline.devview.networkmock.model.ApiGroupConfig
 import com.worldline.devview.networkmock.model.EndpointKey
-import com.worldline.devview.networkmock.model.MockConfiguration
-import com.worldline.devview.networkmock.model.MockMatch
-import com.worldline.devview.networkmock.model.MockResponse
-import com.worldline.devview.networkmock.model.effectiveEndpoints
+import com.worldline.devview.networkmock.core.model.MockConfiguration
+import com.worldline.devview.networkmock.core.model.MockMatch
+import com.worldline.devview.networkmock.core.model.MockResponse
 import kotlinx.serialization.json.Json
 
 /**
@@ -119,7 +118,7 @@ public class MockConfigRepository(
     private val json = Json { ignoreUnknownKeys = true }
 
     // Cache the loaded configuration to avoid re-parsing
-    private var cachedConfig: MockConfiguration? = null
+    private var cachedConfig: com.worldline.devview.networkmock.core.model.MockConfiguration? = null
 
     public companion object {
         /**
@@ -194,7 +193,10 @@ public class MockConfigRepository(
         val configBytes = resourceLoader(configPath)
         val configJson = configBytes.decodeToString()
 
-        val config = json.decodeFromString<MockConfiguration>(string = configJson)
+        val config = json
+            .decodeFromString<MockConfiguration>(
+                string = configJson
+            )
         cachedConfig = config
 
         println(message = "[NetworkMock][Config] Successfully loaded configuration:")
@@ -542,7 +544,11 @@ public class MockConfigRepository(
     ): MockResponse? = runCatching {
         val responseBytes = resourceLoader(filePath)
         val content = responseBytes.decodeToString()
-        MockResponse.fromFile(fileName = fileName, content = content)
+        MockResponse.Companion
+            .fromFile(
+                fileName = fileName,
+                content = content
+            )
     }.getOrNull()
 
     /**

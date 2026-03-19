@@ -1,8 +1,8 @@
-package com.worldline.devview.networkmock.plugin
+package com.worldline.devview.networkmock.ktor.plugin
 
-import com.worldline.devview.networkmock.NetworkMockInitializer
-import com.worldline.devview.networkmock.repository.MockConfigRepository
-import com.worldline.devview.networkmock.repository.MockStateRepository
+import com.worldline.devview.networkmock.core.NetworkMockInitializer
+import com.worldline.devview.networkmock.core.repository.MockConfigRepository
+import com.worldline.devview.networkmock.core.repository.MockStateRepository
 
 /**
  * Configuration class for the [NetworkMockPlugin].
