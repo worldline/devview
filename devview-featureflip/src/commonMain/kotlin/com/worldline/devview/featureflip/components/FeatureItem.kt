@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -83,6 +84,7 @@ internal fun FeatureItem(
             verticalArrangement = Arrangement.spacedBy(space = 4.dp)
         ) {
             Text(
+                modifier = Modifier.testTag(tag = "feature_name_${feature.name}"),
                 text = feature.name,
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontWeight = FontWeight.Bold
@@ -90,6 +92,7 @@ internal fun FeatureItem(
             )
             feature.description?.let {
                 Text(
+                    modifier = Modifier.testTag(tag = "feature_description_${feature.name}"),
                     text = it,
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -98,6 +101,7 @@ internal fun FeatureItem(
 
         when (feature) {
             is LocalFeature -> Switch(
+                modifier = Modifier.testTag(tag = "feature_switch_${feature.name}"),
                 checked = feature.isEnabled,
                 onCheckedChange = {
                     onStateChange(if (it) FeatureState.LOCAL_ON else FeatureState.LOCAL_OFF)
@@ -105,6 +109,7 @@ internal fun FeatureItem(
             )
 
             is RemoteFeature -> FeatureTriStateSwitch(
+                modifier = Modifier.testTag(tag = "feature_tri_state_switch_${feature.name}"),
                 feature = feature,
                 onStateChange = onStateChange
             )
