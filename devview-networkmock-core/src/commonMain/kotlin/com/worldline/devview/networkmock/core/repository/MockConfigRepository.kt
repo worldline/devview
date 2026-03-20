@@ -449,7 +449,12 @@ public class MockConfigRepository(
             message = "[NetworkMock][Discovery] Discovered ${discovered.size} response file(s) " +
                 "for '$groupId/$environmentId/$endpointId'"
         )
-        return discovered.values.sortedBy { it.statusCode }
+
+        // A custom statusCodesToDiscover list may accidentally include duplicates.
+        // Deduplicate by file name so callers get a stable set of discovered files.
+        return responses
+            .distinctBy { it.fileName }
+            .sortedBy { it.statusCode }
     }
 
     /**
