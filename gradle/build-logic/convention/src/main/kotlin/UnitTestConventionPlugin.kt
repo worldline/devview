@@ -2,7 +2,6 @@ import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
 import com.worldline.buildlogic.convention.libs
 import dev.mokkery.gradle.ApplicationRule
 import dev.mokkery.gradle.MokkeryGradleExtension
-import dev.mokkery.internal.options.MokkeryOptions.Core.ignoreFinalMembers
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.internal.Actions.with
@@ -58,23 +57,42 @@ class UnitTestConventionPlugin : Plugin<Project> {
                 }
 
                 sourceSets {
+                    all {
+                        languageSettings.optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+                    }
+
+                    val kotestBom = libs.findLibrary("kotest.bom").get()
+                    val ktorBom = libs.findLibrary("ktor.bom").get()
+
                     commonTest {
                         dependencies {
-                            val bom = libs.findLibrary("kotest.bom").get()
-                            implementation(project.dependencies.platform(bom))
+                            implementation(project.dependencies.platform(kotestBom))
                             implementation(libs.findLibrary("kotest.framework.engine").get())
                             implementation(libs.findLibrary("kotest.assertions.core").get())
                             implementation(libs.findLibrary("kotest.property").get())
 
                             implementation(libs.findLibrary("kotlinx.coroutines.test").get())
                             implementation(libs.findLibrary("turbine").get())
+
+                            implementation(kotlin("test"))
+                            implementation(kotlin("test-annotations-common"))
+
+                            implementation(dependencies.platform(ktorBom))
+                            implementation(libs.findLibrary("ktor.client.mock").get())
                         }
                     }
 
                     getByName("androidHostTest") {
                         dependencies {
+                            implementation(project.dependencies.platform(kotestBom))
                             implementation(libs.findLibrary("kotest.runner.junit5").get())
                             implementation(libs.findLibrary("mockk").get())
+
+                            implementation(kotlin("test"))
+                            implementation(kotlin("test-annotations-common"))
+
+                            implementation(dependencies.platform(ktorBom))
+                            implementation(libs.findLibrary("ktor.client.mock").get())
                         }
                     }
                 }

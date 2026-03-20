@@ -17,17 +17,27 @@ package com.worldline.devview.networkmock.core.utils
  * exactly three digits, making this robust to endpoint IDs that themselves
  * contain hyphens.
  *
+ * ## Extension handling
+ * The `.json` extension is stripped before matching via [String.removeSuffix]. If the
+ * input has no `.json` extension, `removeSuffix` is a no-op and the regex is applied
+ * to the string as-is. A file name without a `.json` extension is therefore still
+ * parsed correctly as long as it otherwise follows the naming convention.
+ *
  * ## Examples
  * ```kotlin
  * "getUser-200.json".parseStatusCode()        // 200
  * "getUser-404-simple.json".parseStatusCode() // 404
  * "get-user-500.json".parseStatusCode()       // 500
- * "malformed.json".parseStatusCode()          // null
+ * "getUser-200".parseStatusCode()             // 200  (no extension — still valid)
+ * "getUser.json".parseStatusCode()            // null (no three-digit code)
+ * "getUser-json.json".parseStatusCode()       // null (non-numeric code segment)
+ * "getUser-20.json".parseStatusCode()         // null (only two digits)
+ * "".parseStatusCode()                        // null (empty string)
  * ```
  *
  * @receiver The response file name to parse (e.g. `"getUser-200.json"`)
  * @return The 3-digit HTTP status code, or `null` if the file name does not
- *   match the expected `{endpointId}-{statusCode}[-{suffix}].json` format
+ *   contain a `-{3 digits}` segment (with or without a `.json` extension)
  */
 internal fun String.parseStatusCode(): Int? {
     val nameWithoutExtension = removeSuffix(suffix = ".json")

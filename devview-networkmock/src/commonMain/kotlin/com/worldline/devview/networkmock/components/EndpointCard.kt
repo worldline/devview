@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -58,6 +59,9 @@ internal fun EndpointCard(
             verticalArrangement = Arrangement.spacedBy(space = spacing.dp)
         ) {
             Text(
+                modifier = Modifier.testTag(
+                    tag = "endpoint_name_${endpoint.descriptor.endpointId}"
+                ),
                 text = endpoint.descriptor.config.name,
                 style = MaterialTheme.typography.titleMedium
             )
@@ -66,12 +70,18 @@ internal fun EndpointCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
+                    modifier = Modifier.testTag(
+                        tag = "endpoint_method_${endpoint.descriptor.endpointId}"
+                    ),
                     text = endpoint.descriptor.config.method,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontFamily = FontFamily.Monospace
                 )
                 Text(
+                    modifier = Modifier.testTag(
+                        tag = "endpoint_path_${endpoint.descriptor.endpointId}"
+                    ),
                     text = endpoint.descriptor.config.path,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -82,6 +92,9 @@ internal fun EndpointCard(
                 visible = showFileName
             ) {
                 Text(
+                    modifier = Modifier.testTag(
+                        tag = "endpoint_state_${endpoint.descriptor.endpointId}"
+                    ),
                     text = endpoint.currentState.displayName,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -89,137 +102,11 @@ internal fun EndpointCard(
             }
         }
         EndpointStateChip(
-            endpointMockState = endpoint.currentState
+            endpointMockState = endpoint.currentState,
+            chipTestTag = "endpoint_state_chip_${endpoint.descriptor.endpointId}",
+            labelTestTag = "endpoint_state_chip_label_${endpoint.descriptor.endpointId}"
         )
     }
-
-//    Card(
-//        modifier = modifier
-//            .fillMaxWidth()
-//    ) {
-//        Column(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(all = 16.dp)
-//        ) {
-//            // Endpoint name and method/path
-//            Text(
-//                text = endpoint.config.name,
-//                style = MaterialTheme.typography.titleMedium
-//            )
-//
-//            Spacer(modifier = Modifier.height(height = 4.dp))
-//
-//            Row(
-//                horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                Text(
-//                    text = endpoint.config.method,
-//                    style = MaterialTheme.typography.labelSmall,
-//                    color = MaterialTheme.colorScheme.primary,
-//                    fontFamily = FontFamily.Monospace
-//                )
-//                Text(
-//                    text = endpoint.config.path,
-//                    style = MaterialTheme.typography.bodySmall,
-//                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-//                    fontFamily = FontFamily.Monospace
-//                )
-//            }
-//
-//            Spacer(modifier = Modifier.height(height = 12.dp))
-//
-//            // Mock toggle
-//            Row(
-//                modifier = Modifier.fillMaxWidth(),
-//                horizontalArrangement = Arrangement.SpaceBetween,
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                Text(
-//                    text = if (endpoint.currentState.mockEnabled) "Use Mock" else "Use Network",
-//                    style = MaterialTheme.typography.bodyMedium
-//                )
-//                Switch(
-//                    checked = endpoint.currentState.mockEnabled,
-//                    onCheckedChange = onToggleMock
-//                )
-//            }
-//
-//            // Response selector (only when mock is enabled)
-//            if (endpoint.currentState.mockEnabled && endpoint.availableResponses.isNotEmpty()) {
-//                Spacer(modifier = Modifier.height(height = 12.dp))
-//
-//                Column {
-//                    Text(
-//                        text = "Mock Response:",
-//                        style = MaterialTheme.typography.labelMedium,
-//                        color = MaterialTheme.colorScheme.onSurfaceVariant
-//                    )
-//
-//                    Spacer(modifier = Modifier.height(height = 4.dp))
-//
-//                    OutlinedButton(
-//                        onClick = { showDropdown = true },
-//                        modifier = Modifier.fillMaxWidth()
-//                    ) {
-//                        Row(
-//                            modifier = Modifier.fillMaxWidth(),
-//                            horizontalArrangement = Arrangement.SpaceBetween,
-//                            verticalAlignment = Alignment.CenterVertically
-//                        ) {
-//                            Text(
-//                                text = endpoint.currentState.selectedResponseFile
-//                                    ?: "Select response...",
-//                                style = MaterialTheme.typography.bodyMedium
-//                            )
-//                            Icon(
-//                                imageVector = Icons.Default.ArrowDropDown,
-//                                contentDescription = "Select response"
-//                            )
-//                        }
-//                    }
-//
-//                    DropdownMenu(
-//                        expanded = showDropdown,
-//                        onDismissRequest = { showDropdown = false }
-//                    ) {
-//                        endpoint.availableResponses.forEach { response ->
-//                            DropdownMenuItem(
-//                                text = {
-//                                    Column {
-//                                        Text(
-//                                            text = response.displayName,
-//                                            style = MaterialTheme.typography.bodyMedium
-//                                        )
-//                                        Text(
-//                                            text = response.fileName,
-//                                            style = MaterialTheme.typography.bodySmall,
-//                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-//                                        )
-//                                    }
-//                                },
-//                                onClick = {
-//                                    onSelectResponse(response.fileName)
-//                                    showDropdown = false
-//                                }
-//                            )
-//                        }
-//                    }
-//                }
-//            }
-//
-//            // Show message if no responses available
-//            if (endpoint.currentState.mockEnabled && endpoint.availableResponses.isEmpty()) {
-//                Spacer(modifier = Modifier.height(height = 8.dp))
-//                Text(
-//                    text = "No mock responses available for this endpoint",
-//                    style = MaterialTheme.typography.bodySmall,
-//                    color = MaterialTheme.colorScheme.error
-//                )
-//            }
-//        }
-//    }
 }
 
 @Preview(locale = "en")

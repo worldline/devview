@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
@@ -97,7 +98,7 @@ public fun NetworkMockScreen(
 }
 
 @Composable
-private fun NetworkMockScreenContent(
+internal fun NetworkMockScreenContent(
     uiState: NetworkMockUiState,
     onGlobalToggle: (Boolean) -> Unit,
     setEndpointMockState: (String, String, String?) -> Unit,
@@ -176,6 +177,7 @@ private fun ContentState(
         ) {
             uiState.hosts.forEachIndexed { index, host ->
                 Tab(
+                    modifier = Modifier.testTag(tag = "host_tab_${host.id}"),
                     selected = selectedTabIndex == index,
                     onClick = { selectedTabIndex = index },
                     text = { Text(text = host.name) }
@@ -199,6 +201,9 @@ private fun ContentState(
                     key = { _, endpoint -> "${host.id}-${endpoint.descriptor.endpointId}" }
                 ) { index, endpoint ->
                     EndpointCard(
+                        modifier = Modifier.testTag(
+                            tag = "endpoint_card_${endpoint.descriptor.hostId}_${endpoint.descriptor.endpointId}"
+                        ),
                         endpoint = endpoint,
                         openEndpointBottomSheet = {
                             selectEndpoint(
