@@ -17,7 +17,10 @@ class KoverConventionPlugin : Plugin<Project> {
                         androidGeneratedClasses()
                         packages(
                             "*.generated.resources",
-                            "*.internal.*"
+                            "*.internal.*",
+                            "*.preview",
+                            "*.preview.*",
+                            "*.components",
                         )
                         classes(
                             "*_*",
@@ -25,7 +28,12 @@ class KoverConventionPlugin : Plugin<Project> {
                             "*.*BuildKonfig*",
                             "*.*ComposableSingletons*",
                             "*.*ScreenKt",
-                            "*.TimeRange*"
+                            "*.TimeRange*",
+                            "*.FeatureFilter*",
+                            "*.*DefaultImpls*",
+                            "*.*Destination*",
+                            "*.*DataStoreDelegate*",
+                            "com.worldline.devview.networkmock.core.NetworkMockInitializer"
                         )
                         annotatedBy(
                             "androidx.compose.runtime.Composable",
@@ -35,7 +43,10 @@ class KoverConventionPlugin : Plugin<Project> {
                             "*.HasTitle",
                             "*.PolymorphicModuleBuilder",
                             "*.ProvidableCompositionLocal",
-                            "*.HighlightedAnalyticsLog"
+                            "*.HighlightedAnalyticsLog",
+                            "*.PreviewParameterProvider",
+                            "*.DataStoreDelegate",
+                            "*.Module"
                         )
                     }
                 }
