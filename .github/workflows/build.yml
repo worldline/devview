@@ -41,6 +41,12 @@ jobs:
       - name: Assemble and check
         run: ./gradlew check assembleDebug -Pandroidx.baselineprofile.skipgeneration
 
+      - name: Run unit tests
+        run: ./gradlew test -Pandroidx.baselineprofile.skipgeneration
+
+      - name: Run androidHostTest tests
+        run: ./gradlew androidHostTest -Pandroidx.baselineprofile.skipgeneration
+
       - name: Upload reports + Roborazzi outputs
         if: failure()
         uses: actions/upload-artifact@v7
@@ -112,6 +118,51 @@ jobs:
           name: konsist-reports
           path: 'konsist/build/reports/tests/**'
 
+  device-tests:
+    # Skip if head commit contains 'skip ci'
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v5
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Enable KVM for emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          sudo chmod 777 /dev/kvm
+
+      - name: Run Android Device Tests
+        uses: reactivecircus/android-emulator-runner@v3
+        with:
+          api-level: 33
+          arch: x86_64
+          profile: Nexus 6P
+          script: ./gradlew connectedAndroidDeviceTest -Pandroidx.baselineprofile.skipgeneration
+
+      - name: Upload device test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: device-test-reports
+          path: |
+            **/build/reports/**
+            **/build/outputs/connected-android-test/**
+
   coverage:
     # Skip if head commit contains 'skip ci'
     if: "!contains(github.event.head_commit.message, 'skip ci')"
@@ -136,9 +187,22 @@ jobs:
       - name: Generate Kover coverage report
         run: ./gradlew koverXmlReport
 
+      - name: Generate test reports
+        run: ./gradlew testReport
+
       - name: Upload coverage report
         if: success()
         uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: '**/build/reports/kover/**'
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: |
+            **/build/reports/tests/**
+            **/test-results/**
+
