@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.convention.multiplatform.library)
     alias(libs.plugins.convention.ktor)
     alias(libs.plugins.convention.unitTest)
+    alias(libs.plugins.convention.kover)
     alias(libs.plugins.dokka)
     alias(libs.plugins.maven.publish)
 }

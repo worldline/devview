@@ -17,16 +17,25 @@ class KoverConventionPlugin : Plugin<Project> {
                         androidGeneratedClasses()
                         packages(
                             "*.generated.resources",
+                            "*.internal.*"
                         )
                         classes(
                             "*_*",
                             "*.*Constructor*",
                             "*.*BuildKonfig*",
                             "*.*ComposableSingletons*",
+                            "*.*ScreenKt",
+                            "*.TimeRange*"
                         )
                         annotatedBy(
-                            "*.Composable",
-                            "*.Preview"
+                            "androidx.compose.runtime.Composable",
+                            "androidx.compose.ui.tooling.preview.Preview"
+                        )
+                        inheritedFrom(
+                            "*.HasTitle",
+                            "*.PolymorphicModuleBuilder",
+                            "*.ProvidableCompositionLocal",
+                            "*.HighlightedAnalyticsLog"
                         )
                     }
                 }

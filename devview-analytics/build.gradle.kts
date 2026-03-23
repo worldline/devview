@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.convention.compose.multiplatform)
     alias(libs.plugins.convention.unitTest)
     alias(libs.plugins.convention.deviceTest)
+    alias(libs.plugins.convention.kover)
     alias(libs.plugins.dokka)
     alias(libs.plugins.maven.publish)
     alias(libs.plugins.poko)
