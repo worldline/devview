@@ -200,7 +200,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v5
 
       - name: Generate Kover coverage report
-        run: ./gradlew koverXmlReport
+        run: ./gradlew :devview:koverXmlReport :devview:koverLog
 
       - name: Upload coverage report
         if: success()
