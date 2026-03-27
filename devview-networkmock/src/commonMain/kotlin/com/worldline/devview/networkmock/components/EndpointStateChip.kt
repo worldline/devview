@@ -25,7 +25,7 @@ import com.worldline.devview.networkmock.utils.icon
 import com.worldline.devview.networkmock.viewmodel.EndpointUiModel
 
 @Composable
-public fun EndpointStateChip(
+internal fun EndpointStateChip(
     endpointMockState: EndpointMockState,
     modifier: Modifier = Modifier,
     chipTestTag: String = "endpoint_state_chip",

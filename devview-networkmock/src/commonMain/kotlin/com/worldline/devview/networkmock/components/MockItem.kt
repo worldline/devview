@@ -135,7 +135,7 @@ private fun MockItemContent(
 
 @Preview(locale = "en")
 @Composable
-internal fun MockItemPreview(
+private fun MockItemPreview(
     @PreviewParameter(MockResponsePreviewParameterProvider::class) mockResponse: MockResponse
 ) {
     MaterialTheme {
@@ -150,7 +150,7 @@ internal fun MockItemPreview(
 
 @Preview(locale = "en")
 @Composable
-internal fun NetworkItemPreview() {
+private fun NetworkItemPreview() {
     MaterialTheme {
         Surface {
             NetworkItem(
@@ -163,7 +163,7 @@ internal fun NetworkItemPreview() {
 
 @Preview(locale = "en")
 @Composable
-internal fun MockItemSelectedPreview() {
+private fun MockItemSelectedPreview() {
     MaterialTheme {
         Surface {
             MockItem(
