@@ -38,8 +38,8 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v5
 
-      - name: Assemble and check
-        run: ./gradlew check assembleDebug -Pandroidx.baselineprofile.skipgeneration
+      - name: Assemble
+        run: ./gradlew assembleDebug -Pandroidx.baselineprofile.skipgeneration
 
   unit-and-host-tests:
     # Skip if head commit contains 'skip ci'
