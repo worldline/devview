@@ -38,10 +38,13 @@ class ComposeTest : FunSpec(body = {
             }
     }
 
-    test(name = "PreviewParameterProvider subclasses are internal") {
+    test(name = "PreviewParameterProvider subclasses are internal (except in utils module)") {
         Konsist
             .scopeFromProject()
             .classes()
+            .filterNot {
+                it.packagee?.hasNameStartingWith("com.worldline.devview.utils") ?: false
+            }
             .withNameEndingWith("PreviewParameterProvider")
             .assertTrue(additionalMessage = "PreviewParameterProvider subclasses must be 'internal'") { clazz ->
                 clazz.hasInternalModifier

@@ -25,6 +25,7 @@ import com.worldline.devview.networkmock.utils.contentColor
 import com.worldline.devview.networkmock.utils.icon
 
 @Composable
+public fun EndpointStateChip(
     endpointMockState: EndpointMockState,
     modifier: Modifier = Modifier,
     label: String = when (endpointMockState) {
