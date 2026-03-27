@@ -138,6 +138,9 @@ class FeatureFlipScreenTest {
         // Click the clear button
         onNodeWithTag(testTag = "clear_feature_filter_button").performClick()
 
+        // Wait for AnimatedVisibility animation to finish
+        waitForIdle()
+
         // After clearing, button should be gone again
         onAllNodesWithTag(testTag = "clear_feature_filter_button").assertCountEquals(0)
         
