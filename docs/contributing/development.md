@@ -1,4 +1,4 @@
-﻿﻿# Development Setup
+﻿# Development Setup
 
 Guide for contributing to DevView.
 

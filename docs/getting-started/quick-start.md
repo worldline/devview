@@ -1,4 +1,4 @@
-﻿﻿# Quick Start Guide
+﻿# Quick Start Guide
 
 Get DevView up and running in your application in just a few minutes!
 

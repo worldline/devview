@@ -1,4 +1,4 @@
-﻿﻿# Module Development Guide
+﻿# Module Development Guide
 
 In-depth guide for creating DevView modules.
 

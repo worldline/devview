@@ -1,4 +1,4 @@
-﻿﻿# Configuration
+﻿# Configuration
 
 Advanced configuration options for DevView.
 

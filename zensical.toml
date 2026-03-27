@@ -11,23 +11,23 @@
 # The site_name is shown in the page header and the browser window title
 #
 # Read more: https://zensical.org/docs/setup/basics/#site_name
-site_name = "Documentation"
+site_name = "DevView"
 
 # The site_description is included in the HTML head and should contain a
 # meaningful description of the site content for use by search engines.
 #
 # Read more: https://zensical.org/docs/setup/basics/#site_description
-site_description = "A new project generated from the default template project."
+site_description = "A Kotlin Multiplatform developer tools framework for Android and iOS"
 
 # The site_author attribute. This is used in the HTML head element.
 #
 # Read more: https://zensical.org/docs/setup/basics/#site_author
-site_author = "<your name here>"
+site_author = "Maxime Michel"
 
 # The site_url is the canonical URL for your site. When building online
 # documentation you should set this.
 # Read more: https://zensical.org/docs/setup/basics/#site_url
-#site_url = "https://www.example.com/"
+site_url = "https://worldline.github.io/devview/"
 
 # The copyright notice appears in the page footer and can contain an HTML
 # fragment.
@@ -37,6 +37,17 @@ copyright = """
 Copyright &copy; 2026 Maxime Michel
 """
 
+# The repository name shown in the header and used for repository links.
+#
+# Read more: https://zensical.org/docs/setup/repository/#repository-name
+repo_name = "worldline/devview"
+
+# The repository URL points to the source repository for your documentation
+# project and enables repository-related integrations.
+#
+# Read more: https://zensical.org/docs/setup/repository/#repository-url
+repo_url = "https://github.com/worldline/devview"
+
 # Zensical supports both implicit navigation and explicitly defined navigation.
 # If you decide not to define a navigation here then Zensical will simply
 # derive the navigation structure from the directory structure of your
@@ -44,10 +55,57 @@ Copyright &copy; 2026 Maxime Michel
 # can be defined using TOML syntax.
 #
 # Read more: https://zensical.org/docs/setup/navigation/
-# nav = [
-#   { "Get started" = "index.md" },
-#   { "Markdown in 5min" = "markdown.md" },
-# ]
+nav = [
+  { "Home" = "index.md" },
+  { "Getting Started" = [
+    "getting-started/index.md",
+    { "Prerequisites" = "getting-started/prerequisites.md" },
+    { "Installation" = "getting-started/installation.md" },
+    { "Quick Start" = "getting-started/quick-start.md" },
+    { "Configuration" = "getting-started/configuration.md" },
+    { "Troubleshooting & FAQ" = "getting-started/troubleshooting-faq.md" },
+  ]},
+  { "Modules" = [
+    "modules/index.md",
+    { "FeatureFlip" = "modules/featureflip.md" },
+    { "Analytics" = "modules/analytics.md" },
+    { "NetworkMock" = [
+      { "Overview" = "modules/networkmock.md" },
+      { "Core" = "modules/networkmock-core.md" },
+      { "UI" = "modules/networkmock-ui.md" },
+      { "Ktor Plugin" = "modules/networkmock-ktor.md" },
+      { "Workflows" = "modules/networkmock-workflows.md" },
+    ]},
+    { "Creating Custom Modules" = "modules/custom-modules.md" },
+  ]},
+  { "Guides" = [
+    "guides/index.md",
+    { "Integration Guide" = "guides/integration-guide.md" },
+    { "Module Development" = "guides/module-development.md" },
+    { "Navigation" = "guides/navigation.md" },
+    { "Theming" = "guides/theming.md" },
+    { "Best Practices" = "guides/best-practices.md" },
+    { "Common Pitfalls" = "guides/common-pitfalls.md" },
+  ]},
+  { "API Reference" = "api/index.html" },
+  { "Examples" = [
+    "examples/index.md",
+    { "Android Setup" = "examples/android.md" },
+    { "iOS Setup" = "examples/ios.md" },
+    { "Feature Flags" = "examples/feature-flags.md" },
+    { "Analytics Tracking" = "examples/analytics-tracking.md" },
+    { "Advanced Examples" = "examples/advanced-examples.md" },
+  ]},
+  { "Contributing" = [
+    "contributing/index.md",
+    { "Development Setup" = "contributing/development.md" },
+    { "Code Style" = "contributing/code-style.md" },
+    { "Pull Requests" = "contributing/pull-requests.md" },
+    { "Code of Conduct" = "contributing/code-of-conduct.md" },
+  ]},
+  { "Changelog" = "changelog.md" },
+  { "License" = "license.md" },
+]
 
 # With the "extra_css" option you can add your own CSS styling to customize
 # your Zensical project according to your needs. You can add any number of
@@ -215,12 +273,12 @@ features = [
     # When tabs are enabled, top-level sections are rendered in a menu layer
     # below the header for viewports above 1220px, but remain as-is on mobile.
     # https://zensical.org/docs/setup/navigation/#navigation-tabs
-    #"navigation.tabs",
+    "navigation.tabs",
 
     # When sticky tabs are enabled, navigation tabs will lock below the header
     # and always remain visible when scrolling down.
     # https://zensical.org/docs/setup/navigation/#sticky-navigation-tabs
-    #"navigation.tabs.sticky",
+    "navigation.tabs.sticky",
 
     # A back-to-top button can be shown when the user, after scrolling down,
     # starts to scroll up again.
@@ -241,12 +299,12 @@ features = [
     # When anchor following for the table of contents is enabled, the sidebar
     # is automatically scrolled so that the active anchor is always visible.
     # https://zensical.org/docs/setup/navigation/#anchor-following
-    # "toc.follow",
+    "toc.follow",
 
     # When navigation integration for the table of contents is enabled, it is
     # always rendered as part of the navigation sidebar on the left.
     # https://zensical.org/docs/setup/navigation/#navigation-integration
-    #"toc.integrate",
+    "toc.integrate",
 ]
 
 # ----------------------------------------------------------------------------
@@ -265,8 +323,9 @@ features = [
 # - https://zensical.org/docs/setup/logo-and-icons
 # - https://github.com/zensical/ui/tree/master/dist/.icons
 # ----------------------------------------------------------------------------
-#[project.theme.icon]
-#logo = "lucide/smile"
+[project.theme.icon]
+logo = "lucide/bug-play"
+repo = "fontawesome/brands/github"
 
 # ----------------------------------------------------------------------------
 # In the "font" subsection you can configure the fonts used. By default, fonts
@@ -274,9 +333,9 @@ features = [
 # of suitably licensed fonts. There are options for a normal text font and for
 # a monospaced font used in code blocks.
 # ----------------------------------------------------------------------------
-#[project.theme.font]
-#text = "Inter"
-#code = "Jetbrains Mono"
+[project.theme.font]
+text = "Inter"
+code = "Jetbrains Mono"
 
 # ----------------------------------------------------------------------------
 # In the "palette" subsection you can configure options for the color scheme.
@@ -288,18 +347,52 @@ features = [
 # - https://zensical.org/docs/setup/colors/
 # ----------------------------------------------------------------------------
 [[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+primary = "orange"
+accent = "orange"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
 scheme = "default"
 toggle.icon = "lucide/sun"
 toggle.name = "Switch to dark mode"
+primary = "orange"
+accent = "orange"
 
 [[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
 scheme = "slate"
 toggle.icon = "lucide/moon"
-toggle.name = "Switch to light mode"
+toggle.name = "Switch to system preference"
+primary = "orange"
+accent = "orange"
 
 # ----------------------------------------------------------------------------
 # The "extra" section contains miscellaneous settings.
 # ----------------------------------------------------------------------------
-#[[project.extra.social]]
-#icon = "fontawesome/brands/github"
-#link = "https://github.com/user/repo"
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/worldline"
+
+[project.markdown_extensions.codehilite]
+[project.markdown_extensions.pymdownx.betterem]
+[project.markdown_extensions.pymdownx.tilde]
+[project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.emoji]
+emoji_index = "zensical.extensions.emoji.twemoji"
+emoji_generator = "zensical.extensions.emoji.to_svg"
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums = true
+line_spans = "__span"
+pygments_lang_class = true
+[project.markdown_extensions.pymdownx.inlinehilite]
+[project.markdown_extensions.pymdownx.superfences]
+custom_fences = [
+    { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" }
+]
+[project.markdown_extensions.pymdownx.snippets]
+[project.markdown_extensions.pymdownx.magiclink]
+[project.markdown_extensions.def_list]
+[project.markdown_extensions.tables]
