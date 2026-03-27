@@ -102,9 +102,9 @@ import kotlinx.serialization.json.Json
  * @property statusCodesToDiscover The list of HTTP status codes to probe when
  * discovering response files. Defaults to [DEFAULT_STATUS_CODES]. Override this
  * to include non-standard status codes used by your API.
- * @see com.worldline.devview.networkmock.core.model.MockConfiguration
- * @see com.worldline.devview.networkmock.core.model.MockResponse
- * @see com.worldline.devview.networkmock.core.model.MockMatch
+ * @see MockConfiguration
+ * @see MockResponse
+ * @see MockMatch
  * @see RequestMatcher
  */
 public class MockConfigRepository(
@@ -115,7 +115,7 @@ public class MockConfigRepository(
     private val json = Json { ignoreUnknownKeys = true }
 
     // Cache the loaded configuration to avoid re-parsing
-    private var cachedConfig: com.worldline.devview.networkmock.core.model.MockConfiguration? = null
+    private var cachedConfig: MockConfiguration? = null
 
     public companion object {
         /**
@@ -218,7 +218,8 @@ public class MockConfigRepository(
      *
      * This method performs the following matching steps:
      * 1. Extract hostname from the host parameter
-     * 2. Find a [HostConfig] with matching hostname (case-insensitive)
+     * 2. Find a [HostConfig][com.worldline.devview.networkmock.core.model.HostConfig] with matching
+     * hostname (case-insensitive)
      * 3. For each endpoint in that host, check if the path and method match
      * 4. Use [RequestMatcher] to handle path parameters (e.g., `/users/{userId}`)
      *

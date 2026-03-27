@@ -24,3 +24,7 @@ kotlin {
         }
     }
 }
+
+dependencies {
+    dokka(projects.devview)
+}
