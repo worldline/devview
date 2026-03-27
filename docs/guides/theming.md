@@ -1,24 +1,55 @@
 ﻿# Theming Guide
-Customizing the appearance of DevView.
-## Module Customization
-Customize your module's appearance:
+
+Customising the appearance of DevView.
+
+> _[Placeholder: Insert screenshot of DevView UI in light and dark themes. Use a device frame if relevant.]_
+
+## Overview
+DevView is designed to inherit your app's theme, using MaterialTheme and Compose best practices. This ensures a consistent look and feel across all modules and platforms.
+
+## Step-by-Step: Adapting to App Theme
+DevView uses MaterialTheme colour schemes and typography by default:
+```kotlin
+MaterialTheme.colorScheme.primary
+MaterialTheme.typography.bodyLarge
+```
+
+## Customising Colours
+Override colours for modules or components as needed:
 ```kotlin
 object MyModule : Module {
-    override val moduleName = "My Tool"
-    override val icon = Icons.Default.Build
-    override val containerColor = Color(0xFFFF5722)
-    override val contentColor = Color.White
-    override val subtitle = "Custom tool"
+    override val containerColour = MaterialTheme.colorScheme.secondary
+    override val contentColour = MaterialTheme.colorScheme.onSecondary
+    // ...other properties...
 }
 ```
-## Material Design 3
-DevView uses Material Design 3. Your modules inherit the app's theme.
-## Colors
-- **containerColor**: Icon background
-- **contentColor**: Icon color
-- Use theme colors for consistency
-## Icons
-Use Material Icons or custom ImageVectors.
+
+## Customising Typography
+Use your app's typography settings in custom modules:
 ```kotlin
-override val icon = Icons.Rounded.BugReport
+Text("DevView", style = MaterialTheme.typography.titleLarge)
 ```
+
+## Customising Icons
+Use Compose icons or your own vector assets:
+```kotlin
+override val icon = Icons.Default.Build
+```
+
+## Best Practices
+- Use MaterialTheme for all custom modules
+- Test on both light and dark themes
+- Use accessible colour contrasts
+- Preview modules in different theme modes
+
+## Troubleshooting
+- **Colours not matching app theme?** Ensure you use MaterialTheme properties and override them as needed.
+- **Typography issues?** Use MaterialTheme.typography for consistency.
+- **Icon rendering problems?** Check vector asset compatibility and Compose version.
+
+## Next Steps
+- See [Module Development](module-development.md) for more on customisation.
+- Explore [Examples](../examples/index.md) for themed module samples.
+
+## API Reference
+> _[API reference available via Dokka. Add direct link here when available.]_

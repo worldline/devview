@@ -10,10 +10,10 @@ import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.worldline.devview.networkmock.model.EndpointConfig
-import com.worldline.devview.networkmock.model.EndpointDescriptor
-import com.worldline.devview.networkmock.model.EndpointMockState
-import com.worldline.devview.networkmock.model.MockResponse
+import com.worldline.devview.networkmock.core.model.EndpointConfig
+import com.worldline.devview.networkmock.core.model.EndpointDescriptor
+import com.worldline.devview.networkmock.core.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.viewmodel.EndpointUiModel
 import com.worldline.devview.networkmock.viewmodel.HostUiModel
 import kotlinx.collections.immutable.toPersistentList

@@ -13,10 +13,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import com.worldline.devview.networkmock.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.preview.EndpointUiModelPreviewParameterProvider
 import com.worldline.devview.networkmock.utils.containerColor
 import com.worldline.devview.networkmock.utils.contentColor
@@ -24,9 +25,20 @@ import com.worldline.devview.networkmock.utils.icon
 import com.worldline.devview.networkmock.viewmodel.EndpointUiModel
 
 @Composable
-public fun EndpointStateChip(endpointMockState: EndpointMockState, modifier: Modifier = Modifier) {
+internal fun EndpointStateChip(
+    endpointMockState: EndpointMockState,
+    modifier: Modifier = Modifier,
+    chipTestTag: String = "endpoint_state_chip",
+    labelTestTag: String = "endpoint_state_chip_label"
+) {
+    val displayedLabel = when (endpointMockState) {
+        is EndpointMockState.Mock -> endpointMockState.statusCode.toString()
+        EndpointMockState.Network -> endpointMockState.displayName
+    }
+
     Row(
         modifier = modifier
+            .testTag(tag = chipTestTag)
             .clip(
                 shape = MaterialTheme.shapes.small
             ).background(
@@ -46,10 +58,8 @@ public fun EndpointStateChip(endpointMockState: EndpointMockState, modifier: Mod
             tint = endpointMockState.contentColor
         )
         Text(
-            text = when (endpointMockState) {
-                is EndpointMockState.Mock -> endpointMockState.statusCode.toString()
-                EndpointMockState.Network -> endpointMockState.displayName
-            },
+            modifier = Modifier.testTag(tag = "${labelTestTag}_$displayedLabel"),
+            text = displayedLabel,
             style = MaterialTheme.typography.bodySmallEmphasized,
             color = endpointMockState.contentColor
         )

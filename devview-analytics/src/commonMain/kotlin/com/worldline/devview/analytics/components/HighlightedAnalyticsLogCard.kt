@@ -108,7 +108,7 @@ internal fun HighlightedAnalyticsLogCard(
 
 @Preview(locale = "en")
 @Composable
-internal fun HighlightedAnalyticsLogCardPreview() {
+private fun HighlightedAnalyticsLogCardPreview() {
     MaterialTheme {
         Surface {
             HighlightedAnalyticsLogCard(

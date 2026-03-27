@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.convention.multiplatform.library)
     alias(libs.plugins.convention.ktor)
+    alias(libs.plugins.convention.unitTest)
+    alias(libs.plugins.convention.kover)
     alias(libs.plugins.dokka)
     alias(libs.plugins.maven.publish)
 }
@@ -8,7 +10,7 @@ plugins {
 kotlin {
     addDefaultDevViewTargets()
 
-    androidLibrary {
+    android {
         namespace = "com.worldline.devview.networkmock.ktor"
     }
 
@@ -23,4 +25,9 @@ kotlin {
 
 tasks.withType<Test> {
     failOnNoDiscoveredTests.set(false)
+}
+
+dependencies {
+    dokka(projects.devviewNetworkmock)
+    dokka(projects.devviewNetworkmockCore)
 }

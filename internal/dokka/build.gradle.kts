@@ -6,9 +6,19 @@ plugins {
 kotlin {
     addDefaultDevViewTargets()
 
-    androidLibrary {
+    android {
         namespace = "com.worldline.devview.docs"
     }
+}
+
+dependencies {
+    dokka(projects.devview)
+    dokka(projects.devviewAnalytics)
+    dokka(projects.devviewFeatureflip)
+    dokka(projects.devviewNetworkmock)
+    dokka(projects.devviewNetworkmockCore)
+    dokka(projects.devviewNetworkmockKtor)
+    dokka(projects.devviewUtils)
 }
 
 dokka {

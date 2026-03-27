@@ -46,7 +46,7 @@ Add DevView dependencies to your `gradle/libs.versions.toml`:
 devview = "1.0.0"
 
 [libraries]
-devview-core = { module = "com.worldline.devview:devview", version.ref = "devview" }
+devview = { module = "com.worldline.devview:devview", version.ref = "devview" }
 devview-featureflip = { module = "com.worldline.devview:devview-featureflip", version.ref = "devview" }
 devview-analytics = { module = "com.worldline.devview:devview-analytics", version.ref = "devview" }
 ```
@@ -55,43 +55,47 @@ devview-analytics = { module = "com.worldline.devview:devview-analytics", versio
 
 In your shared module's `build.gradle.kts`:
 
-=== "Using Version Catalog"
+**Using Version Catalog**
 
-    ```kotlin
-    kotlin {
-        sourceSets {
-            commonMain.dependencies {
-                // Core DevView module (required)
-                implementation(libs.devview.core)
-                
-                // Optional: FeatureFlip module
-                implementation(libs.devview.featureflip)
-                
-                // Optional: Analytics module
-                implementation(libs.devview.analytics)
-            }
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            // Core DevView module (required)
+            implementation(libs.devview.core)
+            
+            // Optional: FeatureFlip module
+            implementation(libs.devview.featureflip)
+            
+            // Optional: Analytics module
+            implementation(libs.devview.analytics)
         }
     }
-    ```
+}
+```
 
-=== "Direct Dependencies"
+--- 
 
-    ```kotlin
-    kotlin {
-        sourceSets {
-            commonMain.dependencies {
-                // Core DevView module (required)
-                implementation("com.worldline.devview:devview:1.0.0")
-                
-                // Optional: FeatureFlip module
-                implementation("com.worldline.devview:devview-featureflip:1.0.0")
-                
-                // Optional: Analytics module
-                implementation("com.worldline.devview:devview-analytics:1.0.0")
-            }
+**Direct Dependencies**
+
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            // Core DevView module (required)
+            implementation("com.worldline.devview:devview:1.0.0")
+            
+            // Optional: FeatureFlip module
+            implementation("com.worldline.devview:devview-featureflip:1.0.0")
+            
+            // Optional: Analytics module
+            implementation("com.worldline.devview:devview-analytics:1.0.0")
         }
     }
-    ```
+}
+```
+
+---
 
 ## Module Selection
 
@@ -99,21 +103,26 @@ DevView is modular, so you only include what you need:
 
 | Module | Purpose | When to Include |
 |--------|---------|----------------|
-| **devview-core** | Core framework, module system, navigation | ✅ Always required |
+| **devview** | Core framework, module system, navigation | ✅ Always required |
 | **devview-featureflip** | Feature flag management with DataStore | When you need feature toggles |
 | **devview-analytics** | Analytics event monitoring | When you need analytics debugging |
+| **devview-networkmock** | Network mocking for Ktor and other platforms | When you need to simulate network responses |
+
+> _[Placeholder: Insert screenshot of DevView module selection UI or a dependency diagram. Use a device frame if relevant.]_
 
 ## Sync Your Project
 
 After adding dependencies, sync your Gradle project:
 
-=== "Android Studio"
-    Click the **Sync Now** banner or **File > Sync Project with Gradle Files**
+**Android Studio**
 
-=== "Terminal"
-    ```bash
-    ./gradlew --refresh-dependencies
-    ```
+- Click the **Sync Now** banner or **File > Sync Project with Gradle Files**
+
+**Terminal**
+
+```bash
+./gradlew --refresh-dependencies
+```
 
 ## Verification
 
@@ -123,6 +132,18 @@ Verify the installation by adding this simple import:
 import com.worldline.devview.DevView
 import com.worldline.devview.core.*
 ```
+
+## Custom Modules
+
+> _[Placeholder: Describe how to add custom DevView modules. This section will be expanded in future updates.]_
+
+## Troubleshooting
+
+If you encounter issues during installation:
+- Ensure all repositories are correctly configured in your Gradle files.
+- For dependency resolution errors, run `./gradlew --refresh-dependencies` in the terminal.
+- If Compose Multiplatform is not detected, verify plugin versions and compatibility.
+- For further help, consult the [troubleshooting section](troubleshooting-faq.md).
 
 ## Next Steps
 

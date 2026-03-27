@@ -41,18 +41,6 @@ class ComposeMultiplatformConventionPlugin : Plugin<Project> {
                     extensions.getByType<KotlinMultiplatformAndroidLibraryExtension>()
 
                 androidExtension.apply {
-                    withHostTestBuilder {
-                        sourceSetTreeName = null
-                    }.configure {
-                        isIncludeAndroidResources = true
-                    }
-
-                    withDeviceTestBuilder {
-                        sourceSetTreeName = null
-                    }.configure {
-                        instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-                    }
-
                     targets.withType<KotlinMultiplatformAndroidLibraryTarget> {
                         compileSdk = Versions.COMPILE_SDK
 
@@ -104,17 +92,6 @@ class ComposeMultiplatformConventionPlugin : Plugin<Project> {
                             // Navigation3
                             implementation(libs.findLibrary("jetbrains.androidx.navigation3.ui").get())
                             implementation(libs.findLibrary("jetbrains.compose.material3.adaptive.navigation3").get())
-                        }
-                    }
-
-                    getByName("androidDeviceTest") {
-                        dependencies {
-                            val bom = libs.findLibrary("androidx.compose.bom").get()
-                            implementation(project.dependencies.platform(bom))
-                            implementation(libs.findLibrary("androidx.compose.ui.test.junit4.android").get())
-                            implementation(libs.findLibrary("androidx.compose.ui.test.manifest").get())
-                            implementation(kotlin("test"))
-                            implementation(kotlin("test-annotations-common"))
                         }
                     }
 

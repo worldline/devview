@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.convention.multiplatform.library)
     alias(libs.plugins.convention.compose.multiplatform)
     alias(libs.plugins.convention.datastore)
+    alias(libs.plugins.convention.unitTest)
+    alias(libs.plugins.convention.deviceTest)
+    alias(libs.plugins.convention.kover)
     alias(libs.plugins.dokka)
     alias(libs.plugins.maven.publish)
 }
@@ -9,7 +12,7 @@ plugins {
 kotlin {
     addDefaultDevViewTargets()
 
-    androidLibrary {
+    android {
         namespace = "com.worldline.devview.utils"
     }
 
@@ -20,4 +23,8 @@ kotlin {
             }
         }
     }
+}
+
+dependencies {
+    dokka(projects.devview)
 }

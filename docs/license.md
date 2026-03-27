@@ -1,5 +1,9 @@
 ﻿# License
+
 DevView is released under the Apache License 2.0.
+
+> _[Placeholder: Insert screenshot or diagram of license badge or summary. Use a device frame if relevant.]_
+
 ```
 Copyright 2024-2026 TechSquad
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,10 +16,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
-## Third-Party Licenses
+
+## Third-Party Licences
 DevView uses the following open-source libraries:
 - **Kotlin** - Apache License 2.0
 - **Compose Multiplatform** - Apache License 2.0
 - **Navigation3** - Apache License 2.0
 - **DataStore** - Apache License 2.0
 - **kotlinx.serialization** - Apache License 2.0
+
+## Next Steps
+- See [Contributing Guide](contributing/index.md) for how to get involved
+- Review [Changelog](changelog.md) for release history
+
+---
+
+_If you have questions about the license, open an issue or start a discussion on GitHub._
