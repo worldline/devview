@@ -5,3 +5,4 @@ mkdocs-redirects
 mkdocs-video
 mike
 mdx-gh-links
+zensical
