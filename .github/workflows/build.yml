@@ -21,7 +21,7 @@ jobs:
     # Skip build if head commit contains 'skip ci'
     if: "!contains(github.event.head_commit.message, 'skip ci')"
 
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 60
 
     steps:
@@ -41,26 +41,44 @@ jobs:
       - name: Assemble and check
         run: ./gradlew check assembleDebug -Pandroidx.baselineprofile.skipgeneration
 
-      - name: Run unit tests
-        run: ./gradlew test -Pandroidx.baselineprofile.skipgeneration
+  unit-and-host-tests:
+    # Skip if head commit contains 'skip ci'
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
 
-      - name: Run androidHostTest tests
-        run: ./gradlew androidHostTest -Pandroidx.baselineprofile.skipgeneration
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
 
-      - name: Upload reports + Roborazzi outputs
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v5
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Run unit + androidHostTest tests
+        run: ./gradlew test androidHostTest -Pandroidx.baselineprofile.skipgeneration
+
+      - name: Upload unit + androidHostTest reports
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: reports
+          name: unit-and-host-test-reports
           path: |
-            **/build/reports/**
-            **/build/outputs/roborazzi/**
+            **/build/reports/tests/**
+            **/test-results/**
 
   detekt:
     # Skip if head commit contains 'skip ci'
     if: "!contains(github.event.head_commit.message, 'skip ci')"
 
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
@@ -166,11 +184,9 @@ jobs:
     # Skip if head commit contains 'skip ci'
     if: "!contains(github.event.head_commit.message, 'skip ci')"
 
-    runs-on: macos-latest
-    needs: [ build ]
+    runs-on: ubuntu-latest
+    needs: [ build, unit-and-host-tests ]
     timeout-minutes: 30
-    # TODO: Remove continue-on-error once the kover convention plugin is applied to modules
-    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v6
