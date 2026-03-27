@@ -26,10 +26,10 @@ class ModuleItemUiTest {
             )
         }
 
-        onNodeWithTag(testTag = "module_name_Network Mock").assertIsDisplayed()
-        onNodeWithTag(testTag = "module_subtitle_Network Mock").assertIsDisplayed()
+        onNodeWithTag(testTag = "module_name_Network Mock", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithTag(testTag = "module_subtitle_Network Mock", useUnmergedTree = true).assertIsDisplayed()
 
-        onNodeWithTag(testTag = "module_name_Network Mock").performClick()
+        onNodeWithTag(testTag = "module_name_Network Mock", useUnmergedTree = true).performClick()
 
         runOnIdle {
             opened shouldBe module
@@ -48,7 +48,7 @@ class ModuleItemUiTest {
             )
         }
 
-        onNodeWithTag(testTag = "module_name_Analytics").assertIsDisplayed()
-        onAllNodesWithTag(testTag = "module_subtitle_Analytics").assertCountEquals(0)
+        onNodeWithTag(testTag = "module_name_Analytics", useUnmergedTree = true).assertIsDisplayed()
+        onAllNodesWithTag(testTag = "module_subtitle_Analytics", useUnmergedTree = true).assertCountEquals(0)
     }
 }

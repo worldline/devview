@@ -63,7 +63,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v5
 
       - name: Run unit + androidHostTest tests
-        run: ./gradlew test androidHostTest -Pandroidx.baselineprofile.skipgeneration
+        run: ./gradlew cleanTestAndroidHostTest testAndroidHostTest -Pandroidx.baselineprofile.skipgeneration
 
       - name: Upload unit + androidHostTest reports
         if: failure()
@@ -178,7 +178,7 @@ jobs:
           name: device-test-reports
           path: |
             **/build/reports/**
-            **/build/outputs/connected-android-test/**
+            **/build/outputs/androidTest-results/**
 
   coverage:
     # Skip if head commit contains 'skip ci'
@@ -202,22 +202,9 @@ jobs:
       - name: Generate Kover coverage report
         run: ./gradlew koverXmlReport
 
-      - name: Generate test reports
-        run: ./gradlew testReport
-
       - name: Upload coverage report
         if: success()
         uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: '**/build/reports/kover/**'
-
-      - name: Upload test reports
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: test-reports
-          path: |
-            **/build/reports/tests/**
-            **/test-results/**
-
