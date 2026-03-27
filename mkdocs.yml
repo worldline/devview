@@ -12,43 +12,39 @@ repo_name: "DevView"
 repo_url: "https://github.com/worldline/devview"
 
 nav:
-  - Home: index.md
-  - Getting Started:
+  - "Home": index.md
+  - "Getting Started":
       - getting-started/index.md
-      - Installation: getting-started/installation.md
-      - Quick Start: getting-started/quick-start.md
-      - Configuration: getting-started/configuration.md
-  - Modules:
+      - "Installation": getting-started/installation.md
+      - "Quick Start": getting-started/quick-start.md
+      - "Configuration": getting-started/configuration.md
+  - "Modules":
       - modules/index.md
-      - Core Module: modules/core.md
-      - FeatureFlip: modules/featureflip.md
-      - Analytics: modules/analytics.md
-      - Creating Custom Modules: modules/custom-modules.md
-  - Guides:
+      - "Core Module": modules/core.md
+      - "FeatureFlip": modules/featureflip.md
+      - "Analytics": modules/analytics.md
+      - "Creating Custom Modules": modules/custom-modules.md
+  - "Guides":
       - guides/index.md
-      - Integration Guide: guides/integration.md
-      - Module Development: guides/module-development.md
-      - Navigation: guides/navigation.md
-      - Theming: guides/theming.md
-      - Best Practices: guides/best-practices.md
-  - API Reference:
-      - api/index.md
-      - Core API: api/core.md
-      - FeatureFlip API: api/featureflip.md
-      - Analytics API: api/analytics.md
-  - Examples:
+      - "Integration Guide": guides/integration.md
+      - "Module Development": guides/module-development.md
+      - "Navigation": guides/navigation.md
+      - "Theming": guides/theming.md
+      - "Best Practices": guides/best-practices.md
+  - "API Reference": api/index.html
+  - "Examples":
       - examples/index.md
-      - Android Setup: examples/android.md
-      - iOS Setup: examples/ios.md
-      - Feature Flags: examples/feature-flags.md
-      - Analytics Tracking: examples/analytics-tracking.md
-  - Contributing:
+      - "Android Setup": examples/android.md
+      - "iOS Setup": examples/ios.md
+      - "Feature Flags": examples/feature-flags.md
+      - "Analytics Tracking": examples/analytics-tracking.md
+  - "Contributing":
       - contributing/index.md
-      - Development Setup: contributing/development.md
-      - Code Style: contributing/code-style.md
-      - Pull Requests: contributing/pull-requests.md
-  - Changelog: changelog.md
-  - License: license.md
+      - "Development Setup": contributing/development.md
+      - "Code Style": contributing/code-style.md
+      - "Pull Requests": contributing/pull-requests.md
+  - "Changelog": changelog.md
+  - "License": license.md
 
 copyright: "Copyright &copy; 2026 Maxime Michel"
 
