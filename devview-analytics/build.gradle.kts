@@ -34,3 +34,14 @@ poko {
 tasks.withType<Test> {
     failOnNoDiscoveredTests.set(false)
 }
+
+dokka {
+    dokkaSourceSets {
+        getByName("commonMain") {
+            samples.from(
+                "$projectDir/src/commonTest/kotlin/com/worldline/devview/analytics/samples/AnalyticsLoggerSamples.kt",
+                "$projectDir/src/commonTest/kotlin/com/worldline/devview/analytics/samples/AnalyticsLogSamples.kt"
+            )
+        }
+    }
+}

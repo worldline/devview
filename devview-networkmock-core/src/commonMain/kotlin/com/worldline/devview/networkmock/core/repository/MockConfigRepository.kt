@@ -103,8 +103,8 @@ import kotlinx.serialization.json.Json
  * @property configPath The path to the mocks.json file relative to composeResources
  * @property resourceLoader Function to load resource bytes from a path
  * @property statusCodesToDiscover The list of HTTP status codes to probe when
- *   discovering response files. Defaults to [DEFAULT_STATUS_CODES]. Override this
- *   to include non-standard status codes used by your API.
+ * discovering response files. Defaults to [DEFAULT_STATUS_CODES]. Override this
+ * to include non-standard status codes used by your API.
  * @see MockConfiguration
  * @see MockResponse
  * @see MockMatch
@@ -118,7 +118,7 @@ public class MockConfigRepository(
     private val json = Json { ignoreUnknownKeys = true }
 
     // Cache the loaded configuration to avoid re-parsing
-    private var cachedConfig: com.worldline.devview.networkmock.core.model.MockConfiguration? = null
+    private var cachedConfig: MockConfiguration? = null
 
     public companion object {
         /**

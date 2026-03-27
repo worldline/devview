@@ -27,7 +27,10 @@ kotlin {
     }
 }
 
-
 tasks.withType<Test> {
     failOnNoDiscoveredTests.set(false)
+}
+
+dependencies {
+    dokka(projects.devviewNetworkmockCore)
 }
