@@ -1,4 +1,4 @@
-﻿﻿# Modules
+﻿# Modules
 
 DevView uses a modular architecture where each module provides specific developer tools functionality. Modules are plug-and-play and integrate seamlessly with the DevView core. You can include only the modules you need, and modules can be conditionally enabled based on build type, feature flags, or other criteria.
 

@@ -1,4 +1,4 @@
-﻿﻿# Navigation Guide
+﻿# Navigation Guide
 
 Understanding DevView's type-safe navigation system.
 

@@ -8,4 +8,4 @@ cp -r internal/dokka/build/dokka/html/ docs/api/
 
 cp CHANGELOG.md docs/changelog.md
 
-mkdocs $@
+zensical $@ --clean

@@ -1,4 +1,4 @@
-﻿﻿# Creating Custom Modules
+﻿# Creating Custom Modules
 
 DevView is built around a modular architecture. The **core module** provides the foundational interfaces and registry, while all real functionality is implemented as modules—including your own custom modules.
 
