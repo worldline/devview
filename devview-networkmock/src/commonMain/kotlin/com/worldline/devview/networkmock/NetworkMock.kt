@@ -13,9 +13,10 @@ import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
 import com.worldline.devview.core.withTitle
-import com.worldline.devview.networkmock.model.EndpointKey
-import com.worldline.devview.networkmock.repository.MockConfigRepository
-import com.worldline.devview.networkmock.repository.MockStateRepository
+import com.worldline.devview.networkmock.core.NETWORK_MOCK_DATASTORE_NAME
+import com.worldline.devview.networkmock.core.NetworkMockDataStoreDelegate
+import com.worldline.devview.networkmock.core.NetworkMockInitializer
+import com.worldline.devview.networkmock.core.model.EndpointKey
 import com.worldline.devview.networkmock.viewmodel.NetworkMockEndpointViewModel
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
 import com.worldline.devview.utils.DataStoreDelegate

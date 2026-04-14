@@ -14,13 +14,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.intl.Locale
-import com.worldline.devview.networkmock.model.EndpointConfig
-import com.worldline.devview.networkmock.model.EndpointDescriptor
-import com.worldline.devview.networkmock.model.EndpointKey
-import com.worldline.devview.networkmock.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.EndpointConfig
+import com.worldline.devview.networkmock.core.model.EndpointDescriptor
+import com.worldline.devview.networkmock.core.model.EndpointKey
+import com.worldline.devview.networkmock.core.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.model.EndpointUiModel
 import com.worldline.devview.networkmock.model.GroupEnvironmentUiModel
-import com.worldline.devview.networkmock.model.MockResponse
 import kotlinx.collections.immutable.toPersistentList
 
 internal fun GroupEnvironmentUiModel.Companion.fake(

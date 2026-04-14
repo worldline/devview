@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
@@ -36,9 +37,9 @@ import com.worldline.devview.networkmock.components.EndpointCard
 import com.worldline.devview.networkmock.components.ErrorState
 import com.worldline.devview.networkmock.components.GlobalMockToggle
 import com.worldline.devview.networkmock.components.LoadingState
-import com.worldline.devview.networkmock.model.EndpointDescriptor
-import com.worldline.devview.networkmock.model.EndpointKey
-import com.worldline.devview.networkmock.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.EndpointDescriptor
+import com.worldline.devview.networkmock.core.model.EndpointKey
+import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.preview.NetworkMockUiStatePreviewParameterProvider
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
@@ -97,7 +98,7 @@ public fun NetworkMockScreen(
 }
 
 @Composable
-private fun NetworkMockScreenContent(
+internal fun NetworkMockScreenContent(
     uiState: NetworkMockUiState,
     onGlobalToggle: (Boolean) -> Unit,
     setEndpointMockState: (EndpointKey, String?) -> Unit,
@@ -176,6 +177,9 @@ private fun ContentState(
         ) {
             uiState.groups.forEachIndexed { index, group ->
                 Tab(
+                    modifier = Modifier.testTag(
+                        tag = "group_tab_${group.groupId}_${group.environmentId}"
+                    ),
                     selected = selectedTabIndex == index,
                     onClick = { selectedTabIndex = index },
                     text = { Text(text = group.name) }
@@ -199,6 +203,11 @@ private fun ContentState(
                     key = { _, endpoint -> endpoint.descriptor.key.compositeKey }
                 ) { index, endpoint ->
                     EndpointCard(
+                        modifier = Modifier.testTag(
+                            tag = "endpoint_card_${endpoint.descriptor.groupId}" +
+                                "_${endpoint.descriptor.environmentId}" +
+                                "_${endpoint.descriptor.endpointId}"
+                        ),
                         endpoint = endpoint,
                         openEndpointDetails = {
                             openEndpointDetails(endpoint.descriptor.key)

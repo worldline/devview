@@ -1,7 +1,9 @@
 plugins {
     alias(libs.plugins.convention.multiplatform.library)
     alias(libs.plugins.convention.compose.multiplatform)
-    alias(libs.plugins.convention.datastore)
+    alias(libs.plugins.convention.unitTest)
+    alias(libs.plugins.convention.deviceTest)
+    alias(libs.plugins.convention.kover)
     alias(libs.plugins.dokka)
     alias(libs.plugins.maven.publish)
     alias(libs.plugins.poko)
@@ -31,4 +33,15 @@ poko {
 
 tasks.withType<Test> {
     failOnNoDiscoveredTests.set(false)
+}
+
+dokka {
+    dokkaSourceSets {
+        getByName("commonMain") {
+            samples.from(
+                "$projectDir/src/commonTest/kotlin/com/worldline/devview/analytics/samples/AnalyticsLoggerSamples.kt",
+                "$projectDir/src/commonTest/kotlin/com/worldline/devview/analytics/samples/AnalyticsLogSamples.kt"
+            )
+        }
+    }
 }

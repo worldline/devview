@@ -42,12 +42,6 @@ class MultiplatformLibraryConventionPlugin : Plugin<Project> {
                             implementation(libs.findLibrary("kermit").get())
                         }
                     }
-                    commonTest {
-                        dependencies {
-                            implementation(kotlin("test"))
-                            implementation(kotlin("test-annotations-common"))
-                        }
-                    }
                 }
             }
 

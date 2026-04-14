@@ -21,7 +21,7 @@ import com.worldline.devview.analytics.model.AnalyticsLog
  *     AnalyticsLog(
  *         tag = "user_login",
  *         screenClass = "LoginScreen",
- *         timestamp = System.currentTimeMillis(),
+ *         timestamp = Clock.System.now().toEpochMilliseconds(),
  *         type = AnalyticsLogCategory.Session.Login
  *     )
  * )
@@ -53,17 +53,7 @@ public object AnalyticsLogger {
      *
      * @param log The analytics log entry to add.
      *
-     * @sample
-     * ```kotlin
-     * AnalyticsLogger.log(
-     *     AnalyticsLog(
-     *         tag = "HomeScreen",
-     *         screenClass = "com.example.ui.HomeScreen",
-     *         timestamp = System.currentTimeMillis(),
-     *         type = AnalyticsLogCategory.Screen.View
-     *     )
-     * )
-     * ```
+     * @sample com.worldline.devview.analytics.samples.AnalyticsLoggerSamples.logSample
      */
     public fun log(log: AnalyticsLog) {
         analyticsLogs.add(element = log)

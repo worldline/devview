@@ -1,6 +1,8 @@
 package com.worldline.devview.networkmock.model
 
 import androidx.compose.runtime.Immutable
+import com.worldline.devview.networkmock.core.model.EndpointDescriptor
+import com.worldline.devview.networkmock.core.model.EndpointMockState
 
 /**
  * UI model pairing a static [EndpointDescriptor] with its live [EndpointMockState].

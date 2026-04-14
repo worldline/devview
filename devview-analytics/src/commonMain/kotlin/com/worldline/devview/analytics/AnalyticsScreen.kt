@@ -56,6 +56,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
@@ -231,9 +232,13 @@ public fun AnalyticsScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp, vertical = 4.dp)
+                                    .testTag(tag = "time_range_selector")
                             ) {
                                 TimeRange.entries.forEachIndexed { index, timeRange ->
                                     SegmentedButton(
+                                        modifier = Modifier.testTag(
+                                            tag = "time_range_${timeRange.label}"
+                                        ),
                                         selected = selectedTimeRange == timeRange,
                                         onClick = { selectedTimeRange = timeRange },
                                         shape = SegmentedButtonDefaults.itemShape(
@@ -248,13 +253,17 @@ public fun AnalyticsScreen(
                             LazyRow(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
+                                    .padding(vertical = 4.dp)
+                                    .testTag(tag = "category_filter_row"),
                                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 contentPadding = PaddingValues(horizontal = 16.dp)
                             ) {
                                 items(items = availableCategories) { category ->
                                     FilterChip(
+                                        modifier = Modifier.testTag(
+                                            tag = "category_chip_${category.displayName}"
+                                        ),
                                         selected = category in selectedCategories,
                                         onClick = {
                                             selectedCategories =
@@ -297,7 +306,8 @@ public fun AnalyticsScreen(
                             modifier = Modifier
                                 .weight(weight = 1f)
                                 .padding(vertical = 8.dp)
-                                .padding(bottom = bottomPadding),
+                                .padding(bottom = bottomPadding)
+                                .testTag(tag = "analytics_filter_field"),
                             value = filterQuery,
                             onValueChange = { filterQuery = it },
                             placeholder = { Text(text = "Filter by tag or screen...") },
@@ -309,7 +319,10 @@ public fun AnalyticsScreen(
                             },
                             trailingIcon = {
                                 AnimatedVisibility(visible = filterQuery.isNotEmpty()) {
-                                    IconButton(onClick = { filterQuery = "" }) {
+                                    IconButton(
+                                        modifier = Modifier.testTag(tag = "clear_filter_button"),
+                                        onClick = { filterQuery = "" }
+                                    ) {
                                         Icon(
                                             imageVector = Icons.Rounded.Close,
                                             contentDescription = "Clear filter"
@@ -323,7 +336,8 @@ public fun AnalyticsScreen(
                         VerticalDivider(modifier = Modifier.fillMaxHeight())
                         IconButton(
                             modifier = Modifier
-                                .padding(bottom = bottomPadding),
+                                .padding(bottom = bottomPadding)
+                                .testTag(tag = "expand_filter_button"),
                             onClick = { filtersExpanded = !filtersExpanded }
                         ) {
                             Icon(
@@ -368,7 +382,8 @@ public fun AnalyticsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(all = 16.dp)
-                            .wrapContentWidth(align = Alignment.CenterHorizontally),
+                            .wrapContentWidth(align = Alignment.CenterHorizontally)
+                            .testTag(tag = "empty_state_message"),
                         text = if (filterQuery.isBlank()) {
                             "Analytics logs will appear here"
                         } else {
@@ -386,6 +401,7 @@ public fun AnalyticsScreen(
                 Column(
                     modifier = Modifier
                         .animateItem()
+                        .testTag(tag = "analytics_log_item_${log.tag}")
                 ) {
                     AnalyticsLogItem(
                         analyticsLog = log

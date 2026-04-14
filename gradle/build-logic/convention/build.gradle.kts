@@ -29,6 +29,7 @@ dependencies {
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.kover.gradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
+    compileOnly(libs.mokkery.gradlePlugin)
     compileOnly(libs.room.gradlePlugin)
 }
 
@@ -52,6 +53,10 @@ gradlePlugin {
         register("datastore") {
             id = libs.plugins.convention.datastore.get().pluginId
             implementationClass = "DatastoreConventionPlugin"
+        }
+        register("deviceTest") {
+            id = libs.plugins.convention.deviceTest.get().pluginId
+            implementationClass = "DeviceTestConventionPlugin"
         }
         register("konsist") {
             id = libs.plugins.convention.konsist.get().pluginId
