@@ -17,14 +17,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.worldline.devview.networkmock.model.EndpointMockState
+import com.worldline.devview.networkmock.model.EndpointUiModel
 import com.worldline.devview.networkmock.preview.EndpointUiModelPreviewParameterProvider
 import com.worldline.devview.networkmock.utils.containerColor
 import com.worldline.devview.networkmock.utils.contentColor
 import com.worldline.devview.networkmock.utils.icon
-import com.worldline.devview.networkmock.viewmodel.EndpointUiModel
 
 @Composable
-public fun EndpointStateChip(endpointMockState: EndpointMockState, modifier: Modifier = Modifier) {
+public fun EndpointStateChip(
+    endpointMockState: EndpointMockState,
+    modifier: Modifier = Modifier,
+    label: String = when (endpointMockState) {
+        is EndpointMockState.Mock -> endpointMockState.statusCode.toString()
+        EndpointMockState.Network -> endpointMockState.displayName
+    }
+) {
     Row(
         modifier = modifier
             .clip(
@@ -46,10 +53,7 @@ public fun EndpointStateChip(endpointMockState: EndpointMockState, modifier: Mod
             tint = endpointMockState.contentColor
         )
         Text(
-            text = when (endpointMockState) {
-                is EndpointMockState.Mock -> endpointMockState.statusCode.toString()
-                EndpointMockState.Network -> endpointMockState.displayName
-            },
+            text = label,
             style = MaterialTheme.typography.bodySmallEmphasized,
             color = endpointMockState.contentColor
         )

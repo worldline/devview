@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.worldline.devview.networkmock.model.EndpointKey
 import com.worldline.devview.networkmock.model.EndpointMockState
 import com.worldline.devview.networkmock.model.NetworkMockState
 import kotlin.time.Clock
@@ -22,8 +23,8 @@ import okio.IOException
  * Repository for persisting and retrieving network mock state using DataStore.
  *
  * This repository manages the runtime state of the network mock feature, including
- * the global mocking toggle and individual endpoint configurations. All state changes
- * are persisted to DataStore and survive app restarts.
+ * the global mocking toggle, the active environment selection, and individual endpoint
+ * configurations. All state changes are persisted to DataStore and survive app restarts.
  *
  * ## Responsibilities
  * - Persist [NetworkMockState] to DataStore Preferences
@@ -32,13 +33,23 @@ import okio.IOException
  * - Update individual endpoint states
  * - Handle reset operations
  *
+ * ## Current Implementation Status
+ * All write-path APIs accept an [EndpointKey] as the primary overload. The three separate
+ * string parameters (`groupId`, `environmentId`, `endpointId`) are still accepted as a
+ * convenience overload that delegates to the [EndpointKey] variant, so existing call sites
+ * continue to compile without changes.
+ *
  * ## DataStore Schema
  * Each piece of state is stored under its own typed preference key:
  * - `network_mock_global_enabled`: Boolean — global mocking toggle
  * - `network_mock_last_modified`: Long — timestamp of last modification
- * - `network_mock_endpoint_{hostId}-{endpointId}`: String — JSON-serialized
+ * - `network_mock_endpoint_{groupId}-{environmentId}-{endpointId}`: String — JSON-serialized
  *   [EndpointMockState] for each individual endpoint, stored separately so
  *   that updating one endpoint does not affect others
+ *
+ * There is no stored active environment — the environment is derived at runtime by matching
+ * the incoming request's hostname against configured environment URLs, allowing the app to
+ * simultaneously target different environments for different API groups.
  *
  * An in-memory registry of known endpoint keys is maintained alongside the
  * DataStore to allow enumeration of all endpoints without scanning all keys.
@@ -72,7 +83,12 @@ import okio.IOException
  *     if (!currentState.globalMockingEnabled) {
  *         return@intercept execute(requestBuilder)
  *     }
- *     // ... check endpoint states
+ *     val match = mockRepository.findMatchingMock(
+ *         host = host,
+ *         path = path,
+ *         method = method
+ *     )
+ *     // ...
  * }
  * ```
  *
@@ -83,8 +99,7 @@ import okio.IOException
  *
  * // Configure endpoint
  * repository.setEndpointMockState(
- *     hostId = "staging",
- *     endpointId = "getUser",
+ *     key = EndpointKey("my-backend", "staging", "getUser"),
  *     state = EndpointMockState.Mock(responseFile = "getUser-200.json")
  * )
  *
@@ -109,7 +124,7 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
     /**
      * In-memory registry of known endpoint preference keys.
      *
-     * Maps `"{hostId}-{endpointId}"` to its corresponding [Preferences.Key].
+     * Maps `"{groupId}-{environmentId}-{endpointId}"` to its corresponding [Preferences.Key].
      * Populated as endpoints are written to DataStore. Used to enumerate all
      * known endpoints without scanning all DataStore keys.
      */
@@ -125,20 +140,17 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
     }
 
     /**
-     * Returns the [Preferences.Key] for a specific endpoint, creating and
-     * registering it in [endpointKeys] if not already present.
+     * Returns the [Preferences.Key] for a specific endpoint identified by an [EndpointKey],
+     * creating and registering it in [endpointKeys] if not already present.
      *
-     * @param hostId The host identifier
-     * @param endpointId The endpoint identifier
+     * @param key The [EndpointKey] identifying the group, environment, and endpoint
      * @return The [Preferences.Key] for this endpoint's [EndpointMockState]
      */
     @Suppress("DocumentationOverPrivateFunction")
-    private fun endpointKey(hostId: String, endpointId: String): Preferences.Key<String> {
-        val compositeKey = "$hostId-$endpointId"
-        return endpointKeys.getOrPut(key = compositeKey) {
-            stringPreferencesKey(name = "$ENDPOINT_KEY_PREFIX$compositeKey")
+    private fun endpointKey(key: EndpointKey): Preferences.Key<String> =
+        endpointKeys.getOrPut(key = key.compositeKey) {
+            stringPreferencesKey(name = "$ENDPOINT_KEY_PREFIX${key.compositeKey}")
         }
-    }
 
     /**
      * Observes the network mock state as a reactive [Flow].
@@ -171,21 +183,12 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
                 throw exception
             }
         }.map { preferences ->
-            // Scan ALL keys stored in DataStore that match our endpoint prefix.
-            // This replaces the previous approach of iterating over the in-memory
-            // `endpointKeys` registry, which is empty on a cold start because it
-            // is only populated when a write operation is performed in the current
-            // session. Without this change, all persisted endpoint states were
-            // silently ignored on startup and every endpoint appeared as Network.
             val endpointStates = preferences
                 .asMap()
                 .entries
                 .filter { (key, _) -> key.name.startsWith(prefix = ENDPOINT_KEY_PREFIX) }
                 .associate { (key, rawValue) ->
                     val compositeKey = key.name.removePrefix(prefix = ENDPOINT_KEY_PREFIX)
-                    // Keep the in-memory registry in sync so write-side helpers
-                    // (setEndpointMockState, resetKnownEndpointsToNetwork, etc.)
-                    // remain consistent for the rest of the session.
                     endpointKeys.getOrPut(key = compositeKey) {
                         stringPreferencesKey(name = key.name)
                     }
@@ -242,41 +245,72 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
     }
 
     /**
-     * Sets the mock state for a specific endpoint.
+     * Sets the mock state for a specific endpoint identified by an [EndpointKey].
      *
      * The endpoint state is stored under its own individual preference key
-     * (`network_mock_endpoint_{hostId}-{endpointId}`), so updating one endpoint
-     * does not affect any other endpoint's stored state.
+     * (`network_mock_endpoint_{groupId}-{environmentId}-{endpointId}`), so updating one
+     * endpoint does not affect any other endpoint's stored state. Each group+environment
+     * combination maintains independent state for the same endpoint ID.
      *
      * ```kotlin
      * repository.setEndpointMockState(
-     *     hostId = "staging",
-     *     endpointId = "getUser",
+     *     key = EndpointKey("my-backend", "staging", "getUser"),
      *     state = EndpointMockState.Mock(responseFile = "getUser-200.json")
      * )
      * ```
      *
-     * @param hostId The host identifier (e.g., "staging", "production")
-     * @param endpointId The endpoint identifier (e.g., "getUser", "createPost")
+     * @param key The [EndpointKey] identifying the group, environment, and endpoint
      * @param state The new endpoint mock state
      */
-    public suspend fun setEndpointMockState(
-        hostId: String,
-        endpointId: String,
-        state: EndpointMockState
-    ) {
+    public suspend fun setEndpointMockState(key: EndpointKey, state: EndpointMockState) {
         val stateDescription = when (state) {
             is EndpointMockState.Network -> "network"
             is EndpointMockState.Mock -> "mock, file=${state.responseFile}, status=${state.statusCode}"
         }
         println(
-            message = "[NetworkMock][State] Setting endpoint state: $hostId-$endpointId, $stateDescription"
+            message = "[NetworkMock][State] Setting endpoint state: ${key.compositeKey}, $stateDescription"
         )
-        val key = endpointKey(hostId = hostId, endpointId = endpointId)
+        val prefKey = endpointKey(key = key)
         dataStore.edit { preferences ->
-            preferences[key] = json.encodeToString(value = state)
+            preferences[prefKey] = json.encodeToString(value = state)
             preferences[KEY_LAST_MODIFIED] = Clock.System.now().toEpochMilliseconds()
         }
+    }
+
+    /**
+     * Sets the mock state for a specific endpoint in a specific group and environment.
+     *
+     * Convenience overload of [setEndpointMockState] that accepts three separate string
+     * identifiers instead of an [EndpointKey]. Delegates to the [EndpointKey] overload.
+     *
+     * ```kotlin
+     * repository.setEndpointMockState(
+     *     groupId = "my-backend",
+     *     environmentId = "staging",
+     *     endpointId = "getUser",
+     *     state = EndpointMockState.Mock(responseFile = "getUser-200.json")
+     * )
+     * ```
+     *
+     * @param groupId The [com.worldline.devview.networkmock.model.ApiGroupConfig] identifier
+     * @param environmentId The [com.worldline.devview.networkmock.model.EnvironmentConfig] identifier
+     * @param endpointId The [com.worldline.devview.networkmock.model.EndpointConfig] identifier
+     * @param state The new endpoint mock state
+     */
+    public suspend fun setEndpointMockState(
+        groupId: String,
+        environmentId: String,
+        endpointId: String,
+        state: EndpointMockState
+    ) {
+        setEndpointMockState(
+            key = EndpointKey(
+                groupId = groupId,
+                environmentId = environmentId,
+                endpointId = endpointId
+            ),
+            state = state
+        )
     }
 
     /**
@@ -293,16 +327,15 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
      * - Endpoint states: Each entry written to its own key
      * - Last modified timestamp: Updated to current time
      *
-     * @param states Map of `"{hostId}-{endpointId}"` keys to [EndpointMockState] values
+     * @param states Map of [EndpointKey] identifiers to [EndpointMockState] values
      */
-    public suspend fun setAllEndpointStates(states: Map<String, EndpointMockState>) {
+    public suspend fun setAllEndpointStates(states: Map<EndpointKey, EndpointMockState>) {
         println(
             message = "[NetworkMock][State] Setting all endpoint states (${states.size} entries)"
         )
         dataStore.edit { preferences ->
-            states.forEach { (compositeKey, state) ->
-                val (hostId, endpointId) = compositeKey.split("-", limit = 2)
-                val key = endpointKey(hostId = hostId, endpointId = endpointId)
+            states.forEach { (endpointKey, state) ->
+                val key = endpointKey(key = endpointKey)
                 preferences[key] = json.encodeToString(value = state)
             }
             preferences[KEY_LAST_MODIFIED] = Clock.System.now().toEpochMilliseconds()
@@ -352,12 +385,12 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
      * Call this once, immediately after the mock configuration has been loaded
      * (before any writes).
      *
-     * @param endpoints List of `(hostId, endpointId)` pairs from the loaded
+     * @param endpoints List of [EndpointKey] values from the loaded
      *   [com.worldline.devview.networkmock.model.MockConfiguration]
      */
-    public fun registerEndpoints(endpoints: List<Pair<String, String>>) {
-        endpoints.forEach { (hostId, endpointId) ->
-            endpointKey(hostId = hostId, endpointId = endpointId)
+    public fun registerEndpoints(endpoints: List<EndpointKey>) {
+        endpoints.forEach { key ->
+            endpointKey(key = key)
         }
     }
 }

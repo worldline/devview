@@ -84,25 +84,30 @@ public data class NetworkMockPluginConfig(internal val config: NetworkMockConfig
  * Create `composeResources/files/networkmocks/mocks.json`:
  * ```json
  * {
- *   "hosts": [{
- *     "id": "staging",
- *     "url": "https://staging.api.example.com",
+ *   "apiGroups": [{
+ *     "id": "my-backend",
+ *     "name": "My Backend",
  *     "endpoints": [{
  *       "id": "getUser",
  *       "name": "Get User Profile",
- *       "path": "/api/v1/user/{userId}",
+ *       "path": "/v1/users/{userId}",
  *       "method": "GET"
- *     }]
+ *     }],
+ *     "environments": [
+ *       { "id": "staging",    "name": "Staging",    "url": "https://staging.api.example.com" },
+ *       { "id": "production", "name": "Production", "url": "https://api.example.com" }
+ *     ]
  *   }]
  * }
  * ```
  *
  * Add response files following the naming convention:
  * ```
- * composeResources/files/networkmocks/responses/getUser/
- * ├── getUser-200.json
- * ├── getUser-404.json
- * └── getUser-500.json
+ * composeResources/files/networkmocks/responses/my-backend/getUser/
+ * ├── getUser-200.json        (shared — used by all environments)
+ * └── getUser-404.json
+ * composeResources/files/networkmocks/responses/my-backend/staging/getUser/
+ * └── getUser-200.json        (staging-specific — overrides the shared variant)
  * ```
  *
  * ## Error Handling
@@ -165,15 +170,15 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
 
                 mockMatch?.let { match ->
                     println(
-                        message = "$LOG_PREFIX Found matching endpoint: ${match.hostId}-${match.endpointId}"
+                        message = "$LOG_PREFIX Found matching endpoint: " +
+                            "${match.groupId}/${match.environmentId}/${match.endpointId}"
                     )
 
-                    val endpointKey = "${match.hostId}-${match.endpointId}"
-                    val endpointState = currentState.endpointStates[endpointKey]
+                    val endpointState = currentState.getEndpointState(key = match.key)
 
                     if (endpointState == null) {
                         println(
-                            message = "$LOG_PREFIX No state found for endpoint key: $endpointKey"
+                            message = "$LOG_PREFIX No state found for endpoint key: ${match.key.compositeKey}"
                         )
                         println(
                             message = "$LOG_PREFIX Available endpoint states: ${currentState.endpointStates.keys}"
@@ -214,7 +219,7 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                             @Suppress("TooGenericExceptionCaught")
                             try {
                                 val mockResponse = mockRepository.loadMockResponse(
-                                    endpointId = match.endpointId,
+                                    key = match.key,
                                     fileName = endpointState.responseFile
                                 )
 

@@ -4,8 +4,12 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.worldline.devview.networkmock.model.EndpointDescriptor
+import com.worldline.devview.networkmock.model.EndpointKey
 import com.worldline.devview.networkmock.model.EndpointMockState
+import com.worldline.devview.networkmock.model.EndpointUiModel
+import com.worldline.devview.networkmock.model.GroupEnvironmentUiModel
 import com.worldline.devview.networkmock.model.MockConfiguration
+import com.worldline.devview.networkmock.model.effectiveEndpoints
 import com.worldline.devview.networkmock.repository.MockConfigRepository
 import com.worldline.devview.networkmock.repository.MockStateRepository
 import kotlinx.collections.immutable.PersistentList
@@ -48,16 +52,31 @@ public class NetworkMockViewModel(
 ) : ViewModel() {
     private val privateConfiguration = MutableStateFlow<MockConfiguration?>(value = null)
     private val privateLoadingState = MutableStateFlow<LoadingState>(value = LoadingState.Loading)
-    private val privateEndpointMocks = MutableStateFlow<Map<String, EndpointDescriptor>>(
+    private val privateEndpointMocks = MutableStateFlow<Map<EndpointKey, EndpointDescriptor>>(
         value = emptyMap()
     )
-    private val selectedEndpointId = MutableStateFlow<Pair<String, String>?>(value = null)
+
+    /**
+     * The [EndpointKey] of the currently selected endpoint, or `null` when nothing is selected.
+     * Drives bottom sheet visibility — non-null means open.
+     */
+    @Suppress("DocumentationOverPrivateProperty")
+    private val selectedEndpointKey = MutableStateFlow<EndpointKey?>(value = null)
 
     /**
      * Combined UI state for the Network Mock screen.
      *
-     * This flow combines configuration, runtime state, and discovered responses
-     * to provide everything the UI needs to render.
+     * Combines [MockConfiguration] (loaded once from `mocks.json`), the live
+     * [com.worldline.devview.networkmock.model.NetworkMockState] from DataStore, the internal
+     * loading state, and the discovered [EndpointDescriptor] map into a single
+     * [NetworkMockUiState] emission. Re-emits whenever any of the four sources change.
+     *
+     * Each API group + environment pair in the configuration becomes one
+     * [GroupEnvironmentUiModel] tab. Within each tab, only endpoints whose
+     * [EndpointDescriptor] has already been discovered are included.
+     *
+     * @see NetworkMockUiState
+     * @see GroupEnvironmentUiModel
      */
     public val uiState: StateFlow<NetworkMockUiState> = combine(
         flow = privateConfiguration,
@@ -74,26 +93,35 @@ public class NetworkMockViewModel(
                 } else {
                     NetworkMockUiState.Content(
                         globalMockingEnabled = runtimeState.globalMockingEnabled,
-                        hosts = config.hosts
-                            .map { host ->
-                                HostUiModel(
-                                    id = host.id,
-                                    name = host.id,
-                                    url = host.url,
-                                    endpoints = host.endpoints
-                                        .mapNotNull { endpoint ->
-                                            val key = "${host.id}-${endpoint.id}"
-                                            endpointMocks[key]?.let { descriptor ->
-                                                EndpointUiModel(
-                                                    descriptor = descriptor,
-                                                    currentState = runtimeState.getEndpointState(
-                                                        hostId = host.id,
-                                                        endpointId = endpoint.id
-                                                    ) ?: EndpointMockState.Network
+                        groups = config.apiGroups
+                            .flatMap { group ->
+                                group.environments.map { environment ->
+                                    val effectiveEndpoints = group.effectiveEndpoints(
+                                        environment = environment
+                                    )
+                                    GroupEnvironmentUiModel(
+                                        groupId = group.id,
+                                        environmentId = environment.id,
+                                        name = "${group.name} — ${environment.name}",
+                                        url = environment.url,
+                                        endpoints = effectiveEndpoints
+                                            .mapNotNull { endpoint ->
+                                                val key = EndpointKey(
+                                                    groupId = group.id,
+                                                    environmentId = environment.id,
+                                                    endpointId = endpoint.id
                                                 )
-                                            }
-                                        }.toPersistentList()
-                                )
+                                                endpointMocks[key]?.let { descriptor ->
+                                                    EndpointUiModel(
+                                                        descriptor = descriptor,
+                                                        currentState = runtimeState
+                                                            .getEndpointState(key = key)
+                                                            ?: EndpointMockState.Network
+                                                    )
+                                                }
+                                            }.toPersistentList()
+                                    )
+                                }
                             }.toPersistentList()
                     )
                 }
@@ -110,10 +138,10 @@ public class NetworkMockViewModel(
      * endpoint is selected. Drives bottom sheet visibility — non-null means open.
      */
     public val selectedEndpointDescriptor: StateFlow<EndpointDescriptor?> = combine(
-        flow = selectedEndpointId,
+        flow = selectedEndpointKey,
         flow2 = privateEndpointMocks
-    ) { id, endpointMocks ->
-        id?.let { (hostId, endpointId) -> endpointMocks["$hostId-$endpointId"] }
+    ) { key, endpointMocks ->
+        key?.let { endpointMocks[it] }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(stopTimeoutMillis = WHILE_SUBSCRIBED_TIMEOUT_MS),
@@ -126,12 +154,10 @@ public class NetworkMockViewModel(
      * bottom sheet highlight in sync without any UI-side lookup.
      */
     public val selectedEndpointState: StateFlow<EndpointMockState> = combine(
-        flow = selectedEndpointId,
+        flow = selectedEndpointKey,
         flow2 = stateRepository.observeState()
-    ) { id, runtimeState ->
-        id?.let { (hostId, endpointId) ->
-            runtimeState.getEndpointState(hostId = hostId, endpointId = endpointId)
-        } ?: EndpointMockState.Network
+    ) { key, runtimeState ->
+        key?.let { runtimeState.getEndpointState(key = it) } ?: EndpointMockState.Network
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(stopTimeoutMillis = WHILE_SUBSCRIBED_TIMEOUT_MS),
@@ -143,7 +169,8 @@ public class NetworkMockViewModel(
     }
 
     /**
-     * Loads the mock configuration from resources and discovers response files.
+     * Loads the mock configuration from resources and discovers response files for every
+     * group + environment + endpoint combination.
      */
     @Suppress("DocumentationOverPrivateFunction")
     private fun loadConfiguration() {
@@ -153,29 +180,43 @@ public class NetworkMockViewModel(
             configRepository
                 .loadConfiguration()
                 .onSuccess { config ->
-                    stateRepository.registerEndpoints(
-                        endpoints = config.hosts.flatMap { host ->
-                            host.endpoints.map { endpoint -> host.id to endpoint.id }
+                    // Pre-register every EndpointKey so write-side helpers have the full set
+                    val allKeys = config.apiGroups.flatMap { group ->
+                        group.environments.flatMap { environment ->
+                            group.effectiveEndpoints(environment = environment).map { endpoint ->
+                                EndpointKey(
+                                    groupId = group.id,
+                                    environmentId = environment.id,
+                                    endpointId = endpoint.id
+                                )
+                            }
                         }
-                    )
+                    }
+                    stateRepository.registerEndpoints(endpoints = allKeys)
 
                     privateConfiguration.value = config
 
-                    // Discover response files for all endpoints
-                    val mocks = mutableMapOf<String, EndpointDescriptor>()
-                    config.hosts.forEach { host ->
-                        host.endpoints.forEach { endpoint ->
-                            val key = "${host.id}-${endpoint.id}"
-                            val responses = configRepository.discoverResponseFiles(
-                                endpointId = endpoint.id
-                            )
-
-                            mocks[key] = EndpointDescriptor(
-                                hostId = host.id,
-                                endpointId = endpoint.id,
-                                config = endpoint,
-                                availableResponses = responses
-                            )
+                    // Discover response files for every group + environment + endpoint
+                    val mocks = mutableMapOf<EndpointKey, EndpointDescriptor>()
+                    config.apiGroups.forEach { group ->
+                        group.environments.forEach { environment ->
+                            group
+                                .effectiveEndpoints(environment = environment)
+                                .forEach { endpoint ->
+                                    val key = EndpointKey(
+                                        groupId = group.id,
+                                        environmentId = environment.id,
+                                        endpointId = endpoint.id
+                                    )
+                                    val responses = configRepository.discoverResponseFiles(
+                                        key = key
+                                    )
+                                    mocks[key] = EndpointDescriptor(
+                                        key = key,
+                                        config = endpoint,
+                                        availableResponses = responses
+                                    )
+                                }
                         }
                     }
 
@@ -191,6 +232,12 @@ public class NetworkMockViewModel(
 
     /**
      * Toggles global mocking on/off.
+     *
+     * When disabled, every HTTP request passes through to the actual network
+     * regardless of individual endpoint configurations. Persisted immediately
+     * to DataStore so the setting survives app restarts.
+     *
+     * @param enabled `true` to enable global mocking, `false` to disable
      */
     public fun setGlobalMockingEnabled(enabled: Boolean) {
         viewModelScope.launch {
@@ -199,7 +246,7 @@ public class NetworkMockViewModel(
     }
 
     /**
-     * Sets the mock state for a specific endpoint.
+     * Sets the mock state for a specific endpoint identified by an [EndpointKey].
      *
      * When [responseFileName] is `null`, the endpoint state is set to
      * [EndpointMockState.Network], effectively disabling mocking for that endpoint.
@@ -207,24 +254,18 @@ public class NetworkMockViewModel(
      * When [responseFileName] is non-null, the endpoint transitions to
      * [EndpointMockState.Mock] with the given file, replacing any previous state.
      *
-     * @param hostId The ID of the host that owns the endpoint.
-     * @param endpointId The ID of the endpoint to update.
+     * @param key The [EndpointKey] identifying the group, environment, and endpoint
      * @param responseFileName The response file to use for mocking, or `null` to use
-     * the actual network.
+     *   the actual network
      */
-    public fun setEndpointMockState(hostId: String, endpointId: String, responseFileName: String?) {
+    public fun setEndpointMockState(key: EndpointKey, responseFileName: String?) {
         viewModelScope.launch {
             val newState = if (responseFileName != null) {
                 EndpointMockState.Mock(responseFile = responseFileName)
             } else {
                 EndpointMockState.Network
             }
-
-            stateRepository.setEndpointMockState(
-                hostId = hostId,
-                endpointId = endpointId,
-                state = newState
-            )
+            stateRepository.setEndpointMockState(key = key, state = newState)
         }
     }
 
@@ -245,11 +286,17 @@ public class NetworkMockViewModel(
                 return@launch
             }
 
-            // Build a Network state for every configured endpoint
-            val allNetwork = config.hosts
-                .flatMap { host ->
-                    host.endpoints.map { endpoint ->
-                        "${host.id}-${endpoint.id}" to EndpointMockState.Network
+            // Build a Network state for every configured group + environment + endpoint
+            val allNetwork = config.apiGroups
+                .flatMap { group ->
+                    group.environments.flatMap { environment ->
+                        group.effectiveEndpoints(environment = environment).map { endpoint ->
+                            EndpointKey(
+                                groupId = group.id,
+                                environmentId = environment.id,
+                                endpointId = endpoint.id
+                            ) to EndpointMockState.Network
+                        }
                     }
                 }.toMap()
 
@@ -263,84 +310,56 @@ public class NetworkMockViewModel(
      * Triggers reactive updates to [selectedEndpointDescriptor] and
      * [selectedEndpointState] so the UI requires no manual lookup.
      *
-     * @param hostId The ID of the host that owns the endpoint.
-     * @param endpointId The ID of the selected endpoint.
+     * @param key The [EndpointKey] identifying the group, environment, and endpoint
      */
-    public fun selectEndpoint(hostId: String, endpointId: String) {
-        selectedEndpointId.value = hostId to endpointId
+    public fun selectEndpoint(key: EndpointKey) {
+        selectedEndpointKey.value = key
     }
 
     /**
      * Clears the current endpoint selection, closing the bottom sheet.
      */
     public fun clearSelectedEndpoint() {
-        selectedEndpointId.value = null
+        selectedEndpointKey.value = null
     }
 }
 
 /**
  * UI state for the Network Mock screen.
+ *
+ * Emitted by [NetworkMockViewModel.uiState]. The UI renders different layouts
+ * depending on which variant is active.
  */
 @Immutable
 public sealed interface NetworkMockUiState {
-    /**
-     * Loading configuration.
-     */
+    /** Configuration is being loaded from resources. */
     @Immutable
     public data object Loading : NetworkMockUiState
 
     /**
-     * Error loading configuration.
+     * Configuration failed to load.
+     *
+     * @property message Human-readable description of the failure
      */
     @Immutable
     public data class Error(val message: String) : NetworkMockUiState
 
-    /**
-     * No mocks configured.
-     */
+    /** Configuration loaded successfully but contains no API groups. */
     @Immutable
     public data object Empty : NetworkMockUiState
 
     /**
-     * Content loaded successfully.
+     * Configuration loaded successfully and at least one group is available.
+     *
+     * @property globalMockingEnabled Whether the global mocking master switch is on
+     * @property groups One entry per API group + environment combination, each
+     *   rendered as a tab in the UI
      */
     @Immutable
     public data class Content(
         val globalMockingEnabled: Boolean,
-        val hosts: PersistentList<HostUiModel>
+        val groups: PersistentList<GroupEnvironmentUiModel>
     ) : NetworkMockUiState
-}
-
-/**
- * UI model pairing a static [EndpointDescriptor] with its live [EndpointMockState].
- *
- * Constructed fresh on every emission of [NetworkMockViewModel.uiState], ensuring
- * that [currentState] always reflects the latest persisted value without any
- * UI-side snapshot or lookup.
- *
- * @property descriptor The immutable endpoint configuration and available responses.
- * @property currentState The current runtime mock state for this endpoint.
- * @see EndpointDescriptor
- * @see EndpointMockState
- */
-@Immutable
-public data class EndpointUiModel(
-    val descriptor: EndpointDescriptor,
-    val currentState: EndpointMockState
-) {
-    public companion object
-}
-
-/**
- * UI model for a host with its endpoints.
- */
-public data class HostUiModel(
-    val id: String,
-    val name: String,
-    val url: String,
-    val endpoints: PersistentList<EndpointUiModel>
-) {
-    public companion object
 }
 
 /**

@@ -1,8 +1,8 @@
 {
-  "hosts": [
+  "apiGroups": [
     {
       "id": "jsonplaceholder",
-      "url": "https://jsonplaceholder.typicode.com",
+      "name": "JSONPlaceholder",
       "endpoints": [
         {
           "id": "getUser",
@@ -28,11 +28,18 @@
           "path": "/posts/{postId}",
           "method": "GET"
         }
+      ],
+      "environments": [
+        {
+          "id": "production",
+          "name": "Production",
+          "url": "https://jsonplaceholder.typicode.com"
+        }
       ]
     },
     {
-      "id": "staging",
-      "url": "https://staging.api.example.com",
+      "id": "sample-api",
+      "name": "Sample API",
       "endpoints": [
         {
           "id": "getUserProfile",
@@ -45,6 +52,24 @@
           "name": "Update Profile",
           "path": "/api/v1/profile",
           "method": "PUT"
+        }
+      ],
+      "environments": [
+        {
+          "id": "staging",
+          "name": "Staging",
+          "url": "https://sample.api.staging.com"
+        },
+        {
+          "id": "prod",
+          "name": "Production",
+          "url": "https://sample.api.com",
+          "endpointOverrides": [
+            {
+              "id": "getUserProfile",
+              "path": "/api/v2/profile/{userId}"
+            }
+          ]
         }
       ]
     }

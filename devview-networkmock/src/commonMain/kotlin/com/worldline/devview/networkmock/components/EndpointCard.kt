@@ -19,8 +19,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import com.worldline.devview.networkmock.model.EndpointUiModel
 import com.worldline.devview.networkmock.preview.EndpointUiModelPreviewParameterProvider
-import com.worldline.devview.networkmock.viewmodel.EndpointUiModel
 
 /**
  * Card component for displaying and configuring a single API endpoint mock.
@@ -29,13 +29,13 @@ import com.worldline.devview.networkmock.viewmodel.EndpointUiModel
  * and a dropdown to select which mock response to return.
  *
  * @param endpoint The endpoint UI model pairing static config with live state
- * @param openEndpointBottomSheet Callback invoked when the card is tapped
+ * @param openEndpointDetails Callback invoked when the card is tapped
  * @param modifier Optional modifier
  */
 @Composable
 public fun EndpointCard(
     endpoint: EndpointUiModel,
-    openEndpointBottomSheet: () -> Unit,
+    openEndpointDetails: () -> Unit,
     modifier: Modifier = Modifier,
     showFileName: Boolean = false
 ) {
@@ -47,7 +47,7 @@ public fun EndpointCard(
             .fillMaxWidth()
             .clickable(
                 enabled = true,
-                onClick = openEndpointBottomSheet
+                onClick = openEndpointDetails
             ).padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -233,7 +233,7 @@ private fun EndpointCardPreview(
         Surface {
             EndpointCard(
                 endpoint = endpoint,
-                openEndpointBottomSheet = {}
+                openEndpointDetails = {}
             )
         }
     }
@@ -250,7 +250,7 @@ private fun EndpointCardWithFileNamePreview(
         Surface {
             EndpointCard(
                 endpoint = endpoint,
-                openEndpointBottomSheet = {},
+                openEndpointDetails = {},
                 showFileName = true
             )
         }

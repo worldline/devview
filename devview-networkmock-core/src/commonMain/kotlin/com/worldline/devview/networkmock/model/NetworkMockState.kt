@@ -31,8 +31,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
  *
  * // Configure specific endpoint
  * repository.setEndpointMockState(
- *     hostId = "staging",
- *     endpointId = "getUser",
+ *     key = EndpointKey("my-backend", "staging", "getUser"),
  *     state = EndpointMockState.Mock(responseFile = "getUser-200.json")
  * )
  * ```
@@ -44,16 +43,23 @@ import kotlinx.serialization.json.JsonClassDiscriminator
  *
  * This allows quick testing with/without mocking while preserving individual configurations.
  *
+ * ## Environment Resolution
+ * There is no stored "active environment" selection. The environment is derived at runtime
+ * by matching the incoming request's hostname against the [com.worldline.devview.networkmock.model.EnvironmentConfig.url]
+ * of each environment across all API groups. This allows the app to simultaneously target
+ * different environments for different API groups without any manual selection.
+ *
  * ## Endpoint State Keys
- * Endpoint states are keyed by `"{hostId}-{endpointId}"` to ensure uniqueness
- * across multiple hosts that might have endpoints with the same ID:
+ * Endpoint states are keyed by `"{groupId}-{environmentId}-{endpointId}"` to guarantee
+ * uniqueness across all combinations. This prevents collisions between API groups that
+ * happen to share the same environment ID and endpoint ID:
  * ```kotlin
- * val key = "staging-getUser"  // For staging host's getUser endpoint
+ * val key = "my-backend-staging-getUser"     // my-backend group, staging environment, getUser endpoint
  * val state = networkMockState.endpointStates[key]
  * ```
  *
- * @property globalMockingEnabled Master toggle - when false, all mocking is disabled
- * @property endpointStates Map of endpoint states, keyed by "{hostId}-{endpointId}"
+ * @property globalMockingEnabled Master toggle — when `false`, all mocking is disabled
+ * @property endpointStates Map of endpoint states, keyed by `"{groupId}-{environmentId}-{endpointId}"`
  * @property lastModified Timestamp (milliseconds since epoch) of last state modification
  * @see EndpointMockState
  * @see com.worldline.devview.networkmock.repository.MockStateRepository
@@ -65,36 +71,71 @@ public data class NetworkMockState(
     val lastModified: Long = 0L
 ) {
     /**
-     * Gets the state for a specific endpoint.
+     * Gets the mock state for a specific endpoint identified by an [EndpointKey].
      *
-     * @param hostId The host identifier
-     * @param endpointId The endpoint identifier
-     * @return The [EndpointMockState] if configured, or null if not set
+     * @param key The [EndpointKey] identifying the group, environment, and endpoint
+     * @return The [EndpointMockState] if configured, or `null` if not set
      */
-    public fun getEndpointState(hostId: String, endpointId: String): EndpointMockState? {
-        val key = "$hostId-$endpointId"
-        return endpointStates[key]
-    }
+    public fun getEndpointState(key: EndpointKey): EndpointMockState? =
+        endpointStates[key.compositeKey]
+
+    /**
+     * Gets the mock state for a specific endpoint in a specific group and environment.
+     *
+     * Convenience overload of [getEndpointState] that accepts three separate string
+     * identifiers instead of an [EndpointKey]. Delegates to the [EndpointKey] overload.
+     *
+     * @param groupId The [com.worldline.devview.networkmock.model.ApiGroupConfig] identifier
+     * @param environmentId The [com.worldline.devview.networkmock.model.EnvironmentConfig] identifier
+     * @param endpointId The [com.worldline.devview.networkmock.model.EndpointConfig] identifier
+     * @return The [EndpointMockState] if configured, or `null` if not set
+     */
+    public fun getEndpointState(
+        groupId: String,
+        environmentId: String,
+        endpointId: String
+    ): EndpointMockState? = getEndpointState(
+        key = EndpointKey(groupId = groupId, environmentId = environmentId, endpointId = endpointId)
+    )
 
     /**
      * Creates a new state with the specified endpoint state updated.
      *
-     * @param hostId The host identifier
-     * @param endpointId The endpoint identifier
+     * @param key The [EndpointKey] identifying the group, environment, and endpoint
+     * @param state The new endpoint state
+     * @return A new [NetworkMockState] with the updated endpoint state
+     */
+    public fun withEndpointState(key: EndpointKey, state: EndpointMockState): NetworkMockState =
+        copy(
+            endpointStates = endpointStates + (key.compositeKey to state),
+            lastModified = Clock.System.now().toEpochMilliseconds()
+        )
+
+    /**
+     * Creates a new state with the specified endpoint state updated.
+     *
+     * Convenience overload of [withEndpointState] that accepts three separate string
+     * identifiers instead of an [EndpointKey]. Delegates to the [EndpointKey] overload.
+     *
+     * @param groupId The [com.worldline.devview.networkmock.model.ApiGroupConfig] identifier
+     * @param environmentId The [com.worldline.devview.networkmock.model.EnvironmentConfig] identifier
+     * @param endpointId The [com.worldline.devview.networkmock.model.EndpointConfig] identifier
      * @param state The new endpoint state
      * @return A new [NetworkMockState] with the updated endpoint state
      */
     public fun withEndpointState(
-        hostId: String,
+        groupId: String,
+        environmentId: String,
         endpointId: String,
         state: EndpointMockState
-    ): NetworkMockState {
-        val key = "$hostId-$endpointId"
-        return copy(
-            endpointStates = endpointStates + (key to state),
-            lastModified = Clock.System.now().toEpochMilliseconds()
-        )
-    }
+    ): NetworkMockState = withEndpointState(
+        key = EndpointKey(
+            groupId = groupId,
+            environmentId = environmentId,
+            endpointId = endpointId
+        ),
+        state = state
+    )
 
     /**
      * Creates a new state with all endpoint mocks reset to use the actual network.

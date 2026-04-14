@@ -6,7 +6,7 @@ plugins {
 kotlin {
     addDefaultDevViewTargets()
 
-    androidLibrary {
+    android {
         namespace = "com.worldline.devview.docs"
     }
 }

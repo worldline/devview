@@ -1,8 +1,8 @@
 package com.worldline.devview.networkmock.preview
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.worldline.devview.networkmock.model.GroupEnvironmentUiModel
 import com.worldline.devview.networkmock.utils.fake
-import com.worldline.devview.networkmock.viewmodel.HostUiModel
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import kotlinx.collections.immutable.toPersistentList
 
@@ -15,11 +15,11 @@ internal class NetworkMockUiStatePreviewParameterProvider :
             NetworkMockUiState.Empty,
             NetworkMockUiState.Content(
                 globalMockingEnabled = true,
-                hosts = HostUiModel.fake().toPersistentList()
+                groups = GroupEnvironmentUiModel.fake().toPersistentList()
             ),
             NetworkMockUiState.Content(
                 globalMockingEnabled = false,
-                hosts = HostUiModel.fake().toPersistentList()
+                groups = GroupEnvironmentUiModel.fake().toPersistentList()
             )
         )
 

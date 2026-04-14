@@ -234,7 +234,7 @@ public fun DevView(
     val currentModule: Module? by remember(key1 = modules) {
         derivedStateOf {
             modules.find { module ->
-                module.destinations.containsKey(key = backstack.last())
+                module.destinations.containsKey(key = backstack.last()::class)
             }
         }
     }
@@ -249,7 +249,7 @@ public fun DevView(
                 else ->
                     currentModule
                         ?.let { module ->
-                            module.destinations[current]?.title ?: module.moduleName
+                            module.destinations[current::class]?.title ?: module.moduleName
                         }.orEmpty()
             }
         }
@@ -260,7 +260,7 @@ public fun DevView(
         derivedStateOf {
             currentModule
                 ?.destinations
-                ?.get(key = backstack.last())
+                ?.get(key = backstack.last()::class)
                 ?.actions
                 .orEmpty()
         }
@@ -352,10 +352,8 @@ public fun DevView(
                         HomeScreen(
                             modules = modules,
                             openModule = { module ->
-                                // Navigate to the module's first destination
-                                module.destinations.keys.firstOrNull()?.let { first ->
-                                    backstack.add(element = first)
-                                }
+                                // Navigate to the module's entry destination
+                                backstack.add(element = module.entryDestination)
                             }
                         )
                     }
