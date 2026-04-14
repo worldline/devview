@@ -163,12 +163,27 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      - name: Delete unnecessary tools
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          android: false # Don't remove Android tools
+          tool-cache: true # Remove image tool cache - rm -rf "$AGENT_TOOLSDIRECTORY"
+          dotnet: true # rm -rf /usr/share/dotnet
+          haskell: true # rm -rf /opt/ghc...
+          swap-storage: true # rm -f /mnt/swapfile (4GiB)
+          docker-images: false # Takes 16s, enable if needed in the future
+          large-packages: false # includes google-cloud-sdk and it's slow
+
       - name: Run Android Device Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 33
+          api-level: 35
+          target: google_apis
           arch: x86_64
-          profile: Nexus 6P
+          profile: pixel_5
+          force-avd-creation: false
+          emulator-options: -no-snapshot-load -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
+          disable-animations: true
           script: ./gradlew connectedAndroidDeviceTest -Pandroidx.baselineprofile.skipgeneration
 
       - name: Upload device test reports
