@@ -23,9 +23,9 @@ class AnalyticsModuleTest {
         val module = Analytics()
 
         module.section shouldBe Section.LOGGING
-        module.destinations.keys.shouldContain(AnalyticsDestination.Main)
+        module.destinations.keys.shouldContain(AnalyticsDestination.Main::class)
 
-        val mainMetadata = module.destinations[AnalyticsDestination.Main].shouldNotBeNull()
+        val mainMetadata = module.destinations[AnalyticsDestination.Main::class].shouldNotBeNull()
 
         mainMetadata.title shouldBe "Analytics"
         mainMetadata.actions shouldHaveSize 1
@@ -43,7 +43,7 @@ class AnalyticsModuleTest {
     fun `clear action removes existing logs`() {
         val module = Analytics()
 
-        val clearAction = module.destinations[AnalyticsDestination.Main]
+        val clearAction = module.destinations[AnalyticsDestination.Main::class]
             .shouldNotBeNull()
             .actions
             .single()

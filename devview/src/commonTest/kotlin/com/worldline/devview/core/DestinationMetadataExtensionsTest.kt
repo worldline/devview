@@ -15,7 +15,7 @@ class DestinationMetadataExtensionsTest {
 
     @Test
     fun `asDestination registers nav key with default metadata`() {
-        val key = TestNavKey
+        val key = TestNavKey::class
 
         val (registeredKey, metadata) = key.asDestination()
 
@@ -26,7 +26,7 @@ class DestinationMetadataExtensionsTest {
 
     @Test
     fun `withTitle without block sets title and keeps actions empty`() {
-        val key = TestNavKey
+        val key = TestNavKey::class
 
         val (registeredKey, metadata) = key.withTitle(title = "My Screen")
 
@@ -37,7 +37,7 @@ class DestinationMetadataExtensionsTest {
 
     @Test
     fun `withTitle with block sets title and builds actions in order`() {
-        val key = TestNavKey
+        val key = TestNavKey::class
         val firstIcon = Icons.Default.Check
         val secondIcon = Icons.Default.Close
         val popup = ModuleDestinationActionPopup(
@@ -76,7 +76,7 @@ class DestinationMetadataExtensionsTest {
 
     @Test
     fun `withActions with block keeps title null and builds actions`() {
-        val key = TestNavKey
+        val key = TestNavKey::class
         val icon = Icons.Default.Check
         var calls = 0
 

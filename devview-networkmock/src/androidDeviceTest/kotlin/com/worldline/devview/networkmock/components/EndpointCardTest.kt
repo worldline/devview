@@ -9,9 +9,10 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.worldline.devview.networkmock.core.model.EndpointConfig
 import com.worldline.devview.networkmock.core.model.EndpointDescriptor
+import com.worldline.devview.networkmock.core.model.EndpointKey
 import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.core.model.MockResponse
-import com.worldline.devview.networkmock.viewmodel.EndpointUiModel
+import com.worldline.devview.networkmock.model.EndpointUiModel
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
@@ -28,7 +29,10 @@ class EndpointCardTest {
     fun displaysHttpMethod() = runComposeUiTest {
         setEndpointCard(endpoint = networkEndpoint())
 
-        onNodeWithTag(testTag = "endpoint_method_getUser", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithTag(
+            testTag = "endpoint_method_getUser",
+            useUnmergedTree = true
+        ).assertIsDisplayed()
     }
 
     @Test
@@ -42,7 +46,10 @@ class EndpointCardTest {
     fun displaysStateChip() = runComposeUiTest {
         setEndpointCard(endpoint = networkEndpoint())
 
-        onNodeWithTag(testTag = "endpoint_state_chip_getUser", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithTag(
+            testTag = "endpoint_state_chip_getUser",
+            useUnmergedTree = true
+        ).assertIsDisplayed()
     }
 
     @Test
@@ -51,10 +58,13 @@ class EndpointCardTest {
 
         setEndpointCard(
             endpoint = networkEndpoint(),
-            openEndpointBottomSheet = { clicked = true }
+            openEndpointDetails = { clicked = true }
         )
 
-        onNodeWithTag(testTag = "endpoint_state_chip_getUser", useUnmergedTree = true).performClick()
+        onNodeWithTag(
+            testTag = "endpoint_state_chip_getUser",
+            useUnmergedTree = true
+        ).performClick()
 
         clicked shouldBe true
     }
@@ -66,7 +76,10 @@ class EndpointCardTest {
             showFileName = false
         )
 
-        onNodeWithTag(testTag = "endpoint_state_getUser", useUnmergedTree = true).assertIsNotDisplayed()
+        onNodeWithTag(
+            testTag = "endpoint_state_getUser",
+            useUnmergedTree = true
+        ).assertIsNotDisplayed()
     }
 
     @Test
@@ -76,27 +89,39 @@ class EndpointCardTest {
             showFileName = true
         )
 
-        onNodeWithTag(testTag = "endpoint_state_getUser", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithTag(
+            testTag = "endpoint_state_getUser",
+            useUnmergedTree = true
+        ).assertIsDisplayed()
     }
 
     @Test
     fun stateChipIsDisplayed_forNetworkState() = runComposeUiTest {
         setEndpointCard(endpoint = networkEndpoint())
 
-        onNodeWithTag(testTag = "endpoint_state_chip_getUser", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithTag(
+            testTag = "endpoint_state_chip_getUser",
+            useUnmergedTree = true
+        ).assertIsDisplayed()
     }
 
     @Test
     fun stateChipIsDisplayed_forMockState() = runComposeUiTest {
         setEndpointCard(endpoint = mockEndpoint())
 
-        onNodeWithTag(testTag = "endpoint_state_chip_getUser", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithTag(
+            testTag = "endpoint_state_chip_getUser",
+            useUnmergedTree = true
+        ).assertIsDisplayed()
     }
 
     private fun networkEndpoint() = EndpointUiModel(
         descriptor = EndpointDescriptor(
-            hostId = "staging",
-            endpointId = "getUser",
+            key = EndpointKey(
+                groupId = "test",
+                environmentId = "staging",
+                endpointId = "getUser"
+            ),
             config = EndpointConfig(
                 id = "getUser",
                 name = "Get User",
@@ -117,8 +142,11 @@ class EndpointCardTest {
 
     private fun mockEndpoint() = EndpointUiModel(
         descriptor = EndpointDescriptor(
-            hostId = "staging",
-            endpointId = "getUser",
+            key = EndpointKey(
+                groupId = "test",
+                environmentId = "staging",
+                endpointId = "getUser"
+            ),
             config = EndpointConfig(
                 id = "getUser",
                 name = "Get User",
@@ -139,14 +167,14 @@ class EndpointCardTest {
 
     private fun ComposeUiTest.setEndpointCard(
         endpoint: EndpointUiModel,
-        openEndpointBottomSheet: () -> Unit = {},
+        openEndpointDetails: () -> Unit = {},
         showFileName: Boolean = false
     ) {
         setContent {
             MaterialTheme {
                 EndpointCard(
                     endpoint = endpoint,
-                    openEndpointBottomSheet = openEndpointBottomSheet,
+                    openEndpointDetails = openEndpointDetails,
                     showFileName = showFileName
                 )
             }

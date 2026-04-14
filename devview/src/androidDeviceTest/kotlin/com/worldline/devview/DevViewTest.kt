@@ -20,6 +20,7 @@ import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
 import com.worldline.devview.core.withTitle
+import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
@@ -66,8 +67,10 @@ private data object DevViewDestination : NavKey
 private data object DevViewModule : Module {
     override val moduleName: String = "Network Mock"
     override val section: Section = Section.NETWORK
-    override val destinations: PersistentMap<NavKey, DestinationMetadata> =
+    override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> =
         persistentMapOf(DevViewDestination.withTitle(title = "Network Mock Screen"))
+    override val entryDestination: NavKey
+        get() = DevViewDestination
     override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit = {}
 
     override fun EntryProviderScope<NavKey>.registerContent(

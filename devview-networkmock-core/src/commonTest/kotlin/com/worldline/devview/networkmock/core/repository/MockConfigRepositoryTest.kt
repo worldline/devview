@@ -1,5 +1,6 @@
 package com.worldline.devview.networkmock.core.repository
 
+import com.worldline.devview.networkmock.core.model.EndpointKey
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
@@ -20,9 +21,9 @@ class MockConfigRepositoryTest {
 
         result.isSuccess shouldBe true
         val config = result.getOrThrow()
-        config.hosts shouldHaveSize 2
-        config.hosts[0].id shouldBe "staging"
-        config.hosts[1].id shouldBe "production"
+        config.apiGroups shouldHaveSize 1
+        config.apiGroups[0].id shouldBe "example"
+        config.apiGroups[0].environments.map { it.id } shouldContainExactly listOf("staging", "production")
     }
 
     @Test
@@ -52,7 +53,7 @@ class MockConfigRepositoryTest {
     fun `loadConfiguration returns failure when config json is malformed`() = runTest {
         val repository = createRepository(
             resources = mapOf(
-                CONFIG_PATH to """{ "hosts": [ {"""
+                CONFIG_PATH to """{ "apiGroups": [ {"""
             )
         )
 
@@ -62,7 +63,7 @@ class MockConfigRepositoryTest {
     }
 
     @Test
-    fun `findMatchingMock returns endpoint for exact host path and method`() = runTest {
+    fun `findMatchingMock returns endpoint for exact environment host path and method`() = runTest {
         val repository = createRepository(resources = baseResources())
 
         val match = repository.findMatchingMock(
@@ -71,13 +72,14 @@ class MockConfigRepositoryTest {
             method = "GET"
         )
 
-        match?.hostId shouldBe "staging"
+        match?.groupId shouldBe "example"
+        match?.environmentId shouldBe "staging"
         match?.endpointId shouldBe "getUser"
         match?.config?.method shouldBe "GET"
     }
 
     @Test
-    fun `findMatchingMock host matching is case insensitive`() = runTest {
+    fun `findMatchingMock environment host matching is case insensitive`() = runTest {
         val repository = createRepository(resources = baseResources())
 
         val match = repository.findMatchingMock(
@@ -90,7 +92,7 @@ class MockConfigRepositoryTest {
     }
 
     @Test
-    fun `findMatchingMock handles configured url with scheme port and path`() = runTest {
+    fun `findMatchingMock handles environment url with scheme port and path`() = runTest {
         val repository = createRepository(resources = baseResources())
 
         val match = repository.findMatchingMock(
@@ -99,7 +101,7 @@ class MockConfigRepositoryTest {
             method = "GET"
         )
 
-        match?.hostId shouldBe "staging"
+        match?.environmentId shouldBe "staging"
     }
 
     @Test
@@ -161,7 +163,11 @@ class MockConfigRepositoryTest {
             statusCodesToDiscover = listOf(500, 200, 404)
         )
 
-        val responses = repository.discoverResponseFiles(endpointId = "getUser")
+        val responses = repository.discoverResponseFiles(
+            groupId = "example",
+            environmentId = "staging",
+            endpointId = "getUser"
+        )
 
         responses.map { response -> response.statusCode } shouldBe listOf(200, 404)
     }
@@ -169,14 +175,18 @@ class MockConfigRepositoryTest {
     @Test
     fun `discoverResponseFiles discovers suffix variants`() = runTest {
         val resources = baseResources() + mapOf(
-            "files/networkmocks/responses/getUser/getUser-404-simple.json" to """{"error":"simple"}"""
+            "files/networkmocks/responses/example/getUser/getUser-404-simple.json" to """{"error":"simple"}"""
         )
         val repository = createRepository(
             resources = resources,
             statusCodesToDiscover = listOf(404)
         )
 
-        val responses = repository.discoverResponseFiles(endpointId = "getUser")
+        val responses = repository.discoverResponseFiles(
+            groupId = "example",
+            environmentId = "staging",
+            endpointId = "getUser"
+        )
 
         responses shouldHaveSize 2
         responses.map { response -> response.fileName } shouldContain "getUser-404-simple.json"
@@ -185,15 +195,19 @@ class MockConfigRepositoryTest {
     @Test
     fun `discoverResponseFiles preserves deterministic order for same status suffix variants`() = runTest {
         val resources = baseResources() + mapOf(
-            "files/networkmocks/responses/getUser/getUser-404-simple.json" to """{"error":"simple"}""",
-            "files/networkmocks/responses/getUser/getUser-404-detailed.json" to """{"error":"detailed"}"""
+            "files/networkmocks/responses/example/getUser/getUser-404-simple.json" to """{"error":"simple"}""",
+            "files/networkmocks/responses/example/getUser/getUser-404-detailed.json" to """{"error":"detailed"}"""
         )
         val repository = createRepository(
             resources = resources,
             statusCodesToDiscover = listOf(404)
         )
 
-        val responses = repository.discoverResponseFiles(endpointId = "getUser")
+        val responses = repository.discoverResponseFiles(
+            groupId = "example",
+            environmentId = "staging",
+            endpointId = "getUser"
+        )
 
         responses.map { response -> response.fileName } shouldContainExactly listOf(
             "getUser-404.json",
@@ -209,7 +223,11 @@ class MockConfigRepositoryTest {
             statusCodesToDiscover = listOf(404, 404)
         )
 
-        val responses = repository.discoverResponseFiles(endpointId = "getUser")
+        val responses = repository.discoverResponseFiles(
+            groupId = "example",
+            environmentId = "staging",
+            endpointId = "getUser"
+        )
 
         responses shouldHaveSize 1
         responses.single().fileName shouldBe "getUser-404.json"
@@ -222,7 +240,11 @@ class MockConfigRepositoryTest {
             statusCodesToDiscover = listOf(200)
         )
 
-        val responses = repository.discoverResponseFiles(endpointId = "getUser")
+        val responses = repository.discoverResponseFiles(
+            groupId = "example",
+            environmentId = "staging",
+            endpointId = "getUser"
+        )
 
         responses shouldHaveSize 1
         responses.single().statusCode shouldBe 200
@@ -233,7 +255,11 @@ class MockConfigRepositoryTest {
         val repository = createRepository(resources = baseResources())
 
         val response = repository.loadMockResponse(
-            endpointId = "getUser",
+            key = EndpointKey(
+                groupId = "example",
+                environmentId = "staging",
+                endpointId = "getUser"
+            ),
             fileName = "getUser-200.json"
         )
 
@@ -247,6 +273,8 @@ class MockConfigRepositoryTest {
         val repository = createRepository(resources = baseResources())
 
         val response = repository.loadMockResponse(
+            groupId = "example",
+            environmentId = "staging",
             endpointId = "getUser",
             fileName = "getUser-999.json"
         )
@@ -257,11 +285,13 @@ class MockConfigRepositoryTest {
     @Test
     fun `loadMockResponse returns null when file name is malformed`() = runTest {
         val resources = baseResources() + mapOf(
-            "files/networkmocks/responses/getUser/getUser-invalid.json" to """{"id":1}"""
+            "files/networkmocks/responses/example/staging/getUser/getUser-invalid.json" to """{"id":1}"""
         )
         val repository = createRepository(resources = resources)
 
         val response = repository.loadMockResponse(
+            groupId = "example",
+            environmentId = "staging",
             endpointId = "getUser",
             fileName = "getUser-invalid.json"
         )
@@ -273,7 +303,11 @@ class MockConfigRepositoryTest {
     fun `discoverResponseFiles returns empty list when endpoint has no files`() = runTest {
         val repository = createRepository(resources = baseResources())
 
-        val responses = repository.discoverResponseFiles(endpointId = "doesNotExist")
+        val responses = repository.discoverResponseFiles(
+            groupId = "example",
+            environmentId = "staging",
+            endpointId = "doesNotExist"
+        )
 
         responses shouldBe emptyList()
     }
@@ -306,18 +340,19 @@ class MockConfigRepositoryTest {
 
     private fun baseResources(): Map<String, String> = mapOf(
         CONFIG_PATH to baseConfigJson(),
-        "files/networkmocks/responses/getUser/getUser-200.json" to """{"id":1}""",
-        "files/networkmocks/responses/getUser/getUser-404.json" to """{"error":"not found"}""",
-        "files/networkmocks/responses/createUser/createUser-201.json" to """{"id":2}"""
+        "files/networkmocks/responses/example/staging/getUser/getUser-200.json" to """{"id":1}""",
+        "files/networkmocks/responses/example/getUser/getUser-404.json" to """{"error":"not found"}""",
+        "files/networkmocks/responses/example/staging/createUser/createUser-201.json" to """{"id":2}""",
+        "files/networkmocks/responses/example/production/getProduct/getProduct-200.json" to """{"id":10}"""
     )
 
     @Suppress("MaxLineLength")
     private fun baseConfigJson(): String = """
         {
-          "hosts": [
+          "apiGroups": [
             {
-              "id": "staging",
-              "url": "https://staging.api.example.com:8443/v1",
+              "id": "example",
+              "name": "Example",
               "endpoints": [
                 {
                   "id": "getUser",
@@ -331,17 +366,25 @@ class MockConfigRepositoryTest {
                   "path": "/api/users",
                   "method": "POST"
                 }
-              ]
-            },
-            {
-              "id": "production",
-              "url": "https://api.example.com",
-              "endpoints": [
+              ],
+              "environments": [
                 {
-                  "id": "getProduct",
-                  "name": "Get Product",
-                  "path": "/api/products/{productId}",
-                  "method": "GET"
+                  "id": "staging",
+                  "name": "Staging",
+                  "url": "https://staging.api.example.com:8443/v1"
+                },
+                {
+                  "id": "production",
+                  "name": "Production",
+                  "url": "https://api.example.com",
+                  "additionalEndpoints": [
+                    {
+                      "id": "getProduct",
+                      "name": "Get Product",
+                      "path": "/api/products/{productId}",
+                      "method": "GET"
+                    }
+                  ]
                 }
               ]
             }

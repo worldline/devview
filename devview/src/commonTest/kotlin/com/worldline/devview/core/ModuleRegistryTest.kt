@@ -4,6 +4,7 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
@@ -77,8 +78,8 @@ private abstract class TestModule(
 ) : Module {
     override val moduleName: String = name
     override val section: Section = Section.CUSTOM
-    override val destinations: PersistentMap<NavKey, DestinationMetadata> =
-        persistentMapOf(DummyDestination to DestinationMetadata())
+    override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> =
+        persistentMapOf(DummyDestination::class to DestinationMetadata())
     override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit = {}
 
     override fun EntryProviderScope<NavKey>.registerContent(
@@ -88,8 +89,22 @@ private abstract class TestModule(
     ) = Unit
 }
 
-private data object ModuleA : TestModule(name = "A")
-private data object ModuleB : TestModule(name = "B")
-private data object ModuleC : TestModule(name = "C")
-private data object ModuleD : TestModule(name = "D")
+private data object ModuleA : TestModule(name = "A") {
+    override val entryDestination: NavKey
+        get() = DummyDestination
+}
 
+private data object ModuleB : TestModule(name = "B") {
+    override val entryDestination: NavKey
+        get() = DummyDestination
+}
+
+private data object ModuleC : TestModule(name = "C") {
+    override val entryDestination: NavKey
+        get() = DummyDestination
+}
+
+private data object ModuleD : TestModule(name = "D") {
+    override val entryDestination: NavKey
+        get() = DummyDestination
+}

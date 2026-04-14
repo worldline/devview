@@ -7,7 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.worldline.devview.networkmock.model.EndpointKey
+import com.worldline.devview.networkmock.core.model.EndpointKey
 import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.core.model.NetworkMockState
 import kotlin.time.Clock

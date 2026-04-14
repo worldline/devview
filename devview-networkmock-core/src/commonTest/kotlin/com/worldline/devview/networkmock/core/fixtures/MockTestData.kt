@@ -1,8 +1,10 @@
 package com.worldline.devview.networkmock.core.fixtures
 
+import com.worldline.devview.networkmock.core.model.ApiGroupConfig
 import com.worldline.devview.networkmock.core.model.EndpointConfig
+import com.worldline.devview.networkmock.core.model.EndpointKey
 import com.worldline.devview.networkmock.core.model.EndpointMockState
-import com.worldline.devview.networkmock.core.model.HostConfig
+import com.worldline.devview.networkmock.core.model.EnvironmentConfig
 import com.worldline.devview.networkmock.core.model.MockConfiguration
 import com.worldline.devview.networkmock.core.model.NetworkMockState
 
@@ -44,53 +46,80 @@ internal object MockTestData {
     ): EndpointConfig = EndpointConfig(id = id, name = name, path = path, method = method)
 
     // -------------------------------------------------------------------------
-    // HostConfig builders
+    // Environment / ApiGroup builders
     // -------------------------------------------------------------------------
 
-    /** A staging host with a single GET endpoint (no path parameters). */
-    fun stagingHostConfig(
+    /** A staging environment. */
+    fun stagingEnvironment(
         id: String = "staging",
+        name: String = "Staging",
         url: String = "https://staging.api.example.com",
-        endpoints: List<EndpointConfig> = listOf(endpointConfig()),
-    ): HostConfig = HostConfig(id = id, url = url, endpoints = endpoints)
+    ): EnvironmentConfig = EnvironmentConfig(id = id, name = name, url = url)
 
-    /** A production host with a single endpoint. */
-    fun productionHostConfig(
+    /** A production environment. */
+    fun productionEnvironment(
         id: String = "production",
+        name: String = "Production",
         url: String = "https://api.example.com",
-        endpoints: List<EndpointConfig> = listOf(endpointConfig()),
-    ): HostConfig = HostConfig(id = id, url = url, endpoints = endpoints)
+    ): EnvironmentConfig = EnvironmentConfig(id = id, name = name, url = url)
 
-    /** A host with multiple endpoints (GET + POST). */
-    fun multiEndpointHostConfig(
-        id: String = "staging",
-        url: String = "https://staging.api.example.com",
-    ): HostConfig = HostConfig(
+    /** A single API group with the provided environments and endpoints. */
+    fun apiGroupConfig(
+        id: String = "example",
+        name: String = "Example",
+        environments: List<EnvironmentConfig> = listOf(stagingEnvironment()),
+        endpoints: List<EndpointConfig> = listOf(endpointConfig()),
+    ): ApiGroupConfig = ApiGroupConfig(
         id = id,
-        url = url,
+        name = name,
+        endpoints = endpoints,
+        environments = environments,
+    )
+
+    /** An API group with multiple endpoints (GET + POST + DELETE). */
+    fun multiEndpointApiGroup(
+        id: String = "example",
+        name: String = "Example",
+        environments: List<EnvironmentConfig> = listOf(stagingEnvironment()),
+    ): ApiGroupConfig = ApiGroupConfig(
+        id = id,
+        name = name,
+        environments = environments,
         endpoints = listOf(
             endpointConfig(id = "getUser", path = "/api/users/{userId}", method = "GET"),
             postEndpointConfig(id = "createUser", path = "/api/users", method = "POST"),
             endpointConfig(id = "deleteUser", path = "/api/users/{userId}", method = "DELETE"),
-        )
+        ),
     )
 
     // -------------------------------------------------------------------------
     // MockConfiguration builders
     // -------------------------------------------------------------------------
 
-    /** A configuration with a single staging host. */
-    fun singleHostConfig(
-        host: HostConfig = stagingHostConfig(),
-    ): MockConfiguration = MockConfiguration(hosts = listOf(host))
+    /** A configuration with one API group and one environment. */
+    fun singleGroupConfig(
+        group: ApiGroupConfig = apiGroupConfig(),
+    ): MockConfiguration = MockConfiguration(apiGroups = listOf(group))
 
-    /** A configuration with both a staging and production host. */
-    fun multiHostConfig(): MockConfiguration = MockConfiguration(
-        hosts = listOf(stagingHostConfig(), productionHostConfig())
+    /** A configuration with one API group and both staging + production environments. */
+    fun multiEnvironmentGroupConfig(): MockConfiguration = MockConfiguration(
+        apiGroups = listOf(
+            apiGroupConfig(
+                environments = listOf(stagingEnvironment(), productionEnvironment())
+            )
+        )
     )
 
-    /** An empty configuration with no hosts. */
-    fun emptyConfig(): MockConfiguration = MockConfiguration(hosts = emptyList())
+    /** A configuration with two API groups. */
+    fun multiGroupConfig(): MockConfiguration = MockConfiguration(
+        apiGroups = listOf(
+            apiGroupConfig(id = "example", name = "Example"),
+            apiGroupConfig(id = "catalog", name = "Catalog")
+        )
+    )
+
+    /** An empty configuration with no API groups. */
+    fun emptyConfig(): MockConfiguration = MockConfiguration(apiGroups = emptyList())
 
     // -------------------------------------------------------------------------
     // EndpointMockState variations
@@ -132,24 +161,38 @@ internal object MockTestData {
     /**
      * State with global mocking enabled and a single endpoint set to a 200 mock.
      *
-     * Key used: `"staging-getUser"`.
+     * Key used: `"example-staging-getUser"`.
      */
     val singleEndpointMocked: NetworkMockState = NetworkMockState(
         globalMockingEnabled = true,
-        endpointStates = mapOf("staging-getUser" to EndpointMockState.Mock(responseFile = "getUser-200.json"))
+        endpointStates = mapOf(
+            EndpointKey(
+                groupId = "example",
+                environmentId = "staging",
+                endpointId = "getUser"
+            ).compositeKey to EndpointMockState.Mock(responseFile = "getUser-200.json")
+        )
     )
 
     /**
      * State with global mocking enabled and two endpoints configured
      * with different mock responses.
      *
-     * Keys used: `"staging-getUser"`, `"staging-createUser"`.
+     * Keys used: `"example-staging-getUser"`, `"example-staging-createUser"`.
      */
     val multipleEndpointsMocked: NetworkMockState = NetworkMockState(
         globalMockingEnabled = true,
         endpointStates = mapOf(
-            "staging-getUser" to EndpointMockState.Mock(responseFile = "getUser-200.json"),
-            "staging-createUser" to EndpointMockState.Mock(responseFile = "createUser-201.json"),
+            EndpointKey(
+                groupId = "example",
+                environmentId = "staging",
+                endpointId = "getUser"
+            ).compositeKey to EndpointMockState.Mock(responseFile = "getUser-200.json"),
+            EndpointKey(
+                groupId = "example",
+                environmentId = "staging",
+                endpointId = "createUser"
+            ).compositeKey to EndpointMockState.Mock(responseFile = "createUser-201.json"),
         )
     )
 }

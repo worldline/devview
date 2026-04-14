@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
+import com.worldline.devview.networkmock.core.model.EndpointKey
 import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.fixtures.MockScreenTestData
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
@@ -48,19 +49,19 @@ class NetworkMockScreenTest {
 
 
     @Test
-    fun rendersHostTabs_forContentState() = runComposeUiTest {
+    fun rendersGroupTabs_forContentState() = runComposeUiTest {
         setScreen(uiState = MockScreenTestData.contentState())
 
-        onNodeWithTag(testTag = "host_tab_staging").assertIsDisplayed()
-        onNodeWithTag(testTag = "host_tab_production").assertIsDisplayed()
+        onNodeWithTag(testTag = "group_tab_example_staging").assertIsDisplayed()
+        onNodeWithTag(testTag = "group_tab_example_production").assertIsDisplayed()
     }
 
 
     @Test
-    fun initialSelectedTab_isFirstHost() = runComposeUiTest {
+    fun initialSelectedTab_isFirstGroup() = runComposeUiTest {
         setScreen(uiState = MockScreenTestData.contentState())
 
-        onNodeWithTag(testTag = "host_tab_staging").assertIsSelected()
+        onNodeWithTag(testTag = "group_tab_example_staging").assertIsSelected()
 
     }
 
@@ -68,12 +69,12 @@ class NetworkMockScreenTest {
     fun tabSwitching_changesVisibleEndpoints() = runComposeUiTest {
         setScreen(uiState = MockScreenTestData.contentState())
 
-        onNodeWithTag(testTag = "endpoint_card_staging_getUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_staging_getUser").assertIsDisplayed()
 
-        onNodeWithTag(testTag = "host_tab_production").performClick()
+        onNodeWithTag(testTag = "group_tab_example_production").performClick()
         waitForIdle()
 
-        onNodeWithTag(testTag = "endpoint_card_production_getProduct").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_production_getUser").assertIsDisplayed()
     }
 
 
@@ -116,23 +117,27 @@ class NetworkMockScreenTest {
 
     @Test
     fun endpointSelection_invokesSelectEndpointCallback() = runComposeUiTest {
-        var selected: Pair<String, String>? = null
+        var selected: EndpointKey? = null
 
         setScreen(
             uiState = MockScreenTestData.contentState(),
-            selectEndpoint = { hostId, endpointId -> selected = hostId to endpointId }
+            navigateToEndpointScreen = { endpointKey -> selected = endpointKey }
         )
 
-        onNodeWithTag(testTag = "endpoint_card_staging_getUser").performClick()
+        onNodeWithTag(testTag = "endpoint_card_example_staging_getUser").performClick()
 
-        selected shouldBe ("staging" to "getUser")
+        selected shouldBe EndpointKey(
+            groupId = "example",
+            environmentId = "staging",
+            endpointId = "getUser"
+        )
     }
 
     private fun ComposeUiTest.setScreen(
         uiState: NetworkMockUiState,
         onGlobalToggle: (Boolean) -> Unit = {},
-        setEndpointMockState: (String, String, String?) -> Unit = { _, _, _ -> },
-        selectEndpoint: (String, String) -> Unit = { _, _ -> },
+        setEndpointMockState: (EndpointKey, String?) -> Unit = { _, _ -> },
+        navigateToEndpointScreen: (EndpointKey) -> Unit = { },
         clearSelectedEndpoint: () -> Unit = {},
     ) {
         setContent {
@@ -141,10 +146,10 @@ class NetworkMockScreenTest {
                     uiState = uiState,
                     onGlobalToggle = onGlobalToggle,
                     setEndpointMockState = setEndpointMockState,
-                    selectEndpoint = selectEndpoint,
                     clearSelectedEndpoint = clearSelectedEndpoint,
                     selectedDescriptor = null,
-                    selectedEndpointState = EndpointMockState.Network
+                    selectedEndpointState = EndpointMockState.Network,
+                    navigateToEndpointScreen = navigateToEndpointScreen,
                 )
             }
         }

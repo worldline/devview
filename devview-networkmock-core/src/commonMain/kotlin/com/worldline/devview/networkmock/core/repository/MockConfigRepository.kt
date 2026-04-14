@@ -1,10 +1,11 @@
 package com.worldline.devview.networkmock.core.repository
 
-import com.worldline.devview.networkmock.model.ApiGroupConfig
-import com.worldline.devview.networkmock.model.EndpointKey
+import com.worldline.devview.networkmock.core.model.EndpointKey
 import com.worldline.devview.networkmock.core.model.MockConfiguration
 import com.worldline.devview.networkmock.core.model.MockMatch
 import com.worldline.devview.networkmock.core.model.MockResponse
+import com.worldline.devview.networkmock.core.model.effectiveEndpoints
+import com.worldline.devview.networkmock.core.repository.MockConfigRepository.Companion.DEFAULT_STATUS_CODES
 import kotlinx.serialization.json.Json
 
 /**
@@ -452,7 +453,8 @@ public class MockConfigRepository(
 
         // A custom statusCodesToDiscover list may accidentally include duplicates.
         // Deduplicate by file name so callers get a stable set of discovered files.
-        return responses
+        return discovered
+            .values
             .distinctBy { it.fileName }
             .sortedBy { it.statusCode }
     }

@@ -126,6 +126,8 @@ class FeatureFlipScreenTest {
             }
         }
 
+        waitForIdle()
+
         // Initially, clear button should not be visible (no text input)
         onAllNodesWithTag(testTag = "clear_feature_filter_button").assertCountEquals(0)
 

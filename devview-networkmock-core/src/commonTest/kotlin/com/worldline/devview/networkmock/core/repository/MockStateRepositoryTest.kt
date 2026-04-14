@@ -3,6 +3,7 @@ package com.worldline.devview.networkmock.core.repository
 import app.cash.turbine.test
 import com.worldline.devview.networkmock.core.fixtures.FakePreferencesDataStore
 import com.worldline.devview.networkmock.core.fixtures.ThrowingPreferencesDataStore
+import com.worldline.devview.networkmock.core.model.EndpointKey
 import com.worldline.devview.networkmock.core.model.EndpointMockState
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.maps.shouldNotContainKey
@@ -12,6 +13,14 @@ import kotlin.test.Test
 import kotlinx.coroutines.test.runTest
 
 class MockStateRepositoryTest {
+
+    private val groupId: String = "example"
+
+    private fun key(environmentId: String, endpointId: String): EndpointKey = EndpointKey(
+        groupId = groupId,
+        environmentId = environmentId,
+        endpointId = endpointId
+    )
 
     private fun createRepository(): MockStateRepository =
         MockStateRepository(dataStore = FakePreferencesDataStore())
@@ -85,13 +94,15 @@ class MockStateRepositoryTest {
         val repository = createRepository()
 
         repository.setEndpointMockState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "getUser",
             state = EndpointMockState.Mock(responseFile = "getUser-200.json")
         )
 
         val endpointState = repository.getState().getEndpointState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "getUser"
         )
         endpointState.shouldBeInstanceOf<EndpointMockState.Mock>()
@@ -104,18 +115,21 @@ class MockStateRepositoryTest {
 
         // First set to mock, then back to network
         repository.setEndpointMockState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "getUser",
             state = EndpointMockState.Mock(responseFile = "getUser-200.json")
         )
         repository.setEndpointMockState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "getUser",
             state = EndpointMockState.Network
         )
 
         val endpointState = repository.getState().getEndpointState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "getUser"
         )
         endpointState shouldBe EndpointMockState.Network
@@ -126,14 +140,15 @@ class MockStateRepositoryTest {
         val repository = createRepository()
 
         repository.observeState().test {
-            awaitItem().endpointStates shouldNotContainKey "staging-getUser"
+            awaitItem().endpointStates shouldNotContainKey key("staging", "getUser").compositeKey
 
             repository.setEndpointMockState(
-                hostId = "staging",
+                groupId = groupId,
+                environmentId = "staging",
                 endpointId = "getUser",
                 state = EndpointMockState.Mock(responseFile = "getUser-200.json")
             )
-            awaitItem().endpointStates shouldContainKey "staging-getUser"
+            awaitItem().endpointStates shouldContainKey key("staging", "getUser").compositeKey
 
             cancelAndIgnoreRemainingEvents()
         }
@@ -148,19 +163,29 @@ class MockStateRepositoryTest {
         val repository = createRepository()
 
         repository.setEndpointMockState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "getUser",
             state = EndpointMockState.Mock(responseFile = "getUser-200.json")
         )
         repository.setEndpointMockState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "createUser",
             state = EndpointMockState.Mock(responseFile = "createUser-201.json")
         )
 
         val state = repository.getState()
-        val getUserState = state.getEndpointState(hostId = "staging", endpointId = "getUser")
-        val createUserState = state.getEndpointState(hostId = "staging", endpointId = "createUser")
+        val getUserState = state.getEndpointState(
+            groupId = groupId,
+            environmentId = "staging",
+            endpointId = "getUser"
+        )
+        val createUserState = state.getEndpointState(
+            groupId = groupId,
+            environmentId = "staging",
+            endpointId = "createUser"
+        )
 
         (getUserState as EndpointMockState.Mock).responseFile shouldBe "getUser-200.json"
         (createUserState as EndpointMockState.Mock).responseFile shouldBe "createUser-201.json"
@@ -171,51 +196,59 @@ class MockStateRepositoryTest {
         val repository = createRepository()
 
         repository.setEndpointMockState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "getUser",
             state = EndpointMockState.Mock(responseFile = "getUser-200.json")
         )
         repository.setEndpointMockState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "createUser",
             state = EndpointMockState.Mock(responseFile = "createUser-201.json")
         )
 
         // Update only getUser
         repository.setEndpointMockState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "getUser",
             state = EndpointMockState.Mock(responseFile = "getUser-404.json")
         )
 
         val createUserState = repository.getState().getEndpointState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "createUser"
         )
         (createUserState as EndpointMockState.Mock).responseFile shouldBe "createUser-201.json"
     }
 
     @Test
-    fun `endpoints on different hosts are tracked independently`() = runTest {
+    fun `endpoints on different environments are tracked independently`() = runTest {
         val repository = createRepository()
 
         repository.setEndpointMockState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "getUser",
             state = EndpointMockState.Mock(responseFile = "getUser-200.json")
         )
         repository.setEndpointMockState(
-            hostId = "production",
+            groupId = groupId,
+            environmentId = "production",
             endpointId = "getUser",
             state = EndpointMockState.Mock(responseFile = "getUser-500.json")
         )
 
         val stagingState = repository.getState().getEndpointState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "getUser"
         )
         val productionState = repository.getState().getEndpointState(
-            hostId = "production",
+            groupId = groupId,
+            environmentId = "production",
             endpointId = "getUser"
         )
 
@@ -232,12 +265,14 @@ class MockStateRepositoryTest {
         val repository = createRepository()
 
         repository.setEndpointMockState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "getUser",
             state = EndpointMockState.Mock(responseFile = "getUser-200.json")
         )
         repository.setEndpointMockState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "createUser",
             state = EndpointMockState.Mock(responseFile = "createUser-201.json")
         )
@@ -245,8 +280,8 @@ class MockStateRepositoryTest {
         repository.resetKnownEndpointsToNetwork()
 
         val state = repository.getState()
-        state.getEndpointState(hostId = "staging", endpointId = "getUser") shouldBe EndpointMockState.Network
-        state.getEndpointState(hostId = "staging", endpointId = "createUser") shouldBe EndpointMockState.Network
+        state.getEndpointState(groupId = groupId, environmentId = "staging", endpointId = "getUser") shouldBe EndpointMockState.Network
+        state.getEndpointState(groupId = groupId, environmentId = "staging", endpointId = "createUser") shouldBe EndpointMockState.Network
     }
 
     @Test
@@ -255,7 +290,8 @@ class MockStateRepositoryTest {
 
         repository.setGlobalMockingEnabled(enabled = true)
         repository.setEndpointMockState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "getUser",
             state = EndpointMockState.Mock(responseFile = "getUser-200.json")
         )
@@ -270,21 +306,22 @@ class MockStateRepositoryTest {
         val repository = createRepository()
 
         repository.setEndpointMockState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "getUser",
             state = EndpointMockState.Mock(responseFile = "getUser-200.json")
         )
 
         repository.setAllEndpointStates(
             states = mapOf(
-                "staging-getUser" to EndpointMockState.Network,
-                "staging-createUser" to EndpointMockState.Network
+                key("staging", "getUser") to EndpointMockState.Network,
+                key("staging", "createUser") to EndpointMockState.Network
             )
         )
 
         val state = repository.getState()
-        state.getEndpointState(hostId = "staging", endpointId = "getUser") shouldBe EndpointMockState.Network
-        state.getEndpointState(hostId = "staging", endpointId = "createUser") shouldBe EndpointMockState.Network
+        state.getEndpointState(groupId = groupId, environmentId = "staging", endpointId = "getUser") shouldBe EndpointMockState.Network
+        state.getEndpointState(groupId = groupId, environmentId = "staging", endpointId = "createUser") shouldBe EndpointMockState.Network
     }
 
     @Test
@@ -294,7 +331,7 @@ class MockStateRepositoryTest {
         repository.setGlobalMockingEnabled(enabled = true)
 
         repository.setAllEndpointStates(
-            states = mapOf("staging-getUser" to EndpointMockState.Network)
+            states = mapOf(key("staging", "getUser") to EndpointMockState.Network)
         )
 
         repository.getState().globalMockingEnabled shouldBe true
@@ -309,7 +346,8 @@ class MockStateRepositoryTest {
         val repository = createRepository()
 
         val state = repository.getState().getEndpointState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "nonExistent"
         )
 
@@ -326,12 +364,16 @@ class MockStateRepositoryTest {
 
         // Register endpoints without any prior writes
         repository.registerEndpoints(
-            endpoints = listOf("staging" to "getUser", "staging" to "createUser")
+            endpoints = listOf(
+                key("staging", "getUser"),
+                key("staging", "createUser")
+            )
         )
 
         // Write a mock state so there is something to reset for one of them
         repository.setEndpointMockState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "getUser",
             state = EndpointMockState.Mock(responseFile = "getUser-200.json")
         )
@@ -339,7 +381,8 @@ class MockStateRepositoryTest {
         repository.resetKnownEndpointsToNetwork()
 
         repository.getState().getEndpointState(
-            hostId = "staging",
+            groupId = groupId,
+            environmentId = "staging",
             endpointId = "getUser"
         ) shouldBe EndpointMockState.Network
     }

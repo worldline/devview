@@ -12,8 +12,8 @@ import androidx.compose.ui.graphics.Color
 import com.worldline.devview.networkmock.core.model.EndpointDescriptor
 import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.core.model.MockResponse
-import com.worldline.devview.networkmock.viewmodel.EndpointUiModel
-import com.worldline.devview.networkmock.viewmodel.HostUiModel
+import com.worldline.devview.networkmock.model.EndpointUiModel
+import com.worldline.devview.networkmock.model.GroupEnvironmentUiModel
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
@@ -75,24 +75,31 @@ class ModelUtilsTest {
     }
 
     @Test
-    fun `fake HostUiModel creates requested amount with nested endpoints`() {
-        val hosts = HostUiModel.fake(amount = 3)
+    fun `fake GroupEnvironmentUiModel creates requested amount with nested endpoints`() {
+        val groups = GroupEnvironmentUiModel.fake(amount = 3)
 
-        hosts shouldHaveSize 3
-        hosts[0].id shouldBe "host-0"
-        hosts[0].name shouldBe "Host 0"
-        hosts[0].url shouldBe "https://api.host0.com"
-        hosts[0].endpoints shouldHaveSize 7
+        groups shouldHaveSize 3
+        groups[0].groupId shouldBe "group"
+        groups[0].environmentId shouldBe "development"
+        groups[0].name shouldBe "Group - Development"
+        groups[0].url shouldBe "https://group.development.api.com"
+        groups[0].endpoints shouldHaveSize 7
     }
 
     @Test
     fun `fake EndpointDescriptor creates requested amount and response count`() {
-        val descriptors = EndpointDescriptor.fake(amount = 2, availableResponsesAmount = 4, hostId = "qa")
+        val descriptors = EndpointDescriptor.fake(
+            amount = 2,
+            availableResponsesAmount = 4,
+            groupId = "qa",
+            environmentId = "staging"
+        )
 
         descriptors shouldHaveSize 2
-        descriptors[0].hostId shouldBe "qa"
-        descriptors[0].endpointId shouldBe "endpoint-0"
-        descriptors[0].config.path shouldBe "/endpoint0"
+        descriptors[0].groupId shouldBe "qa"
+        descriptors[0].environmentId shouldBe "staging"
+        descriptors[0].endpointId shouldBe "endpoint-1"
+        descriptors[0].config.path shouldBe "/endpoint1"
         descriptors[0].availableResponses shouldHaveSize 4
     }
 
@@ -106,7 +113,7 @@ class ModelUtilsTest {
         endpoints[0].currentState shouldBe EndpointMockState.Mock(responseFile = "response-100.json")
 
         responses shouldHaveSize 4
-        responses[1].fileName shouldBe "response1.json"
+        responses[1].fileName shouldBe "response-201.json"
         responses[1].statusCode shouldBe 200
         responses[1].displayName shouldBe "Response 1"
     }

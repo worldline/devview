@@ -228,7 +228,7 @@ private fun MockItemSelectedPreview(
 
 @Preview(locale = "en")
 @Composable
-internal fun MockItemPreviewModePreview(
+private fun MockItemPreviewModePreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) isInPreviewMode: Boolean
 ) {
     MaterialTheme {

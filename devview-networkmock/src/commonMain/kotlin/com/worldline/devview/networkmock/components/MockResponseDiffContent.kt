@@ -32,9 +32,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.worldline.devview.networkmock.PreviewSheetState
+import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.model.DiffLine
 import com.worldline.devview.networkmock.model.DisplayLine
-import com.worldline.devview.networkmock.model.MockResponse
 import com.worldline.devview.networkmock.preview.PreviewSheetStatePreviewParameterProvider
 import com.worldline.devview.networkmock.utils.CONTEXT_LINES
 import com.worldline.devview.networkmock.utils.toDisplayLines

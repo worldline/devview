@@ -7,10 +7,10 @@ internal object KtorPluginTestData {
 
     val defaultConfigJson: String = """
         {
-          "hosts": [
+          "apiGroups": [
             {
-              "id": "staging",
-              "url": "https://staging.api.example.com",
+              "id": "example",
+              "name": "Example",
               "endpoints": [
                 {
                   "id": "getUser",
@@ -24,17 +24,25 @@ internal object KtorPluginTestData {
                   "path": "/api/users",
                   "method": "POST"
                 }
-              ]
-            },
-            {
-              "id": "production",
-              "url": "https://api.example.com",
-              "endpoints": [
+              ],
+              "environments": [
                 {
-                  "id": "getProduct",
-                  "name": "Get Product",
-                  "path": "/api/products/{productId}",
-                  "method": "GET"
+                  "id": "staging",
+                  "name": "Staging",
+                  "url": "https://staging.api.example.com"
+                },
+                {
+                  "id": "production",
+                  "name": "Production",
+                  "url": "https://api.example.com",
+                  "additionalEndpoints": [
+                    {
+                      "id": "getProduct",
+                      "name": "Get Product",
+                      "path": "/api/products/{productId}",
+                      "method": "GET"
+                    }
+                  ]
                 }
               ]
             }
@@ -45,10 +53,10 @@ internal object KtorPluginTestData {
     /** Response file resources keyed by their path under `files/networkmocks/`. */
     val responseResources: Map<String, String> = mapOf(
         "files/networkmocks/mocks.json" to defaultConfigJson,
-        "files/networkmocks/responses/getUser/getUser-200.json" to """{"id":1,"name":"Alice"}""",
-        "files/networkmocks/responses/getUser/getUser-404.json" to """{"error":"not found"}""",
-        "files/networkmocks/responses/createUser/createUser-201.json" to """{"id":2}""",
-        "files/networkmocks/responses/getProduct/getProduct-200.json" to """{"id":10,"name":"Widget"}"""
+        "files/networkmocks/responses/example/staging/getUser/getUser-200.json" to """{"id":1,"name":"Alice"}""",
+        "files/networkmocks/responses/example/getUser/getUser-404.json" to """{"error":"not found"}""",
+        "files/networkmocks/responses/example/staging/createUser/createUser-201.json" to """{"id":2}""",
+        "files/networkmocks/responses/example/production/getProduct/getProduct-200.json" to """{"id":10,"name":"Widget"}"""
     )
 
     /** Resource loader backed by the in-memory map above. */

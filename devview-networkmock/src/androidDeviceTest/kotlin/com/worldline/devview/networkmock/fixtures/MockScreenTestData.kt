@@ -1,38 +1,72 @@
 package com.worldline.devview.networkmock.fixtures
 
+import com.worldline.devview.networkmock.core.model.ApiGroupConfig
 import com.worldline.devview.networkmock.core.model.EndpointConfig
 import com.worldline.devview.networkmock.core.model.EndpointDescriptor
+import com.worldline.devview.networkmock.core.model.EndpointKey
 import com.worldline.devview.networkmock.core.model.EndpointMockState
-import com.worldline.devview.networkmock.core.model.HostConfig
+import com.worldline.devview.networkmock.core.model.EnvironmentConfig
 import com.worldline.devview.networkmock.core.model.MockConfiguration
 import com.worldline.devview.networkmock.core.model.MockResponse
-import com.worldline.devview.networkmock.viewmodel.EndpointUiModel
-import com.worldline.devview.networkmock.viewmodel.HostUiModel
+import com.worldline.devview.networkmock.model.EndpointUiModel
+import com.worldline.devview.networkmock.model.GroupEnvironmentUiModel
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
-import kotlinx.collections.immutable.toPersistentList
+import kotlinx.collections.immutable.persistentListOf
 
 internal object MockScreenTestData {
 
     const val configPath: String = "files/networkmocks/mocks.json"
 
     private val stagingGetUserResponses = listOf(
-        MockResponse(statusCode = 200, fileName = "getUser-200.json", displayName = "Success (200)", content = "{}"),
-        MockResponse(statusCode = 404, fileName = "getUser-404-simple.json", displayName = "Not Found - Simple (404)", content = "{}")
+        MockResponse(
+            statusCode = 200,
+            fileName = "getUser-200.json",
+            displayName = "Success (200)",
+            content = "{}"
+        ),
+        MockResponse(
+            statusCode = 404,
+            fileName = "getUser-404-simple.json",
+            displayName = "Not Found - Simple (404)",
+            content = "{}"
+        )
     )
 
     private val stagingCreateUserResponses = listOf(
-        MockResponse(statusCode = 201, fileName = "createUser-201.json", displayName = "Created (201)", content = "{}")
+        MockResponse(
+            statusCode = 201,
+            fileName = "createUser-201.json",
+            displayName = "Created (201)",
+            content = "{}"
+        )
     )
 
     private val productionGetProductResponses = listOf(
-        MockResponse(statusCode = 200, fileName = "getProduct-200.json", displayName = "Success (200)", content = "{}")
+        MockResponse(
+            statusCode = 200,
+            fileName = "getProduct-200.json",
+            displayName = "Success (200)",
+            content = "{}"
+        )
     )
 
-    fun configurationWithTwoHosts(): MockConfiguration = MockConfiguration(
-        hosts = listOf(
-            HostConfig(
-                id = "staging",
-                url = "https://staging.api.example.com",
+    fun configurationWithTwoEnvironments(): MockConfiguration = MockConfiguration(
+        apiGroups = listOf(
+            ApiGroupConfig(
+                id = "example",
+                name = "Example",
+                environments = listOf(
+                    EnvironmentConfig(
+                        id = "staging",
+                        name = "Staging",
+                        url = "https://staging.api.example.com"
+                    ),
+                    EnvironmentConfig(
+                        id = "production",
+                        name = "Production",
+                        url = "https://api.example.com"
+                    )
+                ),
                 endpoints = listOf(
                     EndpointConfig(
                         id = "getUser",
@@ -47,46 +81,34 @@ internal object MockScreenTestData {
                         method = "POST"
                     )
                 )
-            ),
-            HostConfig(
-                id = "production",
-                url = "https://api.example.com",
-                endpoints = listOf(
-                    EndpointConfig(
-                        id = "getProduct",
-                        name = "Get Product",
-                        path = "/api/products/{productId}",
-                        method = "GET"
-                    )
-                )
             )
         )
     )
 
-    fun configurationWithNoHosts(): MockConfiguration = MockConfiguration(hosts = emptyList())
+    fun configurationWithNoHosts(): MockConfiguration = MockConfiguration(apiGroups = emptyList())
 
     fun defaultResources(): Map<String, String> = mapOf(
         configPath to defaultConfigJson(),
-        "files/networkmocks/responses/getUser/getUser-200.json" to "{}",
-        "files/networkmocks/responses/getUser/getUser-404-simple.json" to "{}",
-        "files/networkmocks/responses/createUser/createUser-201.json" to "{}",
-        "files/networkmocks/responses/getProduct/getProduct-200.json" to "{}"
+        "files/networkmocks/responses/example/staging/getUser/getUser-200.json" to "{}",
+        "files/networkmocks/responses/example/getUser/getUser-404-simple.json" to "{}",
+        "files/networkmocks/responses/example/staging/createUser/createUser-201.json" to "{}",
+        "files/networkmocks/responses/example/production/getProduct/getProduct-200.json" to "{}"
     )
 
     fun emptyHostsResources(): Map<String, String> = mapOf(
         configPath to """
             {
-              "hosts": []
+              "apiGroups": []
             }
         """.trimIndent()
     )
 
     fun defaultConfigJson(): String = """
         {
-          "hosts": [
+          "apiGroups": [
             {
-              "id": "staging",
-              "url": "https://staging.api.example.com",
+              "id": "example",
+              "name": "Example",
               "endpoints": [
                 {
                   "id": "getUser",
@@ -100,17 +122,25 @@ internal object MockScreenTestData {
                   "path": "/api/users",
                   "method": "POST"
                 }
-              ]
-            },
-            {
-              "id": "production",
-              "url": "https://api.example.com",
-              "endpoints": [
+              ],
+              "environments": [
                 {
-                  "id": "getProduct",
-                  "name": "Get Product",
-                  "path": "/api/products/{productId}",
-                  "method": "GET"
+                  "id": "staging",
+                  "name": "Staging",
+                  "url": "https://staging.api.example.com"
+                },
+                {
+                  "id": "production",
+                  "name": "Production",
+                  "url": "https://api.example.com",
+                  "additionalEndpoints": [
+                    {
+                      "id": "getProduct",
+                      "name": "Get Product",
+                      "path": "/api/products/{productId}",
+                      "method": "GET"
+                    }
+                  ]
                 }
               ]
             }
@@ -121,16 +151,20 @@ internal object MockScreenTestData {
     fun contentState(globalMockingEnabled: Boolean = false): NetworkMockUiState.Content =
         NetworkMockUiState.Content(
             globalMockingEnabled = globalMockingEnabled,
-            hosts = listOf(
-                HostUiModel(
-                    id = "staging",
-                    name = "staging",
+            groups = persistentListOf(
+                GroupEnvironmentUiModel(
+                    groupId = "example",
+                    environmentId = "staging",
+                    name = "Staging",
                     url = "https://staging.api.example.com",
-                    endpoints = listOf(
+                    endpoints = persistentListOf(
                         EndpointUiModel(
                             descriptor = EndpointDescriptor(
-                                hostId = "staging",
-                                endpointId = "getUser",
+                                key = EndpointKey(
+                                    groupId = "example",
+                                    environmentId = "staging",
+                                    endpointId = "getUser"
+                                ),
                                 config = EndpointConfig(
                                     id = "getUser",
                                     name = "Get User",
@@ -143,8 +177,11 @@ internal object MockScreenTestData {
                         ),
                         EndpointUiModel(
                             descriptor = EndpointDescriptor(
-                                hostId = "staging",
-                                endpointId = "createUser",
+                                key = EndpointKey(
+                                    groupId = "example",
+                                    environmentId = "staging",
+                                    endpointId = "createUser"
+                                ),
                                 config = EndpointConfig(
                                     id = "createUser",
                                     name = "Create User",
@@ -155,30 +192,51 @@ internal object MockScreenTestData {
                             ),
                             currentState = EndpointMockState.Mock(responseFile = "createUser-201.json")
                         )
-                    ).toPersistentList()
+                    )
                 ),
-                HostUiModel(
-                    id = "production",
-                    name = "production",
-                    url = "https://api.example.com",
-                    endpoints = listOf(
+                GroupEnvironmentUiModel(
+                    groupId = "example",
+                    environmentId = "production",
+                    name = "Production",
+                    url = "https://staging.api.example.com",
+                    endpoints = persistentListOf(
                         EndpointUiModel(
                             descriptor = EndpointDescriptor(
-                                hostId = "production",
-                                endpointId = "getProduct",
+                                key = EndpointKey(
+                                    groupId = "example",
+                                    environmentId = "production",
+                                    endpointId = "getUser"
+                                ),
                                 config = EndpointConfig(
-                                    id = "getProduct",
-                                    name = "Get Product",
-                                    path = "/api/products/{productId}",
+                                    id = "getUser",
+                                    name = "Get User",
+                                    path = "/api/users/{userId}",
                                     method = "GET"
                                 ),
-                                availableResponses = productionGetProductResponses
+                                availableResponses = stagingGetUserResponses
                             ),
                             currentState = EndpointMockState.Network
+                        ),
+                        EndpointUiModel(
+                            descriptor = EndpointDescriptor(
+                                key = EndpointKey(
+                                    groupId = "example",
+                                    environmentId = "production",
+                                    endpointId = "createUser"
+                                ),
+                                config = EndpointConfig(
+                                    id = "createUser",
+                                    name = "Create User",
+                                    path = "/api/users",
+                                    method = "POST"
+                                ),
+                                availableResponses = stagingCreateUserResponses
+                            ),
+                            currentState = EndpointMockState.Mock(responseFile = "createUser-201.json")
                         )
-                    ).toPersistentList()
+                    )
                 )
-            ).toPersistentList()
+            )
         )
 }
 

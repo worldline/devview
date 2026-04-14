@@ -7,6 +7,7 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import io.kotest.matchers.collections.shouldContainExactly
+import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
@@ -71,8 +72,10 @@ private class TrackingModule(
 ) : Module {
     override val moduleName: String = name
     override val section: Section = Section.CUSTOM
-    override val destinations: PersistentMap<NavKey, DestinationMetadata> =
-        persistentMapOf(UiTestDestination to DestinationMetadata())
+    override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> =
+        persistentMapOf(UiTestDestination::class to DestinationMetadata())
+    override val entryDestination: NavKey
+        get() = UiTestDestination
     override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit = {}
 
     override fun EntryProviderScope<NavKey>.registerContent(

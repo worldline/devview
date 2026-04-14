@@ -37,11 +37,9 @@ import com.worldline.devview.networkmock.components.EndpointCard
 import com.worldline.devview.networkmock.components.ErrorState
 import com.worldline.devview.networkmock.components.GlobalMockToggle
 import com.worldline.devview.networkmock.components.LoadingState
-import com.worldline.devview.networkmock.model.EndpointKey
 import com.worldline.devview.networkmock.core.model.EndpointDescriptor
+import com.worldline.devview.networkmock.core.model.EndpointKey
 import com.worldline.devview.networkmock.core.model.EndpointMockState
-import com.worldline.devview.networkmock.core.repository.MockConfigRepository
-import com.worldline.devview.networkmock.core.repository.MockStateRepository
 import com.worldline.devview.networkmock.preview.NetworkMockUiStatePreviewParameterProvider
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
@@ -179,7 +177,9 @@ private fun ContentState(
         ) {
             uiState.groups.forEachIndexed { index, group ->
                 Tab(
-                    modifier = Modifier.testTag(tag = "host_tab_${host.id}"),
+                    modifier = Modifier.testTag(
+                        tag = "group_tab_${group.groupId}_${group.environmentId}"
+                    ),
                     selected = selectedTabIndex == index,
                     onClick = { selectedTabIndex = index },
                     text = { Text(text = group.name) }
@@ -204,7 +204,9 @@ private fun ContentState(
                 ) { index, endpoint ->
                     EndpointCard(
                         modifier = Modifier.testTag(
-                            tag = "endpoint_card_${endpoint.descriptor.hostId}_${endpoint.descriptor.endpointId}"
+                            tag = "endpoint_card_${endpoint.descriptor.groupId}" +
+                                "_${endpoint.descriptor.environmentId}" +
+                                "_${endpoint.descriptor.endpointId}"
                         ),
                         endpoint = endpoint,
                         openEndpointDetails = {

@@ -14,9 +14,9 @@ class FeatureFlipModuleTest {
         FeatureFlip.section shouldBe Section.FEATURES
         FeatureFlip.dataStoreName shouldBe FEATURE_FLIP_DATASTORE_NAME
 
-        FeatureFlip.destinations.keys.shouldContain(FeatureFlipDestination.Main)
+        FeatureFlip.destinations.keys.shouldContain(FeatureFlipDestination.Main::class)
 
-        val metadata = FeatureFlip.destinations[FeatureFlipDestination.Main].shouldNotBeNull()
+        val metadata = FeatureFlip.destinations[FeatureFlipDestination.Main::class].shouldNotBeNull()
         metadata.title shouldBe "Feature Flip"
         metadata.actions shouldHaveSize 0
     }

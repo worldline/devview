@@ -25,7 +25,7 @@ import com.worldline.devview.networkmock.utils.contentColor
 import com.worldline.devview.networkmock.utils.icon
 
 @Composable
-public fun EndpointStateChip(
+internal fun EndpointStateChip(
     endpointMockState: EndpointMockState,
     modifier: Modifier = Modifier,
     label: String = when (endpointMockState) {
@@ -34,6 +34,7 @@ public fun EndpointStateChip(
     },
     chipTestTag: String = "endpoint_state_chip",
     labelTestTag: String = "endpoint_state_chip_label"
+) {
     Row(
         modifier = modifier
             .testTag(tag = chipTestTag)
@@ -56,7 +57,7 @@ public fun EndpointStateChip(
             tint = endpointMockState.contentColor
         )
         Text(
-            modifier = Modifier.testTag(tag = "${labelTestTag}_$displayedLabel"),
+            modifier = Modifier.testTag(tag = "${labelTestTag}_$label"),
             text = label,
             style = MaterialTheme.typography.bodySmallEmphasized,
             color = endpointMockState.contentColor
