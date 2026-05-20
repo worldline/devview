@@ -10,6 +10,9 @@ import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.NetworkMockState
 import com.worldline.devview.networkmock.core.repository.MockConfigRepository
 import com.worldline.devview.networkmock.core.repository.MockStateRepository
+import com.worldline.devview.test.ViewModelTest
+import com.worldline.devview.test.collectState
+import com.worldline.devview.test.collectStates
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -20,6 +23,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlinx.coroutines.delay
@@ -31,6 +35,11 @@ class NetworkMockViewModelTest : ViewModelTest() {
     @BeforeTest
     override fun setup() {
         super.setup()
+    }
+
+    @AfterTest
+    override fun tearDown() {
+        super.tearDown()
     }
 
     @Test
@@ -52,7 +61,8 @@ class NetworkMockViewModelTest : ViewModelTest() {
     @Test
     fun emitsContentState_afterSuccessfulConfigurationLoad() = runTest {
         val stateFlow = MutableStateFlow(NetworkMockState())
-        val configRepository = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val configRepository =
+            createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
         val stateRepository = createStateRepositoryMock(stateFlow)
 
         val viewModel = NetworkMockViewModel(configRepository, stateRepository)
@@ -103,7 +113,8 @@ class NetworkMockViewModelTest : ViewModelTest() {
     @Test
     fun content_reflectsGlobalMockingEnabledState() = runTest {
         val stateFlow = MutableStateFlow(NetworkMockState(globalMockingEnabled = true))
-        val configRepository = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val configRepository =
+            createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
         val stateRepository = createStateRepositoryMock(stateFlow)
 
         val viewModel = NetworkMockViewModel(configRepository, stateRepository)
@@ -118,7 +129,8 @@ class NetworkMockViewModelTest : ViewModelTest() {
     @Test
     fun selectEndpoint_updatesSelectedEndpointDescriptor() = runTest {
         val stateFlow = MutableStateFlow(NetworkMockState())
-        val configRepository = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val configRepository =
+            createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
         val stateRepository = createStateRepositoryMock(stateFlow)
 
         val viewModel = NetworkMockViewModel(configRepository, stateRepository)
@@ -142,7 +154,8 @@ class NetworkMockViewModelTest : ViewModelTest() {
     @Test
     fun clearSelectedEndpoint_resetsSelectedEndpointDescriptor_toNull() = runTest {
         val stateFlow = MutableStateFlow(NetworkMockState())
-        val configRepository = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val configRepository =
+            createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
         val stateRepository = createStateRepositoryMock(stateFlow)
 
         val viewModel = NetworkMockViewModel(configRepository, stateRepository)
@@ -162,28 +175,32 @@ class NetworkMockViewModelTest : ViewModelTest() {
     @Test
     fun selectedEndpointState_reflectsSelectedEndpointMockState() = runTest {
         val stateFlow = MutableStateFlow(NetworkMockState())
-        val configRepository = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val configRepository =
+            createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
         val stateRepository = createStateRepositoryMock(stateFlow)
 
         val viewModel = NetworkMockViewModel(configRepository, stateRepository)
 
         collectStates(viewModel.uiState, viewModel.selectedEndpointState)
 
-        val key = EndpointKey(groupId = "user-api", environmentId = "staging", endpointId = "getUser")
+        val key =
+            EndpointKey(groupId = "user-api", environmentId = "staging", endpointId = "getUser")
         viewModel.selectEndpoint(key = key)
         viewModel.setEndpointMockState(
             key = key,
             responseFileName = "getUser-200.json"
         )
 
-        val selected = viewModel.selectedEndpointState.value.shouldBeInstanceOf<EndpointMockState.Mock>()
+        val selected =
+            viewModel.selectedEndpointState.value.shouldBeInstanceOf<EndpointMockState.Mock>()
         selected.responseFile shouldBe "getUser-200.json"
     }
 
     @Test
     fun setGlobalMockingEnabled_persistsInRepository() = runTest {
         val stateFlow = MutableStateFlow(NetworkMockState())
-        val configRepository = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val configRepository =
+            createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
         val stateRepository = createStateRepositoryMock(stateFlow)
 
         val viewModel = NetworkMockViewModel(configRepository, stateRepository)
@@ -197,12 +214,14 @@ class NetworkMockViewModelTest : ViewModelTest() {
     @Test
     fun setEndpointMockState_persistsMockAndNetworkTransitions() = runTest {
         val stateFlow = MutableStateFlow(NetworkMockState())
-        val configRepository = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val configRepository =
+            createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
         val stateRepository = createStateRepositoryMock(stateFlow)
 
         val viewModel = NetworkMockViewModel(configRepository, stateRepository)
 
-        val key = EndpointKey(groupId = "user-api", environmentId = "staging", endpointId = "getUser")
+        val key =
+            EndpointKey(groupId = "user-api", environmentId = "staging", endpointId = "getUser")
 
         viewModel.setEndpointMockState(key, "getUser-200.json")
         stateFlow.value.getEndpointState(key)
@@ -216,17 +235,26 @@ class NetworkMockViewModelTest : ViewModelTest() {
     @Test
     fun resetAllToNetwork_resetsEveryConfiguredEndpoint_toNetwork() = runTest {
         val stateFlow = MutableStateFlow(NetworkMockState())
-        val configRepository = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val configRepository =
+            createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
         val stateRepository = createStateRepositoryMock(stateFlow)
 
         val viewModel = NetworkMockViewModel(configRepository, stateRepository)
 
         viewModel.setEndpointMockState(
-            key = EndpointKey(groupId = "user-api", environmentId = "staging", endpointId = "getUser"),
+            key = EndpointKey(
+                groupId = "user-api",
+                environmentId = "staging",
+                endpointId = "getUser"
+            ),
             responseFileName = "getUser-200.json"
         )
         viewModel.setEndpointMockState(
-            key = EndpointKey(groupId = "catalog-api", environmentId = "production", endpointId = "getProduct"),
+            key = EndpointKey(
+                groupId = "catalog-api",
+                environmentId = "production",
+                endpointId = "getProduct"
+            ),
             responseFileName = "getProduct-200.json"
         )
 
@@ -241,8 +269,16 @@ class NetworkMockViewModelTest : ViewModelTest() {
 
         val allNetwork = statesSlot.captured
         allNetwork[EndpointKey("user-api", "staging", "getUser")] shouldBe EndpointMockState.Network
-        allNetwork[EndpointKey("user-api", "staging", "createUser")] shouldBe EndpointMockState.Network
-        allNetwork[EndpointKey("catalog-api", "production", "getProduct")] shouldBe EndpointMockState.Network
+        allNetwork[EndpointKey(
+            "user-api",
+            "staging",
+            "createUser"
+        )] shouldBe EndpointMockState.Network
+        allNetwork[EndpointKey(
+            "catalog-api",
+            "production",
+            "getProduct"
+        )] shouldBe EndpointMockState.Network
     }
 
     private fun createConfigRepositoryMock(
@@ -261,8 +297,24 @@ class NetworkMockViewModelTest : ViewModelTest() {
         coEvery { repository.discoverResponseFiles(any<EndpointKey>()) } coAnswers {
             when (firstArg<EndpointKey>().endpointId) {
                 "getUser" -> listOf(MockResponse(200, "getUser-200.json", "Success (200)", "{}"))
-                "createUser" -> listOf(MockResponse(201, "createUser-201.json", "Created (201)", "{}"))
-                "getProduct" -> listOf(MockResponse(200, "getProduct-200.json", "Success (200)", "{}"))
+                "createUser" -> listOf(
+                    MockResponse(
+                        201,
+                        "createUser-201.json",
+                        "Created (201)",
+                        "{}"
+                    )
+                )
+
+                "getProduct" -> listOf(
+                    MockResponse(
+                        200,
+                        "getProduct-200.json",
+                        "Success (200)",
+                        "{}"
+                    )
+                )
+
                 else -> emptyList()
             }
         }
@@ -351,5 +403,3 @@ class NetworkMockViewModelTest : ViewModelTest() {
         )
     )
 }
-
-

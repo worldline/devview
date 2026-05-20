@@ -4,10 +4,25 @@ import com.lemonappdev.konsist.api.Konsist
 
 internal const val DEVVIEW_BASE_MODULE = "devview"
 internal const val DEVVIEW_UTILS_MODULE = "devview-utils"
+internal const val DEVVIEW_TEST_MODULE = "devview-test"
 internal const val DEVVIEW_MODULE_PREFIX = "devview-"
 internal const val CORE_IDENTIFIER = "core"
 internal const val BASE_PACKAGE = "com.worldline.devview"
 internal const val UTILS_PACKAGE = "com.worldline.devview.utils"
+internal const val TEST_PACKAGE = "com.worldline.devview.test"
+
+private val RESERVED_UTILITY_MODULES: Set<String> = setOf(
+    DEVVIEW_UTILS_MODULE,
+    DEVVIEW_TEST_MODULE
+)
+
+internal val RESERVED_UTILITY_PACKAGES: Set<String> = setOf(
+    UTILS_PACKAGE,
+    TEST_PACKAGE
+)
+
+internal fun isReservedUtilityImport(importName: String): Boolean =
+    RESERVED_UTILITY_PACKAGES.any { utilityPackage -> importName.startsWith(utilityPackage) }
 
 /** Extracts `<feature>` from `devview-<feature>` or `devview-<feature>-<identifier>`. */
 internal fun featureNameOf(moduleName: String): String? {
@@ -20,7 +35,7 @@ internal fun featureNameOf(moduleName: String): String? {
 
 /**
  * Returns all devview feature module names discovered from the project scope,
- * excluding the base (`devview`) and utils (`devview-utils`) modules.
+ * excluding reserved utility modules (e.g. `devview-utils`, `devview-test`).
  */
 internal fun devviewFeatureModuleNames(): List<String> =
     Konsist.scopeFromProject()
@@ -29,7 +44,7 @@ internal fun devviewFeatureModuleNames(): List<String> =
         .distinct()
         .filter { name ->
             name.startsWith(DEVVIEW_MODULE_PREFIX) &&
-                name != DEVVIEW_UTILS_MODULE
+                name !in RESERVED_UTILITY_MODULES
         }
 
 /**

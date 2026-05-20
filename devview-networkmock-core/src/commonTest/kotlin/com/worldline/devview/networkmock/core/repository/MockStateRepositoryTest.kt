@@ -1,10 +1,11 @@
 package com.worldline.devview.networkmock.core.repository
 
 import app.cash.turbine.test
-import com.worldline.devview.networkmock.core.fixtures.FakePreferencesDataStore
 import com.worldline.devview.networkmock.core.fixtures.ThrowingPreferencesDataStore
+import com.worldline.devview.test.FakePreferencesDataStore
 import com.worldline.devview.networkmock.core.model.EndpointKey
 import com.worldline.devview.networkmock.core.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.NetworkMockState
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.maps.shouldNotContainKey
 import io.kotest.matchers.shouldBe
@@ -406,4 +407,3 @@ class MockStateRepositoryTest {
 
     // endregion
 }
-

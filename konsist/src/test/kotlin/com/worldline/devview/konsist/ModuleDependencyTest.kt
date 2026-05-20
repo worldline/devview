@@ -33,7 +33,7 @@ class ModuleDependencyTest : FunSpec(body = {
                 .any { file ->
                     file.imports.any { import ->
                         import.name.startsWith(BASE_PACKAGE) &&
-                            !import.name.startsWith(UTILS_PACKAGE)
+                            !isReservedUtilityImport(import.name)
                     }
                 }
             withClue("'$moduleName' has no file importing from the core '$BASE_PACKAGE' package") {

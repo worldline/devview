@@ -1,12 +1,8 @@
 package com.worldline.devview.featureflip.model
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.emptyPreferences
+import com.worldline.devview.test.FakePreferencesDataStore
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -69,16 +65,3 @@ class FeatureHandlerTest {
         }
     }
 }
-
-private class FakePreferencesDataStore : DataStore<Preferences> {
-    private val state = MutableStateFlow(emptyPreferences())
-
-    override val data: Flow<Preferences> = state
-
-    override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
-        val updated = transform(state.value)
-        state.value = updated
-        return updated
-    }
-}
-

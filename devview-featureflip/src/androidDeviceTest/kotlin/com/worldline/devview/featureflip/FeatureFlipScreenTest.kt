@@ -8,16 +8,12 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.v2.runComposeUiTest
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.emptyPreferences
 import com.worldline.devview.featureflip.model.Feature
 import com.worldline.devview.featureflip.model.FeatureHandler
 import com.worldline.devview.featureflip.model.FeatureState
 import com.worldline.devview.featureflip.model.LocalFeatureHandler
+import com.worldline.devview.test.FakePreferencesDataStore
 import com.worldline.devview.test.waitUntilTagCount
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Test
 
 class FeatureFlipScreenTest {
@@ -149,17 +145,5 @@ class FeatureFlipScreenTest {
         // Both features should be visible again
         waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 1)
         waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
-    }
-}
-
-private class FakePreferencesDataStore : DataStore<Preferences> {
-    private val state = MutableStateFlow(emptyPreferences())
-
-    override val data: Flow<Preferences> = state
-
-    override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
-        val updated = transform(state.value)
-        state.value = updated
-        return updated
     }
 }

@@ -24,6 +24,12 @@ kotlin {
                 implementation(libs.jetbrains.androidx.lifecycle.viewmodel.compose)
             }
         }
+
+        androidHostTest {
+            dependencies {
+                implementation(projects.devviewTest)
+            }
+        }
     }
 }
 

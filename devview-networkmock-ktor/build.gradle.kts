@@ -20,6 +20,7 @@ kotlin {
                 implementation(projects.devviewNetworkmockCore)
             }
         }
+
     }
 }
 
