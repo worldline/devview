@@ -1,9 +1,7 @@
 package com.worldline.devview.featureflip
 
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -17,22 +15,12 @@ import com.worldline.devview.featureflip.model.Feature
 import com.worldline.devview.featureflip.model.FeatureHandler
 import com.worldline.devview.featureflip.model.FeatureState
 import com.worldline.devview.featureflip.model.LocalFeatureHandler
+import com.worldline.devview.test.waitUntilTagCount
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Test
 
 class FeatureFlipScreenTest {
-
-    private companion object {
-        private const val UI_WAIT_TIMEOUT_MS = 10_000L
-    }
-
-    private fun ComposeUiTest.waitUntilTagCount(tag: String, expectedCount: Int) {
-        waitUntil(timeoutMillis = UI_WAIT_TIMEOUT_MS) {
-            runCatching { onAllNodesWithTag(testTag = tag).fetchSemanticsNodes().size == expectedCount }
-                .getOrDefault(false)
-        }
-    }
 
     @Test
     fun featureFlipScreen_renders_features_and_filters_by_query() = runComposeUiTest {

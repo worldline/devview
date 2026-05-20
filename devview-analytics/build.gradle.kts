@@ -24,6 +24,12 @@ kotlin {
                 implementation(libs.kotlinx.datetime)
             }
         }
+
+        androidDeviceTest {
+            dependencies {
+                implementation(projects.devviewTest)
+            }
+        }
     }
 }
 

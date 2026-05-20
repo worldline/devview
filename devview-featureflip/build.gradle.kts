@@ -24,6 +24,12 @@ kotlin {
                 implementation(libs.kotlinx.collections.immutable)
             }
         }
+
+        androidDeviceTest {
+            dependencies {
+                implementation(projects.devviewTest)
+            }
+        }
     }
 }
 

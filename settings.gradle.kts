@@ -42,6 +42,7 @@ include(
     ":devview-networkmock",
     ":devview-networkmock-core",
     ":devview-networkmock-ktor",
+    ":devview-test",
     ":devview-utils",
     ":internal:dokka",
     "konsist",
