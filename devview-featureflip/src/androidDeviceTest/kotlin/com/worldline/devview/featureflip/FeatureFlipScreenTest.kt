@@ -1,6 +1,7 @@
 package com.worldline.devview.featureflip
 
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -22,6 +23,15 @@ import org.junit.Test
 
 class FeatureFlipScreenTest {
 
+    private fun ComposeUiTest.waitUntilDisplayed(tag: String) {
+        waitUntil(timeoutMillis = 5_000L) {
+            runCatching {
+                onNodeWithTag(testTag = tag).assertIsDisplayed()
+                true
+            }.getOrDefault(false)
+        }
+    }
+
     @Test
     fun featureFlipScreen_renders_features_and_filters_by_query() = runComposeUiTest {
         val handler = FeatureHandler(
@@ -38,22 +48,22 @@ class FeatureFlipScreenTest {
             }
         }
 
-        // Verify both features are displayed
-        onNodeWithTag(testTag = "feature_item_dark_mode").assertIsDisplayed()
-        onNodeWithTag(testTag = "feature_item_new_checkout").assertIsDisplayed()
+        // Wait for lazy item enter animations before asserting visibility.
+        waitUntilDisplayed(tag = "feature_item_dark_mode")
+        waitUntilDisplayed(tag = "feature_item_new_checkout")
 
         // Filter by entering "dark" in the search field
         onNodeWithTag(testTag = "feature_filter_field").performTextInput("dark")
 
         // After filtering, only dark_mode should be visible
-        onNodeWithTag(testTag = "feature_item_dark_mode").assertIsDisplayed()
+        waitUntilDisplayed(tag = "feature_item_dark_mode")
         onAllNodesWithTag(testTag = "feature_item_new_checkout").assertCountEquals(0)
 
         // Clear the filter by clicking the clear button
         onNodeWithTag(testTag = "clear_feature_filter_button").performClick()
 
         // After clearing, new_checkout should be visible again
-        onNodeWithTag(testTag = "feature_item_new_checkout").assertIsDisplayed()
+        waitUntilDisplayed(tag = "feature_item_new_checkout")
     }
 
     @Test
@@ -76,7 +86,7 @@ class FeatureFlipScreenTest {
         onNodeWithTag(testTag = "feature_filter_chip_REMOTE").performClick()
 
         // After filtering to Remote only, only new_checkout should be visible
-        onNodeWithTag(testTag = "feature_item_new_checkout").assertIsDisplayed()
+        waitUntilDisplayed(tag = "feature_item_new_checkout")
         onAllNodesWithTag(testTag = "feature_item_dark_mode").assertCountEquals(0)
     }
 
@@ -102,7 +112,7 @@ class FeatureFlipScreenTest {
 
         // Click the OFF filter chip to show only disabled features
         onNodeWithTag(testTag = "feature_filter_chip_OFF").performClick()
-        onNodeWithTag(testTag = "feature_item_new_checkout").assertIsDisplayed()
+        waitUntilDisplayed(tag = "feature_item_new_checkout")
 
         onNodeWithContentDescription(label = "LOCAL_ON").performClick()
 
@@ -147,8 +157,8 @@ class FeatureFlipScreenTest {
         onAllNodesWithTag(testTag = "clear_feature_filter_button").assertCountEquals(0)
         
         // Both features should be visible again
-        onNodeWithTag(testTag = "feature_item_dark_mode").assertIsDisplayed()
-        onNodeWithTag(testTag = "feature_item_new_checkout").assertIsDisplayed()
+        waitUntilDisplayed(tag = "feature_item_dark_mode")
+        waitUntilDisplayed(tag = "feature_item_new_checkout")
     }
 }
 

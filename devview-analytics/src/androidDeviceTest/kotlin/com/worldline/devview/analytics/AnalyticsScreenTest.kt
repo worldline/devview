@@ -1,6 +1,7 @@
 package com.worldline.devview.analytics
 
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -18,6 +19,15 @@ import org.junit.Test
 
 class AnalyticsScreenTest {
 
+    private fun ComposeUiTest.waitUntilDisplayed(tag: String) {
+        waitUntil(timeoutMillis = 5_000L) {
+            runCatching {
+                onNodeWithTag(testTag = tag).assertIsDisplayed()
+                true
+            }.getOrDefault(false)
+        }
+    }
+
     @Test
     fun analyticsScreen_shows_empty_state_when_no_logs() = runComposeUiTest {
         setContent {
@@ -26,7 +36,7 @@ class AnalyticsScreenTest {
             }
         }
 
-        onNodeWithTag(testTag = "empty_state_message").assertIsDisplayed()
+        waitUntilDisplayed(tag = "empty_state_message")
     }
 
     @Test
@@ -42,17 +52,17 @@ class AnalyticsScreenTest {
             }
         }
 
-        onNodeWithTag(testTag = "analytics_log_item_login_click").assertIsDisplayed()
-        onNodeWithTag(testTag = "analytics_log_item_screen_view").assertIsDisplayed()
+        waitUntilDisplayed(tag = "analytics_log_item_login_click")
+        waitUntilDisplayed(tag = "analytics_log_item_screen_view")
 
         onNodeWithTag(testTag = "analytics_filter_field").performTextInput("login")
 
-        onNodeWithTag(testTag = "analytics_log_item_login_click").assertIsDisplayed()
+        waitUntilDisplayed(tag = "analytics_log_item_login_click")
         onAllNodesWithTag(testTag = "analytics_log_item_screen_view").assertCountEquals(0)
 
         onNodeWithContentDescription(label = "Clear filter").performClick()
 
-        onNodeWithTag(testTag = "analytics_log_item_screen_view").assertIsDisplayed()
+        waitUntilDisplayed(tag = "analytics_log_item_screen_view")
     }
 
     @Test
@@ -71,7 +81,7 @@ class AnalyticsScreenTest {
         onNodeWithContentDescription(label = "Expand filter").performClick()
         onNodeWithTag(testTag = "category_chip_${AnalyticsLogCategory.Action.Click.category.displayName}").performClick()
 
-        onNodeWithTag(testTag = "analytics_log_item_click_tag").assertIsDisplayed()
+        waitUntilDisplayed(tag = "analytics_log_item_click_tag")
         onAllNodesWithTag(testTag = "analytics_log_item_view_tag").assertCountEquals(0)
     }
 
@@ -100,7 +110,7 @@ class AnalyticsScreenTest {
         onNodeWithContentDescription(label = "Expand filter").performClick()
         onNodeWithTag(testTag = "time_range_5m").performClick()
 
-        onNodeWithTag(testTag = "analytics_log_item_recent_log").assertIsDisplayed()
+        waitUntilDisplayed(tag = "analytics_log_item_recent_log")
         onAllNodesWithTag(testTag = "analytics_log_item_old_log").assertCountEquals(0)
     }
 
@@ -118,7 +128,7 @@ class AnalyticsScreenTest {
 
         onNodeWithTag(testTag = "analytics_filter_field").performTextInput("does-not-match")
 
-        onNodeWithTag(testTag = "empty_state_message").assertIsDisplayed()
+        waitUntilDisplayed(tag = "empty_state_message")
         onAllNodesWithTag(testTag = "analytics_log_item_login_click").assertCountEquals(0)
     }
 
