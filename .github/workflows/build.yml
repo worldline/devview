@@ -184,7 +184,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-v2-${{ runner.os }}-${{ matrix.api-level }}-${{ matrix.target }}-${{ matrix.arch }}-${{ hashFiles('.github/workflows/build.yml') }}
+          key: avd-v3-${{ runner.os }}-${{ matrix.api-level }}-${{ matrix.target }}-${{ matrix.arch }}-anim-on-${{ hashFiles('.github/workflows/build.yml') }}
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
@@ -206,7 +206,7 @@ jobs:
           arch: ${{ matrix.arch }}
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
+          disable-animations: false
           script: ./gradlew connectedAndroidDeviceTest -Pandroidx.baselineprofile.skipgeneration
 
       - name: Upload device test reports
