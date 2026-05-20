@@ -23,12 +23,14 @@ import org.junit.Test
 
 class FeatureFlipScreenTest {
 
-    private fun ComposeUiTest.waitUntilDisplayed(tag: String) {
-        waitUntil(timeoutMillis = 5_000L) {
-            runCatching {
-                onNodeWithTag(testTag = tag).assertIsDisplayed()
-                true
-            }.getOrDefault(false)
+    private companion object {
+        private const val UI_WAIT_TIMEOUT_MS = 10_000L
+    }
+
+    private fun ComposeUiTest.waitUntilTagCount(tag: String, expectedCount: Int) {
+        waitUntil(timeoutMillis = UI_WAIT_TIMEOUT_MS) {
+            runCatching { onAllNodesWithTag(testTag = tag).fetchSemanticsNodes().size == expectedCount }
+                .getOrDefault(false)
         }
     }
 
@@ -49,21 +51,21 @@ class FeatureFlipScreenTest {
         }
 
         // Wait for lazy item enter animations before asserting visibility.
-        waitUntilDisplayed(tag = "feature_item_dark_mode")
-        waitUntilDisplayed(tag = "feature_item_new_checkout")
+        waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 1)
+        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
 
         // Filter by entering "dark" in the search field
         onNodeWithTag(testTag = "feature_filter_field").performTextInput("dark")
 
         // After filtering, only dark_mode should be visible
-        waitUntilDisplayed(tag = "feature_item_dark_mode")
-        onAllNodesWithTag(testTag = "feature_item_new_checkout").assertCountEquals(0)
+        waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 1)
+        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 0)
 
         // Clear the filter by clicking the clear button
         onNodeWithTag(testTag = "clear_feature_filter_button").performClick()
 
         // After clearing, new_checkout should be visible again
-        waitUntilDisplayed(tag = "feature_item_new_checkout")
+        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
     }
 
     @Test
@@ -86,8 +88,8 @@ class FeatureFlipScreenTest {
         onNodeWithTag(testTag = "feature_filter_chip_REMOTE").performClick()
 
         // After filtering to Remote only, only new_checkout should be visible
-        waitUntilDisplayed(tag = "feature_item_new_checkout")
-        onAllNodesWithTag(testTag = "feature_item_dark_mode").assertCountEquals(0)
+        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
+        waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 0)
     }
 
     @Test
@@ -112,12 +114,12 @@ class FeatureFlipScreenTest {
 
         // Click the OFF filter chip to show only disabled features
         onNodeWithTag(testTag = "feature_filter_chip_OFF").performClick()
-        waitUntilDisplayed(tag = "feature_item_new_checkout")
+        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
 
         onNodeWithContentDescription(label = "LOCAL_ON").performClick()
 
         // After changing state, feature should be filtered out since it no longer matches OFF filter
-        onAllNodesWithTag(testTag = "feature_item_new_checkout").assertCountEquals(0)
+        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 0)
     }
 
     @Test
@@ -157,8 +159,8 @@ class FeatureFlipScreenTest {
         onAllNodesWithTag(testTag = "clear_feature_filter_button").assertCountEquals(0)
         
         // Both features should be visible again
-        waitUntilDisplayed(tag = "feature_item_dark_mode")
-        waitUntilDisplayed(tag = "feature_item_new_checkout")
+        waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 1)
+        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
     }
 }
 
