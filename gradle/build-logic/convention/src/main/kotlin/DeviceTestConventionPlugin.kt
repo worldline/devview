@@ -19,6 +19,7 @@ class DeviceTestConventionPlugin : Plugin<Project> {
                         sourceSetTreeName = null
                     }.configure {
                         instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                        instrumentationRunnerArguments["useTestStorageService"] = "true"
                     }
                 }
 
