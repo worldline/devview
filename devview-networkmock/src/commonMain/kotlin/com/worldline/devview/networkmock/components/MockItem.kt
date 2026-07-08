@@ -29,8 +29,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import com.worldline.devview.networkmock.model.EndpointMockState
-import com.worldline.devview.networkmock.model.MockResponse
+import com.worldline.devview.networkmock.core.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.preview.MockResponsePreviewParameterProvider
 import com.worldline.devview.networkmock.utils.containerColor
 import com.worldline.devview.networkmock.utils.containerColorForStatusCode
@@ -178,7 +178,7 @@ private fun MockItemContent(
 
 @Preview(locale = "en")
 @Composable
-internal fun MockItemPreview(
+private fun MockItemPreview(
     @PreviewParameter(MockResponsePreviewParameterProvider::class) mockResponse: MockResponse
 ) {
     MaterialTheme {
@@ -195,7 +195,7 @@ internal fun MockItemPreview(
 
 @Preview(locale = "en")
 @Composable
-internal fun NetworkItemPreview(
+private fun NetworkItemPreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) selected: Boolean
 ) {
     MaterialTheme {
@@ -210,7 +210,7 @@ internal fun NetworkItemPreview(
 
 @Preview(locale = "en")
 @Composable
-internal fun MockItemSelectedPreview(
+private fun MockItemSelectedPreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) selected: Boolean
 ) {
     MaterialTheme {
@@ -228,7 +228,7 @@ internal fun MockItemSelectedPreview(
 
 @Preview(locale = "en")
 @Composable
-internal fun MockItemPreviewModePreview(
+private fun MockItemPreviewModePreview(
     @PreviewParameter(BooleanPreviewParameterProvider::class) isInPreviewMode: Boolean
 ) {
     MaterialTheme {

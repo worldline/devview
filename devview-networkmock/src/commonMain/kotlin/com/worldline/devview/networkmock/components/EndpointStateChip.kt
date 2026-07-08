@@ -13,10 +13,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import com.worldline.devview.networkmock.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.model.EndpointUiModel
 import com.worldline.devview.networkmock.preview.EndpointUiModelPreviewParameterProvider
 import com.worldline.devview.networkmock.utils.containerColor
@@ -24,16 +25,19 @@ import com.worldline.devview.networkmock.utils.contentColor
 import com.worldline.devview.networkmock.utils.icon
 
 @Composable
-public fun EndpointStateChip(
+internal fun EndpointStateChip(
     endpointMockState: EndpointMockState,
     modifier: Modifier = Modifier,
     label: String = when (endpointMockState) {
         is EndpointMockState.Mock -> endpointMockState.statusCode.toString()
         EndpointMockState.Network -> endpointMockState.displayName
-    }
+    },
+    chipTestTag: String = "endpoint_state_chip",
+    labelTestTag: String = "endpoint_state_chip_label"
 ) {
     Row(
         modifier = modifier
+            .testTag(tag = chipTestTag)
             .clip(
                 shape = MaterialTheme.shapes.small
             ).background(
@@ -53,6 +57,7 @@ public fun EndpointStateChip(
             tint = endpointMockState.contentColor
         )
         Text(
+            modifier = Modifier.testTag(tag = "${labelTestTag}_$label"),
             text = label,
             style = MaterialTheme.typography.bodySmallEmphasized,
             color = endpointMockState.contentColor

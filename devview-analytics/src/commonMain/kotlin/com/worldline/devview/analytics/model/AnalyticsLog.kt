@@ -28,15 +28,7 @@ import kotlinx.datetime.toLocalDateTime
  * @see AnalyticsLogCategory
  * @see com.worldline.devview.analytics.AnalyticsLogger
  *
- * @sample
- * ```kotlin
- * val screenLog = AnalyticsLog(
- *     tag = "HomeScreen",
- *     screenClass = "com.example.ui.HomeScreen",
- *     timestamp = System.currentTimeMillis(),
- *     type = AnalyticsLogCategory.Screen.View
- * )
- * ```
+ * @sample com.worldline.devview.analytics.samples.AnalyticsLogSamples.screenLogSample
  */
 @Immutable
 public data class AnalyticsLog(

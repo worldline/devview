@@ -1,6 +1,6 @@
 package com.worldline.devview.sample.network
 
-import com.worldline.devview.networkmock.plugin.NetworkMockPlugin
+import com.worldline.devview.networkmock.ktor.plugin.NetworkMockPlugin
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngineConfig
 

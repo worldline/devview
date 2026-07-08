@@ -183,7 +183,7 @@ Ready to integrate DevView into your project?
 
     Explore available modules and features
 
-- :material-code-braces: **[API Reference](api/index.md)**
+- :material-code-braces: **[API Reference](api/index.html)**
 
     Detailed API documentation
 

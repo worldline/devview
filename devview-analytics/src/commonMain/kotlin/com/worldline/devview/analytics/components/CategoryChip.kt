@@ -62,7 +62,7 @@ internal fun CategoryChip(category: AnalyticsLogCategory, modifier: Modifier = M
 
 @Preview(locale = "en")
 @Composable
-internal fun CategoryChipPreview() {
+private fun CategoryChipPreview() {
     MaterialTheme {
         Surface {
             CategoryChip(

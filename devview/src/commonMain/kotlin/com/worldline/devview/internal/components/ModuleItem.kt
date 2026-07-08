@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -102,6 +103,7 @@ internal fun ModuleItem(
 
     Card(
         modifier = modifier
+            .testTag(tag = "module_item_${module.moduleName}")
             .padding(horizontal = 16.dp),
         onClick = { openModule(module) },
         shape = shape
@@ -143,6 +145,7 @@ internal fun ModuleItem(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
+                        modifier = Modifier.testTag(tag = "module_name_${module.moduleName}"),
                         text = module.moduleName,
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Normal
@@ -150,6 +153,9 @@ internal fun ModuleItem(
                     )
                     module.subtitle?.let {
                         Text(
+                            modifier = Modifier.testTag(
+                                tag = "module_subtitle_${module.moduleName}"
+                            ),
                             text = it,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Light

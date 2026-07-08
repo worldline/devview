@@ -1,0 +1,115 @@
+name: Publish docs
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build_docs:
+    runs-on: macos-latest
+    env:
+      DYLD_FALLBACK_LIBRARY_PATH: /opt/homebrew/lib
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          brew install cairo freetype libffi libjpeg libpng zlib
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r pip-requirements.txt
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Build docs
+        run: ./scripts/build_docs.sh build
+
+      - name: Upload docs
+        uses: actions/upload-artifact@v7
+        with:
+          name: docs
+          retention-days: 1
+          path: |
+            docs/
+
+  deploy_docs:
+    runs-on: macos-latest
+    needs: build_docs
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      DYLD_FALLBACK_LIBRARY_PATH: /opt/homebrew/lib
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          brew install cairo freetype libffi libjpeg libpng zlib
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r pip-requirements.txt
+
+      - name: Get Docs Version
+        run: cat gradle.properties | grep --color=never VERSION_NAME >> $GITHUB_OUTPUT
+        id: version
+
+      - name: Download docs builds
+        uses: actions/download-artifact@v8
+        with:
+          name: docs
+          path: docs
+
+      - name: Configure git for mike
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git fetch origin gh-pages --depth=1
+
+      - name: Deploy dev docs with mike 🗿
+        if: ${{ success() && contains(steps.version.outputs.VERSION_NAME, 'SNAPSHOT') }}
+        env:
+          DEVVIEW_VERSION: "dev"
+        run: mike deploy -u --push "$DEVVIEW_VERSION"
+
+      - name: Deploy release docs with mike 🚀
+        if: ${{ success() && !contains(steps.version.outputs.VERSION_NAME , 'SNAPSHOT') }}
+        env:
+          DEVVIEW_VERSION: ${{ steps.version.outputs.VERSION_NAME }}
+        run: mike deploy -u --push "$DEVVIEW_VERSION" latest
+
+      - name: Delete old doc versions
+        run: |
+          git fetch origin gh-pages --depth=1
+          scripts/delete_old_version_docs.sh

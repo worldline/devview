@@ -7,7 +7,7 @@ import io.ktor.client.HttpClient
  *
  * Repositories are resolved automatically from
  * [com.worldline.devview.networkmock.NetworkMockInitializer] via
- * [com.worldline.devview.networkmock.plugin.NetworkMockPlugin]'s default
+ * [com.worldline.devview.networkmock.ktor.plugin.NetworkMockPlugin]'s default
  * configuration — no manual wiring required.
  *
  * @return Configured HttpClient with Network Mock plugin installed

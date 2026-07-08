@@ -188,6 +188,8 @@ The main screen component that displays all features with search and filter capa
 
 ## API Reference
 
+For the complete generated API docs, see the [Dokka API Reference](../api/devview-featureflip/index.html).
+
 ### Core Types
 
 - **`Feature`**: Sealed class representing a feature flag

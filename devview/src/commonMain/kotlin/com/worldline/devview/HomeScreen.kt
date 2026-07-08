@@ -16,6 +16,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -118,7 +119,8 @@ internal fun HomeScreen(
                             .background(
                                 color = MaterialTheme.colorScheme.background
                             ).padding(start = 16.dp + 16.dp)
-                            .padding(vertical = 8.dp),
+                            .padding(vertical = 8.dp)
+                            .testTag(tag = "section_header_${section.name}"),
                         text = section.name.replace(oldChar = '_', newChar = ' '),
                         style = MaterialTheme.typography.bodySmallEmphasized.copy(
                             color = MaterialTheme.colorScheme.outline,

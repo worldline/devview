@@ -240,14 +240,15 @@ public fun buildModules(block: ModuleRegistry.() -> Unit): ImmutableList<Module>
  */
 @Composable
 public fun rememberModules(block: ModuleRegistry.() -> Unit): ImmutableList<Module> {
-    val modules = buildModules(block = block)
+    val modules = remember { buildModules(block = block) }
+    val initializedModules = remember { mutableSetOf<Module>() }
 
     modules.forEach { module ->
-        if (module is RequiresDataStore) module.initDataStore()
-        module.initModule()
+        if (initializedModules.add(element = module)) {
+            if (module is RequiresDataStore) module.initDataStore()
+            module.initModule()
+        }
     }
 
-    return remember {
-        modules
-    }
+    return modules
 }

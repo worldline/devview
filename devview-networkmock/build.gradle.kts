@@ -1,6 +1,9 @@
 plugins {
     alias(libs.plugins.convention.multiplatform.library)
     alias(libs.plugins.convention.compose.multiplatform)
+    alias(libs.plugins.convention.unitTest)
+    alias(libs.plugins.convention.deviceTest)
+    alias(libs.plugins.convention.kover)
     alias(libs.plugins.dokka)
     alias(libs.plugins.maven.publish)
 }
@@ -21,10 +24,19 @@ kotlin {
                 implementation(libs.jetbrains.androidx.lifecycle.viewmodel.compose)
             }
         }
+
+        androidHostTest {
+            dependencies {
+                implementation(projects.devviewTest)
+            }
+        }
     }
 }
 
-
 tasks.withType<Test> {
     failOnNoDiscoveredTests.set(false)
+}
+
+dependencies {
+    dokka(projects.devviewNetworkmockCore)
 }

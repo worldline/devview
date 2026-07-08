@@ -46,11 +46,11 @@ import com.worldline.devview.networkmock.components.ErrorState
 import com.worldline.devview.networkmock.components.LoadingState
 import com.worldline.devview.networkmock.components.MockItem
 import com.worldline.devview.networkmock.components.NetworkItem
+import com.worldline.devview.networkmock.core.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.MockResponse
+import com.worldline.devview.networkmock.core.model.StatusCodeFamily
 import com.worldline.devview.networkmock.model.DiffLine
-import com.worldline.devview.networkmock.model.EndpointMockState
 import com.worldline.devview.networkmock.model.EndpointUiModel
-import com.worldline.devview.networkmock.model.MockResponse
-import com.worldline.devview.networkmock.model.StatusCodeFamily
 import com.worldline.devview.networkmock.preview.EndpointUiModelPreviewParameterProvider
 import com.worldline.devview.networkmock.utils.INLINE_DIFF_THRESHOLD
 import com.worldline.devview.networkmock.utils.computeLineDiff

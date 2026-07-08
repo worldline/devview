@@ -38,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -196,6 +197,9 @@ public fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 
                             .forEach { (state, selected) ->
                                 item {
                                     FilterChip(
+                                        modifier = Modifier.testTag(
+                                            tag = "feature_filter_chip_${state.name}"
+                                        ),
                                         selected = selected,
                                         label = {
                                             Text(
@@ -226,7 +230,8 @@ public fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 
                     OutlinedTextField(
                         modifier = Modifier
                             .padding(all = 8.dp)
-                            .fillMaxWidth(),
+                            .fillMaxWidth()
+                            .testTag(tag = "feature_filter_field"),
                         value = filterQuery,
                         onValueChange = {
                             filterQuery = it
@@ -240,7 +245,12 @@ public fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 
                         },
                         trailingIcon = {
                             AnimatedVisibility(visible = filterQuery.isNotEmpty()) {
-                                IconButton(onClick = { filterQuery = "" }) {
+                                IconButton(
+                                    modifier = Modifier.testTag(
+                                        tag = "clear_feature_filter_button"
+                                    ),
+                                    onClick = { filterQuery = "" }
+                                ) {
                                     Icon(
                                         imageVector = Icons.Rounded.Close,
                                         contentDescription = "Clear filter"
@@ -279,6 +289,7 @@ public fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 
                 Column(
                     modifier = Modifier
                         .animateItem()
+                        .testTag(tag = "feature_item_${feature.name}")
                 ) {
                     FeatureItem(
                         modifier = Modifier

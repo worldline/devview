@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,6 +58,7 @@ internal fun AnalyticsLogItem(analyticsLog: AnalyticsLog, modifier: Modifier = M
             verticalArrangement = Arrangement.spacedBy(space = 2.dp)
         ) {
             Text(
+                modifier = Modifier.testTag(tag = "analytics_log_tag_${analyticsLog.tag}"),
                 text = analyticsLog.tag,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -65,6 +67,9 @@ internal fun AnalyticsLogItem(analyticsLog: AnalyticsLog, modifier: Modifier = M
                 )
             )
             Text(
+                modifier = Modifier.testTag(
+                    tag = "analytics_log_screen_class_${analyticsLog.screenClass}"
+                ),
                 text = analyticsLog.screenClass,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -78,6 +83,9 @@ internal fun AnalyticsLogItem(analyticsLog: AnalyticsLog, modifier: Modifier = M
             verticalArrangement = Arrangement.spacedBy(space = 4.dp)
         ) {
             Text(
+                modifier = Modifier.testTag(
+                    tag = "analytics_log_timestamp_${analyticsLog.formattedTimestamp}"
+                ),
                 text = analyticsLog.formattedTimestamp,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Medium
@@ -85,6 +93,9 @@ internal fun AnalyticsLogItem(analyticsLog: AnalyticsLog, modifier: Modifier = M
                 color = MaterialTheme.colorScheme.onSurface
             )
             CategoryChip(
+                modifier = Modifier.testTag(
+                    tag = "analytics_log_category_chip_${analyticsLog.type.category}"
+                ),
                 category = analyticsLog.type.category
             )
         }

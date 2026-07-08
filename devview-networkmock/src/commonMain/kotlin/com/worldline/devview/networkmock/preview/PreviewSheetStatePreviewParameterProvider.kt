@@ -2,7 +2,7 @@ package com.worldline.devview.networkmock.preview
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.worldline.devview.networkmock.PreviewSheetState
-import com.worldline.devview.networkmock.model.MockResponse
+import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.utils.fake
 
 internal class PreviewSheetStatePreviewParameterProvider :

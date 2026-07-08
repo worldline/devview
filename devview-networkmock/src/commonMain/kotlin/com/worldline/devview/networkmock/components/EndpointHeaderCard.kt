@@ -70,7 +70,7 @@ internal fun EndpointHeaderCard(endpoint: EndpointUiModel, modifier: Modifier = 
 
 @Preview(locale = "en")
 @Composable
-internal fun EndpointHeaderCardPreview(
+private fun EndpointHeaderCardPreview(
     @PreviewParameter(
         EndpointUiModelPreviewParameterProvider::class
     ) endpoint: EndpointUiModel

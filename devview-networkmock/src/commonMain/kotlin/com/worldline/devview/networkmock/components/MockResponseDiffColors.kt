@@ -147,7 +147,7 @@ internal object MockResponseDiffDefaults {
      *   without implying additions or removals.
      */
     @Composable
-    fun colors(
+    internal fun colors(
         surface: Color = MaterialTheme.colorScheme.surface,
         onSurface: Color = MaterialTheme.colorScheme.onSurface,
         gutterContainer: Color = MaterialTheme.colorScheme.surfaceContainerHigh,

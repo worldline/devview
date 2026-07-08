@@ -112,6 +112,8 @@ The `AnalyticsLog` class automatically formats timestamps for display in HH:mm:s
 
 ## API Reference
 
+For the complete generated API docs, see the [Dokka API Reference](../api/devview-analytics/index.html).
+
 ### Core Types
 
 - **`AnalyticsLog`**: Data class representing a single analytics event
