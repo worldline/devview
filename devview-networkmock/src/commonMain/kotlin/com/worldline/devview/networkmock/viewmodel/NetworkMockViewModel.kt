@@ -57,13 +57,6 @@ public class NetworkMockViewModel(
     )
 
     /**
-     * The [EndpointKey] of the currently selected endpoint, or `null` when nothing is selected.
-     * Drives bottom sheet visibility — non-null means open.
-     */
-    @Suppress("DocumentationOverPrivateProperty")
-    private val selectedEndpointKey = MutableStateFlow<EndpointKey?>(value = null)
-
-    /**
      * Combined UI state for the Network Mock screen.
      *
      * Combines [MockConfiguration] (loaded once from `mocks.json`), the live
@@ -131,37 +124,6 @@ public class NetworkMockViewModel(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(stopTimeoutMillis = WHILE_SUBSCRIBED_TIMEOUT_MS),
         initialValue = NetworkMockUiState.Loading
-    )
-
-    /**
-     * The [EndpointDescriptor] for the currently selected endpoint, or `null` when no
-     * endpoint is selected. Drives bottom sheet visibility — non-null means open.
-     */
-    public val selectedEndpointDescriptor: StateFlow<EndpointDescriptor?> = combine(
-        flow = selectedEndpointKey,
-        flow2 = privateEndpointMocks
-    ) { key, endpointMocks ->
-        key?.let { endpointMocks[it] }
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(stopTimeoutMillis = WHILE_SUBSCRIBED_TIMEOUT_MS),
-        initialValue = null
-    )
-
-    /**
-     * The live [EndpointMockState] for the currently selected endpoint.
-     * Updates reactively whenever the user selects a response, keeping the
-     * bottom sheet highlight in sync without any UI-side lookup.
-     */
-    public val selectedEndpointState: StateFlow<EndpointMockState> = combine(
-        flow = selectedEndpointKey,
-        flow2 = stateRepository.observeState()
-    ) { key, runtimeState ->
-        key?.let { runtimeState.getEndpointState(key = it) } ?: EndpointMockState.Network
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(stopTimeoutMillis = WHILE_SUBSCRIBED_TIMEOUT_MS),
-        initialValue = EndpointMockState.Network
     )
 
     init {
@@ -302,25 +264,6 @@ public class NetworkMockViewModel(
 
             stateRepository.setAllEndpointStates(states = allNetwork)
         }
-    }
-
-    /**
-     * Marks the given endpoint as selected, opening the bottom sheet.
-     *
-     * Triggers reactive updates to [selectedEndpointDescriptor] and
-     * [selectedEndpointState] so the UI requires no manual lookup.
-     *
-     * @param key The [EndpointKey] identifying the group, environment, and endpoint
-     */
-    public fun selectEndpoint(key: EndpointKey) {
-        selectedEndpointKey.value = key
-    }
-
-    /**
-     * Clears the current endpoint selection, closing the bottom sheet.
-     */
-    public fun clearSelectedEndpoint() {
-        selectedEndpointKey.value = null
     }
 }
 
