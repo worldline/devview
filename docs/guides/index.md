@@ -4,7 +4,7 @@ Comprehensive guides for working with DevView.
 
 ## Available Guides
 
-### [Integration Guide](integration.md)
+### [Integration Guide](integration-guide.md)
 Learn how to integrate DevView into different types of projects.
 
 ### [Module Development](module-development.md)
