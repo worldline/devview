@@ -1,1 +1,0 @@
-* Update documentation for Modules due to changes in destinations variable
