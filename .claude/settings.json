@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.\\gradlew.bat *)",
+      "Bash(./gradlew *)",
+      "Bash(git status*)",
+      "Bash(git log *)",
+      "Bash(git diff*)",
+      "Bash(git branch*)",
+      "Bash(git ls-tree *)",
+      "Bash(git show *)",
+      "Bash(git rev-parse *)",
+      "Bash(git remote -v)",
+      "Bash(git stash list)",
+      "Bash(ls *)",
+      "Bash(cat *)"
+    ]
+  }
+}
