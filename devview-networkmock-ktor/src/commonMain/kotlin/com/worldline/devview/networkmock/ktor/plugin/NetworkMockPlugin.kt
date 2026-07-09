@@ -260,7 +260,6 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                                 println(
                                     message = "$LOG_PREFIX ERROR: Exception loading mock response - ${e.message}"
                                 )
-                                e.printStackTrace()
                                 println(message = "$LOG_PREFIX Falling back to actual network")
                                 println(
                                     message = "$LOG_PREFIX ========================================"
