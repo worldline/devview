@@ -38,7 +38,7 @@ jobs:
           python-version: 3.x
 
       - name: Install dependencies
-        run: pip install zensical
+        run: pip install zensical==0.0.50
 
       - name: Build docs
         run: ./scripts/build_docs.sh build

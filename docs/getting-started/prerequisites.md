@@ -7,10 +7,10 @@ Before integrating DevView, ensure your development environment meets the follow
 - **Compose Multiplatform**: Compose Multiplatform must be configured and working in your project.
 
 ## Minimum Supported Versions
-- **Kotlin**: 2.3.0 or newer
-- **Compose Multiplatform**: 1.10.0 or newer
-- **Android**: API level 21 (Lollipop) or higher
-- **iOS**: iOS 14.0 or higher
+- **Kotlin**: 2.3.20 or newer
+- **Compose Multiplatform**: 1.11.0 or newer
+- **Android**: API level 26 (Oreo) or higher
+- **iOS**: iOS 16.0 or higher
 
 ## Development Tools
 - **IDE**: Android Studio Giraffe or newer (recommended for best Compose Multiplatform support)
@@ -19,8 +19,6 @@ Before integrating DevView, ensure your development environment meets the follow
 ## Additional Recommendations
 - Ensure your project builds and runs successfully on all intended platforms before integrating DevView.
 - Familiarity with Gradle and Kotlin Multiplatform concepts will help you get started quickly.
-
-> _[Placeholder: Insert screenshot of a properly configured KMP project structure. Use a device frame if relevant.]_
 
 ## Troubleshooting
 If you encounter issues with your environment setup, refer to the [troubleshooting section](troubleshooting-faq.md) for common solutions and tips.

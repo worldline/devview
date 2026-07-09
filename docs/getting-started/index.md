@@ -4,10 +4,6 @@ Welcome to DevView! This guide will help you get up and running with the framewo
 
 ---
 
-> _[Placeholder: Insert screenshot of DevView overlay or a key module UI in a sample app. Use a device frame if possible for clarity.]_
-
----
-
 ## Prerequisites
 
 Before you begin, make sure you have:
@@ -15,10 +11,10 @@ Before you begin, make sure you have:
 - ✅ **Kotlin Multiplatform Project** – A working KMP project targeting Android and/or iOS
 - ✅ **Compose Multiplatform** – Compose Multiplatform configured in your project
 - ✅ **Minimum Versions**:
-    - Kotlin 2.3.0+
-    - Compose Multiplatform 1.10.0+
-    - Android: API 21 (Lollipop) or higher
-    - iOS: iOS 14.0 or higher
+    - Kotlin 2.3.20+
+    - Compose Multiplatform 1.11.0+
+    - Android: API 26 (Oreo) or higher
+    - iOS: iOS 16.0 or higher
 
 ---
 

@@ -9,10 +9,10 @@ Before you begin, ensure you have:
 - ✅ **Kotlin Multiplatform Project** - A working KMP project
 - ✅ **Compose Multiplatform** - Configured in your project
 - ✅ **Minimum Versions**:
-    - Kotlin 2.3.0+
-    - Compose Multiplatform 1.10.0+
-    - Android: API 21 (Lollipop) or higher
-    - iOS: iOS 14.0 or higher
+    - Kotlin 2.3.20+
+    - Compose Multiplatform 1.11.0+
+    - Android: API 26 (Oreo) or higher
+    - iOS: iOS 16.0 or higher
 
 ## Gradle Setup
 
@@ -43,7 +43,7 @@ Add DevView dependencies to your `gradle/libs.versions.toml`:
 
 ```toml
 [versions]
-devview = "1.0.0"
+devview = "0.0.1-SNAPSHOT"
 
 [libraries]
 devview = { module = "com.worldline.devview:devview", version.ref = "devview" }
@@ -62,7 +62,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             // Core DevView module (required)
-            implementation(libs.devview.core)
+            implementation(libs.devview)
             
             // Optional: FeatureFlip module
             implementation(libs.devview.featureflip)
@@ -83,13 +83,13 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             // Core DevView module (required)
-            implementation("com.worldline.devview:devview:1.0.0")
+            implementation("com.worldline.devview:devview:0.0.1-SNAPSHOT")
             
             // Optional: FeatureFlip module
-            implementation("com.worldline.devview:devview-featureflip:1.0.0")
+            implementation("com.worldline.devview:devview-featureflip:0.0.1-SNAPSHOT")
             
             // Optional: Analytics module
-            implementation("com.worldline.devview:devview-analytics:1.0.0")
+            implementation("com.worldline.devview:devview-analytics:0.0.1-SNAPSHOT")
         }
     }
 }
@@ -107,8 +107,6 @@ DevView is modular, so you only include what you need:
 | **devview-featureflip** | Feature flag management with DataStore | When you need feature toggles |
 | **devview-analytics** | Analytics event monitoring | When you need analytics debugging |
 | **devview-networkmock** | Network mocking for Ktor and other platforms | When you need to simulate network responses |
-
-> _[Placeholder: Insert screenshot of DevView module selection UI or a dependency diagram. Use a device frame if relevant.]_
 
 ## Sync Your Project
 
@@ -135,7 +133,7 @@ import com.worldline.devview.core.*
 
 ## Custom Modules
 
-> _[Placeholder: Describe how to add custom DevView modules. This section will be expanded in future updates.]_
+See [Creating Custom Modules](../modules/custom-modules.md) for a full guide on extending DevView with your own modules.
 
 ## Troubleshooting
 

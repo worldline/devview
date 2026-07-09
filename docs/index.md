@@ -1,11 +1,11 @@
 # DevView
 
-<div align="center">
+<div align="center" markdown>
 
 **A powerful, modular developer tools framework for Kotlin Multiplatform applications**
 
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
-[![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.10.0-green.svg?style=flat)](https://www.jetbrains.com/lp/compose-multiplatform/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.20-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+[![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.11.0-green.svg?style=flat)](https://www.jetbrains.com/lp/compose-multiplatform/)
 [![Licence](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
 [![GitHub](https://img.shields.io/badge/GitHub-worldline%2Fdevview-blue.svg?style=flat&logo=github)](https://github.com/worldline/devview)
 
@@ -15,23 +15,18 @@
 
 ## What's New
 
-> **Release Highlights:**
-> - _[Placeholder for latest features, improvements, and bug fixes. Update this section with each release.]_
-> - Example: "Added support for iOS 14.0+, improved Analytics UI, and introduced new module registry system."
+> **v0.0.1-SNAPSHOT — Initial Release**
+> - Core DevView framework with module registry DSL, section-based home screen, and type-safe Navigation3 integration
+> - FeatureFlip module: local and remote feature flags, tri-state remote override, DataStore-backed persistence
+> - Analytics module: real-time in-app event capture with typed log categories and clear-log action
+> - NetworkMock modules: JSON-driven mock engine, Ktor client plugin, and UI for toggling mocks per endpoint
+> - devview-utils: shared DataStore utilities and `RequiresDataStore` initialization contract
 
 ---
 
 ## What is DevView?
 
 DevView is an extensible, in-app developer tools framework designed for Kotlin Multiplatform applications. It provides a unified interface for debugging, testing, and managing development features across Android and iOS platforms.
-
----
-
-## Screenshots
-
-> _[Placeholder: Insert screenshot of DevView overlay in an Android/iOS app. Use a device frame if possible for clarity.]_
-> _[Placeholder: Insert screenshot of FeatureFlip UI showing feature toggles.]_
-> _[Placeholder: Insert screenshot of Analytics UI displaying event logs.]_
 
 ---
 
@@ -185,8 +180,8 @@ Extend DevView with your own custom modules.
 
 | Platform | Minimum Version | Status |
 |----------|----------------|--------|
-| Android  | API 21 (Lollipop) | ✅ Stable |
-| iOS      | iOS 14.0 | ✅ Stable |
+| Android  | API 26 (Oreo) | ✅ Stable |
+| iOS      | iOS 16.0 | ✅ Stable |
 
 ---
 
@@ -241,7 +236,7 @@ You may obtain a copy of the Licence at
 
 ---
 
-<div align="center">
+<div align="center" markdown>
 
 **Made with ❤️ by Maxime Michel**
 

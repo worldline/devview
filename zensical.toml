@@ -396,3 +396,5 @@ custom_fences = [
 [project.markdown_extensions.pymdownx.magiclink]
 [project.markdown_extensions.def_list]
 [project.markdown_extensions.tables]
+[project.markdown_extensions.md_in_html]
+[project.markdown_extensions.attr_list]

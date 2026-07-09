@@ -2,8 +2,6 @@
 
 DevView is released under the Apache License 2.0.
 
-> _[Placeholder: Insert screenshot or diagram of license badge or summary. Use a device frame if relevant.]_
-
 ```
 Copyright 2024-2026 TechSquad
 Licensed under the Apache License, Version 2.0 (the "License");
