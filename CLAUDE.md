@@ -93,6 +93,26 @@ sample/                (sample Android app showing full integration)
 
 All library modules apply convention plugins from `gradle/build-logic/convention/` rather than configuring Kotlin/Compose/test targets directly. Key plugins: `MultiplatformLibraryConventionPlugin`, `ComposeMultiplatformConventionPlugin`, `UnitTestConventionPlugin`, `DeviceTestConventionPlugin`, `KoverConventionPlugin`.
 
+## Git Workflow
+
+### Branch naming
+
+Use `<type>/<description>` where `type` is one of the semantic commit types enforced by CI:
+
+```
+feat  fix  docs  chore  refactor  test  ci  perf  build  revert
+```
+
+Examples: `feat/networkmock-endpoint-preview`, `fix/datastore-init-crash`, `chore/update-dependencies`.
+
+### PR titles
+
+PR titles **must** follow `type: description` format (e.g. `refactor: remove dead endpoint selection state`). The `semantic-title` job in `.github/workflows/pr-hygiene.yml` enforces this using `amannn/action-semantic-pull-request`. GitHub auto-suggests a title from the branch name — always verify it matches the `type: description` pattern before opening the PR.
+
+### Commit messages
+
+Individual commits use **gitmoji** format: `:emoji: message` (e.g. `:fire: Remove dead code`, `:memo: Update docs`). This is separate from the PR title convention — PRs are squash-merged using the PR title as the commit message.
+
 ## Publishing
 
 Library group: `com.worldline.devview`. Version and Sonatype config are in `gradle.properties`. Publishing is handled by the `publish.yml` GitHub Actions workflow and `scripts/release.sh`.
