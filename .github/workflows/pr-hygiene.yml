@@ -7,7 +7,7 @@ on:
 jobs:
   semantic-title:
     runs-on: ubuntu-latest
-    if: github.actor != 'renovate[bot]'
+    if: github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'renovate/')
 
     permissions:
       pull-requests: read
