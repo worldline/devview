@@ -44,8 +44,6 @@ Both ViewModels combine two sources via `combine(...)` stateIn `WhileSubscribed(
 - A one-shot coroutine that loads config / discovers response files from `MockConfigRepository`
 - A live `Flow<NetworkMockState>` from `MockStateRepository.observeState()`
 
-`NetworkMockViewModel` also exposes `selectedEndpointDescriptor` and `selectedEndpointState` as derived flows driven by a `MutableStateFlow<EndpointKey?>` — this was the old bottom sheet selection mechanism. The commented-out block at the bottom of `NetworkMockScreen` is dead code left from that approach (superseded by Navigation3 push to `Endpoint`).
-
 ### "Reset to Network" toolbar action
 
 Wired via a `MutableSharedFlow<Unit>` (capacity 1, `DROP_OLDEST`) created in `NetworkMock` and passed into `NetworkMockScreen`. `resetAllToNetwork()` resets every endpoint in the parsed config (not just those stored in DataStore) to avoid gaps for endpoints the user has never touched.

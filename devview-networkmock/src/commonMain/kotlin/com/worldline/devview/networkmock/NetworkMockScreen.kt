@@ -31,15 +31,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.worldline.devview.networkmock.components.EmptyState
 import com.worldline.devview.networkmock.components.EndpointCard
 import com.worldline.devview.networkmock.components.ErrorState
 import com.worldline.devview.networkmock.components.GlobalMockToggle
 import com.worldline.devview.networkmock.components.LoadingState
-import com.worldline.devview.networkmock.core.model.EndpointDescriptor
 import com.worldline.devview.networkmock.core.model.EndpointKey
-import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.preview.NetworkMockUiStatePreviewParameterProvider
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
@@ -75,8 +72,6 @@ public fun NetworkMockScreen(
     bottomPadding: Dp = 0.dp
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val selectedDescriptor by viewModel.selectedEndpointDescriptor.collectAsStateWithLifecycle()
-    val selectedEndpointState by viewModel.selectedEndpointState.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = Unit) {
         resetToNetworkSharedFlow.collect {
@@ -87,11 +82,7 @@ public fun NetworkMockScreen(
     NetworkMockScreenContent(
         uiState = uiState,
         onGlobalToggle = viewModel::setGlobalMockingEnabled,
-        setEndpointMockState = viewModel::setEndpointMockState,
         navigateToEndpointScreen = navigateToEndpointScreen,
-        clearSelectedEndpoint = viewModel::clearSelectedEndpoint,
-        selectedDescriptor = selectedDescriptor,
-        selectedEndpointState = selectedEndpointState,
         modifier = modifier,
         bottomPadding = bottomPadding
     )
@@ -101,11 +92,7 @@ public fun NetworkMockScreen(
 internal fun NetworkMockScreenContent(
     uiState: NetworkMockUiState,
     onGlobalToggle: (Boolean) -> Unit,
-    setEndpointMockState: (EndpointKey, String?) -> Unit,
     navigateToEndpointScreen: (EndpointKey) -> Unit,
-    clearSelectedEndpoint: () -> Unit,
-    selectedDescriptor: EndpointDescriptor?,
-    selectedEndpointState: EndpointMockState,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp
 ) {
@@ -117,11 +104,7 @@ internal fun NetworkMockScreenContent(
             ContentState(
                 uiState = uiState,
                 onGlobalToggle = onGlobalToggle,
-                setEndpointMockState = setEndpointMockState,
                 openEndpointDetails = navigateToEndpointScreen,
-                clearSelectedEndpoint = clearSelectedEndpoint,
-                selectedDescriptor = selectedDescriptor,
-                selectedEndpointState = selectedEndpointState,
                 modifier = modifier,
                 bottomPadding = bottomPadding
             )
@@ -133,11 +116,7 @@ internal fun NetworkMockScreenContent(
 private fun ContentState(
     uiState: NetworkMockUiState.Content,
     onGlobalToggle: (Boolean) -> Unit,
-    setEndpointMockState: (EndpointKey, String?) -> Unit,
     openEndpointDetails: (EndpointKey) -> Unit,
-    clearSelectedEndpoint: () -> Unit,
-    selectedDescriptor: EndpointDescriptor?,
-    selectedEndpointState: EndpointMockState,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp
 ) {
@@ -225,17 +204,6 @@ private fun ContentState(
             }
         }
     }
-
-//    selectedDescriptor?.let { descriptor ->
-//        NetworkMockEndpointScreen(
-//            descriptor = descriptor,
-//            currentState = selectedEndpointState,
-//            onDismissRequest = { clearSelectedEndpoint() },
-//            onSelectResponse = { fileName ->
-//                setEndpointMockState(descriptor.key, fileName)
-//            }
-//        )
-//    }
 }
 
 @Preview(locale = "en")
@@ -248,11 +216,7 @@ private fun NetworkMockScreenPreview(
             NetworkMockScreenContent(
                 uiState = uiState,
                 onGlobalToggle = {},
-                setEndpointMockState = { _, _ -> },
-                navigateToEndpointScreen = {},
-                clearSelectedEndpoint = {},
-                selectedDescriptor = null,
-                selectedEndpointState = EndpointMockState.Network
+                navigateToEndpointScreen = {}
             )
         }
     }

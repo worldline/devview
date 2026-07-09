@@ -11,7 +11,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.worldline.devview.networkmock.core.model.EndpointKey
-import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.fixtures.MockScreenTestData
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import io.kotest.matchers.shouldBe
@@ -136,19 +135,13 @@ class NetworkMockScreenTest {
     private fun ComposeUiTest.setScreen(
         uiState: NetworkMockUiState,
         onGlobalToggle: (Boolean) -> Unit = {},
-        setEndpointMockState: (EndpointKey, String?) -> Unit = { _, _ -> },
         navigateToEndpointScreen: (EndpointKey) -> Unit = { },
-        clearSelectedEndpoint: () -> Unit = {},
     ) {
         setContent {
             MaterialTheme {
                 NetworkMockScreenContent(
                     uiState = uiState,
                     onGlobalToggle = onGlobalToggle,
-                    setEndpointMockState = setEndpointMockState,
-                    clearSelectedEndpoint = clearSelectedEndpoint,
-                    selectedDescriptor = null,
-                    selectedEndpointState = EndpointMockState.Network,
                     navigateToEndpointScreen = navigateToEndpointScreen,
                 )
             }
