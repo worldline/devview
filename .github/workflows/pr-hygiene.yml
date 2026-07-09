@@ -7,6 +7,7 @@ on:
 jobs:
   semantic-title:
     runs-on: ubuntu-latest
+    if: github.actor != 'renovate[bot]'
 
     permissions:
       pull-requests: read
