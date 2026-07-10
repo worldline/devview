@@ -40,11 +40,11 @@ cd devview
 
 ## Platform-Specific Notes
 ### Android
-- Minimum API level 21
+- Minimum API level 26
 - Use Android Studio for best Compose support
 
 ### iOS
-- Minimum iOS 14.0
+- Minimum iOS 16.0
 - Use Xcode 15+ and latest Compose Multiplatform plugin
 - Run on simulator or real device
 

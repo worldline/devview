@@ -11,8 +11,8 @@ Before you begin, make sure you have:
 - ✅ **Kotlin Multiplatform Project** – A working KMP project targeting Android and/or iOS
 - ✅ **Compose Multiplatform** – Compose Multiplatform configured in your project
 - ✅ **Minimum Versions**:
-    - Kotlin 2.3.20+
-    - Compose Multiplatform 1.11.0+
+    - Kotlin 2.4.0+
+    - Compose Multiplatform 1.11.1+
     - Android: API 26 (Oreo) or higher
     - iOS: iOS 16.0 or higher
 

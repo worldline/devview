@@ -7,8 +7,8 @@ Before integrating DevView, ensure your development environment meets the follow
 - **Compose Multiplatform**: Compose Multiplatform must be configured and working in your project.
 
 ## Minimum Supported Versions
-- **Kotlin**: 2.3.20 or newer
-- **Compose Multiplatform**: 1.11.0 or newer
+- **Kotlin**: 2.4.0 or newer
+- **Compose Multiplatform**: 1.11.1 or newer
 - **Android**: API level 26 (Oreo) or higher
 - **iOS**: iOS 16.0 or higher
 

@@ -317,11 +317,11 @@ Use the analytics screen to:
 
 ## Requirements
 
-- Kotlin 1.9+
+- Kotlin 2.4.0+
 - Compose Multiplatform
 - kotlinx-datetime for timestamp formatting
-- Android: API 21+
-- iOS: iOS 14+
+- Android: API 26+
+- iOS: iOS 16+
 
 ## Integration with DevView
 
