@@ -32,7 +32,8 @@ import com.worldline.devview.networkmock.preview.PreviewSheetStatePreviewParamet
 import kotlinx.coroutines.launch
 
 /**
- * A modal bottom sheet that displays a preview of one or two [MockResponse] payloads for a
+ * A modal bottom sheet that displays a preview of one or two
+ * [MockResponse][com.worldline.devview.networkmock.core.model.MockResponse] payloads for a
  * network mock endpoint.
  *
  * When [previewSheetState] is [PreviewSheetState.Single], the sheet renders the single response

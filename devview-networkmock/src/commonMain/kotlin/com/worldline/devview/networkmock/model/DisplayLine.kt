@@ -3,7 +3,7 @@ package com.worldline.devview.networkmock.model
 import androidx.compose.runtime.Immutable
 
 /**
- * A flattened display entry used by [InlineDiffContent].
+ * A flattened display entry used by `InlineDiffContent`.
  * Long runs of [DiffLine.Unchanged] are collapsed into [DisplayLine.Collapsed].
  */
 @Immutable

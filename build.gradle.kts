@@ -1,3 +1,6 @@
+import org.jetbrains.gradle.ext.settings
+import org.jetbrains.gradle.ext.taskTriggers
+
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
     // in each subproject's classloader
@@ -10,6 +13,7 @@ plugins {
     alias(libs.plugins.compose.stability.analyzer) apply false
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.dokka)
+    alias(libs.plugins.jetbrains.idea.ext)
     alias(libs.plugins.kotest.multiplatform) apply false
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.multiplatform) apply false
@@ -30,4 +34,66 @@ tasks.register("detektFull") {
             task.name == "detektMainAndroid" || task.name == "detektIosMainSourceSet"
         }
     })
+}
+
+subprojects {
+    pluginManager.withPlugin("org.jetbrains.dokka") {
+        the<org.jetbrains.dokka.gradle.DokkaExtension>().apply {
+            dokkaSourceSets.configureEach {
+                enableJdkDocumentationLink.set(false)
+            }
+        }
+    }
+}
+
+tasks.register("preCommitCheck") {
+    group = "verification"
+    description = "Installs pre-commit and ensures hooks are up to date."
+
+    val rootDirectory = rootDir
+
+    doLast {
+        val isWindows = System.getProperty("os.name").lowercase().contains("win")
+
+        fun run(cmd: List<String>): Int = ProcessBuilder(cmd)
+            .directory(rootDirectory)
+            .inheritIO()
+            .start()
+            .waitFor()
+
+        println("Installing pre-commit package")
+        if (isWindows) {
+            run(listOf("cmd", "/c", "python -m pip install pre-commit"))
+        } else {
+            run(listOf("/opt/homebrew/bin/brew", "install", "pre-commit"))
+        }
+
+        println("Autoupdate pre-commit config")
+        val autoupdateExit = if (isWindows) {
+            run(listOf("cmd", "/c", "pre-commit autoupdate"))
+        } else {
+            run(listOf("/opt/homebrew/bin/pre-commit", "autoupdate"))
+        }
+
+        println("Installing pre-commit hooks")
+        val installExit = if (isWindows) {
+            run(listOf("cmd", "/c", "pre-commit install"))
+        } else {
+            run(listOf("/opt/homebrew/bin/pre-commit", "install"))
+        }
+
+        if (autoupdateExit != 0 || installExit != 0) {
+            throw GradleException(
+                "\"pre-commit\" is not installed or not in PATH. Please install it before syncing."
+            )
+        }
+    }
+}
+
+idea.project.settings {
+    taskTriggers {
+        if (System.getenv("CI") == null) {
+            afterSync(tasks.getByName("preCommitCheck"))
+        }
+    }
 }

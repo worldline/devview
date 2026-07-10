@@ -1,0 +1,15 @@
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+        verbose: true
+        args: ['-c', 'config/gitleaks/.gitleaks.toml']
+  - repo: local
+    hooks:
+      - id: detekt
+        name: Detekt
+        entry: bash ./gradlew detektFull -Pandroidx.baselineprofile.skipgeneration
+        language: system
+        pass_filenames: false
+        verbose: true

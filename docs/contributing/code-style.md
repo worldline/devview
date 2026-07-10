@@ -18,12 +18,22 @@ Code style guidelines for DevView.
 - Use descriptive names and be consistent
 
 ## Linting & Static Analysis
-- Run ktlint and detekt before submitting changes
-```bash
-./gradlew ktlintCheck
-./gradlew detekt
-```
-- Fix all reported issues before opening a pull request
+
+Detekt (with ktlint bundled) enforces style automatically. Run the full analysis across all modules:
+
+=== "Windows"
+
+    ```bat
+    .\gradlew.bat detektFull
+    ```
+
+=== "macOS / Linux"
+
+    ```bash
+    ./gradlew detektFull
+    ```
+
+The pre-commit hook runs this automatically on every `git commit`, so issues are caught before they reach CI. See [Development Setup](development.md) for hook installation.
 
 ## Documentation
 - Use KDoc for all public classes, functions, and properties

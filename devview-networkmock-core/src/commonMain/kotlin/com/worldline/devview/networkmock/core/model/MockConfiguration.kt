@@ -349,7 +349,7 @@ public data class EndpointOverride(
  *
  * ## Composite string key
  * Use [compositeKey] to obtain the `"{groupId}-{environmentId}-{endpointId}"` string
- * required by DataStore and [com.worldline.devview.networkmock.model.NetworkMockState]:
+ * required by DataStore and [com.worldline.devview.networkmock.core.model.NetworkMockState]:
  * ```kotlin
  * val key = EndpointKey("my-backend", "staging", "getUser").compositeKey
  * // "my-backend-staging-getUser"
@@ -360,9 +360,9 @@ public data class EndpointOverride(
  * @property endpointId The [EndpointConfig.id] (e.g. `"getUser"`)
  * @see MockMatch
  * @see EndpointDescriptor
- * @see com.worldline.devview.networkmock.model.NetworkMockState
- * @see com.worldline.devview.networkmock.repository.MockStateRepository
- * @see com.worldline.devview.networkmock.repository.MockConfigRepository
+ * @see com.worldline.devview.networkmock.core.model.NetworkMockState
+ * @see com.worldline.devview.networkmock.core.repository.MockStateRepository
+ * @see com.worldline.devview.networkmock.core.repository.MockConfigRepository
  */
 @Immutable
 @Serializable
@@ -374,7 +374,7 @@ public data class EndpointKey(
     /**
      * The canonical `"{groupId}-{environmentId}-{endpointId}"` string used as a
      * DataStore preference key suffix and as the key in
-     * [com.worldline.devview.networkmock.model.NetworkMockState.endpointStates].
+     * [com.worldline.devview.networkmock.core.model.NetworkMockState.endpointStates].
      */
     public val compositeKey: String get() = "$groupId-$environmentId-$endpointId"
 
@@ -418,7 +418,7 @@ public data class EndpointKey(
  * @see EnvironmentConfig
  * @see EndpointConfig
  * @see EndpointKey
- * @see com.worldline.devview.networkmock.repository.MockConfigRepository.findMatchingMock
+ * @see com.worldline.devview.networkmock.core.repository.MockConfigRepository.findMatchingMock
  */
 @Immutable
 public data class MockMatch(val key: EndpointKey, val config: EndpointConfig) {
