@@ -137,37 +137,34 @@ public fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 
 
     val filteredFeatures by remember(key1 = filterQuery, key2 = selectedFilters, key3 = features) {
         derivedStateOf {
-            when {
-                filterQuery.isBlank() && selectedFilters.values.all { !it } -> features
+            val activeTypeFilters = selectedFilters
+                .filterKeys { it == FeatureFilter.LOCAL || it == FeatureFilter.REMOTE }
+                .filterValues { it }
+                .keys
+            val activeStateFilters = selectedFilters
+                .filterKeys { it == FeatureFilter.ON || it == FeatureFilter.OFF }
+                .filterValues { it }
+                .keys
 
-                selectedFilters.values.all { !it } -> features.filter { feature ->
+            features.filter { feature ->
+                val matchesQuery = filterQuery.isBlank() ||
                     feature.name.contains(other = filterQuery, ignoreCase = true)
-                }
-
-                filterQuery.isBlank() -> features.filter { feature ->
-                    selectedFilters.filter { it.value }.all { (state, selected) ->
-                        when (state) {
-                            FeatureFilter.LOCAL -> feature is Feature.LocalFeature
-                            FeatureFilter.REMOTE -> feature is Feature.RemoteFeature
-                            FeatureFilter.ON -> feature.isEnabled
-                            FeatureFilter.OFF -> !feature.isEnabled
-                        } && selected
+                val matchesType = activeTypeFilters.isEmpty() || activeTypeFilters.any { filter ->
+                    when (filter) {
+                        FeatureFilter.LOCAL -> feature is Feature.LocalFeature
+                        FeatureFilter.REMOTE -> feature is Feature.RemoteFeature
+                        else -> false
                     }
                 }
-
-                else -> features.filter { feature ->
-                    feature.name.contains(
-                        other = filterQuery,
-                        ignoreCase = true
-                    ) && selectedFilters.filter { it.value }.all { (state, selected) ->
-                        when (state) {
-                            FeatureFilter.LOCAL -> feature is Feature.LocalFeature
-                            FeatureFilter.REMOTE -> feature is Feature.RemoteFeature
+                val matchesState =
+                    activeStateFilters.isEmpty() || activeStateFilters.any { filter ->
+                        when (filter) {
                             FeatureFilter.ON -> feature.isEnabled
                             FeatureFilter.OFF -> !feature.isEnabled
-                        } && selected
+                            else -> false
+                        }
                     }
-                }
+                matchesQuery && matchesType && matchesState
             }
         }
     }
@@ -357,11 +354,10 @@ private enum class FeatureFilter {
          * @return List of applicable filter options
          */
         fun availableEntries(features: List<Feature>): List<FeatureFilter> =
-            if (features.filterIsInstance<Feature.RemoteFeature>().size == features.size) {
-                listOf(
-                    ON,
-                    OFF
-                )
+            if (features.all { it is Feature.RemoteFeature } ||
+                features.all { it is Feature.LocalFeature }
+            ) {
+                listOf(ON, OFF)
             } else {
                 entries
             }
