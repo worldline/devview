@@ -56,12 +56,12 @@ fun App() {
 
 ## Platform-Specific Notes
 ### Android
-- Ensure minimum API level 21.
+- Ensure minimum API level 26.
 - Use Android Studio Giraffe or newer for best Compose support.
 - Test on both light and dark themes.
 
 ### iOS
-- Ensure minimum iOS 14.0.
+- Ensure minimum iOS 16.0.
 - Use Xcode 15+ and latest Compose Multiplatform plugin.
 - Test on both simulator and real device.
 

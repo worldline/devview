@@ -6,7 +6,7 @@ Complete iOS integration example.
 
 ## Prerequisites
 - Xcode 15 or newer
-- Minimum iOS 14.0
+- Minimum iOS 16.0
 - Kotlin Multiplatform and Compose Multiplatform configured
 
 ## Step 1: Add Dependencies
