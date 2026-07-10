@@ -9,7 +9,7 @@ import androidx.datastore.preferences.core.Preferences
  *
  * Each module that requires persistent storage should declare one instance of this
  * class. The DataStore is initialised lazily on the first call to [init], which is
- * triggered automatically by [com.worldline.devview.core.rememberModules] for any
+ * triggered automatically by `rememberModules` for any
  * module implementing [RequiresDataStore]. The `null` guard inside [init] ensures
  * the DataStore is created exactly once per process regardless of recompositions.
  *
@@ -43,7 +43,6 @@ import androidx.datastore.preferences.core.Preferences
  * ```
  *
  * @see RequiresDataStore
- * @see com.worldline.devview.core.rememberModules
  */
 public class DataStoreDelegate {
     private var instance: DataStore<Preferences>? = null
@@ -58,7 +57,7 @@ public class DataStoreDelegate {
      * The `null` guard ensures the DataStore is created exactly once — subsequent
      * calls on recomposition are no-ops.
      *
-     * This function is called automatically by [com.worldline.devview.core.rememberModules]
+     * This function is called automatically by `rememberModules`
      * for any module implementing [RequiresDataStore]. It should not be called manually.
      *
      * @param dataStoreName The filename used for the DataStore preferences file.
@@ -74,7 +73,7 @@ public class DataStoreDelegate {
      * Returns the initialised [DataStore] instance.
      *
      * @throws IllegalStateException if [init] has not been called yet, which
-     * indicates the module was not registered via [com.worldline.devview.core.rememberModules].
+     * indicates the module was not registered via `rememberModules`.
      */
     public fun get(): DataStore<Preferences> = instance
         ?: error(
