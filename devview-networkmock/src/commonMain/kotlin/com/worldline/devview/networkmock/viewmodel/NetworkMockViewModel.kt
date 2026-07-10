@@ -60,7 +60,7 @@ public class NetworkMockViewModel(
      * Combined UI state for the Network Mock screen.
      *
      * Combines [MockConfiguration] (loaded once from `mocks.json`), the live
-     * [com.worldline.devview.networkmock.model.NetworkMockState] from DataStore, the internal
+     * [com.worldline.devview.networkmock.core.model.NetworkMockState] from DataStore, the internal
      * loading state, and the discovered [EndpointDescriptor] map into a single
      * [NetworkMockUiState] emission. Re-emits whenever any of the four sources change.
      *

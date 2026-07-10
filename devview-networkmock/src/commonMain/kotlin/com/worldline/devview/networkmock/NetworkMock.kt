@@ -57,8 +57,8 @@ public sealed interface NetworkMockDestination : NavKey {
  * DataStore instance without depending on each other.
  *
  * [initModule] passes the initialised DataStore explicitly to
- * [NetworkMockInitializer.initialize], which constructs [MockStateRepository]
- * and [MockConfigRepository] once for the lifetime of the process.
+ * [NetworkMockInitializer.initialize], which constructs [MockStateRepository][com.worldline.devview.networkmock.core.repository.MockStateRepository]
+ * and [MockConfigRepository][com.worldline.devview.networkmock.core.repository.MockConfigRepository] once for the lifetime of the process.
  *
  * ## Usage
  * ```kotlin

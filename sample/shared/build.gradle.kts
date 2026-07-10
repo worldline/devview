@@ -8,6 +8,7 @@ plugins {
 kotlin {
     android {
         namespace = "com.worldline.devview.sample.shared"
+        withHostTest {}
     }
     
     listOf(

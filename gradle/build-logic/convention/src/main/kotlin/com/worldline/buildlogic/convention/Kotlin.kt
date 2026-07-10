@@ -77,6 +77,5 @@ internal fun Project.configureKotlinCompiler() {
  */
 val kotlinCompilerOptions = listOf(
     "-Xexpect-actual-classes",
-    "-Xcontext-parameters",
     "-Xcontext-sensitive-resolution"
 )

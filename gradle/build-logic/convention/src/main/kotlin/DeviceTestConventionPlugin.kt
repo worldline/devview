@@ -24,11 +24,8 @@ class DeviceTestConventionPlugin : Plugin<Project> {
                 }
 
                 sourceSets {
-                    all {
-                        languageSettings.optIn("androidx.compose.ui.test.ExperimentalTestApi")
-                    }
-
                     getByName("androidDeviceTest") {
+                        languageSettings.optIn("androidx.compose.ui.test.ExperimentalTestApi")
                         dependencies {
                             val composeBom = libs.findLibrary("androidx.compose.bom").get()
                             implementation(project.dependencies.platform(composeBom))

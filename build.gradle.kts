@@ -31,3 +31,13 @@ tasks.register("detektFull") {
         }
     })
 }
+
+subprojects {
+    pluginManager.withPlugin("org.jetbrains.dokka") {
+        the<org.jetbrains.dokka.gradle.DokkaExtension>().apply {
+            dokkaSourceSets.configureEach {
+                enableJdkDocumentationLink.set(false)
+            }
+        }
+    }
+}

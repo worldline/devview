@@ -292,9 +292,9 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
      * )
      * ```
      *
-     * @param groupId The [com.worldline.devview.networkmock.model.ApiGroupConfig] identifier
-     * @param environmentId The [com.worldline.devview.networkmock.model.EnvironmentConfig] identifier
-     * @param endpointId The [com.worldline.devview.networkmock.model.EndpointConfig] identifier
+     * @param groupId The [com.worldline.devview.networkmock.core.model.ApiGroupConfig] identifier
+     * @param environmentId The [com.worldline.devview.networkmock.core.model.EnvironmentConfig] identifier
+     * @param endpointId The [com.worldline.devview.networkmock.core.model.EndpointConfig] identifier
      * @param state The new endpoint mock state
      */
     public suspend fun setEndpointMockState(

@@ -63,7 +63,7 @@ public data class NetworkMockPluginConfig(internal val config: NetworkMockConfig
  *
  * ## Default Installation
  * When `NetworkMock` is registered via `rememberModules`, repositories are resolved
- * automatically from [com.worldline.devview.networkmock.NetworkMockInitializer]:
+ * automatically from [com.worldline.devview.networkmock.core.NetworkMockInitializer]:
  * ```kotlin
  * val client = HttpClient(OkHttp) {
  *     install(NetworkMockPlugin)
@@ -121,8 +121,8 @@ public data class NetworkMockPluginConfig(internal val config: NetworkMockConfig
  * without issues. State reads are atomic through DataStore.
  *
  * @see NetworkMockConfig
- * @see com.worldline.devview.networkmock.repository.MockConfigRepository
- * @see com.worldline.devview.networkmock.repository.MockStateRepository
+ * @see com.worldline.devview.networkmock.core.repository.MockConfigRepository
+ * @see com.worldline.devview.networkmock.core.repository.MockStateRepository
  */
 public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPluginConfig> =
     object : HttpClientPlugin<NetworkMockConfig, NetworkMockPluginConfig> {

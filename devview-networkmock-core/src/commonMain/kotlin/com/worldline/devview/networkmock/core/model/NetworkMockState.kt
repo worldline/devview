@@ -45,7 +45,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
  *
  * ## Environment Resolution
  * There is no stored "active environment" selection. The environment is derived at runtime
- * by matching the incoming request's hostname against the [com.worldline.devview.networkmock.model.EnvironmentConfig.url]
+ * by matching the incoming request's hostname against the [com.worldline.devview.networkmock.core.model.EnvironmentConfig.url]
  * of each environment across all API groups. This allows the app to simultaneously target
  * different environments for different API groups without any manual selection.
  *
@@ -85,9 +85,9 @@ public data class NetworkMockState(
      * Convenience overload of [getEndpointState] that accepts three separate string
      * identifiers instead of an [EndpointKey]. Delegates to the [EndpointKey] overload.
      *
-     * @param groupId The [com.worldline.devview.networkmock.model.ApiGroupConfig] identifier
-     * @param environmentId The [com.worldline.devview.networkmock.model.EnvironmentConfig] identifier
-     * @param endpointId The [com.worldline.devview.networkmock.model.EndpointConfig] identifier
+     * @param groupId The [com.worldline.devview.networkmock.core.model.ApiGroupConfig] identifier
+     * @param environmentId The [com.worldline.devview.networkmock.core.model.EnvironmentConfig] identifier
+     * @param endpointId The [com.worldline.devview.networkmock.core.model.EndpointConfig] identifier
      * @return The [EndpointMockState] if configured, or `null` if not set
      */
     public fun getEndpointState(
@@ -117,9 +117,9 @@ public data class NetworkMockState(
      * Convenience overload of [withEndpointState] that accepts three separate string
      * identifiers instead of an [EndpointKey]. Delegates to the [EndpointKey] overload.
      *
-     * @param groupId The [com.worldline.devview.networkmock.model.ApiGroupConfig] identifier
-     * @param environmentId The [com.worldline.devview.networkmock.model.EnvironmentConfig] identifier
-     * @param endpointId The [com.worldline.devview.networkmock.model.EndpointConfig] identifier
+     * @param groupId The [com.worldline.devview.networkmock.core.model.ApiGroupConfig] identifier
+     * @param environmentId The [com.worldline.devview.networkmock.core.model.EnvironmentConfig] identifier
+     * @param endpointId The [com.worldline.devview.networkmock.core.model.EndpointConfig] identifier
      * @param state The new endpoint state
      * @return A new [NetworkMockState] with the updated endpoint state
      */

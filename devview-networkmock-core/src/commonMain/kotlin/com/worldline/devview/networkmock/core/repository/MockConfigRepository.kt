@@ -235,12 +235,12 @@ public class MockConfigRepository(
      * different environments for different API groups without any manual switching.
      *
      * ## Matching Steps
-     * 1. Iterate over all [com.worldline.devview.networkmock.model.ApiGroupConfig] entries
-     * 2. For each group, iterate over its [com.worldline.devview.networkmock.model.EnvironmentConfig] entries
-     * 3. Extract the hostname from [com.worldline.devview.networkmock.model.EnvironmentConfig.url]
+     * 1. Iterate over all [com.worldline.devview.networkmock.core.model.ApiGroupConfig] entries
+     * 2. For each group, iterate over its [com.worldline.devview.networkmock.core.model.EnvironmentConfig] entries
+     * 3. Extract the hostname from [com.worldline.devview.networkmock.core.model.EnvironmentConfig.url]
      *    and compare against the request host (case-insensitive)
      * 4. On a hostname match, build the effective endpoint list for that group+environment
-     *    via [ApiGroupConfig.effectiveEndpoints] (shared pool + overrides + additions)
+     *    via [ApiGroupConfig.effectiveEndpoints][com.worldline.devview.networkmock.core.model.effectiveEndpoints] (shared pool + overrides + additions)
      * 5. Match the request path and method against the effective endpoint list
      * 6. Return a [MockMatch] carrying [MockMatch.groupId], [MockMatch.environmentId],
      *    [MockMatch.endpointId], and the resolved [MockMatch.config]
@@ -387,9 +387,9 @@ public class MockConfigRepository(
      * - `getUser-404-detailed.json` → Not found with detailed error body
      * - `getUser-500.json` → Server error
      *
-     * @param groupId The [com.worldline.devview.networkmock.model.ApiGroupConfig] identifier
-     * @param environmentId The [com.worldline.devview.networkmock.model.EnvironmentConfig] identifier
-     * @param endpointId The [com.worldline.devview.networkmock.model.EndpointConfig] identifier
+     * @param groupId The [com.worldline.devview.networkmock.core.model.ApiGroupConfig] identifier
+     * @param environmentId The [com.worldline.devview.networkmock.core.model.EnvironmentConfig] identifier
+     * @param endpointId The [com.worldline.devview.networkmock.core.model.EndpointConfig] identifier
      * @return A deduplicated, status-code-sorted list of discovered [MockResponse] objects
      *   (may be empty if no files are found in either location)
      */
@@ -488,9 +488,9 @@ public class MockConfigRepository(
      * 1. `files/networkmocks/responses/{groupId}/{environmentId}/{endpointId}/{fileName}` ← tried first
      * 2. `files/networkmocks/responses/{groupId}/{endpointId}/{fileName}` ← fallback
      *
-     * @param groupId The [com.worldline.devview.networkmock.model.ApiGroupConfig] identifier
-     * @param environmentId The [com.worldline.devview.networkmock.model.EnvironmentConfig] identifier
-     * @param endpointId The [com.worldline.devview.networkmock.model.EndpointConfig] identifier
+     * @param groupId The [com.worldline.devview.networkmock.core.model.ApiGroupConfig] identifier
+     * @param environmentId The [com.worldline.devview.networkmock.core.model.EnvironmentConfig] identifier
+     * @param endpointId The [com.worldline.devview.networkmock.core.model.EndpointConfig] identifier
      * @param fileName The response filename (e.g., `"getUser-200.json"`)
      * @return A [MockResponse] if the file is found in either location, or `null` on error
      */

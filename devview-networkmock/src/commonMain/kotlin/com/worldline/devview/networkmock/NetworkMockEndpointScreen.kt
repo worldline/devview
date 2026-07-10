@@ -66,7 +66,7 @@ import kotlinx.collections.immutable.PersistentList
  * Driven entirely by [viewModel], which is constructed and provided by
  * [NetworkMock.registerContent] inside the `entry<NetworkMockDestination.Endpoint>` lambda
  * so that it is scoped to the navigation entry and receives the correct
- * [com.worldline.devview.networkmock.model.EndpointKey].
+ * [com.worldline.devview.networkmock.core.model.EndpointKey].
  *
  * Renders three possible states from [NetworkMockEndpointViewModel.uiState]:
  * - [NetworkMockEndpointUiState.Loading] — shown while mock response files are being discovered

@@ -54,9 +54,6 @@ import com.worldline.devview.featureflip.preview.FeaturePreviewParameterProvider
  * ```
  *
  * @param feature The feature to display.
- * @param totalFeatures Total number of features in the list (used for shape calculations).
- * @param index The zero-based index of this feature in the list.
- * @param isLastIndex Whether this is the last item in the list.
  * @param onStateChange Callback invoked when the feature's state changes via user interaction.
  * @param modifier Modifier to apply to the card container.
  *
