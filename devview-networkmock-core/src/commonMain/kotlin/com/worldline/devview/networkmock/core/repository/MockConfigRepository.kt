@@ -240,7 +240,8 @@ public class MockConfigRepository(
      * 3. Extract the hostname from [com.worldline.devview.networkmock.core.model.EnvironmentConfig.url]
      *    and compare against the request host (case-insensitive)
      * 4. On a hostname match, build the effective endpoint list for that group+environment
-     *    via [ApiGroupConfig.effectiveEndpoints][com.worldline.devview.networkmock.core.model.effectiveEndpoints] (shared pool + overrides + additions)
+     *    via [ApiGroupConfig.effectiveEndpoints][com.worldline.devview.networkmock.core.model.effectiveEndpoints]
+     *    (shared pool + overrides + additions)
      * 5. Match the request path and method against the effective endpoint list
      * 6. Return a [MockMatch] carrying [MockMatch.groupId], [MockMatch.environmentId],
      *    [MockMatch.endpointId], and the resolved [MockMatch.config]
