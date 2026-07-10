@@ -7,13 +7,13 @@ on:
 jobs:
   semantic-title:
     runs-on: ubuntu-latest
-    if: github.actor != 'renovate[bot]'
+    if: github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'renovate/')
 
     permissions:
       pull-requests: read
 
     steps:
-      - uses: amannn/action-semantic-pull-request@v5
+      - uses: amannn/action-semantic-pull-request@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

@@ -3,7 +3,7 @@ package com.worldline.devview.featureflip.model
 import kotlin.random.Random
 
 /**
- * Sealed class representing a feature flag in the application.
+ * Sealed interface representing a feature flag in the application.
  *
  * Feature flags (also known as feature toggles) allow you to enable or disable
  * features in your application without deploying new code. This sealed class
@@ -50,7 +50,7 @@ import kotlin.random.Random
  * @see FeatureHandler
  * @see FeatureState
  */
-public sealed class Feature {
+public sealed interface Feature {
     /**
      * The unique identifier name of the feature.
      *
@@ -59,7 +59,7 @@ public sealed class Feature {
      *
      * Examples: "dark_mode", "newCheckoutFlow", "feature_premium_tier"
      */
-    public abstract val name: String
+    public val name: String
 
     /**
      * Optional description explaining what this feature does.
@@ -72,7 +72,7 @@ public sealed class Feature {
      * - "New checkout flow with improved UX"
      * - "Premium tier features for subscribed users"
      */
-    public abstract val description: String?
+    public val description: String?
 
     /**
      * Whether the feature is currently enabled.
@@ -82,9 +82,9 @@ public sealed class Feature {
      * - For [RemoteFeature]: Returns the effective enabled state based on
      *   the current [FeatureState] and [RemoteFeature.defaultRemoteValue]
      */
-    public abstract val isEnabled: Boolean
+    public val isEnabled: Boolean
 
-    internal companion object {
+    public companion object {
         internal fun fake(amount: Int = 5) = List(size = amount) {
             when (Random.nextBoolean()) {
                 true -> RemoteFeature.fake(index = it)
@@ -141,7 +141,7 @@ public sealed class Feature {
         override val description: String?,
         val defaultRemoteValue: Boolean,
         val state: FeatureState
-    ) : Feature() {
+    ) : Feature {
         override val isEnabled: Boolean
             get() = when (state) {
                 FeatureState.REMOTE -> defaultRemoteValue
@@ -216,7 +216,7 @@ public sealed class Feature {
         override val name: String,
         override val description: String?,
         override val isEnabled: Boolean
-    ) : Feature() {
+    ) : Feature {
         internal companion object {
             fun fakeList(amount: Int = 5) = List(size = amount) {
                 LocalFeature(
