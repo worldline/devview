@@ -213,7 +213,10 @@ jobs:
           force-avd-creation: ${{ matrix.force-avd-creation }}
           emulator-options: ${{ matrix.test-emulator-options }}
           disable-animations: false
-          script: ./gradlew connectedAndroidDeviceTest -Pandroidx.baselineprofile.skipgeneration
+          script: >-
+            trap '(sleep 30; while pgrep -x crashpad_handler >/dev/null 2>&1; do echo "crashpad_handler:
+            still running, killing"; pkill -9 crashpad_handler || true; sleep 5; done; echo "crashpad_handler: gone") &' EXIT;
+            ./gradlew connectedDebugAndroidTest -Pandroidx.baselineprofile.skipgeneration
 
       - name: Upload device test reports
         if: failure()
