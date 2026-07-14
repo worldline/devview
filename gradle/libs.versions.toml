@@ -30,7 +30,7 @@ turbine = "1.2.1"
 
 # Kotlin only dependencies
 compose-stability-analyzer = "0.10.0"
-kotlin = "2.4.0"
+kotlin = "2.4.10"
 kover = "0.9.8"
 kotlinx-collections-immutable = "0.5.1"
 kotlinx-coroutines = "1.11.0"
