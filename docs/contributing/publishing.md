@@ -56,8 +56,8 @@ gpg --full-generate-key
 ```
 
 When prompted:
-- **Key type**: `RSA and RSA` (option 1)
-- **Key size**: `4096`
+- **Key type**: `ECC (sign and encrypt)` (option 9, default — recommended by JetBrains)
+- **Elliptic curve**: `Curve 25519` (option 1, default)
 - **Expiry**: `0` (does not expire) — or set a date if preferred
 - **Name/email**: your name and the email associated with your Sonatype account
 - **Passphrase**: choose a strong passphrase — you'll need it for `GPG_KEY_PASSWORD`
