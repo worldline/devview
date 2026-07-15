@@ -56,7 +56,9 @@ class ComposeTest : FunSpec(body = {
             .scopeFromProject()
             .classes()
             .withNameEndingWith("PreviewParameterProvider")
-            .assertTrue(additionalMessage = "PreviewParameterProvider subclasses must be in a 'preview' package") { clazz ->
+            .assertTrue(
+                additionalMessage = "PreviewParameterProvider subclasses must be in a 'preview' package",
+            ) { clazz ->
                 clazz.packagee?.name?.endsWith(".preview") ?: false
             }
     }

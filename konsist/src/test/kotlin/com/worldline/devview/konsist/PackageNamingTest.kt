@@ -18,7 +18,9 @@ class PackageNamingTest : FunSpec(body = {
                 val expectedPrefix = expectedPackagePrefixOf(moduleName)
                 Konsist.scopeFromModule(moduleName)
                     .files
-                    .assertTrue(additionalMessage = "Files in '$moduleName' must use package prefix '$expectedPrefix'") { file ->
+                    .assertTrue(
+                        additionalMessage = "Files in '$moduleName' must use package prefix '$expectedPrefix'",
+                    ) { file ->
                         file.packagee?.name?.startsWith(expectedPrefix) ?: true
                     }
             }
