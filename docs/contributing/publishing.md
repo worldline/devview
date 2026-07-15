@@ -89,8 +89,10 @@ This prints a block starting with a PGP private key header. Copy the **entire ou
 ### Publish the public key
 
 ```bash
-gpg --keyserver keyserver.ubuntu.com --send-keys 11223344
+gpg --keyserver hkps://keyserver.ubuntu.com --send-keys 11223344
 ```
+
+> Use `hkps://` (HTTPS, port 443) — plain `hkp://` (port 11371) is often blocked by corporate firewalls. If this fails, try `hkps://keys.openpgp.org` instead.
 
 Maven Central validators check public keyservers to verify artifact signatures. This step is required.
 
@@ -100,10 +102,12 @@ Maven Central validators check public keyservers to verify artifact signatures. 
 
 Do **not** use your portal login credentials in CI. Generate a dedicated token instead:
 
-1. In the Central Portal, click your username in the top-right → **Account**
-2. Scroll to **Generate User Token**
-3. Click **Generate** — the portal shows a username and password
-4. Copy both immediately — the password is only shown once
+1. In the Central Portal, click your username (top-right) → **View User Tokens**
+2. Click **Generate User Token**
+3. A popup appears — fill in:
+   - **Token name**: something descriptive, e.g. `devview-github-actions`
+   - **Expiration**: 1 year (recommended — set a calendar reminder to rotate the GitHub secret before it expires)
+4. The portal shows a **username** and **password** — copy both immediately, the password is only shown once
 
 These become `MAVEN_CENTRAL_USERNAME` and `MAVEN_CENTRAL_PASSWORD`.
 
