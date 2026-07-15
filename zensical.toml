@@ -101,6 +101,7 @@ nav = [
     { "Development Setup" = "contributing/development.md" },
     { "Code Style" = "contributing/code-style.md" },
     { "Pull Requests" = "contributing/pull-requests.md" },
+    { "Publishing a Release" = "contributing/publishing.md" },
     { "Code of Conduct" = "contributing/code-of-conduct.md" },
   ]},
   { "Changelog" = "changelog.md" },
