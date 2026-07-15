@@ -71,7 +71,7 @@ gpg --list-secret-keys --keyid-format=long
 Output looks like:
 
 ```
-sec   rsa4096/AABBCCDD11223344 2026-07-15 [SC]
+sec   ed25519/AABBCCDD11223344 2026-07-15 [SC]
       FFFF0000AAAA1111BBBB2222CCCC3333DDDD4444
 uid           [ultimate] Your Name <you@example.com>
 ```
