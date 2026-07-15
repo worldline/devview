@@ -9,7 +9,9 @@ Before you begin, ensure you have:
 - ✅ **Kotlin Multiplatform Project** - A working KMP project
 - ✅ **Compose Multiplatform** - Configured in your project
 - ✅ **Minimum Versions**:
+    <!-- renovate: datasource=maven depName=org.jetbrains.kotlin:kotlin-stdlib -->
     - Kotlin 2.4.0+
+    <!-- renovate: datasource=maven depName=org.jetbrains.compose:compose-gradle-plugin -->
     - Compose Multiplatform 1.11.1+
     - Android: API 26 (Oreo) or higher
     - iOS: iOS 16.0 or higher

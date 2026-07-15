@@ -317,6 +317,7 @@ Use the analytics screen to:
 
 ## Requirements
 
+<!-- renovate: datasource=maven depName=org.jetbrains.kotlin:kotlin-stdlib -->
 - Kotlin 2.4.0+
 - Compose Multiplatform
 - kotlinx-datetime for timestamp formatting
