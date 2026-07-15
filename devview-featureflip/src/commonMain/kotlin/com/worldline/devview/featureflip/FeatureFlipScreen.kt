@@ -346,9 +346,9 @@ private enum class FeatureFilter {
         /**
          * Returns the available filter entries based on the feature list composition.
          *
-         * If all features are remote features, only ON/OFF filters are shown
-         * (since LOCAL/REMOTE filtering would be redundant). Otherwise, all
-         * filter types are available.
+         * If all features are the same type (all remote or all local), only ON/OFF
+         * filters are shown since LOCAL/REMOTE filtering would be redundant.
+         * Otherwise, all filter types are available.
          *
          * @param features The list of features to analyze
          * @return List of applicable filter options

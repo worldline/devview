@@ -46,7 +46,8 @@ import com.worldline.devview.featureflip.preview.FeaturePreviewParameterProvider
  * └── Row
  *     ├── Column (feature info, weighted)
  *     │   ├── Text (feature name, bold)
- *     │   └── Text (description, optional)
+ *     │   ├── Text (description, optional)
+ *     │   └── Text (type label: "Local" or "Remote")
  *     └── Control Widget
  *         ├── Switch (for LocalFeature)
  *         └── FeatureTriStateSwitch (for RemoteFeature)
