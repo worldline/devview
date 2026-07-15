@@ -11,6 +11,15 @@
   "commitMessagePrefix": ":arrow_up:",
   "rebaseWhen": "conflicted",
   "schedule": ["* 22-23,0-4 * * *", "* * * * 0,6"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["\\.md$"],
+      "matchStrings": [
+        "<!--\\s*renovate:\\s*datasource=(?<datasource>[^\\s]+)\\s+depName=(?<depName>[^\\s]+)\\s*-->\\s*\\n[^\\n]*?(?<currentValue>\\d+\\.\\d+\\.\\d+)"
+      ]
+    }
+  ],
   "packageRules": [
     {
       "groupName": "kotlin",
