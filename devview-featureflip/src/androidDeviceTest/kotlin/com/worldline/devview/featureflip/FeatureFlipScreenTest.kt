@@ -2,6 +2,7 @@ package com.worldline.devview.featureflip
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -104,6 +105,52 @@ class FeatureFlipScreenTest {
 
         // After changing state, feature should be filtered out since it no longer matches OFF filter
         waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 0)
+    }
+
+    @Test
+    fun featureFlipScreen_type_badges_are_displayed() = runComposeUiTest {
+        val handler = FeatureHandler(
+            dataStore = FakePreferencesDataStore(),
+            initialFeatures = listOf(
+                Feature.LocalFeature("dark_mode", null, false),
+                Feature.RemoteFeature("new_checkout", null, true, FeatureState.REMOTE)
+            )
+        )
+
+        setContent {
+            CompositionLocalProvider(LocalFeatureHandler provides handler) {
+                FeatureFlipScreen()
+            }
+        }
+
+        waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 1)
+        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
+
+        onNodeWithTag(testTag = "feature_type_dark_mode").assertIsDisplayed()
+        onNodeWithTag(testTag = "feature_type_new_checkout").assertIsDisplayed()
+    }
+
+    @Test
+    fun featureFlipScreen_selecting_local_and_remote_chips_shows_all_features() = runComposeUiTest {
+        val handler = FeatureHandler(
+            dataStore = FakePreferencesDataStore(),
+            initialFeatures = listOf(
+                Feature.LocalFeature("dark_mode", null, false),
+                Feature.RemoteFeature("new_checkout", null, true, FeatureState.REMOTE)
+            )
+        )
+
+        setContent {
+            CompositionLocalProvider(LocalFeatureHandler provides handler) {
+                FeatureFlipScreen()
+            }
+        }
+
+        onNodeWithTag(testTag = "feature_filter_chip_LOCAL").performClick()
+        onNodeWithTag(testTag = "feature_filter_chip_REMOTE").performClick()
+
+        waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 1)
+        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
     }
 
     @Test

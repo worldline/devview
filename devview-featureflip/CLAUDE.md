@@ -94,7 +94,8 @@ featureHandler.isFeatureEnabledFlow("dark_mode").collect { … }
 
 - **`FeatureState` ordinals are load-bearing.** They are persisted as raw integers in DataStore (`REMOTE=0`, `LOCAL_OFF=1`, `LOCAL_ON=2`). Reordering the enum entries is a breaking data migration.
 - **`FeatureTriStateSwitch` segment order mirrors the enum ordinal order.** The `selectedIndex` is derived directly from `feature.state.ordinal`. Keep enum and UI in sync.
-- **`FeatureFilter` is adaptive.** If every registered feature is a `RemoteFeature`, the LOCAL/REMOTE filter chips are hidden; only ON/OFF chips appear.
+- **`FeatureFilter` is adaptive.** If all registered features are the same type (all `RemoteFeature` or all `LocalFeature`), the LOCAL/REMOTE filter chips are hidden; only ON/OFF chips appear.
+- **Filter chips use OR within a dimension, AND across dimensions.** Selecting LOCAL+REMOTE shows all features; selecting LOCAL+ON shows only enabled local features.
 - **`Poko` annotation** is applied via `com.worldline.devview.core.Poko` (project-local alias), not the default `@Poko`. The `Feature` sealed class members use standard `data class`, so `Poko` affects other model classes in the wider project.
 - **`FeatureHandler.featureRegistry` keyed by `Feature` instance.** Lookups for reads/writes use `firstOrNull { it.key.name == featureName }` — feature `name` is the stable identity; the `Feature` object itself (including `isEnabled`/`state`) changes as DataStore emits updates.
 - **`SegmentedButtonContentMeasurePolicy`** is a hand-rolled copy of Material3 internal logic, required because M3 does not expose icon-only segmented buttons with per-segment container colors.

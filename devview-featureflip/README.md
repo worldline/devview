@@ -180,11 +180,15 @@ The main screen component that displays all features with search and filter capa
 
 ### Feature Controls
 
+Each feature item displays a **type label** ("Local" or "Remote") so the feature's origin is visible at a glance without relying solely on the control widget.
+
 - **Local Features**: Display a standard Material Switch
 - **Remote Features**: Display a tri-state segmented button:
   - 🌐 Remote (cloud icon) - Use remote configuration
   - ❌ Off (cancel icon) - Force feature off
   - ✅ On (check icon) - Force feature on
+
+Filter chips use **OR within a dimension, AND across dimensions** — selecting both LOCAL and REMOTE shows all features, while selecting LOCAL and ON narrows to enabled local features only. The LOCAL/REMOTE chips are hidden automatically when all features are the same type.
 
 ## API Reference
 

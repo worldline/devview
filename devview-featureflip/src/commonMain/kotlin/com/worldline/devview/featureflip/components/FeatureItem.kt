@@ -46,7 +46,8 @@ import com.worldline.devview.featureflip.preview.FeaturePreviewParameterProvider
  * └── Row
  *     ├── Column (feature info, weighted)
  *     │   ├── Text (feature name, bold)
- *     │   └── Text (description, optional)
+ *     │   ├── Text (description, optional)
+ *     │   └── Text (type label: "Local" or "Remote")
  *     └── Control Widget
  *         ├── Switch (for LocalFeature)
  *         └── FeatureTriStateSwitch (for RemoteFeature)
@@ -94,6 +95,15 @@ internal fun FeatureItem(
                     style = MaterialTheme.typography.bodySmall
                 )
             }
+            Text(
+                modifier = Modifier.testTag(tag = "feature_type_${feature.name}"),
+                text = when (feature) {
+                    is LocalFeature -> "Local"
+                    is RemoteFeature -> "Remote"
+                },
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline
+            )
         }
 
         when (feature) {
