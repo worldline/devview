@@ -12,24 +12,27 @@ import io.kotest.core.spec.style.FunSpec
  *  - `ViewModel` subclasses live in a `viewmodel` package
  *  - `ViewModel` subclasses are `public`
  */
-class ViewModelTest : FunSpec(body = {
-    test(name = "ViewModel subclasses reside in a viewmodel package") {
-        Konsist
-            .scopeFromProject()
-            .classes()
-            .withNameEndingWith("ViewModel")
-            .assertTrue(additionalMessage = "ViewModel subclasses must be in a 'viewmodel' package") { clazz ->
-                clazz.packagee?.name?.endsWith(".viewmodel") ?: false
-            }
-    }
+class ViewModelTest :
+    FunSpec(body = {
+        test(name = "ViewModel subclasses reside in a viewmodel package") {
+            Konsist
+                .scopeFromProject()
+                .classes()
+                .withNameEndingWith("ViewModel")
+                .assertTrue(
+                    additionalMessage = "ViewModel subclasses must be in a 'viewmodel' package"
+                ) { clazz ->
+                    clazz.packagee?.name?.endsWith(".viewmodel") ?: false
+                }
+        }
 
-    test(name = "ViewModel subclasses are public") {
-        Konsist
-            .scopeFromProject()
-            .classes()
-            .withNameEndingWith("ViewModel")
-            .assertTrue(additionalMessage = "ViewModel subclasses must be 'public'") { clazz ->
-                clazz.hasPublicOrDefaultModifier
-            }
-    }
-})
+        test(name = "ViewModel subclasses are public") {
+            Konsist
+                .scopeFromProject()
+                .classes()
+                .withNameEndingWith("ViewModel")
+                .assertTrue(additionalMessage = "ViewModel subclasses must be 'public'") { clazz ->
+                    clazz.hasPublicOrDefaultModifier
+                }
+        }
+    })

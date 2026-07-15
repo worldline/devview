@@ -8,7 +8,7 @@ DevView is a Kotlin Multiplatform (Android + iOS) developer tool library. When i
 
 ## Commands
 
-On Windows, use `.\gradlew.bat` instead of `./gradlew`. Always append `-Pandroidx.baselineprofile.skipgeneration` to Android build/test tasks.
+On Windows, use `.\gradlew.bat` instead of `./gradlew`. Always append `-Pandroidx.baselineprofile.skipgeneration` to Android build/test tasks. In PowerShell, quote the flag to prevent it being parsed as a switch parameter: `"-Pandroidx.baselineprofile.skipgeneration"`.
 
 **Build:**
 ```shell

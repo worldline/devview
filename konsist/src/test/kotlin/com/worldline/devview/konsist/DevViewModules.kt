@@ -37,15 +37,15 @@ internal fun featureNameOf(moduleName: String): String? {
  * Returns all devview feature module names discovered from the project scope,
  * excluding reserved utility modules (e.g. `devview-utils`, `devview-test`).
  */
-internal fun devviewFeatureModuleNames(): List<String> =
-    Konsist.scopeFromProject()
-        .files
-        .map { it.moduleName }
-        .distinct()
-        .filter { name ->
-            name.startsWith(DEVVIEW_MODULE_PREFIX) &&
-                name !in RESERVED_UTILITY_MODULES
-        }
+internal fun devviewFeatureModuleNames(): List<String> = Konsist
+    .scopeFromProject()
+    .files
+    .map { it.moduleName }
+    .distinct()
+    .filter { name ->
+        name.startsWith(DEVVIEW_MODULE_PREFIX) &&
+            name !in RESERVED_UTILITY_MODULES
+    }
 
 /**
  * Returns the expected package prefix for a given devview module name by converting
