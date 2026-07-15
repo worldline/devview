@@ -17,9 +17,9 @@
 
 ## What's New
 
-> **v0.0.1-SNAPSHOT — Initial Release**
+> **v0.1.0 — First Release**
 > - Core DevView framework with module registry DSL, section-based home screen, and type-safe Navigation3 integration
-> - FeatureFlip module: local and remote feature flags, tri-state remote override, DataStore-backed persistence
+> - FeatureFlip module: feature flags with type badge and filter, tri-state remote override, DataStore-backed persistence
 > - Analytics module: real-time in-app event capture with typed log categories and clear-log action
 > - NetworkMock modules: JSON-driven mock engine, Ktor client plugin, and UI for toggling mocks per endpoint
 > - devview-utils: shared DataStore utilities and `RequiresDataStore` initialization contract

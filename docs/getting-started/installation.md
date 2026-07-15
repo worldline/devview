@@ -45,7 +45,7 @@ Add DevView dependencies to your `gradle/libs.versions.toml`:
 
 ```toml
 [versions]
-devview = "0.0.1-SNAPSHOT"
+devview = "0.1.0"
 
 [libraries]
 devview = { module = "com.worldline.devview:devview", version.ref = "devview" }
@@ -85,13 +85,13 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             // Core DevView module (required)
-            implementation("com.worldline.devview:devview:0.0.1-SNAPSHOT")
+            implementation("com.worldline.devview:devview:0.1.0")
             
             // Optional: FeatureFlip module
-            implementation("com.worldline.devview:devview-featureflip:0.0.1-SNAPSHOT")
+            implementation("com.worldline.devview:devview-featureflip:0.1.0")
             
             // Optional: Analytics module
-            implementation("com.worldline.devview:devview-analytics:0.0.1-SNAPSHOT")
+            implementation("com.worldline.devview:devview-analytics:0.1.0")
         }
     }
 }
