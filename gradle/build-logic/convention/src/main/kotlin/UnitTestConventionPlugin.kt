@@ -99,7 +99,7 @@ class UnitTestConventionPlugin : Plugin<Project> {
             }
 
             extensions.configure<MokkeryGradleExtension> {
-                rule.set(ApplicationRule.All)
+                rule.set(ApplicationRule.AllTests)
                 ignoreFinalMembers.set(true)
             }
         }

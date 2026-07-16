@@ -25,17 +25,32 @@
       "groupName": "kotlin",
       "matchPackageNames": [
         "/androidx.compose.compiler:compiler/",
-        "/org.jetbrains.kotlin.*/",
-        "/dev.mokkery.*/",
-        "/com.github.skydoves.compose.stability.analyzer/"
-      ]
+        "/org.jetbrains.kotlin.*/"
+      ],
+      "allowedVersions": ">=2.3.0 <2.4.0"
+    },
+    {
+      "groupName": "kotlin",
+      "matchPackageNames": ["/dev.mokkery.*/"],
+      "allowedVersions": ">=3.3.0 <3.4.0"
+    },
+    {
+      "groupName": "kotlin",
+      "matchPackageNames": ["/com.github.skydoves.compose.stability.analyzer/"],
+      "allowedVersions": ">=0.8.0 <0.9.0"
+    },
+    {
+      "groupName": "kotlin",
+      "matchPackageNames": ["/dev.drewhamilton.poko.*/"],
+      "allowedVersions": ">=0.22.0 <0.23.0"
     },
     {
       "groupName": "compose-multiplatform",
       "matchPackageNames": [
         "/org.jetbrains.compose.*/",
         "/org.jetbrains.androidx.*/"
-      ]
+      ],
+      "allowedVersions": ">=1.11.0 <1.12.0"
     }
   ]
 }
