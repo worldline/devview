@@ -8,7 +8,7 @@ Before integrating DevView, ensure your development environment meets the follow
 
 ## Minimum Supported Versions
 <!-- renovate: datasource=maven depName=org.jetbrains.kotlin:kotlin-stdlib -->
-- **Kotlin**: 2.4.0 or newer
+- **Kotlin**: 2.4.10 or newer
 <!-- renovate: datasource=maven depName=org.jetbrains.compose:compose-gradle-plugin -->
 - **Compose Multiplatform**: 1.11.1 or newer
 - **Android**: API level 26 (Oreo) or higher
