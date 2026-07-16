@@ -28,7 +28,6 @@ mrmans0n-detekt-compose-rules = "0.6.2"
 turbine = "1.2.1"
 
 # Kotlin only dependencies
-compose-stability-analyzer = "0.8.0"
 kotlin = "2.3.21"
 kover = "0.9.8"
 kotlinx-collections-immutable = "0.5.1"
@@ -149,7 +148,6 @@ android-multiplatform-library = { id = "com.android.kotlin.multiplatform.library
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "jetbrains-compose-multiplatform" }
 compose-screenshot = { id = "com.android.compose.screenshot", version.ref = "compose-screenshot" }
-compose-stability-analyzer = { id = "com.github.skydoves.compose.stability.analyzer", version.ref = "compose-stability-analyzer" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 jetbrains-idea-ext = { id = "org.jetbrains.gradle.plugin.idea-ext", version.ref = "jetbrains-idea-ext" }

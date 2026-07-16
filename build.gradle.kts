@@ -10,7 +10,6 @@ plugins {
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.compose.multiplatform) apply false
     alias(libs.plugins.compose.screenshot) apply false
-    alias(libs.plugins.compose.stability.analyzer) apply false
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.dokka)
     alias(libs.plugins.jetbrains.idea.ext)

@@ -36,11 +36,6 @@
     },
     {
       "groupName": "kotlin",
-      "matchPackageNames": ["/com.github.skydoves.compose.stability.analyzer/"],
-      "allowedVersions": ">=0.8.0 <0.9.0"
-    },
-    {
-      "groupName": "kotlin",
       "matchPackageNames": ["/dev.drewhamilton.poko.*/"],
       "allowedVersions": ">=0.22.0 <0.23.0"
     },
