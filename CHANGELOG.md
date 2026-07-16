@@ -3,6 +3,8 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## [0.1.1] - 2026-07-16
+
 ### Changed
 - Downgraded Kotlin from 2.4.10 to 2.3.21 for broader consumer compatibility.
 - Removed `compose-stability-analyzer` plugin (KMP incompatible).
