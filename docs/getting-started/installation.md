@@ -10,7 +10,7 @@ Before you begin, ensure you have:
 - ✅ **Compose Multiplatform** - Configured in your project
 - ✅ **Minimum Versions**:
     <!-- renovate: datasource=maven depName=org.jetbrains.kotlin:kotlin-stdlib -->
-    - Kotlin 2.4.0+
+    - Kotlin 2.3.21+
     <!-- renovate: datasource=maven depName=org.jetbrains.compose:compose-gradle-plugin -->
     - Compose Multiplatform 1.11.1+
     - Android: API 26 (Oreo) or higher
