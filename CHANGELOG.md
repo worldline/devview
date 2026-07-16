@@ -3,6 +3,20 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+### Changed
+- Downgraded Kotlin from 2.4.10 to 2.3.21 for broader consumer compatibility.
+- Removed `compose-stability-analyzer` plugin (KMP incompatible).
+
+### Documentation
+- Updated minimum Kotlin version requirement to 2.3.21 in installation guide.
+- Added acknowledgment for chrisbanes/haze inspiration.
+- Added GitHub issue templates for bugs and feature requests.
+
+### Quality
+- Added Metalava API tracking to all published modules.
+- Improved CI infrastructure: split workflows to Linux/macOS, added snapshot deploy, replaced `release.sh` with platform-agnostic `release.py`.
+- Enabled automatic Maven Central publishing.
+
 ## [0.1.0] - 2026-07-15
 
 ### Added

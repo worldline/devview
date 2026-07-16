@@ -17,12 +17,11 @@
 
 ## What's New
 
-> **v0.1.0 — First Release**
-> - Core DevView framework with module registry DSL, section-based home screen, and type-safe Navigation3 integration
-> - FeatureFlip module: feature flags with type badge and filter, tri-state remote override, DataStore-backed persistence
-> - Analytics module: real-time in-app event capture with typed log categories and clear-log action
-> - NetworkMock modules: JSON-driven mock engine, Ktor client plugin, and UI for toggling mocks per endpoint
-> - devview-utils: shared DataStore utilities and `RequiresDataStore` initialization contract
+> **v0.1.1 — Compatibility Fix**
+> - Downgraded Kotlin from 2.4.10 to 2.3.21 for broader consumer compatibility
+> - Removed `compose-stability-analyzer` plugin (KMP incompatible)
+> - Added Metalava API tracking to all published modules
+> - CI improvements: split Linux/macOS workflows, snapshot deploys, platform-agnostic release script
 
 ---
 
