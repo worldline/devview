@@ -6,6 +6,7 @@ import com.worldline.devview.networkmock.core.model.MockMatch
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.effectiveEndpoints
 import com.worldline.devview.networkmock.core.repository.MockConfigRepository.Companion.DEFAULT_STATUS_CODES
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
 /**
@@ -181,50 +182,59 @@ public class MockConfigRepository(
      *
      * @return A [Result] containing the [MockConfiguration] on success, or an error on failure
      */
-    public suspend fun loadConfiguration(): Result<MockConfiguration> = runCatching {
-        cachedConfig?.let {
-            println(
-                message = "[NetworkMock][Config] Using cached configuration with ${it.apiGroups.size} group(s)"
-            )
-            return@runCatching it
-        }
-
-        println(message = "[NetworkMock][Config] Loading configuration from: $configPath")
-
-        val configBytes = resourceLoader(configPath)
-        val configJson = configBytes.decodeToString()
-
-        val config = json
-            .decodeFromString<MockConfiguration>(
-                string = configJson
-            )
-        cachedConfig = config
-
-        println(message = "[NetworkMock][Config] Successfully loaded configuration:")
-        config.apiGroups.forEach { group ->
-            println(
-                message = "[NetworkMock][Config]   Group: ${group.id} " +
-                    "with ${group.endpoints.size} shared endpoint(s) " +
-                    "and ${group.environments.size} environment(s)"
-            )
-            group.environments.forEach { env ->
+    public suspend fun loadConfiguration(): Result<MockConfiguration> {
+        // ponytail: explicit try-catch instead of runCatching — K/N's inline expansion of runCatching
+        // does not reliably catch exceptions thrown by suspend calls in the generated state machine.
+        return try {
+            cachedConfig?.let {
                 println(
-                    message = "[NetworkMock][Config]     Environment: ${env.id} (${env.url})"
+                    message = "[NetworkMock][Config] Using cached configuration with ${it.apiGroups.size} group(s)"
                 )
+                return Result.success(value = it)
             }
-            group.endpoints.forEach { endpoint ->
-                println(
-                    message = "[NetworkMock][Config]     - ${endpoint.method} ${endpoint.path} (${endpoint.id})"
-                )
-            }
-        }
 
-        config
-    }.onFailure { error ->
-        println(
-            message = "[NetworkMock][Config] ERROR: Failed to load configuration - ${error.message}"
-        )
-        error.printStackTrace()
+            println(message = "[NetworkMock][Config] Loading configuration from: $configPath")
+
+            val configBytes = resourceLoader(configPath)
+            val configJson = configBytes.decodeToString()
+
+            val config = json
+                .decodeFromString<MockConfiguration>(
+                    string = configJson
+                )
+            cachedConfig = config
+
+            println(message = "[NetworkMock][Config] Successfully loaded configuration:")
+            config.apiGroups.forEach { group ->
+                println(
+                    message = "[NetworkMock][Config]   Group: ${group.id} " +
+                        "with ${group.endpoints.size} shared endpoint(s) " +
+                        "and ${group.environments.size} environment(s)"
+                )
+                group.environments.forEach { env ->
+                    println(
+                        message = "[NetworkMock][Config]     Environment: ${env.id} (${env.url})"
+                    )
+                }
+                group.endpoints.forEach { endpoint ->
+                    println(
+                        message = "[NetworkMock][Config]     - ${endpoint.method} ${endpoint.path} (${endpoint.id})"
+                    )
+                }
+            }
+
+            Result.success(value = config)
+        } catch (e: IllegalStateException) {
+            println(
+                message = "[NetworkMock][Config] ERROR: Failed to load configuration - ${e.message}"
+            )
+            Result.failure(exception = e)
+        } catch (e: SerializationException) {
+            println(
+                message = "[NetworkMock][Config] ERROR: Failed to load configuration - ${e.message}"
+            )
+            Result.failure(exception = e)
+        }
     }
 
     /**
@@ -549,7 +559,7 @@ public class MockConfigRepository(
     private suspend fun loadMockResponseFromPath(
         filePath: String,
         fileName: String
-    ): MockResponse? = runCatching {
+    ): MockResponse? = try {
         val responseBytes = resourceLoader(filePath)
         val content = responseBytes.decodeToString()
         MockResponse.Companion
@@ -557,7 +567,9 @@ public class MockConfigRepository(
                 fileName = fileName,
                 content = content
             )
-    }.getOrNull()
+    } catch (@Suppress("SwallowedException") e: IllegalStateException) {
+        null
+    }
 
     /**
      * Extracts the hostname from a URL string.

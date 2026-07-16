@@ -6,7 +6,7 @@ This guide walks through publishing DevView to Maven Central from scratch — no
 
 The publish pipeline is already wired:
 
-- **Trigger**: pushing a tag matching `v*` (e.g. `v0.1.0`) fires `.github/workflows/publish.yml`
+- **Trigger**: pushing a tag matching `[0-9]*` (e.g. `0.1.1`) fires `.github/workflows/publish.yml`
 - **What it does**: runs build + detekt + konsist checks, then calls `./gradlew publish` using the [Vanniktech Maven Publish plugin](https://github.com/vanniktech/gradle-maven-publish-plugin)
 - **Signing**: all artifacts are GPG-signed before upload (`RELEASE_SIGNING_ENABLED=true` in `gradle.properties`)
 - **Target**: the new [Maven Central Portal](https://central.sonatype.com) (`SONATYPE_HOST=CENTRAL_PORTAL`)
@@ -134,19 +134,21 @@ The `publish.yml` workflow passes these to Gradle as `ORG_GRADLE_PROJECT_*` envi
 Ensure you are on `main` with a clean working tree, then run:
 
 ```bash
-./scripts/release.sh 0.1.0 0.2.0-SNAPSHOT
+python3 scripts/release.py 0.1.1 0.2.0-SNAPSHOT
 ```
 
-On Windows, run this from Git Bash (not PowerShell — the script uses `sed` and bash features).
+Works on any platform (Windows, macOS, Linux) — no bash required.
 
 The script does the following automatically:
 
-1. Replaces `VERSION_NAME` in `gradle.properties` with `0.1.0`
-2. Commits: `Prepare for release 0.1.0`
-3. Creates tag `v0.1.0` — **this tag push triggers the publish workflow**
-4. Replaces `VERSION_NAME` with `0.2.0-SNAPSHOT`
-5. Commits: `Prepare next development version`
-6. Pushes both commits and the tag (`git push && git push --tags`)
+1. Replaces `VERSION_NAME` in `gradle.properties` with `0.1.1`
+2. Snapshots each published module's `api/api.txt` to `api/0.1.1.txt`
+3. Inserts `## [0.1.1] - <today>` in `CHANGELOG.md` under `## Unreleased`
+4. Commits: `Prepare for release 0.1.1`
+5. Creates tag `0.1.1` — **this tag push triggers the publish workflow**
+6. Replaces `VERSION_NAME` with `0.2.0-SNAPSHOT`
+7. Commits: `Prepare next development version`
+8. Pushes both commits and the tag
 
 ---
 
