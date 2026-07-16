@@ -1,0 +1,30 @@
+// Signature format: 4.0
+package com.worldline.devview.networkmock.ktor.plugin {
+
+  public final class MockHttpClientCall extends io.ktor.client.call.HttpClientCall {
+    ctor public MockHttpClientCall(io.ktor.client.HttpClient client);
+    ctor public MockHttpClientCall(io.ktor.client.HttpClient client, io.ktor.client.request.HttpRequestData mockRequestData, io.ktor.client.request.HttpResponseData mockResponseData);
+  }
+
+  public final class NetworkMockConfig {
+    ctor public NetworkMockConfig();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.repository.MockConfigRepository? getMockRepository();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.repository.MockStateRepository? getStateRepository();
+    method @InaccessibleFromKotlin public void setMockRepository(com.worldline.devview.networkmock.core.repository.MockConfigRepository?);
+    method @InaccessibleFromKotlin public void setStateRepository(com.worldline.devview.networkmock.core.repository.MockStateRepository?);
+    property public com.worldline.devview.networkmock.core.repository.MockConfigRepository? mockRepository;
+    property public com.worldline.devview.networkmock.core.repository.MockStateRepository? stateRepository;
+  }
+
+  public final class NetworkMockPluginConfig {
+    ctor public NetworkMockPluginConfig(com.worldline.devview.networkmock.ktor.plugin.NetworkMockConfig config);
+    method public com.worldline.devview.networkmock.ktor.plugin.NetworkMockPluginConfig copy(optional com.worldline.devview.networkmock.ktor.plugin.NetworkMockConfig config);
+  }
+
+  public final class NetworkMockPluginKt {
+    method @InaccessibleFromKotlin public static io.ktor.client.plugins.HttpClientPlugin<com.worldline.devview.networkmock.ktor.plugin.NetworkMockConfig,com.worldline.devview.networkmock.ktor.plugin.NetworkMockPluginConfig> getNetworkMockPlugin();
+    property public static io.ktor.client.plugins.HttpClientPlugin<com.worldline.devview.networkmock.ktor.plugin.NetworkMockConfig,com.worldline.devview.networkmock.ktor.plugin.NetworkMockPluginConfig> NetworkMockPlugin;
+  }
+
+}
+

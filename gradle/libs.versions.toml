@@ -23,6 +23,7 @@ kotest = "6.2.2"
 ksp = "2.3.10"
 ktor = "3.5.1"
 maven-publish = "0.37.0"
+metalava = "0.5.0"
 mockk = "1.14.11"
 mrmans0n-detekt-compose-rules = "0.6.2"
 turbine = "1.2.1"
@@ -126,6 +127,7 @@ ktor-client-logging = { module = "io.ktor:ktor-client-logging" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json" }
+metalava-gradlePlugin = { module = "me.tylerbwong.gradle.metalava:plugin", version.ref = "metalava" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 screenshot-validation-api = { group = "com.android.tools.screenshot", name = "screenshot-validation-api", version.ref = "compose-screenshot"}
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
@@ -158,6 +160,7 @@ kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization"
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }
+metalava = { id = "me.tylerbwong.gradle.metalava", version.ref = "metalava" }
 mokkery = { id = "dev.mokkery", version.ref = "mokkery" }
 poko = { id = "dev.drewhamilton.poko", version.ref = "poko" }
 room = { id = "androidx.room", version.ref = "androidx-room" }
@@ -170,6 +173,7 @@ convention-deviceTest = { id = "convention.deviceTest", version = "unspecified" 
 convention-koin = { id = "convention.koin", version = "unspecified" }
 convention-koin-compose = { id = "convention.koin.compose", version = "unspecified" }
 convention-konsist = { id = "convention.konsist", version = "unspecified" }
+convention-metalava = { id = "convention.metalava", version = "unspecified" }
 convention-ktor = { id = "convention.ktor", version = "unspecified" }
 convention-kover = { id = "convention.kover", version = "unspecified" }
 convention-multiplatform-library = { id = "convention.multiplatform.library", version = "unspecified" }

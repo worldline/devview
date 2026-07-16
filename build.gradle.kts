@@ -19,6 +19,7 @@ plugins {
     alias(libs.plugins.kotlin.plugin.serialization) apply false
     alias(libs.plugins.kover) apply false
     alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.metalava) apply false
     alias(libs.plugins.mokkery) apply false
     alias(libs.plugins.poko) apply false
     alias(libs.plugins.room) apply false
