@@ -329,7 +329,7 @@ class MockConfigRepositoryTest {
     ) {
         private val calls = mutableMapOf<String, Int>()
 
-        fun load(path: String): ByteArray {
+        suspend fun load(path: String): ByteArray {
             calls[path] = (calls[path] ?: 0) + 1
             return resources[path]?.encodeToByteArray()
                 ?: error("Resource not found: $path")
