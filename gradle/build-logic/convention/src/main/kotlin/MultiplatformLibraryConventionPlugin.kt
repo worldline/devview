@@ -65,6 +65,8 @@ fun KotlinMultiplatformExtension.addDefaultDevViewTargets() {
         withJava()
     }
 
-    iosArm64()
-    iosSimulatorArm64()
+    if (!project.providers.gradleProperty("devview.disableAppleTargets").isPresent) {
+        iosArm64()
+        iosSimulatorArm64()
+    }
 }

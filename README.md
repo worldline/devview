@@ -140,6 +140,12 @@ val client = HttpClient(OkHttp) {
 
 ---
 
+## Acknowledgments
+
+DevView's build infrastructure, CI setup, and library conventions draw inspiration from [chrisbanes/haze](https://github.com/chrisbanes/haze). Many thanks to Chris Banes for open-sourcing that work.
+
+---
+
 ## License
 
 [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)

@@ -29,6 +29,7 @@ dependencies {
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.kover.gradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
+    compileOnly(libs.metalava.gradlePlugin)
     compileOnly(libs.mokkery.gradlePlugin)
     compileOnly(libs.room.gradlePlugin)
 }
@@ -69,6 +70,10 @@ gradlePlugin {
         register("ktor") {
             id = libs.plugins.convention.ktor.get().pluginId
             implementationClass = "KtorConventionPlugin"
+        }
+        register("metalava") {
+            id = libs.plugins.convention.metalava.get().pluginId
+            implementationClass = "MetalavaConventionPlugin"
         }
         register("multiplatformLibrary") {
             id = libs.plugins.convention.multiplatform.library.get().pluginId
