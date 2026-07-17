@@ -17,11 +17,11 @@
 
 ## What's New
 
-> **v0.1.1 — Compatibility Fix**
-> - Downgraded Kotlin from 2.4.10 to 2.3.21 for broader consumer compatibility
-> - Removed `compose-stability-analyzer` plugin (KMP incompatible)
-> - Added Metalava API tracking to all published modules
-> - CI improvements: split Linux/macOS workflows, snapshot deploys, platform-agnostic release script
+### v0.1.2 - Patch Updates
+
+- Fixed Android packaging excludes to preserve Kotlin module metadata in published artifacts
+- Updated sample app feature setup with local and remote feature examples
+- Improved docs formatting so lists render correctly on Home and License pages
 
 ---
 

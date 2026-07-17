@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 
 ## [0.1.2] - 2026-07-17
 
+### Fixed
+- Preserved Kotlin module metadata in Android packaging by replacing broad `META-INF/**` excludes with selective license/signature excludes.
+- Fixed docs list rendering on Home (`What's New`) and License (`Third-Party Licences`) pages.
+
+### Changed
+- Updated sample `DevViewApp` feature setup to include a local feature entry fix and a remote feature example.
+
 ## [0.1.1] - 2026-07-16
 
 ### Changed

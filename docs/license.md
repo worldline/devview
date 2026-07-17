@@ -16,12 +16,14 @@ limitations under the License.
 ```
 
 ## Third-Party Licences
+
 DevView uses the following open-source libraries:
-- **Kotlin** - Apache License 2.0
-- **Compose Multiplatform** - Apache License 2.0
-- **Navigation3** - Apache License 2.0
-- **DataStore** - Apache License 2.0
-- **kotlinx.serialization** - Apache License 2.0
+
+- **Kotlin** - Apache License 2.0 ([license](https://github.com/JetBrains/kotlin/blob/master/license/LICENSE.txt))
+- **Compose Multiplatform** - Apache License 2.0 ([license](https://github.com/JetBrains/compose-multiplatform/blob/master/LICENSE.txt))
+- **Navigation3** - Apache License 2.0 ([license](https://github.com/androidx/androidx/blob/androidx-main/LICENSE.txt))
+- **DataStore** - Apache License 2.0 ([license](https://github.com/androidx/androidx/blob/androidx-main/LICENSE.txt))
+- **kotlinx.serialization** - Apache License 2.0 ([license](https://github.com/Kotlin/kotlinx.serialization/blob/master/LICENSE.txt))
 
 ## Next Steps
 - See [Contributing Guide](contributing/index.md) for how to get involved
