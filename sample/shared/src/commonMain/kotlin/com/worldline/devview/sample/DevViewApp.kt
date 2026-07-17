@@ -19,6 +19,7 @@ import com.worldline.devview.analytics.model.AnalyticsLogType
 import com.worldline.devview.core.rememberModules
 import com.worldline.devview.featureflip.FeatureFlip
 import com.worldline.devview.featureflip.model.Feature
+import com.worldline.devview.featureflip.model.FeatureState
 import com.worldline.devview.featureflip.model.LocalFeatureHandler
 import com.worldline.devview.featureflip.model.rememberFeatureHandler
 import com.worldline.devview.networkmock.NetworkMock
@@ -55,10 +56,16 @@ public fun DevViewApp() {
     // Initialize feature handler with dark mode feature
     val featureHandler = rememberFeatureHandler(
         features = listOf(
-            element = Feature.LocalFeature(
+            Feature.LocalFeature(
                 name = AppFeatures.DARK_MODE.featureName,
                 description = "Enable or disable dark mode",
                 isEnabled = darkTheme
+            ),
+            Feature.RemoteFeature(
+                name = "Remote Feature",
+                description = "This is a remote feature for demonstration purposes.",
+                defaultRemoteValue = false,
+                state = FeatureState.REMOTE
             )
         )
     )
