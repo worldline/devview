@@ -1,5 +1,10 @@
 # DevView
 
+<p align="center">
+  <img src="docs/assets/branding/devview-logo-light.svg#gh-light-mode-only" alt="DevView" width="420">
+  <img src="docs/assets/branding/devview-logo-dark.svg#gh-dark-mode-only" alt="DevView" width="420">
+</p>
+
 A Kotlin Multiplatform library that adds an in-app developer overlay to Android and iOS apps. The overlay hosts pluggable modules for feature flags, analytics inspection, and network mocking.
 
 **Full documentation:** [worldline.github.io/devview](https://worldline.github.io/devview/)

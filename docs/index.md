@@ -2,6 +2,13 @@
 
 <div align="center" markdown>
 
+<img class="devview-logo devview-logo--light" src="assets/branding/devview-logo-light.svg" alt="DevView" width="420" />
+<img class="devview-logo devview-logo--dark" src="assets/branding/devview-logo-dark.svg" alt="DevView" width="420" />
+
+</div>
+
+<div align="center" markdown>
+
 **A powerful, modular developer tools framework for Kotlin Multiplatform applications**
 
 <!-- renovate: datasource=maven depName=org.jetbrains.kotlin:kotlin-stdlib -->
