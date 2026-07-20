@@ -2,8 +2,6 @@
 
 We are committed to providing a welcoming and inclusive environment for all contributors. Please follow these guidelines to ensure a positive experience for everyone.
 
-> _[Placeholder: Insert screenshot or diagram illustrating community standards. Use a device frame if relevant.]_
-
 ## Our Standards
 - Be respectful and constructive in all interactions
 - Use inclusive language

@@ -2,8 +2,6 @@
 
 Managing feature toggles with FeatureFlip.
 
-> _[Placeholder: Insert screenshot of FeatureFlip UI showing feature toggles. Use a device frame if relevant.]_
-
 ## Step 1: Define Features
 ```kotlin
 val darkMode = Feature.LocalFeature(
@@ -28,12 +26,12 @@ val modules = rememberModules {
 }
 ```
 
-## Step 3: Use FeatureFlipScreen in Your Composable
+## Step 3: Provide the FeatureHandler to your composable tree
 ```kotlin
-CompositionLocalProvider(LocalFeatures provides features) {
-    FeatureFlipScreen(onStateChange = { featureName, newState ->
-        // Handle state change
-    })
+val featureHandler = rememberFeatureHandler(features)
+CompositionLocalProvider(LocalFeatureHandler provides featureHandler) {
+    // FeatureFlipScreen is rendered automatically by DevView when FeatureFlip is registered.
+    // State changes are persisted to DataStore internally.
 }
 ```
 

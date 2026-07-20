@@ -2,8 +2,6 @@
 
 Explore practical examples for integrating and using DevView in your projects. These examples cover Android, iOS, feature flags, analytics tracking, and advanced scenarios.
 
-> _[Placeholder: Insert screenshot or diagram showing example DevView screens on Android and iOS. Use a device frame if relevant.]_
-
 ## Available Examples
 - [Android Setup](android.md): Step-by-step integration in an Android app
 - [iOS Setup](ios.md): Step-by-step integration in an iOS app
@@ -15,7 +13,6 @@ Explore practical examples for integrating and using DevView in your projects. T
 - Follow the step-by-step instructions in each example
 - Copy and adapt code snippets to your own project
 - Refer to troubleshooting tips for common issues
-- Use placeholders to add your own screenshots or diagrams
 
 ## Sample Code
 Check the `sample/` directory in the repository for complete working examples.

@@ -2,8 +2,6 @@
 
 We welcome contributions from the community! This guide explains how to get started, development setup, code style, submitting pull requests, and our code of conduct.
 
-> _[Placeholder: Insert diagram or screenshot showing the contribution workflow. Use a device frame if relevant.]_
-
 ## Ways to Contribute
 - 🐛 Report bugs
 - 💡 Suggest features

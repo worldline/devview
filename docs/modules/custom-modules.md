@@ -12,17 +12,18 @@ DevView is built around a modular architecture. The **core module** provides the
 ### Module Interface
 ```kotlin
 interface Module {
-    val moduleName: String
+    val moduleName: String  // defaults to class simple name
     val section: Section
-    val icon: ImageVector
-    val containerColor: Color
-    val contentColor: Color
-    val subtitle: String?
-    val destinations: ImmutableList<NavKey>
+    val icon: ImageVector   // defaults to section icon
+    val subtitle: String?   // optional description text, defaults to null
+    val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata>
+    val entryDestination: NavKey
     val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit
+    fun initModule() {}     // optional, called once after DataStore init
     fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
-        onNavigate: (NavKey) -> Unit
+        onNavigate: (NavKey) -> Unit,
+        bottomPadding: Dp,
     )
 }
 ```
@@ -32,6 +33,7 @@ interface Module {
 enum class Section {
     SETTINGS,   // Configuration and app info
     FEATURES,   // Feature flags and dev tools
+    NETWORK,    // Network-related modules
     LOGGING,    // Analytics, logs, monitoring
     CUSTOM      // App-specific modules
 }
@@ -72,13 +74,19 @@ object MyTool : Module {
     override val moduleName = "My Tool"
     override val section = Section.CUSTOM
     override val subtitle = "Custom developer tool"
-    override val destinations = persistentListOf(
-        MyToolDestination.Main
+
+    override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> = persistentMapOf(
+        MyToolDestination.Main.withTitle("My Tool"),
+        MyToolDestination.Detail::class.asDestination()
     )
+
+    override val entryDestination: NavKey = MyToolDestination.Main
+
     override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit = {
         subclass(MyToolDestination.Main::class, MyToolDestination.Main.serializer())
         subclass(MyToolDestination.Detail::class, MyToolDestination.Detail.serializer())
     }
+
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
         onNavigate: (NavKey) -> Unit,
@@ -87,9 +95,7 @@ object MyTool : Module {
         entry<MyToolDestination.Main> {
             MyToolMainScreen(
                 onNavigateBack = onNavigateBack,
-                onDetailClick = { id ->
-                    onNavigate(MyToolDestination.Detail(id))
-                }
+                onDetailClick = { id -> onNavigate(MyToolDestination.Detail(id)) }
             )
         }
         entry<MyToolDestination.Detail> { destination ->
@@ -128,16 +134,8 @@ val modules = rememberModules {
 }
 ```
 
-> _[Placeholder: Insert screenshot or diagram of a custom module UI. Use a device frame if relevant.]_
-
 ## Examples
 See [Examples section](../examples/index.md) for complete custom module examples.
-
-## Customisation
-> _[Placeholder: Guide for customising the appearance and behaviour of custom modules. This section will be expanded in future updates.]_
-
-## Advanced Usage
-> _[Placeholder: Advanced scenarios such as multi-screen modules, platform-specific customisation, and complex navigation.]_
 
 ## Troubleshooting / FAQ
 - **Why isn't my module appearing in DevView?**

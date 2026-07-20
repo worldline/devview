@@ -2,8 +2,6 @@
 
 Customising the appearance of DevView.
 
-> _[Placeholder: Insert screenshot of DevView UI in light and dark themes. Use a device frame if relevant.]_
-
 ## Overview
 DevView is designed to inherit your app's theme, using MaterialTheme and Compose best practices. This ensures a consistent look and feel across all modules and platforms.
 

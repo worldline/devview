@@ -2,8 +2,6 @@
 
 Advanced configuration options for DevView.
 
-> _[Placeholder: Insert screenshot of DevView configuration UI or module selection. Use a device frame if relevant.]_
-
 ## Module Configuration
 
 ### Conditional Modules
@@ -73,7 +71,7 @@ object MyModule : Module {
 
 ## Custom Modules
 
-> _[Placeholder: Guide for developing custom DevView modules. This section will be expanded in future updates.]_
+See the [Creating Custom Modules](../modules/custom-modules.md) guide for a full example.
 
 ## Troubleshooting
 

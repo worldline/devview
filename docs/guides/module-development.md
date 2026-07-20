@@ -2,8 +2,6 @@
 
 In-depth guide for creating DevView modules.
 
-> _[Placeholder: Insert diagram or screenshot of a module development workflow. Use a device frame if relevant.]_
-
 ## Module Structure
 A DevView module consists of:
 1. **Destinations** - Navigation screens
@@ -29,16 +27,19 @@ object MyModule : Module {
     override val moduleName = "My Module"
     override val section = Section.CUSTOM
     override val subtitle = "Custom developer tool"
-    override val destinations = persistentListOf(
-        MyModuleDestination.Main
+    override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> = persistentMapOf(
+        MyModuleDestination.Main.withTitle("My Module"),
+        MyModuleDestination.Detail::class.asDestination()
     )
-    override val registerSerialisers: PolymorphicModuleBuilder<NavKey>.() -> Unit = {
+    override val entryDestination: NavKey = MyModuleDestination.Main
+    override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit = {
         subclass(MyModuleDestination.Main::class, MyModuleDestination.Main.serializer())
         subclass(MyModuleDestination.Detail::class, MyModuleDestination.Detail.serializer())
     }
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
-        onNavigate: (NavKey) -> Unit
+        onNavigate: (NavKey) -> Unit,
+        bottomPadding: Dp,
     ) {
         entry<MyModuleDestination.Main> {
             MyModuleMainScreen(
@@ -84,9 +85,6 @@ val modules = rememberModules {
 }
 ```
 
-## Customisation
-> _[Placeholder: Guide for customising modules. This section will be expanded in future updates.]_
-
 ## Architecture Best Practices
 - Keep modules focused and single-purpose
 - Use proper state management
@@ -95,9 +93,6 @@ val modules = rememberModules {
 - Test on both platforms
 - Use descriptive names and icons for your module
 - Group related screens under a single module
-
-## Advanced Scenarios
-> _[Placeholder: Multi-screen modules, platform-specific customisation, complex navigation, and advanced UI patterns.]_
 
 ## Troubleshooting
 - **Module not appearing?** Ensure it is registered and implements the required interface.
@@ -110,4 +105,5 @@ val modules = rememberModules {
 - Explore [Navigation](navigation.md) for advanced navigation patterns.
 
 ## API Reference
-> _[API reference available via Dokka. Add direct link here when available.]_
+
+See the [Dokka API Reference](../api/index.html) for full API documentation.

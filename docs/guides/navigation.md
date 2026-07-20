@@ -2,8 +2,6 @@
 
 Understanding DevView's type-safe navigation system.
 
-> _[Placeholder: Insert diagram of navigation flow in a DevView module. Use a device frame if relevant.]_
-
 ## Navigation Architecture
 DevView uses Navigation3 with kotlinx.serialization for type-safe navigation. Destinations are defined as sealed interfaces implementing NavKey, and navigation is handled via callbacks.
 
@@ -21,7 +19,7 @@ sealed interface MyDestination : NavKey {
 
 ### 2. Register Destinations and Serialisers
 ```kotlin
-override val registerSerialisers = {
+override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit = {
     subclass(MyDestination.Main::class, MyDestination.Main.serializer())
     subclass(MyDestination.Detail::class, MyDestination.Detail.serializer())
 }
@@ -50,9 +48,6 @@ entry<MyDestination.Detail> { destination ->
 - Keep navigation flows simple and predictable
 - Document all navigation paths
 - Test navigation on all supported platforms
-
-## Advanced Patterns
-> _[Placeholder: Deep linking, multi-module navigation, platform-specific navigation customisation.]_
 
 ## Troubleshooting
 - **Navigation not working?** Check destination and serialiser definitions.

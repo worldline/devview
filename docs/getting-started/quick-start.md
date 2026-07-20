@@ -2,8 +2,6 @@
 
 Get DevView up and running in your application in just a few minutes!
 
-> _[Placeholder: Insert screenshot of DevView UI in an app. Use a device frame if relevant.]_
-
 ## Step 1: Create Your App Structure
 Set up your main app structure and state for DevView.
 
@@ -25,8 +23,8 @@ Configure which DevView modules you want to use.
 ```kotlin
 val modules = rememberModules {
     module(FeatureFlip)
-    module(Analytics)
-    module(NetworkMock) // Optional: Add network mocking
+    module(Analytics())
+    module(NetworkMock(resourceLoader = { path -> Res.readBytes(path) })) // Optional
 }
 ```
 
@@ -55,8 +53,8 @@ fun App() {
     var isDevViewOpen by remember { mutableStateOf(false) }
     val modules = rememberModules {
         module(FeatureFlip)
-        module(Analytics)
-        module(NetworkMock)
+        module(Analytics())
+        module(NetworkMock(resourceLoader = { path -> Res.readBytes(path) }))
     }
     Box(modifier = Modifier.fillMaxSize()) {
         MainAppContent()
@@ -76,7 +74,7 @@ fun App() {
 
 ## Custom Modules
 
-> _[Placeholder: Describe how to add custom DevView modules. This section will be expanded in future updates.]_
+See the [Creating Custom Modules](../modules/custom-modules.md) guide for a full example.
 
 ## Troubleshooting
 For common integration issues, see the [troubleshooting section](troubleshooting-faq.md).

@@ -1,39 +1,39 @@
 # NetworkMock UI
 
-The UI module (`devview-networkmock`) provides Compose screens and controls for managing network mocks.
+The `devview-networkmock` module provides the Compose UI for the network mocking feature. It implements the `Module` interface and surfaces two navigation screens backed by `devview-networkmock-core`.
 
-## Overview
-- Toggle global mocking on/off
-- Enable/disable individual endpoint mocks
-- Select mock responses for each endpoint
-- Reset all mocks to use actual network
+## Screens
 
-## Features
-- Compose UI for managing mocks
-- Viewmodels and components for endpoint management
-- Interacts with core repositories to update configuration/state
+### Main screen — endpoint list
 
-## Usage
-- Add the NetworkMock screen to your Compose navigation.
-- Use provided viewmodels and components for endpoint management.
-- UI changes are reflected in the Ktor plugin via shared state.
+The main screen shows a global mock toggle at the top, followed by a scrollable tab row with one tab per API group + environment combination (e.g. "My Backend – Staging"). Each tab lists the endpoints for that group/environment with their current mock state.
 
-## Best Practices
-- Extend or modify UI components for custom mock management.
-- Integrate with other DevView modules as needed.
+- **Global toggle**: enables or disables all mocking globally. When off, all requests go to the real network regardless of per-endpoint settings.
+- **Endpoint cards**: show the endpoint name, HTTP method, path, and current state chip (Network / HTTP status code). Tap an endpoint to open its detail screen.
+- **Reset to Network**: toolbar action that resets every endpoint to `Network` state in one tap.
 
-## Troubleshooting / FAQ
-- **Why aren't my UI changes reflected in the Ktor plugin?**
-  - Ensure both modules use the same DataStoreDelegate and core initialization.
-- **How do I reset all mocks?**
-  - Use the UI reset option or clear state via the core repository.
+### Endpoint detail screen
+
+Shows the full endpoint info and all discovered mock response files, grouped by status code family (2xx, 4xx, 5xx, etc.).
+
+- **"No mock" option**: tap to route this endpoint to the real network.
+- **Response items**: tap to activate a mock response (shown with its status code chip); long-press to open a preview bottom sheet.
+- **Preview bottom sheet**: shows the response file contents. Long-press a second response to enter compare mode, which renders a side-by-side or inline diff (LCS-based, collapses long unchanged runs).
+
+## Registration
+
+```kotlin
+val modules = rememberModules {
+    module(NetworkMock(
+        resourceLoader = { path -> Res.readBytes(path) }
+    ))
+}
+```
+
+`configPath` defaults to `"files/networkmocks/mocks.json"`. Pass a custom value if your config lives elsewhere.
 
 ## Related Modules
-- [NetworkMock](networkmock.md): Overview and usage.
-- [NetworkMock Core](networkmock-core.md): Shared configuration/state.
-- [NetworkMock Ktor](networkmock-ktor.md): Ktor plugin for HTTP interception.
-- [FeatureFlip](featureflip.md): Combine with feature flags for advanced testing.
 
----
-
-*API reference is available via Dokka or in your IDE.*
+- [NetworkMock Core](networkmock-core.md): Shared config and state.
+- [NetworkMock Ktor](networkmock-ktor.md): Ktor client plugin.
+- [NetworkMock Workflows](networkmock-workflows.md): Step-by-step integration guide.

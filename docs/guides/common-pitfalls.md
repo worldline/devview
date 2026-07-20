@@ -2,8 +2,6 @@
 
 Avoid these common mistakes when integrating and extending DevView. This guide provides troubleshooting tips and best practices to help you build robust developer tools.
 
-> _[Placeholder: Insert diagram or screenshot illustrating common mistakes and solutions. Use a device frame if relevant.]_
-
 ## Module Registration
 - Forgetting to register modules in `rememberModules`.
 - Registering duplicate modules or conflicting names.

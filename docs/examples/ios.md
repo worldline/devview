@@ -2,8 +2,6 @@
 
 Complete iOS integration example.
 
-> _[Placeholder: Insert screenshot of DevView running in an iOS app. Use a device frame if relevant.]_
-
 ## Prerequisites
 - Xcode 15 or newer
 - Minimum iOS 16.0

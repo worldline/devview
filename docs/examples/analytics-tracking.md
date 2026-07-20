@@ -2,26 +2,24 @@
 
 Monitoring analytics events with the Analytics module.
 
-> _[Placeholder: Insert screenshot of Analytics UI showing tracked events. Use a device frame if relevant.]_
-
 ## Step 1: Log Analytics Events
 ```kotlin
 // Screen view
 AnalyticsLogger.log(
     AnalyticsLog(
-        tag = "HomeScreen",
+        tag = "home_screen_view",
         screenClass = "com.app.HomeScreen",
         timestamp = System.currentTimeMillis(),
-        type = AnalyticsLogType.SCREEN
+        type = AnalyticsLogCategory.Screen.View
     )
 )
-// User event
+// User action
 AnalyticsLogger.log(
     AnalyticsLog(
         tag = "button_click",
         screenClass = "HomeScreen",
         timestamp = System.currentTimeMillis(),
-        type = AnalyticsLogType.EVENT
+        type = AnalyticsLogCategory.Action.Click
     )
 )
 ```
@@ -29,7 +27,7 @@ AnalyticsLogger.log(
 ## Step 2: Register Analytics Module
 ```kotlin
 val modules = rememberModules {
-    module(Analytics)
+    module(Analytics()) // constructor params customize summary chip types
     // ...other modules...
 }
 ```
@@ -38,8 +36,15 @@ val modules = rememberModules {
 ```kotlin
 @Composable
 fun MyApp() {
+    // AnalyticsScreen is rendered automatically when Analytics() is registered in rememberModules.
+    // To use it standalone:
     CompositionLocalProvider(LocalAnalytics provides AnalyticsLogger.logs) {
-        AnalyticsScreen()
+        AnalyticsScreen(
+            highlightedAnalyticsLogTypes = persistentListOf(
+                AnalyticsLogCategory.Action.Click,
+                AnalyticsLogCategory.Performance.Error
+            )
+        )
     }
 }
 ```
