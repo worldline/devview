@@ -16,6 +16,7 @@ import com.worldline.devview.core.withTitle
 import com.worldline.devview.networkmock.core.NETWORK_MOCK_DATASTORE_NAME
 import com.worldline.devview.networkmock.core.NetworkMockDataStoreDelegate
 import com.worldline.devview.networkmock.core.NetworkMockInitializer
+import com.worldline.devview.networkmock.core.NetworkMockResourceLoader
 import com.worldline.devview.networkmock.core.model.EndpointKey
 import com.worldline.devview.networkmock.viewmodel.NetworkMockEndpointViewModel
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
@@ -67,7 +68,7 @@ public sealed interface NetworkMockDestination : NavKey {
  * ```kotlin
  * val modules = rememberModules {
  *     module(NetworkMock(
- *         resourceLoader = { path -> Res.readBytes(path) }
+ *         resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }
  *     ))
  * }
  * ```
@@ -79,13 +80,12 @@ public sealed interface NetworkMockDestination : NavKey {
  * }
  * ```
  *
- * @property resourceLoader Function to load resource bytes from a path, provided
- * by the integrator's resource system (e.g. `Res.readBytes` from Compose Resources)
+ * @property resourceLoader [NetworkMockResourceLoader] provided by the integrator's resource system
  * @property configPath Path to the `mocks.json` configuration file relative to
  * composeResources. Defaults to `"files/networkmocks/mocks.json"`.
  */
 public class NetworkMock(
-    private val resourceLoader: suspend (String) -> ByteArray,
+    private val resourceLoader: NetworkMockResourceLoader,
     private val configPath: String = "files/networkmocks/mocks.json"
 ) : Module,
     RequiresDataStore {
@@ -114,7 +114,7 @@ public class NetworkMock(
             configPath = configPath,
             resourceLoader = { path ->
                 try {
-                    resourceLoader(path)
+                    resourceLoader.load(path = path)
                 } catch (e: MissingResourceException) {
                     throw IllegalStateException(e.message, e)
                 }

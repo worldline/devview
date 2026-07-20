@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `NetworkMockResourceLoader` fun interface in `devview-networkmock-core`: provides a named type for DI frameworks (Koin, Hilt, etc.) to bind, eliminating the need for a custom bridge interface in multi-module KMP projects where mock resource files live in a different module than where `NetworkMock` is constructed. Both `devview-networkmock` and `devview-networkmock-ktor` now expose `devview-networkmock-core` as an `api` dependency so the type is available to all integrators.
+
 ### Fixed
 - Fixed DevView overlay back navigation: the overlay's back handler now correctly yields priority to the host app when closed, preventing it from silently consuming back events.
 - Fixed crash on Network Mock screen startup: `MissingResourceException` thrown by Compose Resources when probing absent response files was not caught by the `IllegalStateException` handler in `MockConfigRepository`, causing a fatal crash. The exception is now normalised at the `NetworkMock` boundary before reaching the core module.
