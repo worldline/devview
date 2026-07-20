@@ -3,6 +3,9 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+### Fixed
+- Fixed DevView overlay back navigation: the overlay's back handler now correctly yields priority to the host app when closed, preventing it from silently consuming back events.
+
 ## [0.1.2] - 2026-07-17
 
 ### Fixed

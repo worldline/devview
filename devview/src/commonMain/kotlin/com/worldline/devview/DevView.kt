@@ -16,10 +16,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults.exitUntilCollapsedScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -29,9 +33,11 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import androidx.navigationevent.NavigationEventDispatcher
+import androidx.navigationevent.NavigationEventHandler
 import androidx.navigationevent.NavigationEventInfo
-import androidx.navigationevent.compose.NavigationEventHandler
-import androidx.navigationevent.compose.rememberNavigationEventState
+import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
+import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.worldline.devview.core.Module
 import com.worldline.devview.internal.HasTitle
@@ -217,16 +223,12 @@ public fun DevView(
         Home
     )
 
-    val navigationState = rememberNavigationEventState(currentInfo = NavigationEventInfo.None)
-
-    NavigationEventHandler(
-        state = navigationState,
-        onBackCompleted = {
-            if (backstack.size == 1 && backstack.first() == Home) {
-                // Close DevView if we're at the root
-                closeDevView()
-            }
-        }
+    val overlayNavigationOwner = rememberNavigationEventDispatcherOwner()
+    SideEffect { overlayNavigationOwner.navigationEventDispatcher.isEnabled = devViewIsOpen }
+    OverlayBackHandler(
+        dispatcher = overlayNavigationOwner.navigationEventDispatcher,
+        isEnabled = devViewIsOpen && backstack.size == 1,
+        onBack = closeDevView
     )
 
     val scrollBehaviour = exitUntilCollapsedScrollBehavior()
@@ -239,7 +241,7 @@ public fun DevView(
         }
     }
 
-    val title: String by remember(key1 = backstack) {
+    val title: String by remember {
         derivedStateOf {
             val current = backstack.last()
             when {
@@ -256,7 +258,7 @@ public fun DevView(
     }
 
     // Actions for the current destination, resolved from its DestinationMetadata
-    val currentActions by remember(key1 = backstack) {
+    val currentActions by remember {
         derivedStateOf {
             currentModule
                 ?.destinations
@@ -272,108 +274,146 @@ public fun DevView(
     AnimatedVisibility(
         visible = devViewIsOpen
     ) {
-        Scaffold(
-            modifier = modifier,
-            topBar = {
-                MediumTopAppBar(
-                    title = {
-                        Text(text = title)
-                    },
-                    scrollBehavior = scrollBehaviour,
-                    actions = {
-                        currentActions.forEachIndexed { index, action ->
-                            IconButton(
-                                onClick = {
-                                    if (action.popup != null) {
-                                        activePopupIndex = index
-                                    } else {
-                                        action.action()
+        CompositionLocalProvider(
+            value = LocalNavigationEventDispatcherOwner provides overlayNavigationOwner
+        ) {
+            Scaffold(
+                modifier = modifier,
+                topBar = {
+                    MediumTopAppBar(
+                        title = {
+                            Text(text = title)
+                        },
+                        scrollBehavior = scrollBehaviour,
+                        actions = {
+                            currentActions.forEachIndexed { index, action ->
+                                IconButton(
+                                    onClick = {
+                                        if (action.popup != null) {
+                                            activePopupIndex = index
+                                        } else {
+                                            action.action()
+                                        }
                                     }
+                                ) {
+                                    Icon(
+                                        imageVector = action.icon,
+                                        contentDescription = null
+                                    )
                                 }
-                            ) {
-                                Icon(
-                                    imageVector = action.icon,
-                                    contentDescription = null
+                            }
+                        }
+                    )
+                }
+            ) { padding ->
+                val layoutDirection = LocalLayoutDirection.current
+                val newPaddingValues = PaddingValues(
+                    start = padding.calculateStartPadding(layoutDirection = layoutDirection),
+                    top = padding.calculateTopPadding(),
+                    end = padding.calculateEndPadding(layoutDirection = layoutDirection)
+                )
+
+                // Confirmation popup for the active action — rendered at Scaffold level so that
+                // it overlays the full screen rather than being constrained to the TopAppBar slot
+                activePopupIndex?.let { index ->
+                    val action = currentActions[index]
+                    action.popup?.let { popup ->
+                        AlertDialog(
+                            onDismissRequest = { activePopupIndex = null },
+                            title = { Text(text = popup.title) },
+                            text = popup.subtitle?.let { { Text(text = it) } },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        action.action()
+                                        activePopupIndex = null
+                                    }
+                                ) {
+                                    Text(text = popup.confirmButton)
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(
+                                    onClick = { activePopupIndex = null }
+                                ) {
+                                    Text(text = popup.dismissButton)
+                                }
+                            }
+                        )
+                    }
+                }
+
+                NavDisplay(
+                    modifier = Modifier
+                        .padding(
+                            paddingValues = newPaddingValues
+                        ).consumeWindowInsets(
+                            paddingValues = newPaddingValues
+                        ).nestedScroll(connection = scrollBehaviour.nestedScrollConnection),
+                    backStack = backstack,
+                    onBack = {
+                        backstack.removeLastOrNull()
+                    },
+                    entryProvider = entryProvider {
+                        // Home screen entry
+                        entry<Home> {
+                            HomeScreen(
+                                modules = modules,
+                                openModule = { module ->
+                                    // Navigate to the module's entry destination
+                                    backstack.add(element = module.entryDestination)
+                                }
+                            )
+                        }
+
+                        // Register each module's content
+                        modules.forEach { module ->
+                            with(receiver = module) {
+                                this@entryProvider.registerContent(
+                                    onNavigateBack = {
+                                        backstack.removeLastOrNull()
+                                    },
+                                    onNavigate = { destination ->
+                                        backstack.add(element = destination)
+                                    },
+                                    bottomPadding = padding.calculateBottomPadding()
                                 )
                             }
                         }
                     }
                 )
             }
-        ) { padding ->
-            val layoutDirection = LocalLayoutDirection.current
-            val newPaddingValues = PaddingValues(
-                start = padding.calculateStartPadding(layoutDirection = layoutDirection),
-                top = padding.calculateTopPadding(),
-                end = padding.calculateEndPadding(layoutDirection = layoutDirection)
-            )
-
-            // Confirmation popup for the active action — rendered at Scaffold level so that
-            // it overlays the full screen rather than being constrained to the TopAppBar slot
-            activePopupIndex?.let { index ->
-                val action = currentActions[index]
-                action.popup?.let { popup ->
-                    AlertDialog(
-                        onDismissRequest = { activePopupIndex = null },
-                        title = { Text(text = popup.title) },
-                        text = popup.subtitle?.let { { Text(text = it) } },
-                        confirmButton = {
-                            TextButton(
-                                onClick = {
-                                    action.action()
-                                    activePopupIndex = null
-                                }
-                            ) {
-                                Text(text = popup.confirmButton)
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(
-                                onClick = { activePopupIndex = null }
-                            ) {
-                                Text(text = popup.dismissButton)
-                            }
-                        }
-                    )
-                }
-            }
-
-            NavDisplay(
-                modifier = Modifier
-                    .padding(
-                        paddingValues = newPaddingValues
-                    ).consumeWindowInsets(
-                        paddingValues = newPaddingValues
-                    ).nestedScroll(connection = scrollBehaviour.nestedScrollConnection),
-                backStack = backstack,
-                entryProvider = entryProvider {
-                    // Home screen entry
-                    entry<Home> {
-                        HomeScreen(
-                            modules = modules,
-                            openModule = { module ->
-                                // Navigate to the module's entry destination
-                                backstack.add(element = module.entryDestination)
-                            }
-                        )
-                    }
-
-                    // Register each module's content
-                    modules.forEach { module ->
-                        with(receiver = module) {
-                            this@entryProvider.registerContent(
-                                onNavigateBack = {
-                                    backstack.removeLastOrNull()
-                                },
-                                onNavigate = { destination ->
-                                    backstack.add(element = destination)
-                                },
-                                bottomPadding = padding.calculateBottomPadding()
-                            )
-                        }
-                    }
-                }
-            )
         }
+    }
+}
+
+@Composable
+private fun OverlayBackHandler(
+    dispatcher: NavigationEventDispatcher,
+    isEnabled: Boolean,
+    onBack: () -> Unit
+) {
+    val currentOnBack by rememberUpdatedState(newValue = onBack)
+    val handler = remember {
+        object : NavigationEventHandler<NavigationEventInfo>(
+            initialInfo = NavigationEventInfo.None,
+            isBackEnabled = false
+        ) {
+            override fun onBackCompleted() {
+                currentOnBack()
+            }
+        }
+    }
+
+    SideEffect {
+        handler.isBackEnabled = isEnabled
+    }
+
+    DisposableEffect(key1 = dispatcher, key2 = handler) {
+        dispatcher.addHandler(
+            handler = handler,
+            priority = NavigationEventDispatcher.PRIORITY_OVERLAY
+        )
+        onDispose { handler.remove() }
     }
 }

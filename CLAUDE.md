@@ -116,3 +116,7 @@ Individual commits use **gitmoji** format: `:emoji: message` (e.g. `:fire: Remov
 ## Publishing
 
 Library group: `com.worldline.devview`. Version and Sonatype config are in `gradle.properties`. Publishing is handled by the `publish.yml` GitHub Actions workflow and `scripts/release.sh`.
+
+## Changelog
+
+`CHANGELOG.md` at the repo root is the single source of truth. `docs/changelog.md` is built from it automatically — only edit the root file.
