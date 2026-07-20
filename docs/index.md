@@ -85,7 +85,7 @@ fun App() {
     var isDevViewOpen by remember { mutableStateOf(false) }
     val modules = rememberModules {
         module(FeatureFlip)
-        module(Analytics)
+        module(Analytics())
     }
     Box {
         // Your main app content
@@ -207,6 +207,7 @@ graph TD
     A[DevView Framework] --> B[Core Module]
     A --> C[FeatureFlip Module]
     A --> D[Analytics Module]
+    A --> NM[NetworkMock Module]
     A --> E[Custom Modules]
     B --> F[Module Registry]
     B --> G[Navigation System]
@@ -215,6 +216,9 @@ graph TD
     C --> J[DataStore Persistence]
     D --> K[Analytics Logger]
     D --> L[Event Display]
+    NM --> MC[Mock Config Engine]
+    NM --> MS[Mock State DataStore]
+    NM --> KP[Ktor Plugin]
 ```
 
 ---

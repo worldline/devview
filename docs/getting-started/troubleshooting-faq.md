@@ -2,8 +2,6 @@
 
 Find solutions to common issues and answers to frequently asked questions when integrating or using DevView.
 
-> _[Placeholder: Insert screenshot or diagram of a typical error message or troubleshooting UI. Use a device frame if relevant.]_
-
 ## General Troubleshooting
 
 ### DevView not appearing
@@ -44,7 +42,7 @@ Find solutions to common issues and answers to frequently asked questions when i
 DevView is intended for development and debugging purposes. It is not recommended to include DevView in production builds.
 
 ### How do I add a custom module?
-> _[Placeholder: Add step-by-step guide for custom module integration. This section will be expanded in future updates.]_
+See the [Creating Custom Modules](../modules/custom-modules.md) guide for a full example.
 
 ### Is DevView compatible with all Compose Multiplatform targets?
 DevView supports Android and iOS targets. Other platforms may require additional configuration or are not officially supported yet.

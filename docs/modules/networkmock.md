@@ -2,8 +2,6 @@
 
 A Kotlin Multiplatform library for mocking network requests and responses, with a built-in UI and Ktor plugin for flexible development and testing.
 
-> _[Placeholder: Insert screenshot of NetworkMock UI. Use a device frame if relevant.]_
-
 ## Overview
 NetworkMock enables developers to simulate API behaviour, test offline flows, and control network responses at runtime. It consists of three modules:
 - **Core**: Shared configuration and state management
@@ -30,7 +28,9 @@ dependencies {
 Add NetworkMock to your DevView modules list:
 ```kotlin
 val modules = rememberModules {
-    module(NetworkMock)
+    module(NetworkMock(
+        resourceLoader = { path -> Res.readBytes(path) }
+    ))
     // ...other modules...
 }
 ```
@@ -43,9 +43,16 @@ NetworkMockScreen(...)
 ```
 ### Using the Ktor Plugin
 ```kotlin
-val client = HttpClient {
+// Zero-config: repositories are resolved automatically from NetworkMockInitializer
+val client = HttpClient(OkHttp) {
+    install(NetworkMockPlugin)
+}
+
+// For testing or advanced DI, inject repositories explicitly:
+val client = HttpClient(OkHttp) {
     install(NetworkMockPlugin) {
-        config = ... // Provide NetworkMockConfig
+        mockRepository = myMockConfigRepository
+        stateRepository = myMockStateRepository
     }
 }
 ```
@@ -54,12 +61,6 @@ val client = HttpClient {
 - Use the UI to toggle mocks and select responses.
 - Use the Ktor plugin to intercept requests in your client.
 - Configuration/state is shared via the core module.
-
-## Customisation
-> _[Placeholder: Guide for customising NetworkMock UI and behaviour. This section will be expanded in future updates.]_
-
-## Advanced Usage
-> _[Placeholder: Advanced scenarios such as workflows, custom mock engines, and platform-specific customisation.]_
 
 ## Best Practices
 1. Initialise the core module before using UI or Ktor plugin.

@@ -2,8 +2,6 @@
 
 This guide walks you through integrating DevView into a new or existing Kotlin Multiplatform project, with platform-specific notes and troubleshooting tips.
 
-> _[Placeholder: Insert screenshot or diagram of DevView integration in a project. Use a device frame if relevant.]_
-
 ## Step 1: Prepare Your Project
 - Ensure your project is set up for Kotlin Multiplatform and Compose Multiplatform.
 - Confirm minimum supported versions (see Prerequisites).

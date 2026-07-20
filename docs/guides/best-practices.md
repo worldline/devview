@@ -2,8 +2,6 @@
 
 Recommended patterns and practices for using DevView.
 
-> _[Placeholder: Insert diagram or screenshot illustrating best practices in DevView usage. Use a device frame if relevant.]_
-
 ## General Principles
 - Keep modules focused and single-purpose
 - Use type-safe navigation and state management

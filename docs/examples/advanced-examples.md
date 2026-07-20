@@ -2,22 +2,26 @@
 
 Explore advanced usage scenarios for DevView, including custom modules, multi-module integration, and workflows. These examples demonstrate how to extend DevView for complex developer needs.
 
-> _[Placeholder: Insert diagram or screenshot illustrating advanced DevView usage. Use a device frame if relevant.]_
-
 ## Custom Module Example
 ```kotlin
 object MyAdvancedModule : Module {
     override val moduleName = "Advanced Tool"
     override val section = Section.CUSTOM
-    override val destinations = persistentListOf(MyDestination.Main)
-    override val registerSerialisers = { /* ... */ }
-    override fun EntryProviderScope<NavKey>.registerContent(...) { /* ... */ }
+    override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> =
+        persistentMapOf(MyDestination.Main.withTitle("Advanced Tool"))
+    override val entryDestination: NavKey = MyDestination.Main
+    override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit = { /* ... */ }
+    override fun EntryProviderScope<NavKey>.registerContent(
+        onNavigateBack: () -> Unit,
+        onNavigate: (NavKey) -> Unit,
+        bottomPadding: Dp,
+    ) { /* ... */ }
 }
 val modules = rememberModules {
     module(MyAdvancedModule)
     module(FeatureFlip)
-    module(Analytics)
-    module(NetworkMock)
+    module(Analytics())
+    module(NetworkMock(resourceLoader = { path -> Res.readBytes(path) }))
 }
 ```
 

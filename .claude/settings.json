@@ -15,5 +15,8 @@
       "Bash(ls *)",
       "Bash(cat *)"
     ]
+  },
+  "enabledPlugins": {
+    "claude-md-management@claude-plugins-official": true
   }
 }

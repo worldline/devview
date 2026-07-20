@@ -2,8 +2,6 @@
 
 Code style guidelines for DevView.
 
-> _[Placeholder: Insert screenshot or diagram of code style checks in action. Use a device frame if relevant.]_
-
 ## Formatting
 - Use Kotlin's official style guide
 - Indent with 4 spaces

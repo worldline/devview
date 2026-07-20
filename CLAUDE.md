@@ -45,6 +45,17 @@ On Windows, use `.\gradlew.bat` instead of `./gradlew`. Always append `-Pandroid
 ./gradlew :devview:koverXmlReport :devview:koverLog
 ```
 
+**Docs (local preview):**
+```shell
+pip install zensical==0.0.50
+zensical serve
+```
+
+**Docs (full build including Dokka API docs):**
+```shell
+./scripts/build_docs.sh build
+```
+
 ## Architecture
 
 ### Module Graph
@@ -64,6 +75,7 @@ devview-networkmock-ktor  (Ktor client plugin intercepting requests via networkm
 devview-test           (shared test utilities: FakePreferencesDataStore, Turbine wrappers)
 konsist/               (Konsist architecture enforcement tests)
 sample/                (sample Android app showing full integration)
+internal/dokka         (Dokka aggregation for published API docs)
 ```
 
 ### Key Concepts

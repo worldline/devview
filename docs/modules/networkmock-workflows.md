@@ -1,46 +1,90 @@
 # NetworkMock Workflows
 
-This page covers common developer workflows for integrating and using the NetworkMock modules.
+Step-by-step guides for common network mocking tasks.
 
-## Overview
-NetworkMock supports a variety of workflows for mocking network requests, managing configuration, and integrating with UI and Ktor plugin.
+## Adding a new mock endpoint
 
-## Workflows
-### Adding a New Mock Endpoint
-1. Define the endpoint in the core module's configuration.
-2. Update the UI to display and manage the new endpoint.
-3. Configure mock responses as needed.
+### 1. Add the endpoint to mocks.json
 
-### Enabling/Disabling Mocks
-- Use the UI toggle to enable/disable global or per-endpoint mocking.
-- Update state via repositories for programmatic control.
+```json
+{
+  "apiGroups": [{
+    "id": "my-backend",
+    "name": "My Backend",
+    "endpoints": [
+      { "id": "getUser", "name": "Get User", "path": "/v1/users/{userId}", "method": "GET" }
+    ],
+    "environments": [
+      { "id": "staging", "name": "Staging", "url": "https://staging.api.example.com" }
+    ]
+  }]
+}
+```
 
-### Resetting Mocks
-- Use the UI reset option to revert all endpoints to real network behavior.
-- Alternatively, reset state via core repositories.
+### 2. Create response files
 
-### Integrating UI and Ktor Plugin
-- Ensure both modules reference the same DataStoreDelegate.
-- UI changes are reflected in Ktor plugin behavior automatically.
+Place response files under `composeResources/files/networkmocks/responses/`:
 
-## Best Practices
-- Initialize core module before using UI or Ktor plugin.
-- Keep mock configuration up-to-date for accurate testing.
-- Use workflows to streamline development and testing.
+```
+responses/my-backend/getUser/getUser-200.json      ← shared (all environments)
+responses/my-backend/staging/getUser/getUser-200.json  ← staging-specific (takes priority)
+```
 
-## Troubleshooting / FAQ
-- **Why aren't my workflow changes reflected in the app?**
-  - Ensure all modules are referencing the same core and DataStoreDelegate.
-- **How do I debug mock configuration issues?**
-  - Use the UI to inspect and update configuration/state.
+File naming: `{endpointId}-{statusCode}[-{suffix}].json`
+
+```
+getUser-200.json         ← default 200 response
+getUser-200-simple.json  ← alternate 200 response (simple variant)
+getUser-404.json         ← 404 error response
+getUser-500.json         ← server error response
+```
+
+### 3. Launch the app
+
+Open DevView → Network Mock. Your new endpoint appears in the list for its group/environment tab.
+
+## Testing an error scenario
+
+1. Open DevView → Network Mock → tap your endpoint.
+2. Tap a 4xx or 5xx response file to activate it.
+3. The endpoint chip turns red/orange. The Ktor plugin now returns that response for matching requests.
+4. After testing, tap "No mock" or use the "Reset to Network" toolbar action to restore pass-through.
+
+## Using environment-specific responses
+
+To serve a different response for production vs staging, place environment-specific files at higher priority:
+
+```
+responses/my-backend/getUser/getUser-200.json          ← shared fallback
+responses/my-backend/production/getUser/getUser-200.json  ← production-specific
+```
+
+The environment is determined at interception time from the request hostname — no manual selection needed.
+
+## Using endpoint path overrides per environment
+
+In `mocks.json`, add `endpointOverrides` to a specific environment:
+
+```json
+{
+  "id": "production",
+  "url": "https://api.example.com",
+  "endpointOverrides": [
+    { "id": "getUser", "path": "/v2/users/{userId}" }
+  ]
+}
+```
+
+The production environment now uses `/v2/users/{userId}` for `getUser` while staging keeps `/v1/users/{userId}`.
+
+## Resetting all mocks
+
+- **UI**: Open DevView → Network Mock → tap the restore icon in the top toolbar.
+- **All mocks are reset to `Network` state**, including endpoints the user has never explicitly touched.
 
 ## Related Modules
-- [NetworkMock](networkmock.md): Overview and usage.
-- [NetworkMock Core](networkmock-core.md): Shared configuration/state.
-- [NetworkMock UI](networkmock-ui.md): UI for managing mocks.
-- [NetworkMock Ktor](networkmock-ktor.md): Ktor plugin for HTTP interception.
-- [FeatureFlip](featureflip.md): Combine with feature flags for advanced testing.
 
----
-
-*API reference is available via Dokka or in your IDE.*
+- [NetworkMock](networkmock.md): Overview and installation.
+- [NetworkMock Core](networkmock-core.md): Config format details, request matching.
+- [NetworkMock UI](networkmock-ui.md): Screen descriptions.
+- [NetworkMock Ktor](networkmock-ktor.md): Plugin installation.

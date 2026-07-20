@@ -2,8 +2,6 @@
 
 How to submit pull requests to DevView.
 
-> _[Placeholder: Insert screenshot or diagram of the pull request workflow. Use a device frame if relevant.]_
-
 ## Before You Submit
 - Ensure your branch is up to date with main
 - Run all tests and code quality checks

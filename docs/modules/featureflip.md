@@ -2,8 +2,6 @@
 
 A Kotlin Multiplatform library for managing feature flags (feature toggles) with a built-in UI for toggling and managing features at runtime.
 
-> _[Placeholder: Insert screenshot of FeatureFlip UI. Use a device frame if relevant.]_
-
 ## Overview
 FeatureFlip enables runtime control of feature flags for development, QA, and experimentation. It supports both local and remote features, persistent state, and a ready-to-use Compose UI.
 
@@ -49,10 +47,10 @@ val newCheckout = Feature.RemoteFeature(
 
 ### Using the UI
 ```kotlin
-CompositionLocalProvider(LocalFeatures provides features) {
-    FeatureFlipScreen(onStateChange = { featureName, newState ->
-        // Handle state change
-    })
+val featureHandler = rememberFeatureHandler(features)
+CompositionLocalProvider(LocalFeatureHandler provides featureHandler) {
+    // FeatureFlipScreen is rendered automatically by DevView when FeatureFlip is registered.
+    // State changes are handled internally by the DevView UI.
 }
 ```
 
@@ -60,12 +58,6 @@ CompositionLocalProvider(LocalFeatures provides features) {
 - Use `FeatureHandler` to manage features programmatically.
 - Use `FeatureFlipScreen` for a ready-made UI.
 - Features are persisted using DataStore.
-
-## Customisation
-> _[Placeholder: Guide for customising FeatureFlip UI and behaviour. This section will be expanded in future updates.]_
-
-## Advanced Usage
-> _[Placeholder: Advanced scenarios such as remote config integration, tri-state features, and platform-specific customisation.]_
 
 ## Best Practices
 1. Use descriptive names and add descriptions.

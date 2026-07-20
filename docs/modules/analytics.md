@@ -2,8 +2,6 @@
 
 A Kotlin Multiplatform library for capturing and visualising analytics events in real time, providing a developer-friendly interface for monitoring and debugging analytics integration in your application.
 
-> _[Placeholder: Insert screenshot of Analytics UI. Use a device frame if relevant.]_
-
 ## Overview
 Analytics enables real-time monitoring of analytics events (screen views, custom events, etc.) with a built-in Compose UI for debugging and QA.
 
@@ -27,7 +25,7 @@ dependencies {
 Add Analytics to your DevView modules list:
 ```kotlin
 val modules = rememberModules {
-    module(Analytics)
+    module(Analytics()) // optional: pass highlightedLogType1/2/3 to customize summary chips
     // ...other modules...
 }
 ```
@@ -37,18 +35,25 @@ val modules = rememberModules {
 ```kotlin
 AnalyticsLogger.log(
     AnalyticsLog(
-        tag = "HomeScreen",
+        tag = "home_screen_view",
         screenClass = "com.example.ui.HomeScreen",
         timestamp = System.currentTimeMillis(),
-        type = AnalyticsLogType.SCREEN
+        type = AnalyticsLogCategory.Screen.View
     )
 )
 ```
 
 ### Using the UI
 ```kotlin
+// AnalyticsScreen is rendered automatically by DevView when Analytics() is registered.
+// To use it standalone, provide LocalAnalytics above it:
 CompositionLocalProvider(LocalAnalytics provides AnalyticsLogger.logs) {
-    AnalyticsScreen(modifier = Modifier.fillMaxSize())
+    AnalyticsScreen(
+        highlightedAnalyticsLogTypes = persistentListOf(
+            AnalyticsLogCategory.Action.Click,
+            AnalyticsLogCategory.Performance.Error
+        )
+    )
 }
 ```
 
@@ -56,12 +61,6 @@ CompositionLocalProvider(LocalAnalytics provides AnalyticsLogger.logs) {
 - Use `AnalyticsLogger.log()` to record events.
 - Use `AnalyticsScreen` to view logs in real time.
 - Integrate with your analytics backend for dual logging.
-
-## Customisation
-> _[Placeholder: Guide for customising Analytics UI and behaviour. This section will be expanded in future updates.]_
-
-## Advanced Usage
-> _[Placeholder: Advanced scenarios such as integration with external analytics backends, filtering, and platform-specific customisation.]_
 
 ## Best Practices
 1. Use descriptive tags and include screen context.

@@ -2,8 +2,6 @@
 
 Complete Android integration example.
 
-> _[Placeholder: Insert screenshot of DevView running in an Android app. Use a device frame if relevant.]_
-
 ## Prerequisites
 - Android Studio Giraffe or newer
 - Minimum API level 21
