@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fixed DevView overlay back navigation: the overlay's back handler now correctly yields priority to the host app when closed, preventing it from silently consuming back events.
+- Fixed crash on Network Mock screen startup: `MissingResourceException` thrown by Compose Resources when probing absent response files was not caught by the `IllegalStateException` handler in `MockConfigRepository`, causing a fatal crash. The exception is now normalised at the `NetworkMock` boundary before reaching the core module.
 
 ## [0.1.2] - 2026-07-17
 
