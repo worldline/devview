@@ -8,8 +8,23 @@ How to submit pull requests to DevView.
 - Review your changes for clarity and completeness
 - Update documentation if needed
 
+## PR Title
+
+PR titles **must** follow `type: description` format — this is enforced by CI (`semantic-title` job):
+
+```
+feat: add network mock response editor
+fix: correct overlay back navigation
+docs: update installation guide
+refactor: remove dead endpoint selection state
+```
+
+Valid types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`, `perf`, `build`, `revert`.
+
+GitHub auto-suggests a title from the branch name — always verify it matches this format before opening the PR.
+
 ## Opening a Pull Request
-- Use a clear, descriptive title and summary
+- Use a clear, descriptive title (see above) and summary
 - Reference related issues or discussions
 - Assign reviewers if possible
 - Mark as draft if not ready for review
@@ -30,13 +45,17 @@ How to submit pull requests to DevView.
 - refactor/description - Refactoring
 
 ## Commit Messages
-Follow conventional commits:
+
+Individual commits use **gitmoji** format: `:emoji: message`
+
 ```
-feat: add new module
-fix: correct navigation issue
-docs: update README
-refactor: improve code structure
+:sparkles: Add network mock response editor
+:bug: Fix overlay back navigation
+:memo: Update installation guide
+:fire: Remove dead endpoint selection code
 ```
+
+Note: PRs are squash-merged using the PR title (`type: description`) as the final commit message. The gitmoji format is for individual commits on your branch.
 
 ## Checklist
 - [ ] Tests pass
