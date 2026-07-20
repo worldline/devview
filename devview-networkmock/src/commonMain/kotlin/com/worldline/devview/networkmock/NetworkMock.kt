@@ -28,6 +28,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
+import org.jetbrains.compose.resources.MissingResourceException
 
 /**
  * Navigation destinations for the NetworkMock module.
@@ -111,7 +112,13 @@ public class NetworkMock(
         NetworkMockInitializer.initialize(
             dataStore = dataStoreDelegate.get(),
             configPath = configPath,
-            resourceLoader = resourceLoader
+            resourceLoader = { path ->
+                try {
+                    resourceLoader(path)
+                } catch (e: MissingResourceException) {
+                    throw IllegalStateException(e.message, e)
+                }
+            }
         )
     }
 
