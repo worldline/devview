@@ -20,7 +20,12 @@ class MetalavaConventionPlugin : Plugin<Project> {
         }
 
         tasks.named { it.startsWith("metalava") }.configureEach {
-            dependsOn(tasks.named { it.startsWith("generateResourceAccessors") || it.startsWith("generateActualResourceCollectors") })
+            dependsOn(tasks.named {
+                it.startsWith("generateResourceAccessors") ||
+                    it.startsWith("generateActualResourceCollectors") ||
+                    it.startsWith("generateComposeResClass") ||
+                    it.startsWith("generateExpectResourceCollectors")
+            })
         }
     }
 }

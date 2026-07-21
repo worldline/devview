@@ -2,7 +2,7 @@
 package com.worldline.devview.networkmock {
 
   public final class NetworkMock implements com.worldline.devview.core.Module com.worldline.devview.utils.RequiresDataStore {
-    ctor public NetworkMock(kotlin.jvm.functions.Function2<? super java.lang.String,? super kotlin.coroutines.Continuation<? super byte[]>,? extends java.lang.Object?> resourceLoader, optional String configPath);
+    ctor public NetworkMock(com.worldline.devview.networkmock.core.NetworkMockResourceLoader resourceLoader, optional String configPath, optional java.util.List<java.lang.String> responseSuffixes);
     method @InaccessibleFromKotlin public com.worldline.devview.utils.DataStoreDelegate getDataStoreDelegate();
     method @InaccessibleFromKotlin public String getDataStoreName();
     method @InaccessibleFromKotlin public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> getDestinations();

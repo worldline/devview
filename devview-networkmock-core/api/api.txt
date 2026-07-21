@@ -9,10 +9,14 @@ package com.worldline.devview.networkmock.core {
   }
 
   public final class NetworkMockInitializer {
-    method @KotlinOnly @androidx.compose.runtime.Composable public void initialize(androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> dataStore, String configPath, kotlin.jvm.functions.Function2<java.lang.String,kotlin.coroutines.Continuation<? super byte[]>,?> resourceLoader);
+    method @KotlinOnly @androidx.compose.runtime.Composable public void initialize(androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> dataStore, String configPath, com.worldline.devview.networkmock.core.NetworkMockResourceLoader resourceLoader, optional java.util.List<java.lang.String> responseSuffixes);
     method public com.worldline.devview.networkmock.core.repository.MockConfigRepository requireConfigRepository();
     method public com.worldline.devview.networkmock.core.repository.MockStateRepository requireStateRepository();
     field public static final com.worldline.devview.networkmock.core.NetworkMockInitializer INSTANCE;
+  }
+
+  public fun interface NetworkMockResourceLoader {
+    method public suspend Object? load(String path, kotlin.coroutines.Continuation<? super byte[]>);
   }
 
 }
@@ -20,16 +24,19 @@ package com.worldline.devview.networkmock.core {
 package com.worldline.devview.networkmock.core.model {
 
   @kotlinx.serialization.Serializable public final class ApiGroupConfig {
-    ctor public ApiGroupConfig(String id, String name, java.util.List<com.worldline.devview.networkmock.core.model.EndpointConfig> endpoints, java.util.List<com.worldline.devview.networkmock.core.model.EnvironmentConfig> environments);
+    ctor public ApiGroupConfig(String id, String name, java.util.List<com.worldline.devview.networkmock.core.model.EndpointConfig> endpoints, java.util.List<com.worldline.devview.networkmock.core.model.EnvironmentConfig> environments, optional Long? defaultDelayMs);
     method public String component1();
     method public String component2();
     method public java.util.List<com.worldline.devview.networkmock.core.model.EndpointConfig> component3();
     method public java.util.List<com.worldline.devview.networkmock.core.model.EnvironmentConfig> component4();
-    method public com.worldline.devview.networkmock.core.model.ApiGroupConfig copy(optional String id, optional String name, optional java.util.List<com.worldline.devview.networkmock.core.model.EndpointConfig> endpoints, optional java.util.List<com.worldline.devview.networkmock.core.model.EnvironmentConfig> environments);
+    method public Long? component5();
+    method public com.worldline.devview.networkmock.core.model.ApiGroupConfig copy(optional String id, optional String name, optional java.util.List<com.worldline.devview.networkmock.core.model.EndpointConfig> endpoints, optional java.util.List<com.worldline.devview.networkmock.core.model.EnvironmentConfig> environments, optional Long? defaultDelayMs);
+    method @InaccessibleFromKotlin public Long? getDefaultDelayMs();
     method @InaccessibleFromKotlin public java.util.List<com.worldline.devview.networkmock.core.model.EndpointConfig> getEndpoints();
     method @InaccessibleFromKotlin public java.util.List<com.worldline.devview.networkmock.core.model.EnvironmentConfig> getEnvironments();
     method @InaccessibleFromKotlin public String getId();
     method @InaccessibleFromKotlin public String getName();
+    property public Long? defaultDelayMs;
     property public java.util.List<com.worldline.devview.networkmock.core.model.EndpointConfig> endpoints;
     property public java.util.List<com.worldline.devview.networkmock.core.model.EnvironmentConfig> environments;
     property public String id;
@@ -37,20 +44,26 @@ package com.worldline.devview.networkmock.core.model {
   }
 
   @androidx.compose.runtime.Immutable @kotlinx.serialization.Serializable public final class EndpointConfig implements com.worldline.devview.networkmock.core.model.EndpointDefinition {
-    ctor public EndpointConfig(String id, String name, String path, String method);
+    ctor public EndpointConfig(String id, String name, String path, String method, optional Long? delayMs, optional java.util.Map<java.lang.String,java.lang.String>? queryParams);
     method public String component1();
     method public String component2();
     method public String component3();
     method public String component4();
-    method public com.worldline.devview.networkmock.core.model.EndpointConfig copy(optional String id, optional String name, optional String path, optional String method);
+    method public Long? component5();
+    method public java.util.Map<java.lang.String,java.lang.String>? component6();
+    method public com.worldline.devview.networkmock.core.model.EndpointConfig copy(optional String id, optional String name, optional String path, optional String method, optional Long? delayMs, optional java.util.Map<java.lang.String,java.lang.String>? queryParams);
+    method @InaccessibleFromKotlin public Long? getDelayMs();
     method @InaccessibleFromKotlin public String getId();
     method @InaccessibleFromKotlin public String getMethod();
     method @InaccessibleFromKotlin public String getName();
     method @InaccessibleFromKotlin public String getPath();
+    method @InaccessibleFromKotlin public java.util.Map<java.lang.String,java.lang.String>? getQueryParams();
+    property public Long? delayMs;
     property public String id;
     property public String method;
     property public String name;
     property public String path;
+    property public java.util.Map<java.lang.String,java.lang.String>? queryParams;
   }
 
   public sealed exhaustive interface EndpointDefinition {
@@ -132,20 +145,26 @@ package com.worldline.devview.networkmock.core.model {
   }
 
   @kotlinx.serialization.Serializable public final class EndpointOverride implements com.worldline.devview.networkmock.core.model.EndpointDefinition {
-    ctor public EndpointOverride(String id, optional String? name, optional String? path, optional String? method);
+    ctor public EndpointOverride(String id, optional String? name, optional String? path, optional String? method, optional Long? delayMs, optional java.util.Map<java.lang.String,java.lang.String>? queryParams);
     method public String component1();
     method public String? component2();
     method public String? component3();
     method public String? component4();
-    method public com.worldline.devview.networkmock.core.model.EndpointOverride copy(optional String id, optional String? name, optional String? path, optional String? method);
+    method public Long? component5();
+    method public java.util.Map<java.lang.String,java.lang.String>? component6();
+    method public com.worldline.devview.networkmock.core.model.EndpointOverride copy(optional String id, optional String? name, optional String? path, optional String? method, optional Long? delayMs, optional java.util.Map<java.lang.String,java.lang.String>? queryParams);
+    method @InaccessibleFromKotlin public Long? getDelayMs();
     method @InaccessibleFromKotlin public String getId();
     method @InaccessibleFromKotlin public String? getMethod();
     method @InaccessibleFromKotlin public String? getName();
     method @InaccessibleFromKotlin public String? getPath();
+    method @InaccessibleFromKotlin public java.util.Map<java.lang.String,java.lang.String>? getQueryParams();
+    property public Long? delayMs;
     property public String id;
     property public String? method;
     property public String? name;
     property public String? path;
+    property public java.util.Map<java.lang.String,java.lang.String>? queryParams;
   }
 
   @kotlinx.serialization.Serializable public final class EnvironmentConfig {
@@ -181,16 +200,19 @@ package com.worldline.devview.networkmock.core.model {
   }
 
   @androidx.compose.runtime.Immutable public final class MockMatch {
-    ctor public MockMatch(com.worldline.devview.networkmock.core.model.EndpointKey key, com.worldline.devview.networkmock.core.model.EndpointConfig config);
+    ctor public MockMatch(com.worldline.devview.networkmock.core.model.EndpointKey key, com.worldline.devview.networkmock.core.model.EndpointConfig config, optional Long? delayMs);
     method public com.worldline.devview.networkmock.core.model.EndpointKey component1();
     method public com.worldline.devview.networkmock.core.model.EndpointConfig component2();
-    method public com.worldline.devview.networkmock.core.model.MockMatch copy(optional com.worldline.devview.networkmock.core.model.EndpointKey key, optional com.worldline.devview.networkmock.core.model.EndpointConfig config);
+    method public Long? component3();
+    method public com.worldline.devview.networkmock.core.model.MockMatch copy(optional com.worldline.devview.networkmock.core.model.EndpointKey key, optional com.worldline.devview.networkmock.core.model.EndpointConfig config, optional Long? delayMs);
     method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.model.EndpointConfig getConfig();
+    method @InaccessibleFromKotlin public Long? getDelayMs();
     method @InaccessibleFromKotlin public String getEndpointId();
     method @InaccessibleFromKotlin public String getEnvironmentId();
     method @InaccessibleFromKotlin public String getGroupId();
     method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.model.EndpointKey getKey();
     property public com.worldline.devview.networkmock.core.model.EndpointConfig config;
+    property public Long? delayMs;
     property public String endpointId;
     property public String environmentId;
     property public String groupId;
@@ -260,10 +282,10 @@ package com.worldline.devview.networkmock.core.model {
 package com.worldline.devview.networkmock.core.repository {
 
   public final class MockConfigRepository {
-    ctor public MockConfigRepository(String configPath, kotlin.jvm.functions.Function2<? super java.lang.String,? super kotlin.coroutines.Continuation<? super byte[]>,? extends java.lang.Object?> resourceLoader, optional java.util.List<java.lang.Integer> statusCodesToDiscover);
+    ctor public MockConfigRepository(String configPath, com.worldline.devview.networkmock.core.NetworkMockResourceLoader resourceLoader, optional java.util.List<java.lang.Integer> statusCodesToDiscover, optional java.util.List<java.lang.String> responseSuffixes);
     method public suspend Object? discoverResponseFiles(com.worldline.devview.networkmock.core.model.EndpointKey key, kotlin.coroutines.Continuation<? super java.util.List<com.worldline.devview.networkmock.core.model.MockResponse>>);
     method public suspend Object? discoverResponseFiles(String groupId, String environmentId, String endpointId, kotlin.coroutines.Continuation<? super java.util.List<com.worldline.devview.networkmock.core.model.MockResponse>>);
-    method public suspend Object? findMatchingMock(String host, String path, String method, kotlin.coroutines.Continuation<? super com.worldline.devview.networkmock.core.model.MockMatch?>);
+    method public suspend Object? findMatchingMock(String host, String path, String method, optional java.util.Map<java.lang.String,? extends java.util.List<java.lang.String>> queryParameters, kotlin.coroutines.Continuation<? super com.worldline.devview.networkmock.core.model.MockMatch?>);
     method @KotlinOnly public suspend Object? loadConfiguration(kotlin.coroutines.Continuation<? super kotlin.Result<com.worldline.devview.networkmock.core.model.MockConfiguration>>);
     method public suspend Object? loadMockResponse(com.worldline.devview.networkmock.core.model.EndpointKey key, String fileName, kotlin.coroutines.Continuation<? super com.worldline.devview.networkmock.core.model.MockResponse?>);
     method public suspend Object? loadMockResponse(String groupId, String environmentId, String endpointId, String fileName, kotlin.coroutines.Continuation<? super com.worldline.devview.networkmock.core.model.MockResponse?>);
@@ -271,7 +293,9 @@ package com.worldline.devview.networkmock.core.repository {
   }
 
   public static final class MockConfigRepository.Companion {
+    method @InaccessibleFromKotlin public java.util.List<java.lang.String> getDEFAULT_RESPONSE_SUFFIXES();
     method @InaccessibleFromKotlin public java.util.List<java.lang.Integer> getDEFAULT_STATUS_CODES();
+    property public java.util.List<java.lang.String> DEFAULT_RESPONSE_SUFFIXES;
     property public java.util.List<java.lang.Integer> DEFAULT_STATUS_CODES;
   }
 
@@ -290,6 +314,7 @@ package com.worldline.devview.networkmock.core.repository {
 
   public final class RequestMatcher {
     method public boolean matchesPath(String configPath, String requestPath);
+    method public boolean matchesQueryParams(java.util.Map<java.lang.String,java.lang.String>? configQueryParams, java.util.Map<java.lang.String,? extends java.util.List<java.lang.String>> requestQueryParams);
     field public static final com.worldline.devview.networkmock.core.repository.RequestMatcher INSTANCE;
   }
 

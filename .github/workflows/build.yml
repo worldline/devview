@@ -168,6 +168,35 @@ jobs:
           name: konsist-reports
           path: 'konsist/build/reports/tests/**'
 
+  metalava:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v6
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Check API compatibility
+        run: ./gradlew metalavaCheckCompatibility -Pandroidx.baselineprofile.skipgeneration
+
+      - name: Upload metalava reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: metalava-reports
+          path: '**/build/metalava/**'
+
   device-tests:
     # Skip if head commit contains 'skip ci'
     if: "!contains(github.event.head_commit.message, 'skip ci')"
