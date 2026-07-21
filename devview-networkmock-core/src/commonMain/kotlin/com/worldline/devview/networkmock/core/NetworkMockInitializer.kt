@@ -50,15 +50,14 @@ public object NetworkMockInitializer {
      * @param dataStore The initialised [DataStore] instance from [NetworkMockDataStoreDelegate]
      * @param configPath Path to the `mocks.json` configuration file relative to
      * composeResources (e.g. `"files/networkmocks/mocks.json"`)
-     * @param resourceLoader Function to load resource bytes from a path, provided
-     * by the integrator's resource system (e.g. `Res.readBytes` from Compose Resources)
+     * @param resourceLoader [NetworkMockResourceLoader] provided by the integrator
      */
     @Suppress("ComposableNaming")
     @Composable
     public fun initialize(
         dataStore: DataStore<Preferences>,
         configPath: String,
-        resourceLoader: suspend (String) -> ByteArray
+        resourceLoader: NetworkMockResourceLoader
     ) {
         if (stateRepository != null) return
         stateRepository = remember {

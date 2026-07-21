@@ -20,7 +20,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(projects.devview)
-                implementation(projects.devviewNetworkmockCore)
+                api(projects.devviewNetworkmockCore)
                 implementation(libs.kotlinx.collections.immutable)
                 implementation(libs.jetbrains.androidx.lifecycle.viewmodel.compose)
             }

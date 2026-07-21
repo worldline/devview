@@ -18,7 +18,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(projects.devviewNetworkmockCore)
+                api(projects.devviewNetworkmockCore)
             }
         }
 

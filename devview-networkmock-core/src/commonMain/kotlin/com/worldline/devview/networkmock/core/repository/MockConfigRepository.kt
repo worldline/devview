@@ -1,5 +1,6 @@
 package com.worldline.devview.networkmock.core.repository
 
+import com.worldline.devview.networkmock.core.NetworkMockResourceLoader
 import com.worldline.devview.networkmock.core.model.EndpointKey
 import com.worldline.devview.networkmock.core.model.MockConfiguration
 import com.worldline.devview.networkmock.core.model.MockMatch
@@ -103,7 +104,7 @@ import kotlinx.serialization.json.Json
  * - [discoverResponseFiles] returns empty list if no files are found
  *
  * @property configPath The path to the mocks.json file relative to composeResources
- * @property resourceLoader Function to load resource bytes from a path
+ * @property resourceLoader [NetworkMockResourceLoader] that provides resource bytes from a path
  * @property statusCodesToDiscover The list of HTTP status codes to probe when
  * discovering response files. Defaults to [DEFAULT_STATUS_CODES]. Override this
  * to include non-standard status codes used by your API.
@@ -114,7 +115,7 @@ import kotlinx.serialization.json.Json
  */
 public class MockConfigRepository(
     private val configPath: String,
-    private val resourceLoader: suspend (String) -> ByteArray,
+    private val resourceLoader: NetworkMockResourceLoader,
     private val statusCodesToDiscover: List<Int> = DEFAULT_STATUS_CODES
 ) {
     private val json = Json { ignoreUnknownKeys = true }
@@ -195,7 +196,7 @@ public class MockConfigRepository(
 
             println(message = "[NetworkMock][Config] Loading configuration from: $configPath")
 
-            val configBytes = resourceLoader(configPath)
+            val configBytes = resourceLoader.load(path = configPath)
             val configJson = configBytes.decodeToString()
 
             val config = json
@@ -560,7 +561,7 @@ public class MockConfigRepository(
         filePath: String,
         fileName: String
     ): MockResponse? = try {
-        val responseBytes = resourceLoader(filePath)
+        val responseBytes = resourceLoader.load(path = filePath)
         val content = responseBytes.decodeToString()
         MockResponse.Companion
             .fromFile(

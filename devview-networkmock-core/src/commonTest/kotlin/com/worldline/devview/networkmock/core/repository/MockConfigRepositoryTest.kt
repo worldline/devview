@@ -1,5 +1,6 @@
 package com.worldline.devview.networkmock.core.repository
 
+import com.worldline.devview.networkmock.core.NetworkMockResourceLoader
 import com.worldline.devview.networkmock.core.model.EndpointKey
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
@@ -31,7 +32,7 @@ class MockConfigRepositoryTest {
         val loader = RecordingResourceLoader(resources = baseResources())
         val repository = MockConfigRepository(
             configPath = CONFIG_PATH,
-            resourceLoader = loader::load
+            resourceLoader = loader
         )
 
         repository.loadConfiguration().getOrThrow()
@@ -319,17 +320,17 @@ class MockConfigRepositoryTest {
         val loader = RecordingResourceLoader(resources = resources)
         return MockConfigRepository(
             configPath = CONFIG_PATH,
-            resourceLoader = loader::load,
+            resourceLoader = loader,
             statusCodesToDiscover = statusCodesToDiscover
         )
     }
 
     private class RecordingResourceLoader(
         private val resources: Map<String, String>
-    ) {
+    ) : NetworkMockResourceLoader {
         private val calls = mutableMapOf<String, Int>()
 
-        suspend fun load(path: String): ByteArray {
+        override suspend fun load(path: String): ByteArray {
             calls[path] = (calls[path] ?: 0) + 1
             return resources[path]?.encodeToByteArray()
                 ?: error("Resource not found: $path")
