@@ -379,6 +379,10 @@ logo = "assets/branding/devview-icon-dark.svg"
 icon = "fontawesome/brands/github"
 link = "https://github.com/worldline"
 
+[project.extra.version]
+provider = "mike"
+alias = true
+
 [project.markdown_extensions.codehilite]
 [project.markdown_extensions.pymdownx.betterem]
 [project.markdown_extensions.pymdownx.tilde]

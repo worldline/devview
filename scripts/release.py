@@ -41,6 +41,38 @@ def find_published_api_files() -> list[Path]:
     return sorted(api_files)
 
 
+def extract_changelog_section(version: str, changelog: Path) -> str:
+    content = changelog.read_text(encoding="utf-8")
+    start = content.find(f"## [{version}]")
+    if start == -1:
+        return ""
+    next_section = content.find("\n## [", start + 1)
+    section = content[start:next_section].strip() if next_section != -1 else content[start:].strip()
+    # Drop the "## [version] - date" header line
+    lines = section.splitlines()[1:]
+    return "\n".join(lines).strip()
+
+
+def update_whats_new(version: str, changelog_section: str, index: Path) -> None:
+    content = index.read_text(encoding="utf-8")
+    start = content.find("## What's New\n")
+    if start == -1:
+        return
+    end = content.find("\n---\n", start)
+    if end == -1:
+        return
+    # Convert ### Added/Fixed/Changed sub-headers into bullet groups
+    lines = []
+    for line in changelog_section.splitlines():
+        if line.startswith("### "):
+            lines.append(f"\n**{line[4:]}**")
+        elif line.startswith("- "):
+            lines.append(line)
+    new_section = f"## What's New\n\n### v{version}\n\n" + "\n".join(lines).strip()
+    content = content[:start] + new_section + content[end:]
+    index.write_text(content, encoding="utf-8")
+
+
 def update_changelog(version: str, changelog: Path) -> None:
     content = changelog.read_text()
     today = date.today().strftime("%Y-%m-%d")
@@ -125,9 +157,20 @@ def main():
     print("\nStep 3: Updating CHANGELOG.md...")
     update_changelog(new_version, changelog)
 
+    # Step 3b: Sync docs changelog and update What's New
+    print("\nStep 3b: Updating docs/changelog.md and docs/index.md...")
+    docs_changelog = Path("docs/changelog.md")
+    docs_index = Path("docs/index.md")
+    shutil.copy2(changelog, docs_changelog)
+    section = extract_changelog_section(new_version, changelog)
+    if section:
+        update_whats_new(new_version, section, docs_index)
+    else:
+        print("  Warning: Could not find changelog section for this version")
+
     # Step 4: Commit and tag
     print("\nStep 4: Committing and tagging...")
-    run(["git", "add", str(gradle_props), str(changelog)])
+    run(["git", "add", str(gradle_props), str(changelog), str(docs_index)])
     for api_txt in api_files:
         version_txt = api_txt.parent / f"{new_version}.txt"
         run(["git", "add", str(version_txt)])
