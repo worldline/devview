@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 versions=($(mike list | tr ' ' '\n'))
 
