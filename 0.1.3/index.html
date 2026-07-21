@@ -592,10 +592,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#v013-networkmock-and-navigation-fixes" class="md-nav__link">
+  <a href="#v013" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        v0.1.3 - NetworkMock and navigation fixes
+        v0.1.3
       </span>
     </span>
   </a>
@@ -2197,12 +2197,12 @@
 </div>
 <hr />
 <h2 id="whats-new">What's New</h2>
-<h3 id="v013-networkmock-and-navigation-fixes">v0.1.3 - NetworkMock and navigation fixes</h3>
-<ul>
-<li>Added <code>NetworkMockResourceLoader</code> fun interface in <code>devview-networkmock-core</code> for easier DI framework integration (Koin, Hilt, etc.)</li>
-<li>Fixed DevView overlay back navigation: the overlay's back handler now correctly yields priority to the host app when closed</li>
-<li>Fixed crash on Network Mock screen startup caused by <code>MissingResourceException</code> when probing absent response files</li>
-</ul>
+<h3 id="v013">v0.1.3</h3>
+<p><strong>Added</strong>
+- <code>NetworkMockResourceLoader</code> fun interface in <code>devview-networkmock-core</code>: provides a named type for DI frameworks (Koin, Hilt, etc.) to bind, eliminating the need for a custom bridge interface in multi-module KMP projects where mock resource files live in a different module than where <code>NetworkMock</code> is constructed. Both <code>devview-networkmock</code> and <code>devview-networkmock-ktor</code> now expose <code>devview-networkmock-core</code> as an <code>api</code> dependency so the type is available to all integrators.</p>
+<p><strong>Fixed</strong>
+- Fixed DevView overlay back navigation: the overlay's back handler now correctly yields priority to the host app when closed, preventing it from silently consuming back events.
+- Fixed crash on Network Mock screen startup: <code>MissingResourceException</code> thrown by Compose Resources when probing absent response files was not caught by the <code>IllegalStateException</code> handler in <code>MockConfigRepository</code>, causing a fatal crash. The exception is now normalised at the <code>NetworkMock</code> boundary before reaching the core module.</p>
 <hr />
 <h2 id="what-is-devview">What is DevView?</h2>
 <p>DevView is an extensible, in-app developer tools framework designed for Kotlin Multiplatform applications. It provides a unified interface for debugging, testing, and managing development features across Android and iOS platforms.</p>
