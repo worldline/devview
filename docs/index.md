@@ -24,11 +24,11 @@
 
 ## What's New
 
-### v0.1.3 - NetworkMock and navigation fixes
+### v0.1.2 - Packaging and sample improvements
 
-- Added `NetworkMockResourceLoader` fun interface in `devview-networkmock-core` for easier DI framework integration (Koin, Hilt, etc.)
-- Fixed DevView overlay back navigation: the overlay's back handler now correctly yields priority to the host app when closed
-- Fixed crash on Network Mock screen startup caused by `MissingResourceException` when probing absent response files
+- Preserved Kotlin module metadata in Android packaging
+- Fixed docs list rendering on Home and License pages
+- Updated sample `DevViewApp` feature setup
 
 ---
 
