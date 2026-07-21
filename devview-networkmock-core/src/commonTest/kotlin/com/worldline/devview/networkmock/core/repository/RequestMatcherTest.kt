@@ -359,5 +359,77 @@ class RequestMatcherTest {
     }
 
     // endregion
+
+    // region Query parameter matching
+
+    @Test
+    fun `matchesQueryParams returns true when configQueryParams is null`() {
+        RequestMatcher.matchesQueryParams(
+            configQueryParams = null,
+            requestQueryParams = mapOf("page" to listOf("1"))
+        ) shouldBe true
+    }
+
+    @Test
+    fun `matchesQueryParams returns true when configQueryParams is empty`() {
+        RequestMatcher.matchesQueryParams(
+            configQueryParams = emptyMap(),
+            requestQueryParams = mapOf("page" to listOf("1"))
+        ) shouldBe true
+    }
+
+    @Test
+    fun `matchesQueryParams returns true when all config params are present`() {
+        RequestMatcher.matchesQueryParams(
+            configQueryParams = mapOf("type" to "user"),
+            requestQueryParams = mapOf("type" to listOf("user"), "page" to listOf("1"))
+        ) shouldBe true
+    }
+
+    @Test
+    fun `matchesQueryParams returns false when a config param is missing from request`() {
+        RequestMatcher.matchesQueryParams(
+            configQueryParams = mapOf("type" to "user", "status" to "active"),
+            requestQueryParams = mapOf("type" to listOf("user"))
+        ) shouldBe false
+    }
+
+    @Test
+    fun `matchesQueryParams returns false when a config param has wrong value`() {
+        RequestMatcher.matchesQueryParams(
+            configQueryParams = mapOf("type" to "user"),
+            requestQueryParams = mapOf("type" to listOf("admin"))
+        ) shouldBe false
+    }
+
+    @Test
+    fun `matchesQueryParams returns true when config param value is one of multiple request values`() {
+        RequestMatcher.matchesQueryParams(
+            configQueryParams = mapOf("type" to "user"),
+            requestQueryParams = mapOf("type" to listOf("admin", "user"))
+        ) shouldBe true
+    }
+
+    @Test
+    fun `matchesQueryParams returns true with multiple config params all present`() {
+        RequestMatcher.matchesQueryParams(
+            configQueryParams = mapOf("type" to "user", "status" to "active"),
+            requestQueryParams = mapOf(
+                "type" to listOf("user"),
+                "status" to listOf("active"),
+                "page" to listOf("1")
+            )
+        ) shouldBe true
+    }
+
+    @Test
+    fun `matchesQueryParams returns false when request has no query params but config requires some`() {
+        RequestMatcher.matchesQueryParams(
+            configQueryParams = mapOf("type" to "user"),
+            requestQueryParams = emptyMap()
+        ) shouldBe false
+    }
+
+    // endregion
 }
 

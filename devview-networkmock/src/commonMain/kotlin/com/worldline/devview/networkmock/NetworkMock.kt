@@ -18,6 +18,7 @@ import com.worldline.devview.networkmock.core.NetworkMockDataStoreDelegate
 import com.worldline.devview.networkmock.core.NetworkMockInitializer
 import com.worldline.devview.networkmock.core.NetworkMockResourceLoader
 import com.worldline.devview.networkmock.core.model.EndpointKey
+import com.worldline.devview.networkmock.core.repository.MockConfigRepository
 import com.worldline.devview.networkmock.viewmodel.NetworkMockEndpointViewModel
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
 import com.worldline.devview.utils.DataStoreDelegate
@@ -86,7 +87,8 @@ public sealed interface NetworkMockDestination : NavKey {
  */
 public class NetworkMock(
     private val resourceLoader: NetworkMockResourceLoader,
-    private val configPath: String = "files/networkmocks/mocks.json"
+    private val configPath: String = "files/networkmocks/mocks.json",
+    private val responseSuffixes: List<String> = MockConfigRepository.DEFAULT_RESPONSE_SUFFIXES
 ) : Module,
     RequiresDataStore {
     override val dataStoreName: String = NETWORK_MOCK_DATASTORE_NAME
@@ -118,7 +120,8 @@ public class NetworkMock(
                 } catch (e: MissingResourceException) {
                     throw IllegalStateException(e.message, e)
                 }
-            }
+            },
+            responseSuffixes = responseSuffixes
         )
     }
 

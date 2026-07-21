@@ -116,7 +116,8 @@ import kotlinx.serialization.json.Json
 public class MockConfigRepository(
     private val configPath: String,
     private val resourceLoader: NetworkMockResourceLoader,
-    private val statusCodesToDiscover: List<Int> = DEFAULT_STATUS_CODES
+    private val statusCodesToDiscover: List<Int> = DEFAULT_STATUS_CODES,
+    private val responseSuffixes: List<String> = DEFAULT_RESPONSE_SUFFIXES
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -138,6 +139,20 @@ public class MockConfigRepository(
             400, 401, 403, 404, 409, 422, 429,
             // 5xx Server Errors
             500, 502, 503, 504
+        )
+
+        /**
+         * The default set of file suffixes probed during response file discovery.
+         *
+         * Files are expected to follow the naming pattern `{endpointId}-{statusCode}[-{suffix}].json`.
+         * Pass a custom list to [MockConfigRepository] to support additional suffixes used by your project.
+         */
+        public val DEFAULT_RESPONSE_SUFFIXES: List<String> = listOf(
+            "",
+            "-simple",
+            "-detailed",
+            "-error",
+            "-success"
         )
     }
 
@@ -268,7 +283,12 @@ public class MockConfigRepository(
      * @return A [MockMatch] if a matching endpoint is found, or `null` otherwise
      */
     @Suppress("ReturnCount", "LongMethod")
-    public suspend fun findMatchingMock(host: String, path: String, method: String): MockMatch? {
+    public suspend fun findMatchingMock(
+        host: String,
+        path: String,
+        method: String,
+        queryParameters: Map<String, List<String>> = emptyMap()
+    ): MockMatch? {
         println(message = "[NetworkMock][Matching] Looking for match: $method $host$path")
 
         val config = loadConfiguration().getOrNull()
@@ -309,6 +329,10 @@ public class MockConfigRepository(
                         requestPath = path
                     )
                     val methodMatches = endpoint.method == method
+                    val queryMatches = RequestMatcher.matchesQueryParams(
+                        configQueryParams = endpoint.queryParams,
+                        requestQueryParams = queryParameters
+                    )
                     println(message = "[NetworkMock][Matching]       Endpoint '${endpoint.id}':")
                     println(
                         message = "[NetworkMock][Matching]         Path: ${endpoint.path} vs " +
@@ -318,7 +342,12 @@ public class MockConfigRepository(
                         message = "[NetworkMock][Matching]         Method: ${endpoint.method} vs " +
                             "$method = $methodMatches"
                     )
-                    pathMatches && methodMatches
+                    println(
+                        message =
+                            "[NetworkMock][Matching]         Query: ${endpoint.queryParams} vs " +
+                                "$queryParameters = $queryMatches"
+                    )
+                    pathMatches && methodMatches && queryMatches
                 }
 
                 if (matchingEndpoint != null) {
@@ -333,7 +362,8 @@ public class MockConfigRepository(
                             environmentId = environment.id,
                             endpointId = matchingEndpoint.id
                         ),
-                        config = matchingEndpoint
+                        config = matchingEndpoint,
+                        delayMs = matchingEndpoint.delayMs ?: group.defaultDelayMs
                     )
                 }
 
@@ -418,8 +448,7 @@ public class MockConfigRepository(
         val environmentPath = "files/networkmocks/responses/$groupId/$environmentId/$endpointId"
         val sharedPath = "files/networkmocks/responses/$groupId/$endpointId"
 
-        // TODO - Consider making suffixes configurable if needed by integrators
-        val suffixesToTry = listOf("", "-simple", "-detailed", "-error", "-success")
+        val suffixesToTry = responseSuffixes
 
         // Use a LinkedHashMap keyed by fileName so that environment-specific entries
         // automatically win over shared ones when both exist for the same file name.

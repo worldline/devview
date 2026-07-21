@@ -3,6 +3,7 @@
 package com.worldline.devview.networkmock.ktor.plugin
 
 import com.worldline.devview.networkmock.core.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.NetworkMockState
 import io.ktor.client.HttpClient
 import io.ktor.client.call.HttpClientCall
 import io.ktor.client.plugins.HttpClientPlugin
@@ -12,12 +13,15 @@ import io.ktor.client.request.HttpRequest
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
 import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpProtocolVersion
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Url
 import io.ktor.http.content.OutgoingContent
+import io.ktor.http.headersOf
 import io.ktor.util.AttributeKey
 import io.ktor.util.Attributes
 import io.ktor.util.date.GMTDate
@@ -25,6 +29,10 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.InternalAPI
 import kotlin.coroutines.CoroutineContext
 import kotlin.text.get
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 private const val LOG_PREFIX = "[NetworkMock][Plugin]"
 
@@ -142,16 +150,26 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
 
             println(message = "$LOG_PREFIX NetworkMock plugin installed successfully")
 
+            val cachedState = MutableStateFlow<NetworkMockState?>(value = null)
+            scope.launch {
+                stateRepository.observeState().collect { state ->
+                    cachedState.value = state
+                }
+            }
+
             scope.plugin(plugin = HttpSend).intercept { requestBuilder ->
                 val request = requestBuilder.build()
                 val host = request.url.host
                 val path = request.url.encodedPath
                 val method = request.method.value
+                val queryParameters = request.url.parameters
+                    .entries()
+                    .associate { (key, values) -> key to values }
 
                 println(message = "$LOG_PREFIX ========================================")
                 println(message = "$LOG_PREFIX Intercepted request: $method $host$path")
 
-                val currentState = stateRepository.getState()
+                val currentState = cachedState.value ?: stateRepository.getState()
 
                 if (!currentState.globalMockingEnabled) {
                     println(
@@ -166,7 +184,8 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                 val mockMatch = mockRepository.findMatchingMock(
                     host = host,
                     path = path,
-                    method = method
+                    method = method,
+                    queryParameters = queryParameters
                 )
 
                 mockMatch?.let { match ->
@@ -237,6 +256,11 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                                         message = "$LOG_PREFIX ========================================"
                                     )
 
+                                    match.delayMs?.let { ms ->
+                                        println(message = "$LOG_PREFIX Simulating delay of ${ms}ms")
+                                        delay(timeMillis = ms)
+                                    }
+
                                     return@intercept createMockHttpClientCall(
                                         client = scope,
                                         requestData = request,
@@ -305,7 +329,10 @@ private fun createMockHttpClientCall(
     val responseData = HttpResponseData(
         statusCode = statusCode,
         requestTime = GMTDate(),
-        headers = Headers.Empty,
+        headers = headersOf(
+            name = HttpHeaders.ContentType,
+            value = ContentType.Application.Json.toString()
+        ),
         version = HttpProtocolVersion.HTTP_1_1,
         body = ByteReadChannel(content = content.encodeToByteArray()),
         callContext = requestData.executionContext
