@@ -1,0 +1,340 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>FeatureFlip</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    DevView
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector common-like" data-active="" aria-pressed="true" data-filter=":devview-featureflip/commonMain">common</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":devview-featureflip/commonMain" data-filter=":devview-featureflip/commonMain">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    DevView
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="devview-featureflip::com.worldline.devview.featureflip/FeatureFlip///PointingToDeclaration//378251977">
+  <div class="breadcrumbs"><a href="../../index.html">devview-featureflip</a><span class="delimiter">/</span><a href="../index.html">com.worldline.devview.featureflip</a><span class="delimiter">/</span><span class="current">FeatureFlip</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Feature</span><wbr><span><span>Flip</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-featureflip/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">FeatureFlip</a> : <a href="../../../devview/com.worldline.devview.core/-module/index.html">Module</a>, <a href="../../../devview-utils/com.worldline.devview.utils/-requires-data-store/index.html">RequiresDataStore</a></div><p class="paragraph">FeatureFlip module for the DevView developer tools suite.</p><p class="paragraph">This module provides feature flag management capabilities, allowing developers to toggle features on/off during development and testing. It supports both local features (device-specific) and remote features (controlled by remote configuration with local override capability).</p><h2 class="">Features</h2><ul><li><p class="paragraph">Local feature flags (simple on/off toggles)</p></li><li><p class="paragraph">Remote feature flags (remote config with local overrides)</p></li><li><p class="paragraph">Persistent state using DataStore</p></li><li><p class="paragraph">Search and filter capabilities</p></li><li><p class="paragraph">Real-time UI updates</p></li><li><p class="paragraph">Tri-state controls for remote features (Remote/Off/On)</p></li></ul><h2 class="">Integration</h2><p class="paragraph">The FeatureFlip module integrates with the DevView core framework as part of the FEATURES section. It provides navigation destinations and UI components that can be accessed through the DevView menu.</p><h3 class="">Module Configuration</h3><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">val devView = DevView(<br>    modules = listOf(<br>        FeatureFlip,<br>        // other modules...<br>    )<br>)</code></pre><span class="copy-tooltip"><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div><span class="copy-icon"></span></span></div><h3 class="">Defining Features</h3><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">val features = listOf(<br>    Feature.LocalFeature(<br>        name = "dark_mode",<br>        description = "Enable dark theme",<br>        isEnabled = false<br>    ),<br>    Feature.RemoteFeature(<br>        name = "new_checkout",<br>        description = "New checkout flow",<br>        defaultRemoteValue = true,<br>        state = FeatureState.REMOTE<br>    )<br>)</code></pre><span class="copy-tooltip"><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div><span class="copy-icon"></span></span></div><h3 class="">Using Features in Code</h3><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">@Composable<br>fun MyScreen() {<br>    val featureHandler = LocalFeatureHandler.current<br>    val isDarkModeEnabled by featureHandler.isFeatureEnabled("dark_mode")<br><br>    if (isDarkModeEnabled) {<br>        DarkThemeContent()<br>    } else {<br>        LightThemeContent()<br>    }<br>}</code></pre><span class="copy-tooltip"><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div><span class="copy-icon"></span></span></div><h4 class="tableheader">See also</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../../../devview/com.worldline.devview.core/-module/index.html"><span><span>Module</span></span></a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../../../devview/com.worldline.devview.core/-section/-f-e-a-t-u-r-e-s/index.html"><span>Section.</span><wbr><span>FEATURES</span></a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../../com.worldline.devview.featureflip.model/-feature/index.html"><span><span>Feature</span></span></a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../../com.worldline.devview.featureflip.model/-feature-handler/index.html"><span>Feature</span><wbr><span><span>Handler</span></span></a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-feature-flip-screen.html"><span>Feature</span><wbr><span>Flip</span><wbr><span><span>Screen</span></span></a></div></span></div><div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-2125603649%2FProperties%2F378251977" anchor-label="containerColor" id="-2125603649%2FProperties%2F378251977" data-filterable-set=":devview-featureflip/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-2125603649%2FProperties%2F378251977"><span>container</span><wbr><span><span>Color</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2125603649%2FProperties%2F378251977"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-featureflip/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="index.html#-2125603649%2FProperties%2F378251977">containerColor</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/compose/ui/graphics/Color.html">Color</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1644280759%2FProperties%2F378251977" anchor-label="contentColor" id="1644280759%2FProperties%2F378251977" data-filterable-set=":devview-featureflip/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1644280759%2FProperties%2F378251977"><span>content</span><wbr><span><span>Color</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1644280759%2FProperties%2F378251977"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-featureflip/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="index.html#1644280759%2FProperties%2F378251977">contentColor</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/compose/ui/graphics/Color.html">Color</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="582545026%2FProperties%2F378251977" anchor-label="dataStoreDelegate" id="582545026%2FProperties%2F378251977" data-filterable-set=":devview-featureflip/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="data-store-delegate.html"><span>data</span><wbr><span>Store</span><wbr><span><span>Delegate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="582545026%2FProperties%2F378251977"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-featureflip/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="data-store-delegate.html">dataStoreDelegate</a><span class="token operator">: </span><a href="../../../devview-utils/com.worldline.devview.utils/-data-store-delegate/index.html">DataStoreDelegate</a></div><div class="brief "><p class="paragraph">The <a href="../../../devview-utils/com.worldline.devview.utils/-data-store-delegate/index.html">DataStoreDelegate</a> instance for the FeatureFlip module.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="664324412%2FProperties%2F378251977" anchor-label="dataStoreName" id="664324412%2FProperties%2F378251977" data-filterable-set=":devview-featureflip/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="data-store-name.html"><span>data</span><wbr><span>Store</span><wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="664324412%2FProperties%2F378251977"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-featureflip/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="data-store-name.html">dataStoreName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="596377431%2FProperties%2F378251977" anchor-label="destinations" id="596377431%2FProperties%2F378251977" data-filterable-set=":devview-featureflip/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="destinations.html"><span><span>destinations</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="596377431%2FProperties%2F378251977"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-featureflip/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="destinations.html">destinations</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.collections.immutable/PersistentMap///PointingToDeclaration/">PersistentMap</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.reflect/-k-class/index.html">KClass</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="https://developer.android.com/reference/kotlin/androidx/navigation3/runtime/NavKey.html">NavKey</a><span class="token operator">&gt;</span><span class="token punctuation">, </span><a href="../../../devview/com.worldline.devview.core/-destination-metadata/index.html">DestinationMetadata</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Maps each navigation destination in this module to its <a href="../../../devview/com.worldline.devview.core/-destination-metadata/index.html">DestinationMetadata</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1404942944%2FProperties%2F378251977" anchor-label="entryDestination" id="-1404942944%2FProperties%2F378251977" data-filterable-set=":devview-featureflip/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="entry-destination.html"><span>entry</span><wbr><span><span>Destination</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1404942944%2FProperties%2F378251977"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-featureflip/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="entry-destination.html">entryDestination</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/navigation3/runtime/NavKey.html">NavKey</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-250122104%2FProperties%2F378251977" anchor-label="icon" id="-250122104%2FProperties%2F378251977" data-filterable-set=":devview-featureflip/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-250122104%2FProperties%2F378251977"><span><span>icon</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-250122104%2FProperties%2F378251977"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-featureflip/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="index.html#-250122104%2FProperties%2F378251977">icon</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/compose/ui/graphics/vector/ImageVector.html">ImageVector</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2018651990%2FProperties%2F378251977" anchor-label="moduleName" id="-2018651990%2FProperties%2F378251977" data-filterable-set=":devview-featureflip/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-2018651990%2FProperties%2F378251977"><span>module</span><wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2018651990%2FProperties%2F378251977"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-featureflip/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="index.html#-2018651990%2FProperties%2F378251977">moduleName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="524575744%2FProperties%2F378251977" anchor-label="registerSerializers" id="524575744%2FProperties%2F378251977" data-filterable-set=":devview-featureflip/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="register-serializers.html"><span>register</span><wbr><span><span>Serializers</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="524575744%2FProperties%2F378251977"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-featureflip/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="register-serializers.html">registerSerializers</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.modules/PolymorphicModuleBuilder///PointingToDeclaration/">PolymorphicModuleBuilder</span><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/androidx/navigation3/runtime/NavKey.html">NavKey</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></div><div class="brief "><p class="paragraph">Registers serializers for navigation destinations.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="173658873%2FProperties%2F378251977" anchor-label="section" id="173658873%2FProperties%2F378251977" data-filterable-set=":devview-featureflip/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="section.html"><span><span>section</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="173658873%2FProperties%2F378251977"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-featureflip/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="section.html">section</a><span class="token operator">: </span><a href="../../../devview/com.worldline.devview.core/-section/index.html">Section</a></div><div class="brief "><p class="paragraph">The section this module belongs to in the DevView menu.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-352931895%2FProperties%2F378251977" anchor-label="subtitle" id="-352931895%2FProperties%2F378251977" data-filterable-set=":devview-featureflip/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-352931895%2FProperties%2F378251977"><span><span>subtitle</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-352931895%2FProperties%2F378251977"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-featureflip/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="index.html#-352931895%2FProperties%2F378251977">subtitle</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-791485405%2FFunctions%2F378251977" anchor-label="initDataStore" id="-791485405%2FFunctions%2F378251977" data-filterable-set=":devview-featureflip/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-791485405%2FFunctions%2F378251977"><span>init</span><wbr><span>Data</span><wbr><span><span>Store</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-791485405%2FFunctions%2F378251977"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-featureflip/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/compose/runtime/Composable.html"><span class="token annotation builtin">Composable</span></a></div></div><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#-791485405%2FFunctions%2F378251977"><span class="token function">initDataStore</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1050743749%2FFunctions%2F378251977" anchor-label="initModule" id="1050743749%2FFunctions%2F378251977" data-filterable-set=":devview-featureflip/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1050743749%2FFunctions%2F378251977"><span>init</span><wbr><span><span>Module</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1050743749%2FFunctions%2F378251977"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-featureflip/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/compose/runtime/Composable.html"><span class="token annotation builtin">Composable</span></a></div></div><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#1050743749%2FFunctions%2F378251977"><span class="token function">initModule</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-614888305%2FFunctions%2F378251977" anchor-label="registerContent" id="-614888305%2FFunctions%2F378251977" data-filterable-set=":devview-featureflip/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-featureflip/commonMain" data-filterable-set=":devview-featureflip/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="register-content.html"><span>register</span><wbr><span><span>Content</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-614888305%2FFunctions%2F378251977"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-featureflip/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="https://developer.android.com/reference/kotlin/androidx/navigation3/runtime/EntryProviderScope.html">EntryProviderScope</a><span class="token operator">&lt;</span><a href="https://developer.android.com/reference/kotlin/androidx/navigation3/runtime/NavKey.html">NavKey</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="register-content.html"><span class="token function">registerContent</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">onNavigateBack<span class="token operator">: </span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token punctuation">, </span></span><span class="parameter ">onNavigate<span class="token operator">: </span><span class="token punctuation">(</span><a href="https://developer.android.com/reference/kotlin/androidx/navigation3/runtime/NavKey.html">NavKey</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token punctuation">, </span></span><span class="parameter ">bottomPadding<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/compose/ui/unit/Dp.html">Dp</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Registers the composable content for each navigation destination.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
