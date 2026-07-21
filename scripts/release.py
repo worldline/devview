@@ -45,12 +45,31 @@ def update_changelog(version: str, changelog: Path) -> None:
     content = changelog.read_text()
     today = date.today().strftime("%Y-%m-%d")
 
-    if "## Unreleased" not in content:
-        raise ValueError("CHANGELOG.md missing '## Unreleased' section")
+    if "## [Unreleased]" not in content:
+        raise ValueError("CHANGELOG.md missing '## [Unreleased]' section")
 
-    parts = content.split("## Unreleased", 1)
-    before, after = parts
-    new_content = f"{before}## Unreleased\n\n## [{version}] - {today}{after}"
+    # Insert new release section below [Unreleased]
+    new_content = content.replace(
+        "## [Unreleased]",
+        f"## [Unreleased]\n\n## [{version}] - {today}",
+        1,
+    )
+
+    # Update the [Unreleased] comparison link and insert a new version link
+    link_re = re.compile(
+        r"^\[Unreleased\]: (https://github\.com/([^/]+/[^/]+))/compare/v(.+?)\.\.\.HEAD$",
+        re.MULTILINE,
+    )
+    m = link_re.search(new_content)
+    if m:
+        base_url = m.group(1)
+        prev_version = m.group(3)
+        new_content = link_re.sub(
+            f"[Unreleased]: {base_url}/compare/v{version}...HEAD\n"
+            f"[{version}]: {base_url}/compare/v{prev_version}...v{version}",
+            new_content,
+        )
+
     changelog.write_text(new_content)
 
 
