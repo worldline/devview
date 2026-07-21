@@ -1,0 +1,139 @@
+// Signature format: 4.0
+package com.worldline.devview {
+
+  public final class DevViewKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void DevView(boolean devViewIsOpen, kotlin.jvm.functions.Function0<kotlin.Unit> closeDevView, kotlinx.collections.immutable.ImmutableList<com.worldline.devview.core.Module> modules, optional androidx.compose.ui.Modifier modifier);
+  }
+
+  @kotlinx.serialization.Serializable public final class Home implements androidx.navigation3.runtime.NavKey {
+    method @InaccessibleFromKotlin public String getTitle();
+    property public String title;
+    field public static final com.worldline.devview.Home INSTANCE;
+  }
+
+}
+
+package com.worldline.devview.core {
+
+  public final class DestinationMetadata {
+    ctor public DestinationMetadata();
+    ctor public DestinationMetadata(optional String? title, optional kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationAction> actions);
+    method public String? component1();
+    method public kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationAction> component2();
+    method public com.worldline.devview.core.DestinationMetadata copy(optional String? title, optional kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationAction> actions);
+    method @InaccessibleFromKotlin public kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationAction> getActions();
+    method @InaccessibleFromKotlin public String? getTitle();
+    property public kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationAction> actions;
+    property public String? title;
+  }
+
+  public final class DestinationMetadataBuilder {
+    method public void action(androidx.compose.ui.graphics.vector.ImageVector icon, optional com.worldline.devview.core.ModuleDestinationActionPopup? popup, kotlin.jvm.functions.Function0<kotlin.Unit> action);
+  }
+
+  public final class DestinationMetadataExtensionsKt {
+    method public static kotlin.Pair<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> asDestination(androidx.navigation3.runtime.NavKey);
+    method public static kotlin.Pair<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> asDestination(kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>);
+    method public static kotlin.Pair<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> withActions(androidx.navigation3.runtime.NavKey, kotlin.jvm.functions.Function1<? super com.worldline.devview.core.DestinationMetadataBuilder,kotlin.Unit> block);
+    method public static kotlin.Pair<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> withActions(kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>, kotlin.jvm.functions.Function1<? super com.worldline.devview.core.DestinationMetadataBuilder,kotlin.Unit> block);
+    method public static kotlin.Pair<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> withTitle(androidx.navigation3.runtime.NavKey, String title);
+    method public static kotlin.Pair<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> withTitle(androidx.navigation3.runtime.NavKey, String title, kotlin.jvm.functions.Function1<? super com.worldline.devview.core.DestinationMetadataBuilder,kotlin.Unit> block);
+    method public static kotlin.Pair<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> withTitle(kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>, String title);
+    method public static kotlin.Pair<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> withTitle(kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>, String title, kotlin.jvm.functions.Function1<? super com.worldline.devview.core.DestinationMetadataBuilder,kotlin.Unit> block);
+  }
+
+  public interface Module {
+    method @InaccessibleFromKotlin public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> getDestinations();
+    method @InaccessibleFromKotlin public androidx.navigation3.runtime.NavKey getEntryDestination();
+    method @InaccessibleFromKotlin public default androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    method @InaccessibleFromKotlin public default String getModuleName();
+    method @InaccessibleFromKotlin public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<? super androidx.navigation3.runtime.NavKey>,kotlin.Unit> getRegisterSerializers();
+    method @InaccessibleFromKotlin public com.worldline.devview.core.Section getSection();
+    method @InaccessibleFromKotlin public default String? getSubtitle();
+    method @KotlinOnly @androidx.compose.runtime.Composable public default void initModule();
+    method @KotlinOnly public void registerContent(androidx.navigation3.runtime.EntryProviderScope<androidx.navigation3.runtime.NavKey>, kotlin.jvm.functions.Function0<kotlin.Unit> onNavigateBack, kotlin.jvm.functions.Function1<androidx.navigation3.runtime.NavKey,kotlin.Unit> onNavigate, androidx.compose.ui.unit.Dp bottomPadding);
+    property public default androidx.compose.ui.graphics.Color containerColor;
+    property public default androidx.compose.ui.graphics.Color contentColor;
+    property public abstract kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> destinations;
+    property public abstract androidx.navigation3.runtime.NavKey entryDestination;
+    property public default androidx.compose.ui.graphics.vector.ImageVector icon;
+    property public default String moduleName;
+    property public abstract kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<androidx.navigation3.runtime.NavKey>,kotlin.Unit> registerSerializers;
+    property public abstract com.worldline.devview.core.Section section;
+    property public default String? subtitle;
+  }
+
+  public final class ModuleDestinationAction {
+    ctor public ModuleDestinationAction(androidx.compose.ui.graphics.vector.ImageVector icon, kotlin.jvm.functions.Function0<kotlin.Unit> action, optional com.worldline.devview.core.ModuleDestinationActionPopup? popup);
+    method public androidx.compose.ui.graphics.vector.ImageVector component1();
+    method public kotlin.jvm.functions.Function0<kotlin.Unit> component2();
+    method public com.worldline.devview.core.ModuleDestinationActionPopup? component3();
+    method public com.worldline.devview.core.ModuleDestinationAction copy(optional androidx.compose.ui.graphics.vector.ImageVector icon, optional kotlin.jvm.functions.Function0<kotlin.Unit> action, optional com.worldline.devview.core.ModuleDestinationActionPopup? popup);
+    method @InaccessibleFromKotlin public kotlin.jvm.functions.Function0<kotlin.Unit> getAction();
+    method @InaccessibleFromKotlin public androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    method @InaccessibleFromKotlin public com.worldline.devview.core.ModuleDestinationActionPopup? getPopup();
+    property public kotlin.jvm.functions.Function0<kotlin.Unit> action;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    property public com.worldline.devview.core.ModuleDestinationActionPopup? popup;
+  }
+
+  public final class ModuleDestinationActionPopup {
+    ctor public ModuleDestinationActionPopup(String title, optional String? subtitle, String confirmButton, String dismissButton);
+    method public String component1();
+    method public String? component2();
+    method public String component3();
+    method public String component4();
+    method public com.worldline.devview.core.ModuleDestinationActionPopup copy(optional String title, optional String? subtitle, optional String confirmButton, optional String dismissButton);
+    method @InaccessibleFromKotlin public String getConfirmButton();
+    method @InaccessibleFromKotlin public String getDismissButton();
+    method @InaccessibleFromKotlin public String? getSubtitle();
+    method @InaccessibleFromKotlin public String getTitle();
+    property public String confirmButton;
+    property public String dismissButton;
+    property public String? subtitle;
+    property public String title;
+  }
+
+  public final class ModuleRegistry {
+    ctor public ModuleRegistry();
+    method public kotlinx.collections.immutable.ImmutableList<com.worldline.devview.core.Module> build();
+    method public com.worldline.devview.core.ModuleRegistry module(com.worldline.devview.core.Module module);
+    method public com.worldline.devview.core.ModuleRegistry modules(com.worldline.devview.core.Module... modules);
+  }
+
+  public final class ModuleRegistryKt {
+    method public static kotlinx.collections.immutable.ImmutableList<com.worldline.devview.core.Module> buildModules(kotlin.jvm.functions.Function1<? super com.worldline.devview.core.ModuleRegistry,kotlin.Unit> block);
+    method @KotlinOnly @androidx.compose.runtime.Composable public static kotlinx.collections.immutable.ImmutableList<com.worldline.devview.core.Module> rememberModules(kotlin.jvm.functions.Function1<com.worldline.devview.core.ModuleRegistry,kotlin.Unit> block);
+  }
+
+  @kotlin.annotation.Retention(kotlin.annotation.AnnotationRetention.SOURCE) @kotlin.annotation.Target(allowedTargets=kotlin.annotation.AnnotationTarget.CLASS) public @interface Poko {
+  }
+
+  public enum Section {
+    enum_constant public static final com.worldline.devview.core.Section CUSTOM;
+    enum_constant public static final com.worldline.devview.core.Section FEATURES;
+    enum_constant public static final com.worldline.devview.core.Section LOGGING;
+    enum_constant public static final com.worldline.devview.core.Section NETWORK;
+    enum_constant public static final com.worldline.devview.core.Section SETTINGS;
+  }
+
+  public final class SectionKt {
+    method @InaccessibleFromKotlin public static androidx.compose.ui.graphics.vector.ImageVector getIcon(com.worldline.devview.core.Section);
+    property public static androidx.compose.ui.graphics.vector.ImageVector com.worldline.devview.core.Section.icon;
+  }
+
+}
+
+package com.worldline.devview.internal.components {
+
+  public enum ModulePosition {
+    method @InaccessibleFromKotlin public boolean getHasDivider();
+    property public boolean hasDivider;
+    enum_constant public static final com.worldline.devview.internal.components.ModulePosition FIRST;
+    enum_constant public static final com.worldline.devview.internal.components.ModulePosition LAST;
+    enum_constant public static final com.worldline.devview.internal.components.ModulePosition MIDDLE;
+    enum_constant public static final com.worldline.devview.internal.components.ModulePosition SINGLE;
+  }
+
+}
+
