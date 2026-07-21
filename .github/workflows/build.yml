@@ -178,25 +178,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - api-level: 26
-            target: default
-            arch: x86
-            force-avd-creation: true
-            test-emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          - api-level: 29
-            target: default
-            arch: x86
-            force-avd-creation: false
-            test-emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          - api-level: 35
-            target: google_apis
-            arch: x86_64
-            force-avd-creation: false
-            test-emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        api-level: [26, 31, 36]
 
     steps:
       - uses: actions/checkout@v7
+
+      - name: Get AVD info
+        uses: ./.github/actions/get-avd-info
+        id: avd-info
+        with:
+          api-level: ${{ matrix.api-level }}
 
       - name: Validate Gradle wrapper
         uses: gradle/actions/wrapper-validation@v6
@@ -222,16 +213,15 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-v3-${{ runner.os }}-${{ matrix.api-level }}-${{ matrix.target }}-${{ matrix.arch }}-anim-on-${{ hashFiles('.github/workflows/build.yml') }}
+          key: avd-v4-${{ runner.os }}-${{ matrix.api-level }}-${{ steps.avd-info.outputs.target }}-${{ steps.avd-info.outputs.arch }}-${{ hashFiles('.github/workflows/build.yml') }}
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.target }}
-          arch: ${{ matrix.arch }}
-          force-avd-creation: ${{ matrix.force-avd-creation }}
+          target: ${{ steps.avd-info.outputs.target }}
+          arch: ${{ steps.avd-info.outputs.arch }}
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
@@ -240,16 +230,11 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.target }}
-          arch: ${{ matrix.arch }}
-          force-avd-creation: ${{ matrix.force-avd-creation }}
-          emulator-options: ${{ matrix.test-emulator-options }}
+          target: ${{ steps.avd-info.outputs.target }}
+          arch: ${{ steps.avd-info.outputs.arch }}
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
-          script: >-
-            ./gradlew connectedDebugAndroidTest -Pandroidx.baselineprofile.skipgeneration;
-            GRADLE_EXIT=$?;
-            (while true; do pkill -9 crashpad_handler 2>/dev/null || true; sleep 2; done) &
-            exit $GRADLE_EXIT
+          script: ./gradlew connectedDebugAndroidTest -Pandroidx.baselineprofile.skipgeneration
 
       - name: Upload device test reports
         if: failure()
