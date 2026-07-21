@@ -126,6 +126,29 @@ public object RequestMatcher {
     }
 
     /**
+     * Checks if request query parameters satisfy the configured constraints.
+     *
+     * Performs **subset matching**: every key-value pair in [configQueryParams] must be present
+     * in [requestQueryParams]. Extra query parameters in the request are allowed and ignored.
+     * If [configQueryParams] is `null` or empty, the check always passes — endpoints without
+     * declared query params match any request regardless of its query string.
+     *
+     * @param configQueryParams The required query parameters from [EndpointConfig][com.worldline.devview.networkmock.core.model.EndpointConfig],
+     *   or `null`
+     * @param requestQueryParams The actual request query parameters (multi-valued map)
+     * @return `true` if all configured params are present with the expected values in the request
+     */
+    public fun matchesQueryParams(
+        configQueryParams: Map<String, String>?,
+        requestQueryParams: Map<String, List<String>>
+    ): Boolean {
+        if (configQueryParams.isNullOrEmpty()) return true
+        return configQueryParams.all { (key, value) ->
+            requestQueryParams[key]?.contains(element = value) == true
+        }
+    }
+
+    /**
      * Checks if a path segment is a parameter (enclosed in curly braces).
      *
      * A segment is considered a parameter if it:

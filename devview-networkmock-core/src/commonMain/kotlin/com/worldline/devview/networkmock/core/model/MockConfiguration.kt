@@ -127,7 +127,8 @@ public data class ApiGroupConfig(
     val id: String,
     val name: String,
     val endpoints: List<EndpointConfig>,
-    val environments: List<EnvironmentConfig>
+    val environments: List<EnvironmentConfig>,
+    val defaultDelayMs: Long? = null
 )
 
 /**
@@ -281,7 +282,9 @@ public data class EndpointConfig(
     override val id: String,
     override val name: String,
     override val path: String,
-    override val method: String
+    override val method: String,
+    val delayMs: Long? = null,
+    val queryParams: Map<String, String>? = null
 ) : EndpointDefinition
 
 /**
@@ -335,7 +338,9 @@ public data class EndpointOverride(
     override val id: String,
     override val name: String? = null,
     override val path: String? = null,
-    override val method: String? = null
+    override val method: String? = null,
+    val delayMs: Long? = null,
+    val queryParams: Map<String, String>? = null
 ) : EndpointDefinition
 
 /**
@@ -421,7 +426,11 @@ public data class EndpointKey(
  * @see com.worldline.devview.networkmock.core.repository.MockConfigRepository.findMatchingMock
  */
 @Immutable
-public data class MockMatch(val key: EndpointKey, val config: EndpointConfig) {
+public data class MockMatch(
+    val key: EndpointKey,
+    val config: EndpointConfig,
+    val delayMs: Long? = null
+) {
     /** The [ApiGroupConfig.id] of the matched group. Convenience accessor for [EndpointKey.groupId]. */
     public val groupId: String get() = key.groupId
 
@@ -541,7 +550,9 @@ public fun ApiGroupConfig.effectiveEndpoints(environment: EnvironmentConfig): Li
             shared.copy(
                 name = override.name ?: shared.name,
                 path = override.path ?: shared.path,
-                method = override.method ?: shared.method
+                method = override.method ?: shared.method,
+                delayMs = override.delayMs ?: shared.delayMs,
+                queryParams = override.queryParams ?: shared.queryParams
             )
         }
     }

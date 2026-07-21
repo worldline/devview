@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.worldline.devview.networkmock.core.repository.MockConfigRepository
+import com.worldline.devview.networkmock.core.repository.MockConfigRepository.Companion.DEFAULT_RESPONSE_SUFFIXES
 import com.worldline.devview.networkmock.core.repository.MockStateRepository
 
 /**
@@ -57,7 +58,8 @@ public object NetworkMockInitializer {
     public fun initialize(
         dataStore: DataStore<Preferences>,
         configPath: String,
-        resourceLoader: NetworkMockResourceLoader
+        resourceLoader: NetworkMockResourceLoader,
+        responseSuffixes: List<String> = DEFAULT_RESPONSE_SUFFIXES
     ) {
         if (stateRepository != null) return
         stateRepository = remember {
@@ -68,7 +70,8 @@ public object NetworkMockInitializer {
         configRepository = remember {
             MockConfigRepository(
                 configPath = configPath,
-                resourceLoader = resourceLoader
+                resourceLoader = resourceLoader,
+                responseSuffixes = responseSuffixes
             )
         }
     }
