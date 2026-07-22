@@ -62,6 +62,7 @@ Note: PRs are squash-merged using the PR title (`type: description`) as the fina
 - [ ] Detekt passes
 - [ ] Documentation updated
 - [ ] CHANGELOG updated
+- [ ] Any `LazyColumn`/`LazyRow` with a `key` argument has a device test rendering 2+ items (see [Code Style](code-style.md#compose-list-keys))
 
 ## Review Process
 - PRs are reviewed by maintainers. Be responsive to feedback.
