@@ -120,10 +120,32 @@ class AnalyticsScreenTest {
         waitUntilTagCount(tag = "analytics_log_item_login_click", expectedCount = 0)
     }
 
+    @Test
+    fun logsWithSameTimestampAllRender() = runComposeUiTest {
+        val sameTimestamp = 1_700_000_000_000L
+        val logs = listOf(
+            AnalyticsLog(tag = "event_a", screenClass = "TestScreen", timestamp = sameTimestamp, type = AnalyticsLogCategory.Action.Click),
+            AnalyticsLog(tag = "event_b", screenClass = "TestScreen", timestamp = sameTimestamp, type = AnalyticsLogCategory.Action.Click),
+            AnalyticsLog(tag = "event_c", screenClass = "TestScreen", timestamp = sameTimestamp, type = AnalyticsLogCategory.Action.Click),
+        )
+
+        setContent {
+            CompositionLocalProvider(LocalAnalytics provides logs) {
+                AnalyticsScreen(highlightedAnalyticsLogTypes = persistentListOf())
+            }
+        }
+
+        waitUntilTagCount(tag = "analytics_log_item_event_a", expectedCount = 1)
+        waitUntilTagCount(tag = "analytics_log_item_event_b", expectedCount = 1)
+        waitUntilTagCount(tag = "analytics_log_item_event_c", expectedCount = 1)
+    }
+
+    private var logIdCounter = 0L
+
     private fun log(
         tag: String,
         type: AnalyticsLogType,
-        timestamp: Long = 1_700_000_000_000
+        timestamp: Long = logIdCounter++
     ): AnalyticsLog =
         AnalyticsLog(
             tag = tag,

@@ -162,14 +162,14 @@ public fun AnalyticsScreen(
     val filteredAnalytics by remember {
         derivedStateOf {
             val now = Clock.System.now().toEpochMilliseconds()
-            analytics.filter {
+            analytics.withIndex().filter { (_, log) ->
                 val matchesQuery = filterQuery.isBlank() ||
-                    it.tag.contains(other = filterQuery, ignoreCase = true) ||
-                    it.screenClass.contains(other = filterQuery, ignoreCase = true)
+                    log.tag.contains(other = filterQuery, ignoreCase = true) ||
+                    log.screenClass.contains(other = filterQuery, ignoreCase = true)
                 val matchesCategory = selectedCategories.isEmpty() ||
-                    it.type.category in selectedCategories
+                    log.type.category in selectedCategories
                 val matchesTimeRange = selectedTimeRange.durationMillis?.let { duration ->
-                    now - it.timestamp <= duration
+                    now - log.timestamp <= duration
                 } ?: true
                 matchesQuery && matchesCategory && matchesTimeRange
             }
@@ -388,8 +388,9 @@ public fun AnalyticsScreen(
             }
             itemsIndexed(
                 items = filteredAnalytics,
-                key = { _, log -> log.timestamp }
-            ) { index, log ->
+                key = { _, item -> item.index }
+            ) { index, item ->
+                val log = item.value
                 Column(
                     modifier = Modifier
                         .animateItem()

@@ -193,4 +193,26 @@ class FeatureFlipScreenTest {
         waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 1)
         waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
     }
+
+    @Test
+    fun multipleFeaturesOfDifferentTypesAllRender() = runComposeUiTest {
+        val handler = FeatureHandler(
+            dataStore = FakePreferencesDataStore(),
+            initialFeatures = listOf(
+                Feature.LocalFeature(name = "feature_local_a", description = null, isEnabled = false),
+                Feature.LocalFeature(name = "feature_local_b", description = null, isEnabled = true),
+                Feature.RemoteFeature(name = "feature_remote_a", description = null, defaultRemoteValue = true, state = FeatureState.REMOTE),
+            )
+        )
+
+        setContent {
+            CompositionLocalProvider(LocalFeatureHandler provides handler) {
+                FeatureFlipScreen()
+            }
+        }
+
+        waitUntilTagCount(tag = "feature_item_feature_local_a", expectedCount = 1)
+        waitUntilTagCount(tag = "feature_item_feature_local_b", expectedCount = 1)
+        waitUntilTagCount(tag = "feature_item_feature_remote_a", expectedCount = 1)
+    }
 }
