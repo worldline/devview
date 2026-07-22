@@ -2156,72 +2156,84 @@
 </span></code></pre></div>
 <h2 id="build">Build</h2>
 <p>=== "Windows"</p>
-<div class="language-text highlight"><pre><span></span><code>```bat
+<div class="codehilite"><pre><span></span><code>```bat
 .\gradlew.bat :sample:androidApp:assembleDebug -Pandroidx.baselineprofile.skipgeneration
 ```
 </code></pre></div>
+
 <p>=== "macOS / Linux"</p>
-<div class="language-text highlight"><pre><span></span><code>```bash
+<div class="codehilite"><pre><span></span><code>```bash
 ./gradlew :sample:androidApp:assembleDebug -Pandroidx.baselineprofile.skipgeneration
 ```
 </code></pre></div>
+
 <h2 id="run-tests">Run tests</h2>
 <p>Unit and host tests (no device required):</p>
 <p>=== "Windows"</p>
-<div class="language-text highlight"><pre><span></span><code>```bat
+<div class="codehilite"><pre><span></span><code>```bat
 .\gradlew.bat cleanTestAndroidHostTest testAndroidHostTest -Pandroidx.baselineprofile.skipgeneration
 ```
 </code></pre></div>
+
 <p>=== "macOS / Linux"</p>
-<div class="language-text highlight"><pre><span></span><code>```bash
+<div class="codehilite"><pre><span></span><code>```bash
 ./gradlew cleanTestAndroidHostTest testAndroidHostTest -Pandroidx.baselineprofile.skipgeneration
 ```
 </code></pre></div>
+
 <p>Instrumented tests (requires a connected emulator or device):</p>
 <p>=== "Windows"</p>
-<div class="language-text highlight"><pre><span></span><code>```bat
+<div class="codehilite"><pre><span></span><code>```bat
 .\gradlew.bat connectedAndroidDeviceTest -Pandroidx.baselineprofile.skipgeneration
 ```
 </code></pre></div>
+
 <p>=== "macOS / Linux"</p>
-<div class="language-text highlight"><pre><span></span><code>```bash
+<div class="codehilite"><pre><span></span><code>```bash
 ./gradlew connectedAndroidDeviceTest -Pandroidx.baselineprofile.skipgeneration
 ```
 </code></pre></div>
+
 <h2 id="code-quality">Code quality</h2>
 <p>Run the full Detekt + ktlint analysis across all modules:</p>
 <p>=== "Windows"</p>
-<div class="language-text highlight"><pre><span></span><code>```bat
+<div class="codehilite"><pre><span></span><code>```bat
 .\gradlew.bat detektFull
 ```
 </code></pre></div>
+
 <p>=== "macOS / Linux"</p>
-<div class="language-text highlight"><pre><span></span><code>```bash
+<div class="codehilite"><pre><span></span><code>```bash
 ./gradlew detektFull
 ```
 </code></pre></div>
+
 <p>Architecture rules (Konsist):</p>
 <p>=== "Windows"</p>
-<div class="language-text highlight"><pre><span></span><code>```bat
+<div class="codehilite"><pre><span></span><code>```bat
 .\gradlew.bat :konsist:test
 ```
 </code></pre></div>
+
 <p>=== "macOS / Linux"</p>
-<div class="language-text highlight"><pre><span></span><code>```bash
+<div class="codehilite"><pre><span></span><code>```bash
 ./gradlew :konsist:test
 ```
 </code></pre></div>
+
 <h2 id="generate-api-docs">Generate API docs</h2>
 <p>=== "Windows"</p>
-<div class="language-text highlight"><pre><span></span><code>```bat
+<div class="codehilite"><pre><span></span><code>```bat
 .\gradlew.bat :internal:dokka:dokkaGenerate -Pandroidx.baselineprofile.skipgeneration
 ```
 </code></pre></div>
+
 <p>=== "macOS / Linux"</p>
-<div class="language-text highlight"><pre><span></span><code>```bash
+<div class="codehilite"><pre><span></span><code>```bash
 ./gradlew :internal:dokka:dokkaGenerate -Pandroidx.baselineprofile.skipgeneration
 ```
 </code></pre></div>
+
 <h2 id="next-steps">Next steps</h2>
 <ul>
 <li>See <a href="../code-style/">Code Style</a> for formatting and linting rules</li>

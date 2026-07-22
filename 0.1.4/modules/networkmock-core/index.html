@@ -1095,6 +1095,56 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#networkmockresourceloader" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        NetworkMockResourceLoader
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="NetworkMockResourceLoader">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Basic Usage
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#di-usage-koin-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        DI Usage (Koin example)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-this-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Why This Exists
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#related-modules" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2203,6 +2253,32 @@
 </tbody>
 </table>
 <p><code>EndpointMockState</code> is serialized as <code>{"type":"network"}</code> (pass-through) or <code>{"type":"mock","responseFile":"getUser-200.json"}</code>.</p>
+<h2 id="networkmockresourceloader">NetworkMockResourceLoader</h2>
+<p><em>Added in v0.1.3.</em></p>
+<p><code>NetworkMockResourceLoader</code> is a <code>fun interface</code> that abstracts how mock resource bytes are loaded from a path. It exists to support DI-friendly architectures where the mock JSON files live in a different Gradle module than the one constructing <code>NetworkMock</code>.</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">public</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nc">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="n">path</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="n">ByteArray</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="basic-usage">Basic Usage</h3>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">NetworkMock</span><span class="p">(</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="n">resourceLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Res</span><span class="p">.</span><span class="na">readBytes</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="di-usage-koin-example">DI Usage (Koin example)</h3>
+<p>In the module that owns the mock resource files:
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">single</span><span class="o">&lt;</span><span class="n">NetworkMockResourceLoader</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="n">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Res</span><span class="p">.</span><span class="na">readBytes</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="p">}</span>
+</span></code></pre></div></p>
+<p>In the presentation module where <code>NetworkMock</code> is constructed:
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">loader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">koinInject</span><span class="o">&lt;</span><span class="n">NetworkMockResourceLoader</span><span class="o">&gt;</span><span class="p">()</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rememberModules</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="n">module</span><span class="p">(</span><span class="n">NetworkMock</span><span class="p">(</span><span class="n">resourceLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loader</span><span class="p">))</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="p">}</span>
+</span></code></pre></div></p>
+<h3 id="why-this-exists">Why This Exists</h3>
+<p>Before v0.1.3, <code>NetworkMock</code> accepted a raw <code>suspend (String) -&gt; ByteArray</code> lambda. This worked but was impossible to register as a typed binding in DI frameworks (Koin, Hilt) across Gradle module boundaries. The named <code>NetworkMockResourceLoader</code> type solves this.</p>
 <h2 id="related-modules">Related Modules</h2>
 <ul>
 <li><a href="../networkmock/">NetworkMock</a>: UI layer and module entry point.</li>
