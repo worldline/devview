@@ -133,7 +133,7 @@ public fun AnalyticsScreen(
     val lazyListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
-    val showScrollToTopFab by remember(key1 = lazyListState) {
+    val showScrollToTopFab by remember {
         derivedStateOf {
             val layoutInfo = lazyListState.layoutInfo
             val headerItem =
@@ -153,18 +153,13 @@ public fun AnalyticsScreen(
         targetValue = if (filtersExpanded) 180f else 0f
     )
 
-    val availableCategories by remember(key1 = analytics) {
+    val availableCategories by remember {
         derivedStateOf {
             analytics.map { it.type.category }.distinct()
         }
     }
 
-    val filteredAnalytics by remember(
-        analytics,
-        filterQuery,
-        selectedCategories,
-        selectedTimeRange
-    ) {
+    val filteredAnalytics by remember {
         derivedStateOf {
             val now = Clock.System.now().toEpochMilliseconds()
             analytics.filter {
@@ -181,10 +176,7 @@ public fun AnalyticsScreen(
         }
     }
 
-    val highlightedAnalyticsLogs: PersistentList<HighlightedAnalyticsLog> by remember(
-        key1 = analytics,
-        key2 = highlightedAnalyticsLogTypes
-    ) {
+    val highlightedAnalyticsLogs: PersistentList<HighlightedAnalyticsLog> by remember {
         derivedStateOf {
             buildList {
                 add(element = HighlightedAnalyticsLog.Total(count = analytics.size))
@@ -396,7 +388,7 @@ public fun AnalyticsScreen(
             }
             itemsIndexed(
                 items = filteredAnalytics,
-                key = { _, log -> log.hashCode() }
+                key = { _, log -> log.timestamp }
             ) { index, log ->
                 Column(
                     modifier = Modifier
