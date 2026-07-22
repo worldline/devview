@@ -17,7 +17,7 @@ val modules = rememberModules {
         module(FeatureFlip)
     }
     if (isNetworkMockEnabled) {
-        module(NetworkMock) // Optional: Add network mocking for development/testing
+        module(NetworkMock(resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }))
     }
 }
 ```
@@ -47,7 +47,7 @@ Box(
 Provide a quick-access button for DevView in debug builds.
 
 ```kotlin
-if (Build.DEBUG) {
+if (BuildConfig.DEBUG) {
     IconButton(onClick = { isDevViewOpen = true }) {
         Icon(Icons.Default.DeveloperMode, null)
     }
@@ -64,7 +64,7 @@ object MyModule : Module {
     override val moduleName = "My Custom Tool"
     override val section = Section.CUSTOM
     override val icon = Icons.Default.Build
-    override val containerColour = Colour(0xFFFF5722)
+    override val containerColor: Color = Color(0xFFFF5722)
     override val subtitle = "Custom developer tool"
 }
 ```
@@ -95,12 +95,12 @@ See the [Creating Custom Modules](../modules/custom-modules.md) guide for a full
 - Make sure you've added the correct dependency for your platform
 - Verify that you're using compatible versions of Kotlin and the library
 - Check that Compose Multiplatform is properly configured
-- Clean and rebuild your project: `./gradlew clean build`
+- Clean and rebuild your project: `.\gradlew.bat clean build -Pandroidx.baselineprofile.skipgeneration`
 
 #### Styling issues
 - Ensure you're using Material3 components and theme
 - Check that custom colours are properly defined
-- Verify containerColour values are valid Colour objects
+- Verify `containerColor` values are valid `Color` objects
 - Test on both light and dark themes
 
 #### Feature flags not working

@@ -66,4 +66,4 @@ Recommended patterns and practices for using DevView.
 - Explore [Examples](../examples/index.md) for practical usage
 
 ## API Reference
-> _[API reference available via Dokka. Add direct link here when available.]_
+> _[Dokka API Reference](../api/index.html)_

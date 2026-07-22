@@ -59,4 +59,4 @@ entry<MyDestination.Detail> { destination ->
 [Custom Modules](../modules/custom-modules.md)
 
 ## API Reference
-> _[API reference available via Dokka. Add direct link here when available.]_
+> _[Dokka API Reference](../api/index.html)_

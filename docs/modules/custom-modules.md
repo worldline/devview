@@ -21,7 +21,7 @@ interface Module {
     val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata>
     val entryDestination: NavKey
     val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit
-    fun initModule() {}     // optional, called once after DataStore init
+    @Composable fun initModule() {}  // optional, called within Composition after DataStore init
     fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
         onNavigate: (NavKey) -> Unit,

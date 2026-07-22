@@ -11,7 +11,7 @@ When `NetworkMock` is registered via `rememberModules`, the plugin resolves its 
 ```kotlin
 // Register the NetworkMock module in your app
 val modules = rememberModules {
-    module(NetworkMock(resourceLoader = { path -> Res.readBytes(path) }))
+    module(NetworkMock(resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }))
 }
 
 // Install the plugin in your Ktor client — no configuration needed

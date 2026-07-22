@@ -25,7 +25,7 @@ Shows the full endpoint info and all discovered mock response files, grouped by 
 ```kotlin
 val modules = rememberModules {
     module(NetworkMock(
-        resourceLoader = { path -> Res.readBytes(path) }
+        resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }
     ))
 }
 ```

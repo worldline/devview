@@ -50,5 +50,5 @@ Avoid these common mistakes when integrating and extending DevView. This guide p
 - Explore [Examples](../examples/index.md) for practical usage.
 
 ## API Reference
-> _[API reference available via Dokka. Add direct link here when available.]_
+> _[Dokka API Reference](../api/index.html)_
 

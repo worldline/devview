@@ -40,7 +40,7 @@ DevView modules are plug-and-play, integrating seamlessly with the core. Modules
 val modules = rememberModules {
     module(FeatureFlip)
     module(Analytics)
-    module(NetworkMock)
+    module(NetworkMock(resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }))
     module(MyCustomModule)
 }
 ```

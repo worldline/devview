@@ -24,7 +24,7 @@ Register the modules you want to use:
 val modules = rememberModules {
     module(FeatureFlip)
     module(Analytics)
-    module(NetworkMock)
+    module(NetworkMock(resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }))
     // Add custom modules if needed
 }
 ```

@@ -71,7 +71,8 @@ If your API uses status codes outside the defaults, pass a custom list:
 
 ```kotlin
 MockConfigRepository(
-    resourceLoader = { path -> Res.readBytes(path) },
+    configPath = "files/networkmocks/mocks.json",
+    resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) },
     statusCodesToDiscover = listOf(200, 400, 503, 418)
 )
 ```

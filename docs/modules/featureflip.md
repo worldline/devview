@@ -86,6 +86,3 @@ CompositionLocalProvider(LocalFeatureHandler provides featureHandler) {
 ## API Reference
 > _[Dokka API Reference](../api/devview-featureflip/index.html)_
 
----
-
-*API reference is available via Dokka or in your IDE.*

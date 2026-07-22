@@ -4,7 +4,7 @@ Complete Android integration example.
 
 ## Prerequisites
 - Android Studio Giraffe or newer
-- Minimum API level 21
+- Minimum API level 26 (Oreo)
 - Kotlin Multiplatform and Compose Multiplatform configured
 
 ## Step 1: Add Dependencies
@@ -40,7 +40,7 @@ fun App() {
     val modules = rememberModules {
         module(FeatureFlip)
         module(Analytics)
-        module(NetworkMock)
+        module(NetworkMock(resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }))
         // Add custom modules if needed
     }
     Box(modifier = Modifier.fillMaxSize()) {

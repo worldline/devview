@@ -87,6 +87,3 @@ CompositionLocalProvider(LocalAnalytics provides AnalyticsLogger.logs) {
 ## API Reference
 > _[Dokka API Reference](../api/devview-analytics/index.html)_
 
----
-
-*API reference is available via Dokka or in your IDE.*

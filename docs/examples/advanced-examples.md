@@ -21,7 +21,7 @@ val modules = rememberModules {
     module(MyAdvancedModule)
     module(FeatureFlip)
     module(Analytics())
-    module(NetworkMock(resourceLoader = { path -> Res.readBytes(path) }))
+    module(NetworkMock(resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }))
 }
 ```
 

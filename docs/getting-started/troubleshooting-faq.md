@@ -22,12 +22,12 @@ Find solutions to common issues and answers to frequently asked questions when i
 - Make sure you've added the correct dependency for your platform.
 - Verify that you're using compatible versions of Kotlin and the library.
 - Check that Compose Multiplatform is properly configured.
-- Clean and rebuild your project: `./gradlew clean build`
+- Clean and rebuild your project: `.\gradlew.bat clean build -Pandroidx.baselineprofile.skipgeneration`
 
 ### Styling issues
 - Ensure you're using Material3 components and theme.
 - Check that custom colours are properly defined.
-- Verify containerColour values are valid Colour objects.
+- Verify `containerColor` values are valid `Color` objects.
 - Test on both light and dark themes.
 
 ### Feature flags not working
@@ -55,5 +55,5 @@ See the [Examples section](../examples/index.md) for platform-specific and advan
 
 ---
 
-If your issue is not listed here, please consult the [DevView repository](https://github.com/worldline-tech/devview) or open an issue for further assistance.
+If your issue is not listed here, please consult the [DevView repository](https://github.com/worldline/devview) or open an issue for further assistance.
 

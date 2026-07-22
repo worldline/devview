@@ -24,7 +24,7 @@ Configure which DevView modules you want to use.
 val modules = rememberModules {
     module(FeatureFlip)
     module(Analytics())
-    module(NetworkMock(resourceLoader = { path -> Res.readBytes(path) })) // Optional
+    module(NetworkMock(resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) })) // Optional
 }
 ```
 
@@ -54,7 +54,7 @@ fun App() {
     val modules = rememberModules {
         module(FeatureFlip)
         module(Analytics())
-        module(NetworkMock(resourceLoader = { path -> Res.readBytes(path) }))
+        module(NetworkMock(resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }))
     }
     Box(modifier = Modifier.fillMaxSize()) {
         MainAppContent()
