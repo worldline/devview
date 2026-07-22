@@ -13,7 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Section headers on the home screen now use `primary` color instead of `outline`, and the DevView chameleon icon appears as a subtle watermark behind the module list. (`devview`)
 - Analytics log items now display a `3dp` leading color strip matching the event category, making the log stream scannable by category at a glance. (`devview-analytics`)
 - Feature type labels ("Local" / "Remote") are now rendered as small pill badges instead of plain text. (`devview-featureflip`)
-- HTTP method labels on endpoint cards are now rendered as proper badges with a `primaryContainer` background, matching the visual language of API explorer tools. (`devview-networkmock`)
+- HTTP method labels on endpoint cards and the endpoint detail header are now rendered as proper badges with a `primaryContainer` background, matching the visual language of API explorer tools. (`devview-networkmock`)
+- NetworkMock empty, error, and loading state screens now use Material icons instead of an emoji, with consistent typography and `onSurfaceVariant` text colors. (`devview-networkmock`)
+- Added empty state to `FeatureFlipScreen` when the feature list is empty or no features match the active filter. (`devview-featureflip`)
+- The endpoint detail hint card now shows a `TouchApp` icon for visual clarity. (`devview-networkmock`)
+- Top app bar titles across all DevView screens are now `SemiBold` weight. (`devview`)
 - Unified surface backgrounds: the `surfaceContainer` explicit color has been removed from the Analytics highlighted-logs header and the NetworkMock global toggle wrapper — backgrounds now inherit from `MaterialTheme` uniformly. (`devview-analytics`, `devview-networkmock`)
 - Diff colors shifted from generic blue to lavender (`#DDD8FF`) to align with the brand palette. (`devview-networkmock`)
 

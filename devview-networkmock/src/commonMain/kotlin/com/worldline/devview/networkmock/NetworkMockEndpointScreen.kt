@@ -17,8 +17,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowUpward
+import androidx.compose.material.icons.rounded.TouchApp
+import androidx.compose.ui.Alignment
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FabPosition
@@ -172,13 +176,26 @@ private fun NetworkMockEndpointScreenContent(
                     elevation = CardDefaults.elevatedCardElevation(),
                     shape = MaterialTheme.shapes.small
                 ) {
-                    Text(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 12.dp, vertical = 8.dp),
-                        text = "Long press a mock response to be able to preview its content",
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                        horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.TouchApp,
+                            contentDescription = null,
+                            modifier = Modifier.size(size = 16.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = "Long press a mock response to be able to preview its content",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
             HorizontalDivider()
