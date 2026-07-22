@@ -608,6 +608,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#-added-compose-list-keys-rules-to-the-contributing-guide-code-stylemd-lazycolumnlazyrow-keys-must-be-unique-stable-under-state-changes-and-semantically-meaningful-added-matching-item-to-the-pr-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        - Added Compose List Keys rules to the contributing guide (<code>code-style.md</code>): LazyColumn/LazyRow keys must be unique, stable under state changes, and semantically meaningful. Added matching item to the PR checklist.
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#what-is-devview" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2198,29 +2209,32 @@
 <hr />
 <h2 id="whats-new">What's New</h2>
 <h3 id="v014">v0.1.4</h3>
-<p><strong>Changed</strong>
-- Applied logo-inspired color palette to the sample app: custom light/dark <code>ColorScheme</code> using violet/indigo/magenta tones from the DevView brand, including the full <code>surfaceContainer</code> tonal ramp. (<code>sample</code>)
-- Module icon containers on the home screen now use per-section colors derived from the logo palette; icon shape changed from circle to squircle (<code>RoundedCornerShape(8.dp)</code>) and module names are now <code>SemiBold</code>. Chevron indicator removed — touch ripple is the navigation affordance. (<code>devview</code>)
-- Section headers on the home screen now use <code>primary</code> color instead of <code>outline</code>, and the DevView chameleon icon appears as a subtle watermark behind the module list. (<code>devview</code>)
-- Analytics log items now display a <code>3dp</code> leading color strip matching the event category, making the log stream scannable by category at a glance. (<code>devview-analytics</code>)
-- Feature type labels ("Local" / "Remote") are now rendered as small pill badges instead of plain text. (<code>devview-featureflip</code>)
-- HTTP method labels on endpoint cards and the endpoint detail header are now rendered as proper badges with a <code>primaryContainer</code> background, matching the visual language of API explorer tools. (<code>devview-networkmock</code>)
-- NetworkMock empty, error, and loading state screens now use Material icons instead of an emoji, with consistent typography and <code>onSurfaceVariant</code> text colors. (<code>devview-networkmock</code>)
-- Added empty state to <code>FeatureFlipScreen</code> when the feature list is empty or no features match the active filter. (<code>devview-featureflip</code>)
-- The endpoint detail hint card now shows a <code>TouchApp</code> icon for visual clarity. (<code>devview-networkmock</code>)
-- Top app bar titles across all DevView screens are now <code>SemiBold</code> weight. (<code>devview</code>)
-- Unified surface backgrounds: the <code>surfaceContainer</code> explicit color has been removed from the Analytics highlighted-logs header and the NetworkMock global toggle wrapper — backgrounds now inherit from <code>MaterialTheme</code> uniformly. (<code>devview-analytics</code>, <code>devview-networkmock</code>)
-- Diff colors shifted from generic blue to lavender (<code>#DDD8FF</code>) to align with the brand palette. (<code>devview-networkmock</code>)</p>
-<p><strong>Fixed</strong>
-- Fixed excessive recompositions and broken Switch animation on <code>FeatureFlipScreen</code>: item keys now use the stable <code>feature.name</code> instead of <code>hashCode()</code>, <code>FeatureHandler</code> caches its Flow to prevent <code>collectAsStateWithLifecycle</code> from restarting on every recomposition, and redundant explicit <code>remember</code> keys have been removed from <code>derivedStateOf</code> blocks. (<code>devview-featureflip</code>)
-- Added <code>distinctUntilChanged()</code> to <code>FeatureHandler.isFeatureEnabledFlow</code> and <code>getFeatures</code> to suppress recompositions when DataStore emits structurally identical values. (<code>devview-featureflip</code>)
-- Fixed <code>AnalyticsScreen</code> <code>LazyColumn</code> item key: <code>log.hashCode()</code> was replaced by <code>log.timestamp</code>, then <code>log.timestamp</code> caused a crash because multiple events can share the same millisecond; the key is now the log's original position in the append-only <code>AnalyticsLogger.logs</code> list via <code>withIndex()</code>. Redundant explicit keys also removed from all <code>derivedStateOf</code> blocks. (<code>devview-analytics</code>)
-- Fixed <code>HomeScreen</code> <code>LazyColumn</code> using <code>module.hashCode()</code> as item key instead of the stable <code>module.moduleName</code>. (<code>devview</code>)
-- Fixed <code>NetworkMockScreen</code> using <code>collectAsState()</code> instead of <code>collectAsStateWithLifecycle()</code>, causing unnecessary state collection when the screen is off-stack or the app is backgrounded. (<code>devview-networkmock</code>)
-- Added <code>distinctUntilChanged()</code> to <code>MockStateRepository.observeState()</code> to suppress recompositions triggered by structurally equal <code>NetworkMockState</code> emissions from DataStore. (<code>devview-networkmock-core</code>)</p>
-<p><strong>Documentation</strong>
-- Added Compose List Keys rules to the contributing guide (<code>code-style.md</code>): LazyColumn/LazyRow keys must be unique, stable under state changes, and semantically meaningful. Added matching item to the PR checklist.</p>
-<hr />
+<p><strong>Changed</strong></p>
+<ul>
+<li>Applied logo-inspired color palette to the sample app: custom light/dark <code>ColorScheme</code> using violet/indigo/magenta tones from the DevView brand, including the full <code>surfaceContainer</code> tonal ramp. (<code>sample</code>)</li>
+<li>Module icon containers on the home screen now use per-section colors derived from the logo palette; icon shape changed from circle to squircle (<code>RoundedCornerShape(8.dp)</code>) and module names are now <code>SemiBold</code>. Chevron indicator removed — touch ripple is the navigation affordance. (<code>devview</code>)</li>
+<li>Section headers on the home screen now use <code>primary</code> color instead of <code>outline</code>, and the DevView chameleon icon appears as a subtle watermark behind the module list. (<code>devview</code>)</li>
+<li>Analytics log items now display a <code>3dp</code> leading color strip matching the event category, making the log stream scannable by category at a glance. (<code>devview-analytics</code>)</li>
+<li>Feature type labels ("Local" / "Remote") are now rendered as small pill badges instead of plain text. (<code>devview-featureflip</code>)</li>
+<li>HTTP method labels on endpoint cards and the endpoint detail header are now rendered as proper badges with a <code>primaryContainer</code> background, matching the visual language of API explorer tools. (<code>devview-networkmock</code>)</li>
+<li>NetworkMock empty, error, and loading state screens now use Material icons instead of an emoji, with consistent typography and <code>onSurfaceVariant</code> text colors. (<code>devview-networkmock</code>)</li>
+<li>Added empty state to <code>FeatureFlipScreen</code> when the feature list is empty or no features match the active filter. (<code>devview-featureflip</code>)</li>
+<li>The endpoint detail hint card now shows a <code>TouchApp</code> icon for visual clarity. (<code>devview-networkmock</code>)</li>
+<li>Top app bar titles across all DevView screens are now <code>SemiBold</code> weight. (<code>devview</code>)</li>
+<li>Unified surface backgrounds: the <code>surfaceContainer</code> explicit color has been removed from the Analytics highlighted-logs header and the NetworkMock global toggle wrapper — backgrounds now inherit from <code>MaterialTheme</code> uniformly. (<code>devview-analytics</code>, <code>devview-networkmock</code>)</li>
+<li>Diff colors shifted from generic blue to lavender (<code>#DDD8FF</code>) to align with the brand palette. (<code>devview-networkmock</code>)</li>
+</ul>
+<p><strong>Fixed</strong></p>
+<ul>
+<li>Fixed excessive recompositions and broken Switch animation on <code>FeatureFlipScreen</code>: item keys now use the stable <code>feature.name</code> instead of <code>hashCode()</code>, <code>FeatureHandler</code> caches its Flow to prevent <code>collectAsStateWithLifecycle</code> from restarting on every recomposition, and redundant explicit <code>remember</code> keys have been removed from <code>derivedStateOf</code> blocks. (<code>devview-featureflip</code>)</li>
+<li>Added <code>distinctUntilChanged()</code> to <code>FeatureHandler.isFeatureEnabledFlow</code> and <code>getFeatures</code> to suppress recompositions when DataStore emits structurally identical values. (<code>devview-featureflip</code>)</li>
+<li>Fixed <code>AnalyticsScreen</code> <code>LazyColumn</code> item key: <code>log.hashCode()</code> was replaced by <code>log.timestamp</code>, then <code>log.timestamp</code> caused a crash because multiple events can share the same millisecond; the key is now the log's original position in the append-only <code>AnalyticsLogger.logs</code> list via <code>withIndex()</code>. Redundant explicit keys also removed from all <code>derivedStateOf</code> blocks. (<code>devview-analytics</code>)</li>
+<li>Fixed <code>HomeScreen</code> <code>LazyColumn</code> using <code>module.hashCode()</code> as item key instead of the stable <code>module.moduleName</code>. (<code>devview</code>)</li>
+<li>Fixed <code>NetworkMockScreen</code> using <code>collectAsState()</code> instead of <code>collectAsStateWithLifecycle()</code>, causing unnecessary state collection when the screen is off-stack or the app is backgrounded. (<code>devview-networkmock</code>)</li>
+<li>Added <code>distinctUntilChanged()</code> to <code>MockStateRepository.observeState()</code> to suppress recompositions triggered by structurally equal <code>NetworkMockState</code> emissions from DataStore. (<code>devview-networkmock-core</code>)</li>
+</ul>
+<p><strong>Documentation</strong></p>
+<h2 id="-added-compose-list-keys-rules-to-the-contributing-guide-code-stylemd-lazycolumnlazyrow-keys-must-be-unique-stable-under-state-changes-and-semantically-meaningful-added-matching-item-to-the-pr-checklist">- Added Compose List Keys rules to the contributing guide (<code>code-style.md</code>): LazyColumn/LazyRow keys must be unique, stable under state changes, and semantically meaningful. Added matching item to the PR checklist.</h2>
 <h2 id="what-is-devview">What is DevView?</h2>
 <p>DevView is an extensible, in-app developer tools framework designed for Kotlin Multiplatform applications. It provides a unified interface for debugging, testing, and managing development features across Android and iOS platforms.</p>
 <hr />
