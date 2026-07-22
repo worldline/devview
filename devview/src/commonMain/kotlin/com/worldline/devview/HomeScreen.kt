@@ -130,7 +130,7 @@ internal fun HomeScreen(
                 }
                 itemsIndexed(
                     items = modulesPerSection,
-                    key = { _, module -> module.hashCode() },
+                    key = { _, module -> module.moduleName },
                     contentType = { _, _ -> "Module" }
                 ) { index, module ->
                     ModuleItem(
