@@ -132,6 +132,14 @@ class NetworkMockScreenTest {
         )
     }
 
+    @Test
+    fun multipleEndpointCardsAllRender() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+
+        onNodeWithTag(testTag = "endpoint_card_example_staging_getUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_staging_createUser").assertIsDisplayed()
+    }
+
     private fun ComposeUiTest.setScreen(
         uiState: NetworkMockUiState,
         onGlobalToggle: (Boolean) -> Unit = {},
