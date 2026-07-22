@@ -10,10 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed excessive recompositions and broken Switch animation on `FeatureFlipScreen`: item keys now use the stable `feature.name` instead of `hashCode()`, `FeatureHandler` caches its Flow to prevent `collectAsStateWithLifecycle` from restarting on every recomposition, and redundant explicit `remember` keys have been removed from `derivedStateOf` blocks. (`devview-featureflip`)
 - Added `distinctUntilChanged()` to `FeatureHandler.isFeatureEnabledFlow` and `getFeatures` to suppress recompositions when DataStore emits structurally identical values. (`devview-featureflip`)
-- Fixed `AnalyticsScreen` `LazyColumn` using `log.hashCode()` as item key instead of the stable `log.timestamp`; removed redundant explicit keys from all `derivedStateOf` blocks. (`devview-analytics`)
+- Fixed `AnalyticsScreen` `LazyColumn` item key: `log.hashCode()` was replaced by `log.timestamp`, then `log.timestamp` caused a crash because multiple events can share the same millisecond; the key is now the log's original position in the append-only `AnalyticsLogger.logs` list via `withIndex()`. Redundant explicit keys also removed from all `derivedStateOf` blocks. (`devview-analytics`)
 - Fixed `HomeScreen` `LazyColumn` using `module.hashCode()` as item key instead of the stable `module.moduleName`. (`devview`)
 - Fixed `NetworkMockScreen` using `collectAsState()` instead of `collectAsStateWithLifecycle()`, causing unnecessary state collection when the screen is off-stack or the app is backgrounded. (`devview-networkmock`)
 - Added `distinctUntilChanged()` to `MockStateRepository.observeState()` to suppress recompositions triggered by structurally equal `NetworkMockState` emissions from DataStore. (`devview-networkmock-core`)
+
+### Documentation
+- Added Compose List Keys rules to the contributing guide (`code-style.md`): LazyColumn/LazyRow keys must be unique, stable under state changes, and semantically meaningful. Added matching item to the PR checklist.
 
 ## [0.1.3] - 2026-07-21
 
