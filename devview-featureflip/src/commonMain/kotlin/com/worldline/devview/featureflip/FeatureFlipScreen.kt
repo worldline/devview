@@ -120,7 +120,7 @@ import kotlinx.coroutines.launch
 @Composable
 public fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 0.dp) {
     val featureHandler = LocalFeatureHandler.current
-    val features by featureHandler.features
+    val featuresState = featureHandler.features
 
     @Suppress("InjectDispatcher")
     val coroutineScope = rememberCoroutineScope(getContext = { Dispatchers.IO })
@@ -130,13 +130,14 @@ public fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 
 
     val selectedFilters = remember {
         FeatureFilter
-            .availableEntries(features = features)
+            .availableEntries(features = featuresState.value)
             .map { it to false }
             .toMutableStateMap()
     }
 
-    val filteredFeatures by remember(key1 = filterQuery, key2 = selectedFilters, key3 = features) {
+    val filteredFeatures by remember {
         derivedStateOf {
+            val features = featuresState.value
             val activeTypeFilters = selectedFilters
                 .filterKeys { it == FeatureFilter.LOCAL || it == FeatureFilter.REMOTE }
                 .filterValues { it }
@@ -280,7 +281,7 @@ public fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 
             }
             itemsIndexed(
                 items = filteredFeatures,
-                key = { _, feature -> feature.hashCode() },
+                key = { _, feature -> feature.name },
                 contentType = { _, feature -> feature::class.simpleName }
             ) { index, feature ->
                 Column(

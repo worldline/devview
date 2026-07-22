@@ -322,8 +322,10 @@ public class FeatureHandler(
      *
      * @return A [State] containing the list of all features with their current state
      */
+    private val featuresFlow: Flow<List<Feature>> = getFeatures()
+
     internal val features: State<List<Feature>>
-        @Composable get() = getFeatures()
+        @Composable get() = featuresFlow
             .collectAsStateWithLifecycle(
                 initialValue = featureRegistry.keys.toList()
             )
