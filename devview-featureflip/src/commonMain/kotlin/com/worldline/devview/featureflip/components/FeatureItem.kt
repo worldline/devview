@@ -1,6 +1,8 @@
 package com.worldline.devview.featureflip.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -95,15 +97,24 @@ internal fun FeatureItem(
                     style = MaterialTheme.typography.bodySmall
                 )
             }
-            Text(
-                modifier = Modifier.testTag(tag = "feature_type_${feature.name}"),
-                text = when (feature) {
-                    is LocalFeature -> "Local"
-                    is RemoteFeature -> "Remote"
-                },
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline
-            )
+            Box(
+                modifier = Modifier
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        shape = MaterialTheme.shapes.extraSmall
+                    )
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    modifier = Modifier.testTag(tag = "feature_type_${feature.name}"),
+                    text = when (feature) {
+                        is LocalFeature -> "Local"
+                        is RemoteFeature -> "Remote"
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
 
         when (feature) {

@@ -6,6 +6,7 @@ import androidx.compose.material.icons.rounded.Extension
 import androidx.compose.material.icons.rounded.FormatListNumbered
 import androidx.compose.material.icons.rounded.NetworkCheck
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
@@ -127,3 +128,15 @@ public val Section.icon: ImageVector
         Section.LOGGING -> Icons.Rounded.FormatListNumbered
         Section.CUSTOM -> Icons.Rounded.Extension
     }
+
+public val Section.containerColor: Color
+    get() = when (this) {
+        Section.SETTINGS -> Color(color = 0xFF545AAE)
+        Section.FEATURES -> Color(color = 0xFF764DD0)
+        Section.NETWORK -> Color(color = 0xFF5571B2)
+        Section.LOGGING -> Color(color = 0xFF6970CA)
+        Section.CUSTOM -> Color(color = 0xFFA03CBC)
+    }
+
+public val Section.contentColor: Color
+    get() = Color(color = 0xFFE8E9F7)

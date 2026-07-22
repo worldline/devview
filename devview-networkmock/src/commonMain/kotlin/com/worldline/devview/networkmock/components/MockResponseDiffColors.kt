@@ -6,11 +6,11 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 
-/** Light blue-white — background for left-side diff lines. Legible in both light and dark. */
-internal val DiffLeftContainer = Color(color = 0xFFD6E8FF)
+/** Light lavender — background for left-side diff lines. Legible in both light and dark. */
+internal val DiffLeftContainer = Color(color = 0xFFDDD8FF)
 
-/** Muted steel blue — text colour on [DiffLeftContainer]. */
-internal val DiffOnLeftContainer = Color(color = 0xFF2D4A6E)
+/** Deep indigo — text colour on [DiffLeftContainer]. */
+internal val DiffOnLeftContainer = Color(color = 0xFF352D6E)
 
 /** Light bisque — background for right-side diff lines. Maximally distinct from [DiffLeftContainer]. */
 internal val DiffRightContainer = Color(color = 0xFFFFE4C4)

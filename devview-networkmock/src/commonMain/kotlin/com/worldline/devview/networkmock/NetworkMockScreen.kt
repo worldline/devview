@@ -136,9 +136,7 @@ private fun ContentState(
         modifier = modifier
             .fillMaxSize()
     ) {
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainer
-        ) {
+        Surface {
             GlobalMockToggle(
                 modifier = Modifier
                     .padding(

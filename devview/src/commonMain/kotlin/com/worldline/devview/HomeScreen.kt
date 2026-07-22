@@ -1,6 +1,7 @@
 package com.worldline.devview
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,11 +12,16 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
+import org.jetbrains.compose.resources.painterResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -91,9 +97,20 @@ internal fun HomeScreen(
         }
     }
 
+    val watermarkAlpha = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) 0.38f else 0.07f
+
     Scaffold(
         modifier = modifier
     ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            Image(
+                painter = painterResource(resource = Res.drawable.devview_chameleon),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .alpha(alpha = watermarkAlpha),
+                contentScale = ContentScale.Fit,
+            )
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -116,14 +133,12 @@ internal fun HomeScreen(
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(
-                                color = MaterialTheme.colorScheme.background
-                            ).padding(start = 16.dp + 16.dp)
+                            .padding(start = 16.dp + 16.dp)
                             .padding(vertical = 8.dp)
                             .testTag(tag = "section_header_${section.name}"),
                         text = section.name.replace(oldChar = '_', newChar = ' '),
                         style = MaterialTheme.typography.bodySmallEmphasized.copy(
-                            color = MaterialTheme.colorScheme.outline,
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Medium
                         )
                     )
@@ -159,6 +174,7 @@ internal fun HomeScreen(
                     )
                 )
             }
+        }
         }
     }
 }
