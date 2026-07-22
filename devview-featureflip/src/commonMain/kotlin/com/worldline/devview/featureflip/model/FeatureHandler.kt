@@ -17,6 +17,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.worldline.devview.featureflip.FeatureFlip
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import okio.IOException
 
@@ -173,7 +174,7 @@ public class FeatureHandler(
                     }
                 }
             }
-        }
+        }.distinctUntilChanged()
 
     /**
      * Checks whether a feature is currently enabled as a Compose [State].
@@ -309,7 +310,7 @@ public class FeatureHandler(
                     }
                 }
             }
-        }
+        }.distinctUntilChanged()
 
     /**
      * Provides access to all registered features as a Compose [State].
