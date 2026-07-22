@@ -186,7 +186,7 @@ public interface Module {
      * Override to match your module's branding or to differentiate it visually.
      *
      * ## Default
-     * A blue color (0xFF326EE6)
+     * Derived from the module's [section] via [Section.containerColor].
      *
      * ## Custom Color Example
      * ```kotlin
@@ -194,7 +194,7 @@ public interface Module {
      * ```
      */
     public val containerColor: Color
-        get() = Color(color = 0xFF326EE6)
+        get() = section.containerColor
 
     /**
      * Color of the icon itself within the container.
@@ -203,7 +203,7 @@ public interface Module {
      * Override to customize the icon color.
      *
      * ## Default
-     * A light gray color (0xFFE6E6E6)
+     * Derived from the module's [section] via [Section.contentColor].
      *
      * ## Custom Color Example
      * ```kotlin
@@ -211,7 +211,7 @@ public interface Module {
      * ```
      */
     public val contentColor: Color
-        get() = Color(color = 0xFFE6E6E6)
+        get() = section.contentColor
 
     /**
      * Optional subtitle displayed below the module name in the module list.

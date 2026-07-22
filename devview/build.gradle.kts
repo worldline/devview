@@ -20,6 +20,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                implementation(libs.jetbrains.compose.components.resources)
+
                 api(libs.kotlinx.collections.immutable)
                 api(projects.devviewUtils)
             }
@@ -33,6 +35,12 @@ poko {
 
 tasks.withType<Test> {
     failOnNoDiscoveredTests.set(false)
+}
+
+compose {
+    resources {
+        packageOfResClass = "com.worldline.devview"
+    }
 }
 
 dependencies {

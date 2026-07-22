@@ -10,11 +10,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults.exitUntilCollapsedScrollBehavior
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -231,8 +230,6 @@ public fun DevView(
         onBack = closeDevView
     )
 
-    val scrollBehaviour = exitUntilCollapsedScrollBehavior()
-
     val currentModule: Module? by remember(key1 = modules) {
         derivedStateOf {
             modules.find { module ->
@@ -280,11 +277,10 @@ public fun DevView(
             Scaffold(
                 modifier = modifier,
                 topBar = {
-                    MediumTopAppBar(
+                    TopAppBar(
                         title = {
                             Text(text = title)
                         },
-                        scrollBehavior = scrollBehaviour,
                         actions = {
                             currentActions.forEachIndexed { index, action ->
                                 IconButton(
@@ -349,7 +345,7 @@ public fun DevView(
                             paddingValues = newPaddingValues
                         ).consumeWindowInsets(
                             paddingValues = newPaddingValues
-                        ).nestedScroll(connection = scrollBehaviour.nestedScrollConnection),
+                        ),
                     backStack = backstack,
                     onBack = {
                         backstack.removeLastOrNull()
