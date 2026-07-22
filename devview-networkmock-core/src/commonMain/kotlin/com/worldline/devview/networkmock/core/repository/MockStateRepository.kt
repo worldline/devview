@@ -13,6 +13,7 @@ import com.worldline.devview.networkmock.core.model.NetworkMockState
 import kotlin.time.Clock
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
@@ -209,7 +210,7 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
                 endpointStates = endpointStates,
                 lastModified = preferences[KEY_LAST_MODIFIED] ?: 0L
             )
-        }
+        }.distinctUntilChanged()
 
     /**
      * Gets the current network mock state as a one-time read.
