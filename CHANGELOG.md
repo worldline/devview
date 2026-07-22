@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-07-22
+
 ### Changed
 - Applied logo-inspired color palette to the sample app: custom light/dark `ColorScheme` using violet/indigo/magenta tones from the DevView brand, including the full `surfaceContainer` tonal ramp. (`sample`)
 - Module icon containers on the home screen now use per-section colors derived from the logo palette; icon shape changed from circle to squircle (`RoundedCornerShape(8.dp)`) and module names are now `SemiBold`. Chevron indicator removed — touch ripple is the navigation affordance. (`devview`)
@@ -105,7 +107,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added and expanded unit test coverage for all primary `devview-*` modules.
 - Added Konsist architecture enforcement tests and Kover coverage reporting across the module set.
 
-[Unreleased]: https://github.com/worldline/DevView/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/worldline/DevView/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/worldline/DevView/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/worldline/DevView/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/worldline/DevView/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/worldline/DevView/compare/v0.1.0...v0.1.1

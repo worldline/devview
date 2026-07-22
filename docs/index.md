@@ -24,14 +24,32 @@
 
 ## What's New
 
-### v0.1.3
+### v0.1.4
 
-**Added**
-- `NetworkMockResourceLoader` fun interface in `devview-networkmock-core`: provides a named type for DI frameworks (Koin, Hilt, etc.) to bind, eliminating the need for a custom bridge interface in multi-module KMP projects where mock resource files live in a different module than where `NetworkMock` is constructed. Both `devview-networkmock` and `devview-networkmock-ktor` now expose `devview-networkmock-core` as an `api` dependency so the type is available to all integrators.
+**Changed**
+- Applied logo-inspired color palette to the sample app: custom light/dark `ColorScheme` using violet/indigo/magenta tones from the DevView brand, including the full `surfaceContainer` tonal ramp. (`sample`)
+- Module icon containers on the home screen now use per-section colors derived from the logo palette; icon shape changed from circle to squircle (`RoundedCornerShape(8.dp)`) and module names are now `SemiBold`. Chevron indicator removed — touch ripple is the navigation affordance. (`devview`)
+- Section headers on the home screen now use `primary` color instead of `outline`, and the DevView chameleon icon appears as a subtle watermark behind the module list. (`devview`)
+- Analytics log items now display a `3dp` leading color strip matching the event category, making the log stream scannable by category at a glance. (`devview-analytics`)
+- Feature type labels ("Local" / "Remote") are now rendered as small pill badges instead of plain text. (`devview-featureflip`)
+- HTTP method labels on endpoint cards and the endpoint detail header are now rendered as proper badges with a `primaryContainer` background, matching the visual language of API explorer tools. (`devview-networkmock`)
+- NetworkMock empty, error, and loading state screens now use Material icons instead of an emoji, with consistent typography and `onSurfaceVariant` text colors. (`devview-networkmock`)
+- Added empty state to `FeatureFlipScreen` when the feature list is empty or no features match the active filter. (`devview-featureflip`)
+- The endpoint detail hint card now shows a `TouchApp` icon for visual clarity. (`devview-networkmock`)
+- Top app bar titles across all DevView screens are now `SemiBold` weight. (`devview`)
+- Unified surface backgrounds: the `surfaceContainer` explicit color has been removed from the Analytics highlighted-logs header and the NetworkMock global toggle wrapper — backgrounds now inherit from `MaterialTheme` uniformly. (`devview-analytics`, `devview-networkmock`)
+- Diff colors shifted from generic blue to lavender (`#DDD8FF`) to align with the brand palette. (`devview-networkmock`)
 
 **Fixed**
-- Fixed DevView overlay back navigation: the overlay's back handler now correctly yields priority to the host app when closed, preventing it from silently consuming back events.
-- Fixed crash on Network Mock screen startup: `MissingResourceException` thrown by Compose Resources when probing absent response files was not caught by the `IllegalStateException` handler in `MockConfigRepository`, causing a fatal crash. The exception is now normalised at the `NetworkMock` boundary before reaching the core module.
+- Fixed excessive recompositions and broken Switch animation on `FeatureFlipScreen`: item keys now use the stable `feature.name` instead of `hashCode()`, `FeatureHandler` caches its Flow to prevent `collectAsStateWithLifecycle` from restarting on every recomposition, and redundant explicit `remember` keys have been removed from `derivedStateOf` blocks. (`devview-featureflip`)
+- Added `distinctUntilChanged()` to `FeatureHandler.isFeatureEnabledFlow` and `getFeatures` to suppress recompositions when DataStore emits structurally identical values. (`devview-featureflip`)
+- Fixed `AnalyticsScreen` `LazyColumn` item key: `log.hashCode()` was replaced by `log.timestamp`, then `log.timestamp` caused a crash because multiple events can share the same millisecond; the key is now the log's original position in the append-only `AnalyticsLogger.logs` list via `withIndex()`. Redundant explicit keys also removed from all `derivedStateOf` blocks. (`devview-analytics`)
+- Fixed `HomeScreen` `LazyColumn` using `module.hashCode()` as item key instead of the stable `module.moduleName`. (`devview`)
+- Fixed `NetworkMockScreen` using `collectAsState()` instead of `collectAsStateWithLifecycle()`, causing unnecessary state collection when the screen is off-stack or the app is backgrounded. (`devview-networkmock`)
+- Added `distinctUntilChanged()` to `MockStateRepository.observeState()` to suppress recompositions triggered by structurally equal `NetworkMockState` emissions from DataStore. (`devview-networkmock-core`)
+
+**Documentation**
+- Added Compose List Keys rules to the contributing guide (`code-style.md`): LazyColumn/LazyRow keys must be unique, stable under state changes, and semantically meaningful. Added matching item to the PR checklist.
 ---
 
 ## What is DevView?
