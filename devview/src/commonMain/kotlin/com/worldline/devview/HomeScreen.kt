@@ -12,16 +12,14 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
-import org.jetbrains.compose.resources.painterResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,6 +31,7 @@ import com.worldline.devview.internal.HasTitle
 import com.worldline.devview.internal.components.ModuleItem
 import com.worldline.devview.internal.components.ModulePosition
 import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.painterResource
 
 /**
  * Internal composable that displays the DevView home screen with all modules.
@@ -97,7 +96,13 @@ internal fun HomeScreen(
         }
     }
 
-    val watermarkAlpha = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) 0.38f else 0.07f
+    val watermarkAlpha = if (MaterialTheme.colorScheme.background.luminance() <
+        0.5f
+    ) {
+        0.38f
+    } else {
+        0.07f
+    }
 
     Scaffold(
         modifier = modifier
@@ -109,72 +114,72 @@ internal fun HomeScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .alpha(alpha = watermarkAlpha),
-                contentScale = ContentScale.Fit,
+                contentScale = ContentScale.Fit
             )
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            item {
-                Spacer(
-                    modifier = Modifier.height(
-                        height = paddingValues.calculateTopPadding()
-                    )
-                )
-            }
-
-            mappedModules.entries.forEachIndexed {
-                    mappedModulesIndex,
-                    (section, modulesPerSection)
-                ->
-                stickyHeader(
-                    key = section
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 16.dp + 16.dp)
-                            .padding(vertical = 8.dp)
-                            .testTag(tag = "section_header_${section.name}"),
-                        text = section.name.replace(oldChar = '_', newChar = ' '),
-                        style = MaterialTheme.typography.bodySmallEmphasized.copy(
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                item {
+                    Spacer(
+                        modifier = Modifier.height(
+                            height = paddingValues.calculateTopPadding()
                         )
                     )
                 }
-                itemsIndexed(
-                    items = modulesPerSection,
-                    key = { _, module -> module.moduleName },
-                    contentType = { _, _ -> "Module" }
-                ) { index, module ->
-                    ModuleItem(
-                        module = module,
-                        position = when {
-                            modulesPerSection.size == 1 -> ModulePosition.SINGLE
-                            index == 0 -> ModulePosition.FIRST
-                            index == modulesPerSection.lastIndex -> ModulePosition.LAST
-                            else -> ModulePosition.MIDDLE
-                        },
-                        openModule = openModule
-                    )
-                }
-                if (mappedModulesIndex != mappedModules.values.toList().lastIndex) {
-                    item {
-                        Spacer(
-                            modifier = Modifier.height(height = 16.dp)
+
+                mappedModules.entries.forEachIndexed {
+                        mappedModulesIndex,
+                        (section, modulesPerSection)
+                    ->
+                    stickyHeader(
+                        key = section
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 16.dp + 16.dp)
+                                .padding(vertical = 8.dp)
+                                .testTag(tag = "section_header_${section.name}"),
+                            text = section.name.replace(oldChar = '_', newChar = ' '),
+                            style = MaterialTheme.typography.bodySmallEmphasized.copy(
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
                         )
                     }
+                    itemsIndexed(
+                        items = modulesPerSection,
+                        key = { _, module -> module.moduleName },
+                        contentType = { _, _ -> "Module" }
+                    ) { index, module ->
+                        ModuleItem(
+                            module = module,
+                            position = when {
+                                modulesPerSection.size == 1 -> ModulePosition.SINGLE
+                                index == 0 -> ModulePosition.FIRST
+                                index == modulesPerSection.lastIndex -> ModulePosition.LAST
+                                else -> ModulePosition.MIDDLE
+                            },
+                            openModule = openModule
+                        )
+                    }
+                    if (mappedModulesIndex != mappedModules.values.toList().lastIndex) {
+                        item {
+                            Spacer(
+                                modifier = Modifier.height(height = 16.dp)
+                            )
+                        }
+                    }
+                }
+                item {
+                    Spacer(
+                        modifier = Modifier.height(
+                            height = paddingValues.calculateBottomPadding()
+                        )
+                    )
                 }
             }
-            item {
-                Spacer(
-                    modifier = Modifier.height(
-                        height = paddingValues.calculateBottomPadding()
-                    )
-                )
-            }
-        }
         }
     }
 }

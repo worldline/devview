@@ -65,60 +65,60 @@ internal fun AnalyticsLogItem(analyticsLog: AnalyticsLog, modifier: Modifier = M
                 .fillMaxHeight()
                 .background(color = categoryColor)
         )
-    Row(
-        modifier = Modifier
-            .weight(weight = 1f)
-            .padding(start = 13.dp, end = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(
-            modifier = Modifier.weight(weight = 1f),
-            verticalArrangement = Arrangement.spacedBy(space = 2.dp)
+        Row(
+            modifier = Modifier
+                .weight(weight = 1f)
+                .padding(start = 13.dp, end = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                modifier = Modifier.testTag(tag = "analytics_log_tag_${analyticsLog.tag}"),
-                text = analyticsLog.tag,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold
+            Column(
+                modifier = Modifier.weight(weight = 1f),
+                verticalArrangement = Arrangement.spacedBy(space = 2.dp)
+            ) {
+                Text(
+                    modifier = Modifier.testTag(tag = "analytics_log_tag_${analyticsLog.tag}"),
+                    text = analyticsLog.tag,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    )
                 )
-            )
-            Text(
-                modifier = Modifier.testTag(
-                    tag = "analytics_log_screen_class_${analyticsLog.screenClass}"
-                ),
-                text = analyticsLog.screenClass,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+                Text(
+                    modifier = Modifier.testTag(
+                        tag = "analytics_log_screen_class_${analyticsLog.screenClass}"
+                    ),
+                    text = analyticsLog.screenClass,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
-        Column(
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(space = 4.dp)
-        ) {
-            Text(
-                modifier = Modifier.testTag(
-                    tag = "analytics_log_timestamp_${analyticsLog.formattedTimestamp}"
-                ),
-                text = analyticsLog.formattedTimestamp,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.Medium
-                ),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            CategoryChip(
-                modifier = Modifier.testTag(
-                    tag = "analytics_log_category_chip_${analyticsLog.type.category}"
-                ),
-                category = analyticsLog.type.category
-            )
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(space = 4.dp)
+            ) {
+                Text(
+                    modifier = Modifier.testTag(
+                        tag = "analytics_log_timestamp_${analyticsLog.formattedTimestamp}"
+                    ),
+                    text = analyticsLog.formattedTimestamp,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.Medium
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                CategoryChip(
+                    modifier = Modifier.testTag(
+                        tag = "analytics_log_category_chip_${analyticsLog.type.category}"
+                    ),
+                    category = analyticsLog.type.category
+                )
+            }
         }
-    }
     }
 }
 

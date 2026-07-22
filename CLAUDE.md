@@ -132,3 +132,15 @@ Library group: `com.worldline.devview`. Version and Sonatype config are in `grad
 ## Changelog
 
 `CHANGELOG.md` at the repo root is the single source of truth. `docs/changelog.md` is built from it automatically — only edit the root file.
+
+## Documentation Hygiene
+
+Any change to the public API surface (anything tracked by metalava in `<module>/api/api.txt`) **must** be accompanied by documentation updates in the same PR. Before merging, check:
+
+- **KDoc in source**: Every public class, property, function, and enum entry must have KDoc. Bulleted lists that enumerate enum entries or properties (e.g. `## Available Sections`, `## Icon Mapping`) must be kept complete.
+- **`docs/modules/<module>.md`**: Update if the module's public API changed.
+- **`docs/guides/theming.md`**: Update if colors, icons, or visual appearance APIs changed.
+- **`docs/modules/custom-modules.md`** and **`docs/guides/module-development.md`**: Update if the `Module` interface or `Section` enum changed.
+- **Code samples in docs**: Verify property names, types, and constructor signatures in Markdown code blocks match the actual API — no stale examples.
+
+When the metalava `api.txt` diff in a PR is non-empty, the PR must include corresponding doc page updates (or explicitly note why none are needed).

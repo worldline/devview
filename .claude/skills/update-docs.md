@@ -5,7 +5,7 @@ description: Update Zensical and Dokka documentation when adding or changing a D
 
 You are updating the DevView documentation. The docs site is built with Zensical (an MkDocs fork) and API docs are generated with Dokka. Three files must stay synchronized — missing any one means the new module silently doesn't appear in the published site.
 
-## The 3 coordinated changes
+## The 4 coordinated changes
 
 ### 1. Create or update `docs/modules/<module>.md`
 
@@ -98,6 +98,17 @@ The project accessor name follows Gradle's camelCase convention from the module'
 - `devview-myfeature` → `projects.devviewMyfeature`
 - `devview-myfeature-core` → `projects.devviewMyfeatureCore`
 
+### 4. Verify KDoc is in sync with the actual API
+
+After making doc site changes, also verify that **source-level KDoc** matches the current API:
+
+- Every public enum entry has its own KDoc block.
+- Extension properties on public types have KDoc (not just the type itself).
+- Bulleted lists in KDoc that enumerate enum entries, sections, or property names are complete — no missing items.
+- Code examples in KDoc use correct property names and types.
+
+Run `git diff <module>/api/api.txt` to see what changed in the metalava surface, then verify each changed symbol has up-to-date KDoc.
+
 ## Doc build pipeline
 
 The full pipeline (from `scripts/build_docs.sh`):
@@ -127,3 +138,4 @@ The output is in `site/`. If you don't have Python/Zensical, at minimum verify:
 | New Ktor plugin variant | New `docs/modules/<module>-ktor.md` + zensical.toml + dokka |
 | Renamed or removed public API | Update docs + check for stale examples |
 | New release | `CHANGELOG.md` auto-copies via build script |
+| Changed enum entries or extension properties | Update KDoc lists that enumerate them (e.g. Section, Module) |

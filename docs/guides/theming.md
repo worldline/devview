@@ -12,15 +12,30 @@ MaterialTheme.colorScheme.primary
 MaterialTheme.typography.bodyLarge
 ```
 
-## Customising Colours
-Override colours for modules or components as needed:
+## Customizing Colors
+Override colors for modules or components as needed:
 ```kotlin
 object MyModule : Module {
-    override val containerColour = MaterialTheme.colorScheme.secondary
-    override val contentColour = MaterialTheme.colorScheme.onSecondary
+    override val containerColor: Color = Color(0xFFFF5722) // Deep Orange
+    override val contentColor: Color = Color.White
     // ...other properties...
 }
 ```
+
+### Section-Derived Defaults (v0.1.4+)
+
+Since v0.1.4, `containerColor` and `contentColor` on `Module` default to the
+module's `Section` palette colors. Each section has its own brand-palette tint:
+
+| Section | Container Color | Content Color |
+|---------|----------------|---------------|
+| `SETTINGS` | `#545AAE` | `#E8E9F7` |
+| `FEATURES` | `#764DD0` | `#E8E9F7` |
+| `NETWORK` | `#5571B2` | `#E8E9F7` |
+| `LOGGING` | `#6970CA` | `#E8E9F7` |
+| `CUSTOM` | `#A03CBC` | `#E8E9F7` |
+
+You only need to override `containerColor`/`contentColor` if your module requires a color outside its section's default.
 
 ## Customising Typography
 Use your app's typography settings in custom modules:
@@ -50,4 +65,4 @@ override val icon = Icons.Default.Build
 - Explore [Examples](../examples/index.md) for themed module samples.
 
 ## API Reference
-> _[API reference available via Dokka. Add direct link here when available.]_
+> _[Dokka API Reference](../api/index.html)_

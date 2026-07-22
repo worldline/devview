@@ -84,8 +84,4 @@ val client = HttpClient(OkHttp) {
 - [Creating Custom Modules](custom-modules.md)
 
 ## API Reference
-> _[API reference available via Dokka. Add direct link here when available.]_
-
----
-
-*API reference is available via Dokka or in your IDE.*
+> _[Dokka API Reference](../api/devview-networkmock/index.html)_
