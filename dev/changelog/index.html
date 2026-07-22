@@ -1919,6 +1919,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Documentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2026,7 +2037,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#documentation" class="md-nav__link">
+  <a href="#documentation_1" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Documentation
@@ -2098,7 +2109,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#documentation_1" class="md-nav__link">
+  <a href="#documentation_2" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Documentation
@@ -2193,10 +2204,14 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <ul>
 <li>Fixed excessive recompositions and broken Switch animation on <code>FeatureFlipScreen</code>: item keys now use the stable <code>feature.name</code> instead of <code>hashCode()</code>, <code>FeatureHandler</code> caches its Flow to prevent <code>collectAsStateWithLifecycle</code> from restarting on every recomposition, and redundant explicit <code>remember</code> keys have been removed from <code>derivedStateOf</code> blocks. (<code>devview-featureflip</code>)</li>
 <li>Added <code>distinctUntilChanged()</code> to <code>FeatureHandler.isFeatureEnabledFlow</code> and <code>getFeatures</code> to suppress recompositions when DataStore emits structurally identical values. (<code>devview-featureflip</code>)</li>
-<li>Fixed <code>AnalyticsScreen</code> <code>LazyColumn</code> using <code>log.hashCode()</code> as item key instead of the stable <code>log.timestamp</code>; removed redundant explicit keys from all <code>derivedStateOf</code> blocks. (<code>devview-analytics</code>)</li>
+<li>Fixed <code>AnalyticsScreen</code> <code>LazyColumn</code> item key: <code>log.hashCode()</code> was replaced by <code>log.timestamp</code>, then <code>log.timestamp</code> caused a crash because multiple events can share the same millisecond; the key is now the log's original position in the append-only <code>AnalyticsLogger.logs</code> list via <code>withIndex()</code>. Redundant explicit keys also removed from all <code>derivedStateOf</code> blocks. (<code>devview-analytics</code>)</li>
 <li>Fixed <code>HomeScreen</code> <code>LazyColumn</code> using <code>module.hashCode()</code> as item key instead of the stable <code>module.moduleName</code>. (<code>devview</code>)</li>
 <li>Fixed <code>NetworkMockScreen</code> using <code>collectAsState()</code> instead of <code>collectAsStateWithLifecycle()</code>, causing unnecessary state collection when the screen is off-stack or the app is backgrounded. (<code>devview-networkmock</code>)</li>
 <li>Added <code>distinctUntilChanged()</code> to <code>MockStateRepository.observeState()</code> to suppress recompositions triggered by structurally equal <code>NetworkMockState</code> emissions from DataStore. (<code>devview-networkmock-core</code>)</li>
+</ul>
+<h3 id="documentation">Documentation</h3>
+<ul>
+<li>Added Compose List Keys rules to the contributing guide (<code>code-style.md</code>): LazyColumn/LazyRow keys must be unique, stable under state changes, and semantically meaningful. Added matching item to the PR checklist.</li>
 </ul>
 <h2 id="013-2026-07-21"><a href="https://github.com/worldline/DevView/compare/v0.1.2...v0.1.3">0.1.3</a> - 2026-07-21</h2>
 <h3 id="added">Added</h3>
@@ -2224,7 +2239,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <li>Downgraded Kotlin from 2.4.10 to 2.3.21 for broader consumer compatibility.</li>
 <li>Removed <code>compose-stability-analyzer</code> plugin (KMP incompatible).</li>
 </ul>
-<h3 id="documentation">Documentation</h3>
+<h3 id="documentation_1">Documentation</h3>
 <ul>
 <li>Updated minimum Kotlin version requirement to 2.3.21 in installation guide.</li>
 <li>Added acknowledgment for chrisbanes/haze inspiration.</li>
@@ -2265,7 +2280,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <li>Fixed documentation site rendering issues and stale content.</li>
 <li>Fixed CI configuration to correctly handle Renovate dependency update branches.</li>
 </ul>
-<h3 id="documentation_1">Documentation</h3>
+<h3 id="documentation_2">Documentation</h3>
 <ul>
 <li>Rewrote README as an integrator quick-start guide; removed TODO.md.</li>
 <li>Added CLAUDE.md guidance files for root and all sub-modules.</li>
