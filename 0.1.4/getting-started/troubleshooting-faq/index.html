@@ -2190,13 +2190,13 @@
 <li>Make sure you've added the correct dependency for your platform.</li>
 <li>Verify that you're using compatible versions of Kotlin and the library.</li>
 <li>Check that Compose Multiplatform is properly configured.</li>
-<li>Clean and rebuild your project: <code>./gradlew clean build</code></li>
+<li>Clean and rebuild your project: <code>.\gradlew.bat clean build -Pandroidx.baselineprofile.skipgeneration</code></li>
 </ul>
 <h3 id="styling-issues">Styling issues</h3>
 <ul>
 <li>Ensure you're using Material3 components and theme.</li>
 <li>Check that custom colours are properly defined.</li>
-<li>Verify containerColour values are valid Colour objects.</li>
+<li>Verify <code>containerColor</code> values are valid <code>Color</code> objects.</li>
 <li>Test on both light and dark themes.</li>
 </ul>
 <h3 id="feature-flags-not-working">Feature flags not working</h3>
@@ -2218,7 +2218,7 @@
 <h3 id="where-can-i-find-more-examples">Where can I find more examples?</h3>
 <p>See the <a href="../../examples/">Examples section</a> for platform-specific and advanced usage examples.</p>
 <hr />
-<p>If your issue is not listed here, please consult the <a href="https://github.com/worldline-tech/devview">DevView repository</a> or open an issue for further assistance.</p>
+<p>If your issue is not listed here, please consult the <a href="https://github.com/worldline/devview">DevView repository</a> or open an issue for further assistance.</p>
 
 
 
