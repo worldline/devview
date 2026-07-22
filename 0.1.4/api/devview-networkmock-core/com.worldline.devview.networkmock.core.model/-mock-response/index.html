@@ -1,0 +1,224 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>MockResponse</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    DevView
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector common-like" data-active="" aria-pressed="true" data-filter=":devview-networkmock-core/commonMain">common</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":devview-networkmock-core/commonMain" data-filter=":devview-networkmock-core/commonMain">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    DevView
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="devview-networkmock-core::com.worldline.devview.networkmock.core.model/MockResponse///PointingToDeclaration//-715053934">
+  <div class="breadcrumbs"><a href="../../index.html">devview-networkmock-core</a><span class="delimiter">/</span><a href="../index.html">com.worldline.devview.networkmock.core.model</a><span class="delimiter">/</span><span class="current">MockResponse</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Mock</span><wbr><span><span>Response</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/compose/runtime/Immutable.html"><span class="token annotation builtin">Immutable</span></a></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">MockResponse</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>statusCode<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fileName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>displayName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>content<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><p class="paragraph">Represents a loaded mock response that can be returned by the network mock plugin.</p><p class="paragraph">This data class encapsulates a mock API response loaded from a JSON file in the <code class="lang-kotlin">composeResources/files/networkmocks/responses/</code> directory. It contains the response status code, metadata for display, and the actual response content.</p><h2 class="">File Naming Convention</h2><p class="paragraph">Response files follow a strict naming convention to enable automatic discovery:</p><ul><li><p class="paragraph">Format: <code class="lang-kotlin">{endpointId}-{statusCode}[-{suffix}].json</code></p></li><li><p class="paragraph">Examples:</p></li><li><p class="paragraph"><code class="lang-kotlin">getUser-200.json</code> → status 200, display name "Success (200)"</p></li><li><p class="paragraph"><code class="lang-kotlin">getUser-404-simple.json</code> → status 404, display name "Not Found - Simple (404)"</p></li><li><p class="paragraph"><code class="lang-kotlin">getUser-500.json</code> → status 500, display name "Server Error (500)"</p></li><li><p class="paragraph"><code class="lang-kotlin">get-user-200.json</code> → status 200, hyphenated endpoint ID supported</p></li></ul><h2 class="">File Location</h2><p class="paragraph">Files should be organized by endpoint ID:</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">composeResources/files/networkmocks/responses/<br>├── getUser/<br>│   ├── getUser-200.json<br>│   ├── getUser-404-simple.json<br>│   └── getUser-500.json<br>└── createUser/<br>    ├── createUser-201.json<br>    └── createUser-400.json</code></pre><span class="copy-tooltip"><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div><span class="copy-icon"></span></span></div><h2 class="">Response Content Format</h2><p class="paragraph">The content is the raw JSON response body as a String. For MVP, response files contain only the response body (no metadata):</p><div class="sample-container"><pre><code class="block lang-json" theme="idea">{<br>  "id": "user-123",<br>  "name": "John Doe",<br>  "email": "john.doe@example.com"<br>}</code></pre><span class="copy-tooltip"><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div><span class="copy-icon"></span></span></div><h2 class="">Usage Example</h2><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">val repository = MockConfigRepository("files/networkmocks/mocks.json")<br>val response = repository.loadMockResponse(<br>    endpointId = "getUser",<br>    fileName = "getUser-200.json"<br>)<br><br>response?.let {<br>    println("Status: ${it.statusCode}")<br>    println("Display: ${it.displayName}")<br>    println("Content: ${it.content}")<br>}</code></pre><span class="copy-tooltip"><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div><span class="copy-icon"></span></span></div><h2 class="">Display Name Generation</h2><p class="paragraph">The display name is automatically generated from the file name:</p><ul><li><p class="paragraph"><code class="lang-kotlin">getUser-200.json</code> → "Success (200)"</p></li><li><p class="paragraph"><code class="lang-kotlin">getUser-404-simple.json</code> → "Not Found - Simple (404)"</p></li><li><p class="paragraph"><code class="lang-kotlin">getUser-404-detailed.json</code> → "Not Found - Detailed (404)"</p></li><li><p class="paragraph"><code class="lang-kotlin">getUser-500.json</code> → "Server Error (500)"</p></li></ul><h4 class="tableheader">See also</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-mock-configuration/index.html"><span>Mock</span><wbr><span><span>Configuration</span></span></a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-endpoint-config/index.html"><span>Endpoint</span><wbr><span><span>Config</span></span></a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../../com.worldline.devview.networkmock.core.repository/-mock-config-repository/index.html"><span>Mock</span><wbr><span>Config</span><wbr><span><span>Repository</span></span></a></div></span></div><div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="-1601913359%2FConstructors%2F-715053934" anchor-label="MockResponse" id="-1601913359%2FConstructors%2F-715053934" data-filterable-set=":devview-networkmock-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-mock-response.html"><span>Mock</span><wbr><span><span>Response</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1601913359%2FConstructors%2F-715053934"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">statusCode<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">fileName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">displayName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">content<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="1189437682%2FClasslikes%2F-715053934" anchor-label="Companion" id="1189437682%2FClasslikes%2F-715053934" data-filterable-set=":devview-networkmock-core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1189437682%2FClasslikes%2F-715053934"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="531777746%2FProperties%2F-715053934" anchor-label="content" id="531777746%2FProperties%2F-715053934" data-filterable-set=":devview-networkmock-core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="content.html"><span><span>content</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="531777746%2FProperties%2F-715053934"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="content.html">content</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The raw JSON response body as a String</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1558799778%2FProperties%2F-715053934" anchor-label="displayName" id="-1558799778%2FProperties%2F-715053934" data-filterable-set=":devview-networkmock-core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="display-name.html"><span>display</span><wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1558799778%2FProperties%2F-715053934"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="display-name.html">displayName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Human-readable name for UI display (e.g., "Success (200)")</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1400691256%2FProperties%2F-715053934" anchor-label="fileName" id="-1400691256%2FProperties%2F-715053934" data-filterable-set=":devview-networkmock-core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="file-name.html"><span>file</span><wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1400691256%2FProperties%2F-715053934"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="file-name.html">fileName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The original file name (e.g., "getUser-200.json")</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="380262768%2FProperties%2F-715053934" anchor-label="statusCode" id="380262768%2FProperties%2F-715053934" data-filterable-set=":devview-networkmock-core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="status-code.html"><span>status</span><wbr><span><span>Code</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="380262768%2FProperties%2F-715053934"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="status-code.html">statusCode</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">HTTP status code extracted from the file name</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
