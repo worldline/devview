@@ -1905,6 +1905,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Unreleased">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Fixed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1931,7 +1948,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fixed" class="md-nav__link">
+  <a href="#fixed_1" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Fixed
@@ -1959,7 +1976,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#fixed_1" class="md-nav__link">
+  <a href="#fixed_2" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Fixed
@@ -2070,7 +2087,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fixed_2" class="md-nav__link">
+  <a href="#fixed_3" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Fixed
@@ -2172,18 +2189,27 @@
 <p>The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>,
 and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
 <h2 id="unreleased"><a href="https://github.com/worldline/DevView/compare/v0.1.3...HEAD">Unreleased</a></h2>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li>Fixed excessive recompositions and broken Switch animation on <code>FeatureFlipScreen</code>: item keys now use the stable <code>feature.name</code> instead of <code>hashCode()</code>, <code>FeatureHandler</code> caches its Flow to prevent <code>collectAsStateWithLifecycle</code> from restarting on every recomposition, and redundant explicit <code>remember</code> keys have been removed from <code>derivedStateOf</code> blocks. (<code>devview-featureflip</code>)</li>
+<li>Added <code>distinctUntilChanged()</code> to <code>FeatureHandler.isFeatureEnabledFlow</code> and <code>getFeatures</code> to suppress recompositions when DataStore emits structurally identical values. (<code>devview-featureflip</code>)</li>
+<li>Fixed <code>AnalyticsScreen</code> <code>LazyColumn</code> using <code>log.hashCode()</code> as item key instead of the stable <code>log.timestamp</code>; removed redundant explicit keys from all <code>derivedStateOf</code> blocks. (<code>devview-analytics</code>)</li>
+<li>Fixed <code>HomeScreen</code> <code>LazyColumn</code> using <code>module.hashCode()</code> as item key instead of the stable <code>module.moduleName</code>. (<code>devview</code>)</li>
+<li>Fixed <code>NetworkMockScreen</code> using <code>collectAsState()</code> instead of <code>collectAsStateWithLifecycle()</code>, causing unnecessary state collection when the screen is off-stack or the app is backgrounded. (<code>devview-networkmock</code>)</li>
+<li>Added <code>distinctUntilChanged()</code> to <code>MockStateRepository.observeState()</code> to suppress recompositions triggered by structurally equal <code>NetworkMockState</code> emissions from DataStore. (<code>devview-networkmock-core</code>)</li>
+</ul>
 <h2 id="013-2026-07-21"><a href="https://github.com/worldline/DevView/compare/v0.1.2...v0.1.3">0.1.3</a> - 2026-07-21</h2>
 <h3 id="added">Added</h3>
 <ul>
 <li><code>NetworkMockResourceLoader</code> fun interface in <code>devview-networkmock-core</code>: provides a named type for DI frameworks (Koin, Hilt, etc.) to bind, eliminating the need for a custom bridge interface in multi-module KMP projects where mock resource files live in a different module than where <code>NetworkMock</code> is constructed. Both <code>devview-networkmock</code> and <code>devview-networkmock-ktor</code> now expose <code>devview-networkmock-core</code> as an <code>api</code> dependency so the type is available to all integrators.</li>
 </ul>
-<h3 id="fixed">Fixed</h3>
+<h3 id="fixed_1">Fixed</h3>
 <ul>
 <li>Fixed DevView overlay back navigation: the overlay's back handler now correctly yields priority to the host app when closed, preventing it from silently consuming back events.</li>
 <li>Fixed crash on Network Mock screen startup: <code>MissingResourceException</code> thrown by Compose Resources when probing absent response files was not caught by the <code>IllegalStateException</code> handler in <code>MockConfigRepository</code>, causing a fatal crash. The exception is now normalised at the <code>NetworkMock</code> boundary before reaching the core module.</li>
 </ul>
 <h2 id="012-2026-07-17"><a href="https://github.com/worldline/DevView/compare/v0.1.1...v0.1.2">0.1.2</a> - 2026-07-17</h2>
-<h3 id="fixed_1">Fixed</h3>
+<h3 id="fixed_2">Fixed</h3>
 <ul>
 <li>Preserved Kotlin module metadata in Android packaging by replacing broad <code>META-INF/**</code> excludes with selective license/signature excludes.</li>
 <li>Fixed docs list rendering on Home (<code>What's New</code>) and License (<code>Third-Party Licences</code>) pages.</li>
@@ -2232,7 +2258,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <li>Updated Kotlin to 2.4.10 and Compose Multiplatform to 2.11.0; bulk transitive dependency upgrades via Renovate.</li>
 <li>Migrated documentation site from MkDocs to Zensical.</li>
 </ul>
-<h3 id="fixed_2">Fixed</h3>
+<h3 id="fixed_3">Fixed</h3>
 <ul>
 <li>Resolved Dokka unresolved link warnings and broken KDoc links across all modules.</li>
 <li>Fixed Detekt <code>MaxLineLength</code> violations in KDoc link references.</li>
