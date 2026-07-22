@@ -160,8 +160,8 @@ public sealed interface Feature {
             }
 
             fun fake(index: Int) = RemoteFeature(
-                name = "Feature ${index + 5}",
-                description = "Description for feature ${index + 5}",
+                name = "Feature ${index + 1}",
+                description = "Description for feature ${index + 1}",
                 defaultRemoteValue = Random.nextBoolean(),
                 state = FeatureState.REMOTE
             )
