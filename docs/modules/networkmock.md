@@ -29,7 +29,7 @@ Add NetworkMock to your DevView modules list:
 ```kotlin
 val modules = rememberModules {
     module(NetworkMock(
-        resourceLoader = { path -> Res.readBytes(path) }
+        resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }
     ))
     // ...other modules...
 }
