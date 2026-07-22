@@ -355,9 +355,7 @@ public fun AnalyticsScreen(
             stickyHeader(
                 key = "highlighted_logs_header"
             ) {
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceContainer
-                ) {
+                Surface {
                     HighlightedAnalyticsLogsHeader(
                         modifier = Modifier
                             .padding(

@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.ZeroCornerSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -130,7 +128,7 @@ internal fun ModuleItem(
                 Icon(
                     modifier = Modifier
                         .padding(end = 12.dp)
-                        .clip(shape = CircleShape)
+                        .clip(shape = RoundedCornerShape(size = 8.dp))
                         .background(color = module.containerColor)
                         .padding(all = 6.dp)
                         .size(size = 20.dp),
@@ -148,7 +146,7 @@ internal fun ModuleItem(
                         modifier = Modifier.testTag(tag = "module_name_${module.moduleName}"),
                         text = module.moduleName,
                         style = MaterialTheme.typography.titleSmall.copy(
-                            fontWeight = FontWeight.Normal
+                            fontWeight = FontWeight.SemiBold
                         )
                     )
                     module.subtitle?.let {
@@ -163,11 +161,6 @@ internal fun ModuleItem(
                         )
                     }
                 }
-                Icon(
-                    imageVector = Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.outline
-                )
             }
         }
     }

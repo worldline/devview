@@ -2,12 +2,15 @@ package com.worldline.devview.networkmock.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -69,15 +72,24 @@ internal fun EndpointCard(
                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    modifier = Modifier.testTag(
-                        tag = "endpoint_method_${endpoint.descriptor.endpointId}"
-                    ),
-                    text = endpoint.descriptor.config.method,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontFamily = FontFamily.Monospace
-                )
+                Box(
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = RoundedCornerShape(size = 4.dp)
+                        )
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        modifier = Modifier.testTag(
+                            tag = "endpoint_method_${endpoint.descriptor.endpointId}"
+                        ),
+                        text = endpoint.descriptor.config.method,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
                 Text(
                     modifier = Modifier.testTag(
                         tag = "endpoint_path_${endpoint.descriptor.endpointId}"

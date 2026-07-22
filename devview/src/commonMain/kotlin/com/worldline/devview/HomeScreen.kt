@@ -138,7 +138,7 @@ internal fun HomeScreen(
                             .testTag(tag = "section_header_${section.name}"),
                         text = section.name.replace(oldChar = '_', newChar = ' '),
                         style = MaterialTheme.typography.bodySmallEmphasized.copy(
-                            color = MaterialTheme.colorScheme.outline,
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Medium
                         )
                     )
