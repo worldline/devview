@@ -88,6 +88,47 @@ State is persisted via `MockStateRepository`:
 
 `EndpointMockState` is serialized as `{"type":"network"}` (pass-through) or `{"type":"mock","responseFile":"getUser-200.json"}`.
 
+## NetworkMockResourceLoader
+
+_Added in v0.1.3._
+
+`NetworkMockResourceLoader` is a `fun interface` that abstracts how mock resource bytes are loaded from a path. It exists to support DI-friendly architectures where the mock JSON files live in a different Gradle module than the one constructing `NetworkMock`.
+
+```kotlin
+public fun interface NetworkMockResourceLoader {
+    public suspend fun load(path: String): ByteArray
+}
+```
+
+### Basic Usage
+
+```kotlin
+NetworkMock(
+    resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }
+)
+```
+
+### DI Usage (Koin example)
+
+In the module that owns the mock resource files:
+```kotlin
+single<NetworkMockResourceLoader> {
+    NetworkMockResourceLoader { Res.readBytes(it) }
+}
+```
+
+In the presentation module where `NetworkMock` is constructed:
+```kotlin
+val loader = koinInject<NetworkMockResourceLoader>()
+val modules = rememberModules {
+    module(NetworkMock(resourceLoader = loader))
+}
+```
+
+### Why This Exists
+
+Before v0.1.3, `NetworkMock` accepted a raw `suspend (String) -> ByteArray` lambda. This worked but was impossible to register as a typed binding in DI frameworks (Koin, Hilt) across Gradle module boundaries. The named `NetworkMockResourceLoader` type solves this.
+
 ## Related Modules
 
 - [NetworkMock](networkmock.md): UI layer and module entry point.

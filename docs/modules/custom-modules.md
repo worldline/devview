@@ -15,6 +15,8 @@ interface Module {
     val moduleName: String  // defaults to class simple name
     val section: Section
     val icon: ImageVector   // defaults to section icon
+    val containerColor: Color  // defaults to section container color
+    val contentColor: Color    // defaults to section content color
     val subtitle: String?   // optional description text, defaults to null
     val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata>
     val entryDestination: NavKey
@@ -148,4 +150,4 @@ See [Examples section](../examples/index.md) for complete custom module examples
   - Verify your colour and icon definitions are valid and supported by Compose.
 
 ## API Reference
-> _[API reference available via Dokka. Add direct link here when available.]_
+> _[Dokka API Reference](../api/devview/com.worldline.devview.core/-module/index.html)_

@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
  * ## Section Organization
  * - [SETTINGS]: Configuration and app information modules
  * - [FEATURES]: Feature flag and development tools
+ * - [NETWORK]: Network monitoring, logging, and mocking tools
  * - [LOGGING]: Debugging, analytics, and logging tools
  * - [CUSTOM]: Application-specific custom modules
  *
@@ -35,6 +36,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
  * Each section has a default icon accessible via the [icon] extension property:
  * - SETTINGS → Settings icon (gear)
  * - FEATURES → DeveloperMode icon
+ * - NETWORK → NetworkCheck icon
  * - LOGGING → FormatListNumbered icon (list)
  * - CUSTOM → Extension icon (puzzle piece)
  *
@@ -102,6 +104,7 @@ public enum class Section {
  * ## Icon Mapping
  * - [Section.SETTINGS] → Settings (gear icon)
  * - [Section.FEATURES] → DeveloperMode icon
+ * - [Section.NETWORK] → NetworkCheck icon
  * - [Section.LOGGING] → FormatListNumbered (list icon)
  * - [Section.CUSTOM] → Extension (puzzle piece icon)
  *
@@ -129,6 +132,16 @@ public val Section.icon: ImageVector
         Section.CUSTOM -> Icons.Rounded.Extension
     }
 
+/**
+ * Extension property providing the default container (background) color for each section.
+ *
+ * Returns a brand-palette color used as the background of module icon containers
+ * on the DevView home screen. Modules inherit this via [Module.containerColor]
+ * by default but can override it.
+ *
+ * @see Section
+ * @see Module.containerColor
+ */
 public val Section.containerColor: Color
     get() = when (this) {
         Section.SETTINGS -> Color(color = 0xFF545AAE)
@@ -138,5 +151,15 @@ public val Section.containerColor: Color
         Section.CUSTOM -> Color(color = 0xFFA03CBC)
     }
 
+/**
+ * Extension property providing the default content (foreground) color for each section.
+ *
+ * Returns a light tint used for the icon drawn inside the section's container.
+ * Modules inherit this via [Module.contentColor] by default but can override it.
+ * All sections currently share the same content color (`0xFFE8E9F7`).
+ *
+ * @see Section
+ * @see Module.contentColor
+ */
 public val Section.contentColor: Color
     get() = Color(color = 0xFFE8E9F7)

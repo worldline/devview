@@ -149,6 +149,7 @@ public interface Module {
      * ## Available Sections
      * - [Section.SETTINGS]: Configuration and app information
      * - [Section.FEATURES]: Feature flags and development tools
+     * - [Section.NETWORK]: Network monitoring and mocking
      * - [Section.LOGGING]: Debugging, analytics, and logging
      * - [Section.CUSTOM]: Application-specific modules
      *
