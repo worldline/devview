@@ -27,6 +27,7 @@
 ### v0.1.4
 
 **Changed**
+
 - Applied logo-inspired color palette to the sample app: custom light/dark `ColorScheme` using violet/indigo/magenta tones from the DevView brand, including the full `surfaceContainer` tonal ramp. (`sample`)
 - Module icon containers on the home screen now use per-section colors derived from the logo palette; icon shape changed from circle to squircle (`RoundedCornerShape(8.dp)`) and module names are now `SemiBold`. Chevron indicator removed — touch ripple is the navigation affordance. (`devview`)
 - Section headers on the home screen now use `primary` color instead of `outline`, and the DevView chameleon icon appears as a subtle watermark behind the module list. (`devview`)
@@ -41,6 +42,7 @@
 - Diff colors shifted from generic blue to lavender (`#DDD8FF`) to align with the brand palette. (`devview-networkmock`)
 
 **Fixed**
+
 - Fixed excessive recompositions and broken Switch animation on `FeatureFlipScreen`: item keys now use the stable `feature.name` instead of `hashCode()`, `FeatureHandler` caches its Flow to prevent `collectAsStateWithLifecycle` from restarting on every recomposition, and redundant explicit `remember` keys have been removed from `derivedStateOf` blocks. (`devview-featureflip`)
 - Added `distinctUntilChanged()` to `FeatureHandler.isFeatureEnabledFlow` and `getFeatures` to suppress recompositions when DataStore emits structurally identical values. (`devview-featureflip`)
 - Fixed `AnalyticsScreen` `LazyColumn` item key: `log.hashCode()` was replaced by `log.timestamp`, then `log.timestamp` caused a crash because multiple events can share the same millisecond; the key is now the log's original position in the append-only `AnalyticsLogger.logs` list via `withIndex()`. Redundant explicit keys also removed from all `derivedStateOf` blocks. (`devview-analytics`)
@@ -49,6 +51,7 @@
 - Added `distinctUntilChanged()` to `MockStateRepository.observeState()` to suppress recompositions triggered by structurally equal `NetworkMockState` emissions from DataStore. (`devview-networkmock-core`)
 
 **Documentation**
+
 - Added Compose List Keys rules to the contributing guide (`code-style.md`): LazyColumn/LazyRow keys must be unique, stable under state changes, and semantically meaningful. Added matching item to the PR checklist.
 ---
 

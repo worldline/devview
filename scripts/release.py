@@ -65,7 +65,7 @@ def update_whats_new(version: str, changelog_section: str, index: Path) -> None:
     lines = []
     for line in changelog_section.splitlines():
         if line.startswith("### "):
-            lines.append(f"\n**{line[4:]}**")
+            lines.append(f"\n**{line[4:]}**\n")
         elif line.startswith("- "):
             lines.append(line)
     new_section = f"## What's New\n\n### v{version}\n\n" + "\n".join(lines).strip()
