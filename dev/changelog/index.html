@@ -1905,8 +1905,30 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Unreleased">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#014-2026-07-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.1.4 - 2026-07-22
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.4 - 2026-07-22">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Changed
+      </span>
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#fixed" class="md-nav__link">
@@ -1998,7 +2020,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#changed" class="md-nav__link">
+  <a href="#changed_1" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Changed
@@ -2026,7 +2048,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#changed_1" class="md-nav__link">
+  <a href="#changed_2" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Changed
@@ -2087,7 +2109,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#changed_2" class="md-nav__link">
+  <a href="#changed_3" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Changed
@@ -2199,7 +2221,23 @@
 <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>,
 and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
-<h2 id="unreleased"><a href="https://github.com/worldline/DevView/compare/v0.1.3...HEAD">Unreleased</a></h2>
+<h2 id="unreleased"><a href="https://github.com/worldline/DevView/compare/v0.1.4...HEAD">Unreleased</a></h2>
+<h2 id="014-2026-07-22"><a href="https://github.com/worldline/DevView/compare/v0.1.3...v0.1.4">0.1.4</a> - 2026-07-22</h2>
+<h3 id="changed">Changed</h3>
+<ul>
+<li>Applied logo-inspired color palette to the sample app: custom light/dark <code>ColorScheme</code> using violet/indigo/magenta tones from the DevView brand, including the full <code>surfaceContainer</code> tonal ramp. (<code>sample</code>)</li>
+<li>Module icon containers on the home screen now use per-section colors derived from the logo palette; icon shape changed from circle to squircle (<code>RoundedCornerShape(8.dp)</code>) and module names are now <code>SemiBold</code>. Chevron indicator removed — touch ripple is the navigation affordance. (<code>devview</code>)</li>
+<li>Section headers on the home screen now use <code>primary</code> color instead of <code>outline</code>, and the DevView chameleon icon appears as a subtle watermark behind the module list. (<code>devview</code>)</li>
+<li>Analytics log items now display a <code>3dp</code> leading color strip matching the event category, making the log stream scannable by category at a glance. (<code>devview-analytics</code>)</li>
+<li>Feature type labels ("Local" / "Remote") are now rendered as small pill badges instead of plain text. (<code>devview-featureflip</code>)</li>
+<li>HTTP method labels on endpoint cards and the endpoint detail header are now rendered as proper badges with a <code>primaryContainer</code> background, matching the visual language of API explorer tools. (<code>devview-networkmock</code>)</li>
+<li>NetworkMock empty, error, and loading state screens now use Material icons instead of an emoji, with consistent typography and <code>onSurfaceVariant</code> text colors. (<code>devview-networkmock</code>)</li>
+<li>Added empty state to <code>FeatureFlipScreen</code> when the feature list is empty or no features match the active filter. (<code>devview-featureflip</code>)</li>
+<li>The endpoint detail hint card now shows a <code>TouchApp</code> icon for visual clarity. (<code>devview-networkmock</code>)</li>
+<li>Top app bar titles across all DevView screens are now <code>SemiBold</code> weight. (<code>devview</code>)</li>
+<li>Unified surface backgrounds: the <code>surfaceContainer</code> explicit color has been removed from the Analytics highlighted-logs header and the NetworkMock global toggle wrapper — backgrounds now inherit from <code>MaterialTheme</code> uniformly. (<code>devview-analytics</code>, <code>devview-networkmock</code>)</li>
+<li>Diff colors shifted from generic blue to lavender (<code>#DDD8FF</code>) to align with the brand palette. (<code>devview-networkmock</code>)</li>
+</ul>
 <h3 id="fixed">Fixed</h3>
 <ul>
 <li>Fixed excessive recompositions and broken Switch animation on <code>FeatureFlipScreen</code>: item keys now use the stable <code>feature.name</code> instead of <code>hashCode()</code>, <code>FeatureHandler</code> caches its Flow to prevent <code>collectAsStateWithLifecycle</code> from restarting on every recomposition, and redundant explicit <code>remember</code> keys have been removed from <code>derivedStateOf</code> blocks. (<code>devview-featureflip</code>)</li>
@@ -2229,12 +2267,12 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <li>Preserved Kotlin module metadata in Android packaging by replacing broad <code>META-INF/**</code> excludes with selective license/signature excludes.</li>
 <li>Fixed docs list rendering on Home (<code>What's New</code>) and License (<code>Third-Party Licences</code>) pages.</li>
 </ul>
-<h3 id="changed">Changed</h3>
+<h3 id="changed_1">Changed</h3>
 <ul>
 <li>Updated sample <code>DevViewApp</code> feature setup to include a local feature entry fix and a remote feature example.</li>
 </ul>
 <h2 id="011-2026-07-16"><a href="https://github.com/worldline/DevView/compare/v0.1.0...v0.1.1">0.1.1</a> - 2026-07-16</h2>
-<h3 id="changed_1">Changed</h3>
+<h3 id="changed_2">Changed</h3>
 <ul>
 <li>Downgraded Kotlin from 2.4.10 to 2.3.21 for broader consumer compatibility.</li>
 <li>Removed <code>compose-stability-analyzer</code> plugin (KMP incompatible).</li>
@@ -2264,7 +2302,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <li><code>devview-test</code>: shared multiplatform test utilities including <code>FakePreferencesDataStore</code> and Turbine-based Flow assertion helpers.</li>
 <li>Pre-commit hooks enforcing gitleaks secret scanning and Detekt static analysis on every commit.</li>
 </ul>
-<h3 id="changed_2">Changed</h3>
+<h3 id="changed_3">Changed</h3>
 <ul>
 <li>Refactored module architecture to support destination-level metadata (screen titles and action buttons) across DevView modules.</li>
 <li>Standardized DataStore initialization flow in <code>rememberModules</code>, allowing modules and plugin-facing components to share persistent state safely.</li>

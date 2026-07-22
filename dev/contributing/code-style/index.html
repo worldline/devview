@@ -2119,15 +2119,17 @@
 <h2 id="linting-static-analysis">Linting &amp; Static Analysis</h2>
 <p>Detekt (with ktlint bundled) enforces style automatically. Run the full analysis across all modules:</p>
 <p>=== "Windows"</p>
-<div class="language-text highlight"><pre><span></span><code>```bat
+<div class="codehilite"><pre><span></span><code>```bat
 .\gradlew.bat detektFull
 ```
 </code></pre></div>
+
 <p>=== "macOS / Linux"</p>
-<div class="language-text highlight"><pre><span></span><code>```bash
+<div class="codehilite"><pre><span></span><code>```bash
 ./gradlew detektFull
 ```
 </code></pre></div>
+
 <p>The pre-commit hook runs this automatically on every <code>git commit</code>, so issues are caught before they reach CI. See <a href="../development/">Development Setup</a> for hook installation.</p>
 <h2 id="documentation">Documentation</h2>
 <ul>
