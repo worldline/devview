@@ -77,8 +77,7 @@ internal fun EndpointCard(
                         .background(
                             color = MaterialTheme.colorScheme.primaryContainer,
                             shape = RoundedCornerShape(size = 4.dp)
-                        )
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ).padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
                         modifier = Modifier.testTag(

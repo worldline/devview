@@ -55,8 +55,7 @@ internal fun EndpointHeaderCard(endpoint: EndpointUiModel, modifier: Modifier = 
                             .background(
                                 color = MaterialTheme.colorScheme.primaryContainer,
                                 shape = RoundedCornerShape(size = 4.dp)
-                            )
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ).padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = endpoint.descriptor.config.method,

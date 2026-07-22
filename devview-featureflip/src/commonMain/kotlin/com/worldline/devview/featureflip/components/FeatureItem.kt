@@ -102,8 +102,7 @@ internal fun FeatureItem(
                     .background(
                         color = MaterialTheme.colorScheme.surfaceContainerHigh,
                         shape = MaterialTheme.shapes.extraSmall
-                    )
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ).padding(horizontal = 6.dp, vertical = 2.dp)
             ) {
                 Text(
                     modifier = Modifier.testTag(tag = "feature_type_${feature.name}"),
