@@ -31,6 +31,7 @@ dependencies {
 
     implementation("com.worldline.devview:devview-featureflip:<version>")   // feature flags
     implementation("com.worldline.devview:devview-analytics:<version>")     // analytics inspector
+    implementation("com.worldline.devview:devview-timecapsule:<version>")   // per-screen state history
     implementation("com.worldline.devview:devview-networkmock:<version>")   // network mock UI
 
     // Ktor plugin only (no UI — lightweight alternative for network-layer integration)
@@ -130,6 +131,24 @@ val client = HttpClient(OkHttp) {
 
 `rememberModules { }` must be called (and composed) before the first HTTP request reaches this client.
 
+### 5. TimeCapsule
+
+Implement `TimeCapsuleOwner` on a screen's state holder and record it with one call:
+
+```kotlin
+class CounterViewModel : ViewModel(), TimeCapsuleOwner<CounterState> {
+    override val state: StateFlow<CounterState> = _state.asStateFlow()
+    override fun restoreState(state: CounterState) { _state.value = state }
+}
+
+@Composable
+fun CounterScreen(viewModel: CounterViewModel) {
+    TimeCapsuleEffect(owner = viewModel)
+}
+```
+
+The recorded history resets automatically when the screen leaves composition.
+
 ---
 
 ## Available Modules
@@ -139,6 +158,7 @@ val client = HttpClient(OkHttp) {
 | Core | `devview` | `DevView` composable + `rememberModules` DSL. Required by all modules. |
 | FeatureFlip | `devview-featureflip` | Runtime feature flag management with Compose UI. Supports local and remote-config flags with local overrides. |
 | Analytics | `devview-analytics` | Real-time analytics event inspector with filtering by type, category, and time range. |
+| TimeCapsule | `devview-timecapsule` | Records the state history of the currently visible screen and lets you restore any earlier state back into it. |
 | NetworkMock (UI) | `devview-networkmock` | Full mock management UI: enable/disable endpoints, switch responses, preview and diff mock payloads. |
 | NetworkMock Core | `devview-networkmock-core` | Mock engine: JSON config parsing, request matching, DataStore state. No UI dependency. |
 | NetworkMock Ktor | `devview-networkmock-ktor` | Ktor `HttpClientPlugin` that intercepts requests and returns mock responses. |

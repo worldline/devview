@@ -39,6 +39,7 @@ include(
     ":devview",
     ":devview-analytics",
     ":devview-featureflip",
+    ":devview-timecapsule",
     ":devview-networkmock",
     ":devview-networkmock-core",
     ":devview-networkmock-ktor",

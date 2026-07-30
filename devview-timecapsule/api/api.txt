@@ -1,0 +1,41 @@
+// Signature format: 4.0
+package com.worldline.devview.timecapsule {
+
+  public final class TimeCapsule implements com.worldline.devview.core.Module {
+    method @InaccessibleFromKotlin public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> getDestinations();
+    method @InaccessibleFromKotlin public androidx.navigation3.runtime.NavKey getEntryDestination();
+    method @InaccessibleFromKotlin public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<? super androidx.navigation3.runtime.NavKey>,kotlin.Unit> getRegisterSerializers();
+    method @InaccessibleFromKotlin public com.worldline.devview.core.Section getSection();
+    method @KotlinOnly public void registerContent(androidx.navigation3.runtime.EntryProviderScope<androidx.navigation3.runtime.NavKey>, kotlin.jvm.functions.Function0<kotlin.Unit> onNavigateBack, kotlin.jvm.functions.Function1<androidx.navigation3.runtime.NavKey,kotlin.Unit> onNavigate, androidx.compose.ui.unit.Dp bottomPadding);
+    property public static int DEFAULT_MAX_ENTRIES;
+    property public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> destinations;
+    property public androidx.navigation3.runtime.NavKey entryDestination;
+    property public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<androidx.navigation3.runtime.NavKey>,kotlin.Unit> registerSerializers;
+    property public com.worldline.devview.core.Section section;
+    field public static final int DEFAULT_MAX_ENTRIES = 50; // 0x32
+    field public static final com.worldline.devview.timecapsule.TimeCapsule INSTANCE;
+  }
+
+  public sealed exhaustive interface TimeCapsuleDestination extends androidx.navigation3.runtime.NavKey {
+  }
+
+  @kotlinx.serialization.Serializable public static final class TimeCapsuleDestination.Main implements com.worldline.devview.timecapsule.TimeCapsuleDestination {
+    field public static final com.worldline.devview.timecapsule.TimeCapsuleDestination.Main INSTANCE;
+  }
+
+  public final class TimeCapsuleEffectKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static <S> void TimeCapsuleEffect(com.worldline.devview.timecapsule.TimeCapsuleOwner<S> owner, optional kotlin.jvm.functions.Function1<S,java.lang.String> label, optional int maxEntries);
+  }
+
+  public interface TimeCapsuleOwner<S> {
+    method @InaccessibleFromKotlin public kotlinx.coroutines.flow.StateFlow<S> getState();
+    method public void restoreState(S state);
+    property public abstract kotlinx.coroutines.flow.StateFlow<S> state;
+  }
+
+  public final class TimeCapsuleScreenKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void TimeCapsuleScreen(optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding);
+  }
+
+}
+

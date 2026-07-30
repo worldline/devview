@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `devview-timecapsule` module: records the state history of the currently visible screen
+  via `TimeCapsuleEffect`/`TimeCapsuleOwner`, and lets a developer restore any earlier
+  state back into that screen from the DevView overlay. History resets automatically when
+  the screen leaves composition.
+
 ## [0.1.4] - 2026-07-22
 
 ### Changed

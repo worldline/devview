@@ -24,6 +24,7 @@ import com.worldline.devview.featureflip.model.FeatureState
 import com.worldline.devview.featureflip.model.LocalFeatureHandler
 import com.worldline.devview.featureflip.model.rememberFeatureHandler
 import com.worldline.devview.networkmock.NetworkMock
+import com.worldline.devview.timecapsule.TimeCapsule
 import devview_root.sample.network.generated.resources.Res
 import kotlin.time.Clock
 
@@ -34,6 +35,7 @@ import kotlin.time.Clock
  * It sets up:
  * - Feature flags (FeatureFlip module)
  * - Analytics logging (Analytics module)
+ * - State history recording and restore (TimeCapsule module)
  * - Network mocking (NetworkMock module)
  * - Theme management
  * - DevView overlay
@@ -44,6 +46,7 @@ public fun DevViewApp() {
     val modules = rememberModules {
         module(module = FeatureFlip)
         module(module = Analytics())
+        module(module = TimeCapsule)
         module(
             module = NetworkMock(
                 resourceLoader = { path -> Res.readBytes(path = path) }

@@ -66,6 +66,7 @@ devview-utils          (DataStore contracts, platform createDataStore)
 devview                (core: Module interface, ModuleRegistry DSL, DevView composable, Navigation3 host)
     ├── devview-analytics        (analytics log capture + Compose UI)
     ├── devview-featureflip      (feature flag management + Compose UI)
+    ├── devview-timecapsule      (per-screen state history + restore, Compose UI)
     └── devview-networkmock      (network mock UI)
             ↑
 devview-networkmock-core  (mock engine: JSON config, request matching, DataStore state)
