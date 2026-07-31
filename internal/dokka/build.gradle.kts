@@ -15,6 +15,7 @@ dependencies {
     dokka(projects.devview)
     dokka(projects.devviewAnalytics)
     dokka(projects.devviewFeatureflip)
+    dokka(projects.devviewTimecapsule)
     dokka(projects.devviewNetworkmock)
     dokka(projects.devviewNetworkmockCore)
     dokka(projects.devviewNetworkmockKtor)

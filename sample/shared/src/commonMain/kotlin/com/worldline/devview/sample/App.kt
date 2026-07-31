@@ -31,6 +31,7 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 public fun App(openDevView: (Boolean) -> Unit, modifier: Modifier = Modifier) {
     var showContent by remember { mutableStateOf(value = false) }
+    var showCounterScreen by remember { mutableStateOf(value = true) }
     var ktorDocs by remember { mutableStateOf(value = "To be called...") }
     val coroutineScope = rememberCoroutineScope()
 
@@ -67,6 +68,15 @@ public fun App(openDevView: (Boolean) -> Unit, modifier: Modifier = Modifier) {
             }
         ) {
             Text(text = "Open DevView")
+        }
+
+        // Demonstrates TimeCapsule: toggling this disposes CounterScreen, which resets
+        // its recorded history.
+        Button(onClick = { showCounterScreen = !showCounterScreen }) {
+            Text(text = if (showCounterScreen) "Hide Counter Screen" else "Show Counter Screen")
+        }
+        if (showCounterScreen) {
+            CounterScreen()
         }
 
         Row(

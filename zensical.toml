@@ -69,6 +69,7 @@ nav = [
     "modules/index.md",
     { "FeatureFlip" = "modules/featureflip.md" },
     { "Analytics" = "modules/analytics.md" },
+    { "TimeCapsule" = "modules/timecapsule.md" },
     { "NetworkMock" = [
       { "Overview" = "modules/networkmock.md" },
       { "Core" = "modules/networkmock-core.md" },
