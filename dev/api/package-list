@@ -21,6 +21,8 @@ com.worldline.devview.networkmock.core.model
 com.worldline.devview.networkmock.core.repository
 module:devview-networkmock-ktor
 com.worldline.devview.networkmock.ktor.plugin
+module:devview-timecapsule
+com.worldline.devview.timecapsule
 module:devview-utils
 com.worldline.devview.utils
 com.worldline.devview.utils.preview
