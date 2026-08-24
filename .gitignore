@@ -170,3 +170,10 @@ docs/api
 docs/sample
 docs/changelog.md
 docs/markdown.md
+
+# Graphify
+graphify-out/cost.json
+graphify-out/.graphify_python
+graphify-out/.graphify_root
+# graphify-out/cache/ is optional: commit for speed, skip to keep repo small
+.claude/settings.json.graphify-bak

@@ -1,0 +1,1 @@
+{"nodes": [{"id": "$graphify-root$_sample_network_src_commonmain_kotlin_com_worldline_devview_sample_network_httpclient_kt", "label": "HttpClient.kt", "file_type": "code", "source_file": "sample/network/src/commonMain/kotlin/com/worldline/devview/sample/network/HttpClient.kt", "source_location": "L1"}], "edges": [], "raw_calls": []}
