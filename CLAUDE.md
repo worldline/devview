@@ -87,7 +87,7 @@ internal/dokka         (Dokka aggregation for published API docs)
 
 **`RequiresDataStore`** (`devview-utils`): Modules needing DataStore persistence implement this interface. `rememberModules` calls `initDataStore()` before `initModule()` automatically.
 
-**Network mock engine** (`devview-networkmock-core`): Reads `mocks.json` from resources, matches requests, persists enabled/disabled state via DataStore. The Ktor plugin (`devview-networkmock-ktor`) intercepts requests client-side.
+**Network mock engine** (`devview-networkmock-core`): Reads one or more OpenAPI 3.x spec files (JSON or YAML) from resources — one spec file per API group, no environment axis — matches requests, persists enabled/disabled state via DataStore. The Ktor plugin (`devview-networkmock-ktor`) intercepts requests client-side.
 
 **Architecture enforcement** (`konsist`): Tests enforce dependency rules — feature modules must depend on `devview` core, each feature family must have exactly one `-core` sub-module, `devview-utils` must not import from `devview`.
 

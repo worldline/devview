@@ -54,7 +54,8 @@ fun MyApp() {
         module(module = Analytics())
         module(
             module = NetworkMock(
-                resourceLoader = { path -> Res.readBytes(path = path) }
+                resourceLoader = { path -> Res.readBytes(path = path) },
+                specPaths = listOf("files/networkmocks/specs/my-backend.json")
             )
         )
     }
@@ -121,7 +122,7 @@ CompositionLocalProvider(LocalAnalytics provides AnalyticsLogger.logs) { … }
 
 ### 4. Network Mocking (Ktor)
 
-Place your mock config at `composeResources/files/networkmocks/mocks.json` and install the plugin:
+Place an OpenAPI 3.x spec (JSON or YAML) at `composeResources/files/networkmocks/specs/my-backend.json` — one spec file per API group — and install the plugin:
 
 ```kotlin
 val client = HttpClient(OkHttp) {
@@ -160,7 +161,7 @@ The recorded history resets automatically when the screen leaves composition.
 | Analytics | `devview-analytics` | Real-time analytics event inspector with filtering by type, category, and time range. |
 | TimeCapsule | `devview-timecapsule` | Records the state history of the currently visible screen and lets you restore any earlier state back into it. |
 | NetworkMock (UI) | `devview-networkmock` | Full mock management UI: enable/disable endpoints, switch responses, preview and diff mock payloads. |
-| NetworkMock Core | `devview-networkmock-core` | Mock engine: JSON config parsing, request matching, DataStore state. No UI dependency. |
+| NetworkMock Core | `devview-networkmock-core` | Mock engine: OpenAPI 3.x spec parsing, request matching, DataStore state. No UI dependency. |
 | NetworkMock Ktor | `devview-networkmock-ktor` | Ktor `HttpClientPlugin` that intercepts requests and returns mock responses. |
 
 ---

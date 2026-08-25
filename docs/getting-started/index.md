@@ -60,7 +60,7 @@ fun App() {
     val modules = rememberModules {
         module(FeatureFlip)
         module(Analytics)
-        module(NetworkMock(resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }))
+        module(NetworkMock(resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }, specPaths = listOf("files/networkmocks/specs/my-backend.json")))
     }
     Box {
         MainAppContent()
