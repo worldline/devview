@@ -119,6 +119,8 @@ package com.worldline.devview.core {
 
   public final class SectionKt {
     method @InaccessibleFromKotlin public static androidx.compose.ui.graphics.vector.ImageVector getIcon(com.worldline.devview.core.Section);
+    property public static androidx.compose.ui.graphics.Color com.worldline.devview.core.Section.containerColor;
+    property public static androidx.compose.ui.graphics.Color com.worldline.devview.core.Section.contentColor;
     property public static androidx.compose.ui.graphics.vector.ImageVector com.worldline.devview.core.Section.icon;
   }
 
