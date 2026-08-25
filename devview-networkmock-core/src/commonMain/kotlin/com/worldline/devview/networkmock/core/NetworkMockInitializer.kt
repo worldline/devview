@@ -5,7 +5,6 @@ import androidx.compose.runtime.remember
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.worldline.devview.networkmock.core.repository.MockConfigRepository
-import com.worldline.devview.networkmock.core.repository.MockConfigRepository.Companion.DEFAULT_RESPONSE_SUFFIXES
 import com.worldline.devview.networkmock.core.repository.MockStateRepository
 
 /**
@@ -49,17 +48,16 @@ public object NetworkMockInitializer {
      * independent and testable in isolation.
      *
      * @param dataStore The initialised [DataStore] instance from [NetworkMockDataStoreDelegate]
-     * @param configPath Path to the `mocks.json` configuration file relative to
-     * composeResources (e.g. `"files/networkmocks/mocks.json"`)
+     * @param specPaths Paths to the OpenAPI spec files relative to composeResources, one per
+     * API group (e.g. `listOf("files/networkmocks/specs/my-backend.json")`)
      * @param resourceLoader [NetworkMockResourceLoader] provided by the integrator
      */
     @Suppress("ComposableNaming")
     @Composable
     public fun initialize(
         dataStore: DataStore<Preferences>,
-        configPath: String,
-        resourceLoader: NetworkMockResourceLoader,
-        responseSuffixes: List<String> = DEFAULT_RESPONSE_SUFFIXES
+        specPaths: List<String>,
+        resourceLoader: NetworkMockResourceLoader
     ) {
         if (stateRepository != null) return
         stateRepository = remember {
@@ -69,9 +67,8 @@ public object NetworkMockInitializer {
         }
         configRepository = remember {
             MockConfigRepository(
-                configPath = configPath,
-                resourceLoader = resourceLoader,
-                responseSuffixes = responseSuffixes
+                specPaths = specPaths,
+                resourceLoader = resourceLoader
             )
         }
     }

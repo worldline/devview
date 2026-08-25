@@ -130,10 +130,10 @@ public object RequestMatcher {
      *
      * Performs **subset matching**: every key-value pair in [configQueryParams] must be present
      * in [requestQueryParams]. Extra query parameters in the request are allowed and ignored.
-     * If [configQueryParams] is `null` or empty, the check always passes — endpoints without
+     * If [configQueryParams] is `null` or empty, the check always passes — operations without
      * declared query params match any request regardless of its query string.
      *
-     * @param configQueryParams The required query parameters from [EndpointConfig][com.worldline.devview.networkmock.core.model.EndpointConfig],
+     * @param configQueryParams The required query parameters from [Operation.queryParameters][com.worldline.devview.networkmock.core.model.Operation.queryParameters],
      *   or `null`
      * @param requestQueryParams The actual request query parameters (multi-valued map)
      * @return `true` if all configured params are present with the expected values in the request

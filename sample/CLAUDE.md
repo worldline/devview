@@ -16,7 +16,7 @@ sample/
 │                  the DevView overlay, feature flags, analytics, TestModule).
 │                  Depends on all DevView modules + sample:network.
 └── network      — KMP library; owns the Ktor HttpClient, NetworkMockPlugin wiring,
-                   and the mocks.json resource tree.
+                   and the OpenAPI spec / mock response resource tree.
                    Depends only on devview-networkmock-ktor (not the full UI module).
 ```
 
@@ -32,7 +32,11 @@ val modules = rememberModules {
     module(module = Analytics())
     module(
         module = NetworkMock(
-            resourceLoader = { path -> Res.readBytes(path = path) }
+            resourceLoader = { path -> Res.readBytes(path = path) },
+            specPaths = listOf(
+                "files/networkmocks/specs/jsonplaceholder.json",
+                "files/networkmocks/specs/sample-api.json"
+            )
         )
     )
     module(module = TestModule)
@@ -41,7 +45,7 @@ val modules = rememberModules {
 
 `rememberModules` calls `initDataStore()` then `initModule()` on each module in order. The `DevView` composable is rendered as an overlay on top of `App`, sharing the same `MaterialTheme` — so dark-mode toggled via the FeatureFlip panel takes effect on the whole screen, not just the overlay.
 
-`NetworkMock` requires a `resourceLoader` lambda; the lambda receives a resource path string (e.g. `"files/networkmocks/mocks.json"`) and must return raw bytes. The sample wires this directly to `Res.readBytes` from `sample:network`'s generated Compose Resources class.
+`NetworkMock` requires a `resourceLoader` lambda and a `specPaths` list — one spec file per API group. The lambda receives a resource path string (e.g. `"files/networkmocks/specs/jsonplaceholder.json"`) and must return raw bytes. The sample wires this directly to `Res.readBytes` from `sample:network`'s generated Compose Resources class.
 
 ## How the Ktor Mock Plugin Is Wired
 
@@ -64,16 +68,17 @@ Platform actuals:
 Mock files live under `network/src/commonMain/composeResources/files/networkmocks/`:
 
 ```
-mocks.json                                       # API groups, endpoints, environments
+specs/
+  jsonplaceholder.json                             # one OpenAPI 3.x document per API group
+  sample-api.json
 responses/
-  {groupId}/
-    {endpointId}/
-      {endpointId}-{statusCode}[-{suffix}].json  # Shared across environments
-  {groupId}/
-    {environmentId}/
-      {endpointId}/
-        {endpointId}-{statusCode}.json           # Environment-specific override (takes priority)
+  {specId}/
+    {operationId}/
+      {operationId}-{statusCode}[-{suffix}].json   # referenced from the spec via
+                                                    # examples.<name>.externalValue
 ```
+
+There is no environment tier — a spec's `servers[]` lists every base URL it can be reached at, and `sample-api.json` demonstrates spanning two API versions in one document (see below) instead of two environments.
 
 `network/build.gradle.kts` sets `publicResClass = true` and `generateResClass = always` — required so the `Res` class generated from `network`'s resources is accessible from `shared`.
 
@@ -88,5 +93,5 @@ responses/
 ## Non-obvious Patterns
 
 - `ExpectSuccessAttributeKey` in `BaseHttpResponseValidator` lets individual requests opt out of the default exception-on-error behaviour by setting `attributes[ExpectSuccessAttributeKey] = false` on the request builder.
-- Environment-specific mock response files under `{groupId}/{environmentId}/` take priority over shared files in `{groupId}/` during discovery — useful to provide prod-specific variants without duplicating every response.
-- The `sample-api` group in `mocks.json` shows endpoint path overrides per environment (`endpointOverrides`) — the `prod` environment redirects `getUserProfile` to `/api/v2/profile/{userId}`.
+- `sample-api.json` declares two operations for the same profile resource — `getUserProfile` (`/api/v1/profile/{userId}`) and `getUserProfileV2` (`/api/v2/profile/{userId}`) — both reachable via either of the spec's two `servers[]` entries. This is the OpenAPI-native replacement for what used to be a staging/prod environment override: the engine mocks whichever path the app actually calls, with no environment selection involved.
+- `sample-api.json` sets a spec-wide default delay via `x-devview.delayMs` at the document root; `jsonplaceholder.json`'s `getUser` operation overrides it with its own operation-level `x-devview.delayMs`.

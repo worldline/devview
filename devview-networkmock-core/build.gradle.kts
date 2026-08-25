@@ -20,6 +20,10 @@ kotlin {
             dependencies {
                 implementation(projects.devviewUtils)
                 implementation(libs.kotlinx.serialization.json)
+                // ponytail: kaml's repo is archived (0.104.0 is final) - best-effort YAML support,
+                // quarantined behind the openapi parser's format-detection branch. If a future
+                // Kotlin/serialization bump breaks it, drop this line and the YAML branch together.
+                implementation(libs.kaml)
             }
         }
 

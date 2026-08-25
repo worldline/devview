@@ -1,7 +1,7 @@
 package com.worldline.devview.networkmock.core.repository
 
 import com.worldline.devview.networkmock.core.NetworkMockResourceLoader
-import com.worldline.devview.networkmock.core.model.EndpointKey
+import com.worldline.devview.networkmock.core.model.OperationKey
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
@@ -14,35 +14,33 @@ class MockConfigRepositoryTest {
 
     @Test
     fun `loadConfiguration returns parsed configuration`() = runTest {
-        val repository = createRepository(
-            resources = baseResources()
-        )
+        val repository = createRepository(resources = baseResources())
 
         val result = repository.loadConfiguration()
 
         result.isSuccess shouldBe true
         val config = result.getOrThrow()
-        config.apiGroups shouldHaveSize 1
-        config.apiGroups[0].id shouldBe "example"
-        config.apiGroups[0].environments.map { it.id } shouldContainExactly listOf("staging", "production")
+        config.specs shouldHaveSize 1
+        config.specs[0].id shouldBe "example"
+        config.specs[0].servers shouldContainExactly listOf(
+            "https://staging.api.example.com:8443/v1",
+            "https://api.example.com"
+        )
     }
 
     @Test
     fun `loadConfiguration uses cache and avoids second file read`() = runTest {
         val loader = RecordingResourceLoader(resources = baseResources())
-        val repository = MockConfigRepository(
-            configPath = CONFIG_PATH,
-            resourceLoader = loader
-        )
+        val repository = MockConfigRepository(specPaths = listOf(SPEC_PATH), resourceLoader = loader)
 
         repository.loadConfiguration().getOrThrow()
         repository.loadConfiguration().getOrThrow()
 
-        loader.callCount(path = CONFIG_PATH) shouldBe 1
+        loader.callCount(path = SPEC_PATH) shouldBe 1
     }
 
     @Test
-    fun `loadConfiguration returns failure when config file is missing`() = runTest {
+    fun `loadConfiguration returns failure when spec file is missing`() = runTest {
         val repository = createRepository(resources = emptyMap())
 
         val result = repository.loadConfiguration()
@@ -51,12 +49,8 @@ class MockConfigRepositoryTest {
     }
 
     @Test
-    fun `loadConfiguration returns failure when config json is malformed`() = runTest {
-        val repository = createRepository(
-            resources = mapOf(
-                CONFIG_PATH to """{ "apiGroups": [ {"""
-            )
-        )
+    fun `loadConfiguration returns failure when spec json is malformed`() = runTest {
+        val repository = createRepository(resources = mapOf(SPEC_PATH to """{ "paths": { """))
 
         val result = repository.loadConfiguration()
 
@@ -64,7 +58,27 @@ class MockConfigRepositoryTest {
     }
 
     @Test
-    fun `findMatchingMock returns endpoint for exact environment host path and method`() = runTest {
+    fun `loadConfiguration returns failure when an operation is missing operationId`() = runTest {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/users": {
+                  "get": { "responses": {} }
+                }
+              }
+            }
+        """.trimIndent()
+        val repository = createRepository(resources = mapOf(SPEC_PATH to spec))
+
+        val result = repository.loadConfiguration()
+
+        result.isFailure shouldBe true
+    }
+
+    @Test
+    fun `findMatchingMock returns operation for exact server host path and method`() = runTest {
         val repository = createRepository(resources = baseResources())
 
         val match = repository.findMatchingMock(
@@ -73,14 +87,26 @@ class MockConfigRepositoryTest {
             method = "GET"
         )
 
-        match?.groupId shouldBe "example"
-        match?.environmentId shouldBe "staging"
-        match?.endpointId shouldBe "getUser"
+        match?.specId shouldBe "example"
+        match?.operationId shouldBe "getUser"
         match?.config?.method shouldBe "GET"
     }
 
     @Test
-    fun `findMatchingMock environment host matching is case insensitive`() = runTest {
+    fun `findMatchingMock matches a secondary declared server`() = runTest {
+        val repository = createRepository(resources = baseResources())
+
+        val match = repository.findMatchingMock(
+            host = "api.example.com",
+            path = "/api/users/42",
+            method = "GET"
+        )
+
+        match?.operationId shouldBe "getUser"
+    }
+
+    @Test
+    fun `findMatchingMock host matching is case insensitive`() = runTest {
         val repository = createRepository(resources = baseResources())
 
         val match = repository.findMatchingMock(
@@ -89,11 +115,11 @@ class MockConfigRepositoryTest {
             method = "GET"
         )
 
-        match?.endpointId shouldBe "getUser"
+        match?.operationId shouldBe "getUser"
     }
 
     @Test
-    fun `findMatchingMock handles environment url with scheme port and path`() = runTest {
+    fun `findMatchingMock handles server url with scheme port and path`() = runTest {
         val repository = createRepository(resources = baseResources())
 
         val match = repository.findMatchingMock(
@@ -102,7 +128,7 @@ class MockConfigRepositoryTest {
             method = "GET"
         )
 
-        match?.environmentId shouldBe "staging"
+        match?.specId shouldBe "example"
     }
 
     @Test
@@ -158,110 +184,300 @@ class MockConfigRepositoryTest {
     }
 
     @Test
-    fun `discoverResponseFiles returns responses sorted by status code`() = runTest {
-        val repository = createRepository(
-            resources = baseResources(),
-            statusCodesToDiscover = listOf(500, 200, 404)
+    fun `findMatchingMock resolves query parameter matches from declared examples`() = runTest {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/users": {
+                  "get": {
+                    "operationId": "listUsers",
+                    "parameters": [
+                      { "name": "type", "in": "query", "example": "user" }
+                    ],
+                    "responses": {}
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val repository = createRepository(resources = mapOf(SPEC_PATH to spec))
+
+        val matches = repository.findMatchingMock(
+            host = "api.example.com",
+            path = "/api/users",
+            method = "GET",
+            queryParameters = mapOf("type" to listOf("user"))
+        )
+        val noMatch = repository.findMatchingMock(
+            host = "api.example.com",
+            path = "/api/users",
+            method = "GET",
+            queryParameters = mapOf("type" to listOf("admin"))
         )
 
-        val responses = repository.discoverResponseFiles(
-            groupId = "example",
-            environmentId = "staging",
-            endpointId = "getUser"
-        )
-
-        responses.map { response -> response.statusCode } shouldBe listOf(200, 404)
+        matches?.operationId shouldBe "listUsers"
+        noMatch.shouldBeNull()
     }
 
     @Test
-    fun `discoverResponseFiles discovers suffix variants`() = runTest {
-        val resources = baseResources() + mapOf(
-            "files/networkmocks/responses/example/getUser/getUser-404-simple.json" to """{"error":"simple"}"""
+    fun `findMatchingMock picks the first spec that has a matching operation when hosts collide`() = runTest {
+        val firstSpec = """
+            {
+              "info": { "title": "First" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/only-in-first": {
+                  "get": { "operationId": "onlyInFirst", "responses": {} }
+                }
+              }
+            }
+        """.trimIndent()
+        val secondSpec = """
+            {
+              "info": { "title": "Second" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/only-in-first": {
+                  "get": { "operationId": "onlyInSecond", "responses": {} }
+                }
+              }
+            }
+        """.trimIndent()
+        val loader = RecordingResourceLoader(
+            resources = mapOf("specs/first.json" to firstSpec, "specs/second.json" to secondSpec)
         )
-        val repository = createRepository(
-            resources = resources,
-            statusCodesToDiscover = listOf(404)
+        val repository = MockConfigRepository(
+            specPaths = listOf("specs/first.json", "specs/second.json"),
+            resourceLoader = loader
         )
 
-        val responses = repository.discoverResponseFiles(
-            groupId = "example",
-            environmentId = "staging",
-            endpointId = "getUser"
+        val match = repository.findMatchingMock(
+            host = "api.example.com",
+            path = "/api/only-in-first",
+            method = "GET"
         )
 
-        responses shouldHaveSize 2
-        responses.map { response -> response.fileName } shouldContain "getUser-404-simple.json"
+        match?.specId shouldBe "first"
+        match?.operationId shouldBe "onlyInFirst"
     }
 
     @Test
-    fun `discoverResponseFiles preserves deterministic order for same status suffix variants`() = runTest {
-        val resources = baseResources() + mapOf(
-            "files/networkmocks/responses/example/getUser/getUser-404-simple.json" to """{"error":"simple"}""",
-            "files/networkmocks/responses/example/getUser/getUser-404-detailed.json" to """{"error":"detailed"}"""
+    fun `findMatchingMock falls through to the next spec when the matched host has no matching operation`() =
+        runTest {
+            val firstSpec = """
+                {
+                  "info": { "title": "First" },
+                  "servers": [ { "url": "https://api.example.com" } ],
+                  "paths": {
+                    "/api/elsewhere": {
+                      "get": { "operationId": "elsewhere", "responses": {} }
+                    }
+                  }
+                }
+            """.trimIndent()
+            val secondSpec = """
+                {
+                  "info": { "title": "Second" },
+                  "servers": [ { "url": "https://api.example.com" } ],
+                  "paths": {
+                    "/api/target": {
+                      "get": { "operationId": "target", "responses": {} }
+                    }
+                  }
+                }
+            """.trimIndent()
+            val loader = RecordingResourceLoader(
+                resources = mapOf("specs/first.json" to firstSpec, "specs/second.json" to secondSpec)
+            )
+            val repository = MockConfigRepository(
+                specPaths = listOf("specs/first.json", "specs/second.json"),
+                resourceLoader = loader
+            )
+
+            val match = repository.findMatchingMock(host = "api.example.com", path = "/api/target", method = "GET")
+
+            match?.specId shouldBe "second"
+            match?.operationId shouldBe "target"
+        }
+
+    @Test
+    fun `findMatchingMock resolves delay from operation falling back to spec default`() = runTest {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "x-devview": { "delayMs": 200 },
+              "paths": {
+                "/api/with-own-delay": {
+                  "get": {
+                    "operationId": "withOwnDelay",
+                    "x-devview": { "delayMs": 500 },
+                    "responses": {}
+                  }
+                },
+                "/api/without-own-delay": {
+                  "get": { "operationId": "withoutOwnDelay", "responses": {} }
+                }
+              }
+            }
+        """.trimIndent()
+        val repository = createRepository(resources = mapOf(SPEC_PATH to spec))
+
+        val withOwnDelay = repository.findMatchingMock(
+            host = "api.example.com",
+            path = "/api/with-own-delay",
+            method = "GET"
         )
-        val repository = createRepository(
-            resources = resources,
-            statusCodesToDiscover = listOf(404)
+        val withoutOwnDelay = repository.findMatchingMock(
+            host = "api.example.com",
+            path = "/api/without-own-delay",
+            method = "GET"
         )
 
-        val responses = repository.discoverResponseFiles(
-            groupId = "example",
-            environmentId = "staging",
-            endpointId = "getUser"
-        )
-
-        responses.map { response -> response.fileName } shouldContainExactly listOf(
-            "getUser-404.json",
-            "getUser-404-simple.json",
-            "getUser-404-detailed.json"
-        )
+        withOwnDelay?.delayMs shouldBe 500
+        withoutOwnDelay?.delayMs shouldBe 200
     }
 
     @Test
-    fun `discoverResponseFiles deduplicates entries when statusCodesToDiscover contains duplicates`() = runTest {
+    fun `local dollar-ref to a components response resolves correctly`() = runTest {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/users/{userId}": {
+                  "get": {
+                    "operationId": "getUser",
+                    "responses": {
+                      "200": { "${'$'}ref": "#/components/responses/UserOk" }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "responses": {
+                  "UserOk": {
+                    "content": {
+                      "application/json": {
+                        "examples": {
+                          "default": { "externalValue": "/responses/getUser-200.json" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
         val repository = createRepository(
-            resources = baseResources(),
-            statusCodesToDiscover = listOf(404, 404)
+            resources = mapOf(SPEC_PATH to spec, "responses/getUser-200.json" to """{"id":1}""")
         )
 
-        val responses = repository.discoverResponseFiles(
-            groupId = "example",
-            environmentId = "staging",
-            endpointId = "getUser"
-        )
-
-        responses shouldHaveSize 1
-        responses.single().fileName shouldBe "getUser-404.json"
-    }
-
-    @Test
-    fun `discoverResponseFiles honors custom statusCodesToDiscover`() = runTest {
-        val repository = createRepository(
-            resources = baseResources(),
-            statusCodesToDiscover = listOf(200)
-        )
-
-        val responses = repository.discoverResponseFiles(
-            groupId = "example",
-            environmentId = "staging",
-            endpointId = "getUser"
-        )
+        val responses = repository.discoverResponseFiles(key = OperationKey(specId = "example", operationId = "getUser"))
 
         responses shouldHaveSize 1
         responses.single().statusCode shouldBe 200
+        responses.single().content shouldBe """{"id":1}"""
     }
 
     @Test
-    fun `loadMockResponse returns parsed response when file exists`() = runTest {
+    fun `external dollar-ref to another file's components resolves correctly`() = runTest {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/users/{userId}": {
+                  "get": {
+                    "operationId": "getUser",
+                    "responses": {
+                      "200": { "${'$'}ref": "./common.json#/components/responses/UserOk" }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val common = """
+            {
+              "components": {
+                "responses": {
+                  "UserOk": {
+                    "content": {
+                      "application/json": {
+                        "examples": {
+                          "default": { "externalValue": "/responses/getUser-200.json" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val repository = createRepository(
+            resources = mapOf(
+                SPEC_PATH to spec,
+                "specs/common.json" to common,
+                "responses/getUser-200.json" to """{"id":1}"""
+            )
+        )
+
+        val responses = repository.discoverResponseFiles(key = OperationKey(specId = "example", operationId = "getUser"))
+
+        responses shouldHaveSize 1
+        responses.single().content shouldBe """{"id":1}"""
+    }
+
+    @Test
+    fun `discoverResponseFiles returns responses sorted by status code`() = runTest {
+        val repository = createRepository(resources = baseResources())
+
+        val responses = repository.discoverResponseFiles(key = OperationKey(specId = "example", operationId = "getUser"))
+
+        responses.map { it.statusCode } shouldBe listOf(200, 404)
+    }
+
+    @Test
+    fun `discoverResponseFiles discovers named example variants`() = runTest {
+        val repository = createRepository(resources = multiExampleResources())
+
+        val responses = repository.discoverResponseFiles(key = OperationKey(specId = "example", operationId = "getUser"))
+
+        responses shouldHaveSize 3
+        responses.map { it.exampleName } shouldContain "detailed"
+    }
+
+    @Test
+    fun `discoverResponseFiles preserves declared example order within a status code`() = runTest {
+        val repository = createRepository(resources = multiExampleResources())
+
+        val responses = repository.discoverResponseFiles(key = OperationKey(specId = "example", operationId = "getUser"))
+
+        responses.filter { it.statusCode == 404 }.map { it.exampleName }.toSet() shouldBe setOf("default", "detailed")
+    }
+
+    @Test
+    fun `discoverResponseFiles returns empty list when operation declares no responses`() = runTest {
+        val repository = createRepository(resources = baseResources())
+
+        val responses = repository.discoverResponseFiles(
+            key = OperationKey(specId = "example", operationId = "doesNotExist")
+        )
+
+        responses shouldBe emptyList()
+    }
+
+    @Test
+    fun `loadMockResponse returns parsed response when example exists`() = runTest {
         val repository = createRepository(resources = baseResources())
 
         val response = repository.loadMockResponse(
-            key = EndpointKey(
-                groupId = "example",
-                environmentId = "staging",
-                endpointId = "getUser"
-            ),
-            fileName = "getUser-200.json"
+            key = OperationKey(specId = "example", operationId = "getUser"),
+            statusCode = 200,
+            exampleName = "default"
         )
 
         response?.statusCode shouldBe 200
@@ -270,60 +486,20 @@ class MockConfigRepositoryTest {
     }
 
     @Test
-    fun `loadMockResponse returns null when file is missing`() = runTest {
+    fun `loadMockResponse returns null when example is not declared`() = runTest {
         val repository = createRepository(resources = baseResources())
 
         val response = repository.loadMockResponse(
-            groupId = "example",
-            environmentId = "staging",
-            endpointId = "getUser",
-            fileName = "getUser-999.json"
+            key = OperationKey(specId = "example", operationId = "getUser"),
+            statusCode = 999,
+            exampleName = "default"
         )
 
         response.shouldBeNull()
     }
 
-    @Test
-    fun `loadMockResponse returns null when file name is malformed`() = runTest {
-        val resources = baseResources() + mapOf(
-            "files/networkmocks/responses/example/staging/getUser/getUser-invalid.json" to """{"id":1}"""
-        )
-        val repository = createRepository(resources = resources)
-
-        val response = repository.loadMockResponse(
-            groupId = "example",
-            environmentId = "staging",
-            endpointId = "getUser",
-            fileName = "getUser-invalid.json"
-        )
-
-        response.shouldBeNull()
-    }
-
-    @Test
-    fun `discoverResponseFiles returns empty list when endpoint has no files`() = runTest {
-        val repository = createRepository(resources = baseResources())
-
-        val responses = repository.discoverResponseFiles(
-            groupId = "example",
-            environmentId = "staging",
-            endpointId = "doesNotExist"
-        )
-
-        responses shouldBe emptyList()
-    }
-
-    private fun createRepository(
-        resources: Map<String, String>,
-        statusCodesToDiscover: List<Int> = MockConfigRepository.DEFAULT_STATUS_CODES
-    ): MockConfigRepository {
-        val loader = RecordingResourceLoader(resources = resources)
-        return MockConfigRepository(
-            configPath = CONFIG_PATH,
-            resourceLoader = loader,
-            statusCodesToDiscover = statusCodesToDiscover
-        )
-    }
+    private fun createRepository(resources: Map<String, String>): MockConfigRepository =
+        MockConfigRepository(specPaths = listOf(SPEC_PATH), resourceLoader = RecordingResourceLoader(resources))
 
     private class RecordingResourceLoader(
         private val resources: Map<String, String>
@@ -340,60 +516,108 @@ class MockConfigRepositoryTest {
     }
 
     private fun baseResources(): Map<String, String> = mapOf(
-        CONFIG_PATH to baseConfigJson(),
-        "files/networkmocks/responses/example/staging/getUser/getUser-200.json" to """{"id":1}""",
-        "files/networkmocks/responses/example/getUser/getUser-404.json" to """{"error":"not found"}""",
-        "files/networkmocks/responses/example/staging/createUser/createUser-201.json" to """{"id":2}""",
-        "files/networkmocks/responses/example/production/getProduct/getProduct-200.json" to """{"id":10}"""
+        SPEC_PATH to baseSpecJson(),
+        "responses/getUser-200.json" to """{"id":1}""",
+        "responses/getUser-404.json" to """{"error":"not found"}""",
+        "responses/createUser-201.json" to """{"id":2}"""
     )
 
-    @Suppress("MaxLineLength")
-    private fun baseConfigJson(): String = """
+    private fun baseSpecJson(): String = """
         {
-          "apiGroups": [
-            {
-              "id": "example",
-              "name": "Example",
-              "endpoints": [
-                {
-                  "id": "getUser",
-                  "name": "Get User",
-                  "path": "/api/users/{userId}",
-                  "method": "GET"
-                },
-                {
-                  "id": "createUser",
-                  "name": "Create User",
-                  "path": "/api/users",
-                  "method": "POST"
-                }
-              ],
-              "environments": [
-                {
-                  "id": "staging",
-                  "name": "Staging",
-                  "url": "https://staging.api.example.com:8443/v1"
-                },
-                {
-                  "id": "production",
-                  "name": "Production",
-                  "url": "https://api.example.com",
-                  "additionalEndpoints": [
-                    {
-                      "id": "getProduct",
-                      "name": "Get Product",
-                      "path": "/api/products/{productId}",
-                      "method": "GET"
+          "info": { "title": "Example" },
+          "servers": [
+            { "url": "https://staging.api.example.com:8443/v1" },
+            { "url": "https://api.example.com" }
+          ],
+          "paths": {
+            "/api/users/{userId}": {
+              "get": {
+                "operationId": "getUser",
+                "summary": "Get User",
+                "responses": {
+                  "200": {
+                    "content": {
+                      "application/json": {
+                        "examples": {
+                          "default": { "externalValue": "/responses/getUser-200.json" }
+                        }
+                      }
                     }
-                  ]
+                  },
+                  "404": {
+                    "content": {
+                      "application/json": {
+                        "examples": {
+                          "default": { "externalValue": "/responses/getUser-404.json" }
+                        }
+                      }
+                    }
+                  }
                 }
-              ]
+              }
+            },
+            "/api/users": {
+              "post": {
+                "operationId": "createUser",
+                "summary": "Create User",
+                "responses": {
+                  "201": {
+                    "content": {
+                      "application/json": {
+                        "examples": {
+                          "default": { "externalValue": "/responses/createUser-201.json" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
-          ]
+          }
         }
     """.trimIndent()
 
+    private fun multiExampleResources(): Map<String, String> = mapOf(
+        SPEC_PATH to """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/users/{userId}": {
+                  "get": {
+                    "operationId": "getUser",
+                    "responses": {
+                      "200": {
+                        "content": {
+                          "application/json": {
+                            "examples": {
+                              "default": { "externalValue": "/responses/getUser-200.json" }
+                            }
+                          }
+                        }
+                      },
+                      "404": {
+                        "content": {
+                          "application/json": {
+                            "examples": {
+                              "default": { "externalValue": "/responses/getUser-404.json" },
+                              "detailed": { "externalValue": "/responses/getUser-404-detailed.json" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent(),
+        "responses/getUser-200.json" to """{"id":1}""",
+        "responses/getUser-404.json" to """{"error":"not found"}""",
+        "responses/getUser-404-detailed.json" to """{"error":"not found","reason":"deleted"}"""
+    )
+
     private companion object {
-        const val CONFIG_PATH: String = "files/networkmocks/mocks.json"
+        const val SPEC_PATH: String = "specs/example.json"
     }
 }

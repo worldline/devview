@@ -16,6 +16,8 @@ compose-screenshot = "0.0.1-alpha15" # Issue https://issuetracker.google.com/iss
 detekt = "2.0.0-alpha.5"
 dokka = "2.2.0"
 jetbrains-idea-ext = "1.4.1"
+# kaml's repo is archived (0.104.0 is the final release) - pin exact, do not bump.
+kaml = "0.104.0"
 kermit = "2.1.0"
 koin = "4.2.2"
 konsist = "0.17.3"
@@ -97,6 +99,7 @@ jetbrains-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", 
 jetbrains-compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "jetbrains-compose-multiplatform" }
 jetbrains-compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "jetbrains-compose-multiplatform" }
 jetbrains-compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "jetbrains-compose-multiplatform" }
+kaml = { module = "com.charleskorn.kaml:kaml", version.ref = "kaml" }
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 koin-android = { module = "io.insert-koin:koin-android" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }

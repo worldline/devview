@@ -5,6 +5,8 @@ import com.worldline.devview.networkmock.PreviewSheetState
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.utils.fake
 
+private const val DEFAULT_EXAMPLE_NAME = "default"
+
 internal class PreviewSheetStatePreviewParameterProvider :
     PreviewParameterProvider<PreviewSheetState.HasResponse> {
     override val values: Sequence<PreviewSheetState.HasResponse>
@@ -15,7 +17,7 @@ internal class PreviewSheetStatePreviewParameterProvider :
             PreviewSheetState.Compare(
                 first = MockResponse(
                     statusCode = 200,
-                    fileName = "endpoint-200.json",
+                    exampleName = DEFAULT_EXAMPLE_NAME,
                     displayName = "Success (200)",
                     content =
                         """
@@ -29,7 +31,7 @@ internal class PreviewSheetStatePreviewParameterProvider :
                 ),
                 second = MockResponse(
                     statusCode = 200,
-                    fileName = "endpoint-200.json",
+                    exampleName = DEFAULT_EXAMPLE_NAME,
                     displayName = "Success (200)",
                     content =
                         """
@@ -45,7 +47,7 @@ internal class PreviewSheetStatePreviewParameterProvider :
             PreviewSheetState.Compare(
                 first = MockResponse(
                     statusCode = 200,
-                    fileName = "endpoint-200.json",
+                    exampleName = DEFAULT_EXAMPLE_NAME,
                     displayName = "Success (200)",
                     content =
                         """
@@ -59,7 +61,7 @@ internal class PreviewSheetStatePreviewParameterProvider :
                 ),
                 second = MockResponse(
                     statusCode = 500,
-                    fileName = "endpoint-500.json",
+                    exampleName = DEFAULT_EXAMPLE_NAME,
                     displayName = "Server Error (500)",
                     content =
                         """

@@ -20,11 +20,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import com.worldline.devview.networkmock.model.EndpointUiModel
-import com.worldline.devview.networkmock.preview.EndpointUiModelPreviewParameterProvider
+import com.worldline.devview.networkmock.model.OperationUiModel
+import com.worldline.devview.networkmock.preview.OperationUiModelPreviewParameterProvider
 
 @Composable
-internal fun EndpointHeaderCard(endpoint: EndpointUiModel, modifier: Modifier = Modifier) {
+internal fun EndpointHeaderCard(endpoint: OperationUiModel, modifier: Modifier = Modifier) {
     ElevatedCard(
         modifier = modifier
             .fillMaxWidth(),
@@ -83,8 +83,8 @@ internal fun EndpointHeaderCard(endpoint: EndpointUiModel, modifier: Modifier = 
 @Composable
 private fun EndpointHeaderCardPreview(
     @PreviewParameter(
-        EndpointUiModelPreviewParameterProvider::class
-    ) endpoint: EndpointUiModel
+        OperationUiModelPreviewParameterProvider::class
+    ) endpoint: OperationUiModel
 ) {
     MaterialTheme {
         Surface {

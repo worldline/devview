@@ -36,7 +36,7 @@ import com.worldline.devview.networkmock.components.EndpointCard
 import com.worldline.devview.networkmock.components.ErrorState
 import com.worldline.devview.networkmock.components.GlobalMockToggle
 import com.worldline.devview.networkmock.components.LoadingState
-import com.worldline.devview.networkmock.core.model.EndpointKey
+import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.preview.NetworkMockUiStatePreviewParameterProvider
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
@@ -54,19 +54,19 @@ import kotlinx.coroutines.flow.SharedFlow
  * @param resetToNetworkSharedFlow Shared flow emitted by [NetworkMock] when the user triggers
  *   the "Reset to Network" toolbar action. Collected here to call [NetworkMockViewModel.resetAllToNetwork].
  * @param navigateToEndpointScreen Callback invoked when the user taps an [EndpointCard],
- *   passing the corresponding [EndpointKey] so the caller can push [NetworkMockDestination.Endpoint]
+ *   passing the corresponding [OperationKey] so the caller can push [NetworkMockDestination.Endpoint]
  *   onto the backstack.
  * @param viewModel The [NetworkMockViewModel] instance. Constructed and provided by
  *   [NetworkMock.registerContent] via the `viewModel { }` factory so that it is scoped to the
  *   navigation entry.
  * @param modifier Optional modifier for the screen.
  * @param bottomPadding Bottom inset padding provided by the DevView [androidx.compose.material3.Scaffold].
- *   Applied to the endpoint list so the last item is not obscured by system navigation bars.
+ *   Applied to the operation list so the last item is not obscured by system navigation bars.
  */
 @Composable
 public fun NetworkMockScreen(
     resetToNetworkSharedFlow: SharedFlow<Unit>,
-    navigateToEndpointScreen: (EndpointKey) -> Unit,
+    navigateToEndpointScreen: (OperationKey) -> Unit,
     viewModel: NetworkMockViewModel,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp
@@ -92,7 +92,7 @@ public fun NetworkMockScreen(
 internal fun NetworkMockScreenContent(
     uiState: NetworkMockUiState,
     onGlobalToggle: (Boolean) -> Unit,
-    navigateToEndpointScreen: (EndpointKey) -> Unit,
+    navigateToEndpointScreen: (OperationKey) -> Unit,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp
 ) {
@@ -116,13 +116,13 @@ internal fun NetworkMockScreenContent(
 private fun ContentState(
     uiState: NetworkMockUiState.Content,
     onGlobalToggle: (Boolean) -> Unit,
-    openEndpointDetails: (EndpointKey) -> Unit,
+    openEndpointDetails: (OperationKey) -> Unit,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(value = 0) }
 
-    val pagerState = rememberPagerState(pageCount = { uiState.groups.size })
+    val pagerState = rememberPagerState(pageCount = { uiState.specs.size })
 
     LaunchedEffect(key1 = selectedTabIndex) {
         pagerState.animateScrollToPage(page = selectedTabIndex)
@@ -152,14 +152,14 @@ private fun ContentState(
             selectedTabIndex = selectedTabIndex,
             edgePadding = 0.dp
         ) {
-            uiState.groups.forEachIndexed { index, group ->
+            uiState.specs.forEachIndexed { index, spec ->
                 Tab(
                     modifier = Modifier.testTag(
-                        tag = "group_tab_${group.groupId}_${group.environmentId}"
+                        tag = "spec_tab_${spec.specId}"
                     ),
                     selected = selectedTabIndex == index,
                     onClick = { selectedTabIndex = index },
-                    text = { Text(text = group.name) }
+                    text = { Text(text = spec.name) }
                 )
             }
         }
@@ -169,29 +169,28 @@ private fun ContentState(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.Top
         ) { pageIndex ->
-            val group = uiState.groups.getOrNull(index = pageIndex) ?: return@HorizontalPager
+            val spec = uiState.specs.getOrNull(index = pageIndex) ?: return@HorizontalPager
             LazyColumn(
                 modifier = Modifier
                     .weight(weight = 1f),
                 verticalArrangement = Arrangement.spacedBy(space = 0.dp)
             ) {
                 itemsIndexed(
-                    items = group.endpoints,
-                    key = { _, endpoint -> endpoint.descriptor.key.compositeKey }
-                ) { index, endpoint ->
+                    items = spec.operations,
+                    key = { _, operation -> operation.descriptor.key.compositeKey }
+                ) { index, operation ->
                     EndpointCard(
                         modifier = Modifier.testTag(
-                            tag = "endpoint_card_${endpoint.descriptor.groupId}" +
-                                "_${endpoint.descriptor.environmentId}" +
-                                "_${endpoint.descriptor.endpointId}"
+                            tag = "endpoint_card_${operation.descriptor.specId}" +
+                                "_${operation.descriptor.operationId}"
                         ),
-                        endpoint = endpoint,
+                        endpoint = operation,
                         openEndpointDetails = {
-                            openEndpointDetails(endpoint.descriptor.key)
+                            openEndpointDetails(operation.descriptor.key)
                         },
                         showFileName = true
                     )
-                    if (index != group.endpoints.lastIndex) {
+                    if (index != spec.operations.lastIndex) {
                         HorizontalDivider()
                     }
                 }

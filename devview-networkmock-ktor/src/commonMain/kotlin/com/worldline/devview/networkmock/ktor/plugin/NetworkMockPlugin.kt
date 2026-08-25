@@ -2,8 +2,8 @@
 
 package com.worldline.devview.networkmock.ktor.plugin
 
-import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.core.model.NetworkMockState
+import com.worldline.devview.networkmock.core.model.OperationMockState
 import io.ktor.client.HttpClient
 import io.ktor.client.call.HttpClientCall
 import io.ktor.client.plugins.HttpClientPlugin
@@ -90,33 +90,31 @@ public data class NetworkMockPluginConfig(internal val config: NetworkMockConfig
  * ```
  *
  * ## Mock File Setup
- * Create `composeResources/files/networkmocks/mocks.json`:
+ * Create an OpenAPI 3.x spec, e.g. `composeResources/files/networkmocks/specs/my-backend.json`:
  * ```json
  * {
- *   "apiGroups": [{
- *     "id": "my-backend",
- *     "name": "My Backend",
- *     "endpoints": [{
- *       "id": "getUser",
- *       "name": "Get User Profile",
- *       "path": "/v1/users/{userId}",
- *       "method": "GET"
- *     }],
- *     "environments": [
- *       { "id": "staging",    "name": "Staging",    "url": "https://staging.api.example.com" },
- *       { "id": "production", "name": "Production", "url": "https://api.example.com" }
- *     ]
- *   }]
+ *   "info": { "title": "My Backend" },
+ *   "servers": [{ "url": "https://api.example.com" }],
+ *   "paths": {
+ *     "/v1/users/{userId}": {
+ *       "get": {
+ *         "operationId": "getUser",
+ *         "summary": "Get User Profile",
+ *         "responses": {
+ *           "200": {
+ *             "content": {
+ *               "application/json": {
+ *                 "examples": {
+ *                   "default": { "externalValue": "responses/getUser-200.json" }
+ *                 }
+ *               }
+ *             }
+ *           }
+ *         }
+ *       }
+ *     }
+ *   }
  * }
- * ```
- *
- * Add response files following the naming convention:
- * ```
- * composeResources/files/networkmocks/responses/my-backend/getUser/
- * ├── getUser-200.json        (shared — used by all environments)
- * └── getUser-404.json
- * composeResources/files/networkmocks/responses/my-backend/staging/getUser/
- * └── getUser-200.json        (staging-specific — overrides the shared variant)
  * ```
  *
  * ## Error Handling
@@ -190,18 +188,18 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
 
                 mockMatch?.let { match ->
                     println(
-                        message = "$LOG_PREFIX Found matching endpoint: " +
-                            "${match.groupId}/${match.environmentId}/${match.endpointId}"
+                        message = "$LOG_PREFIX Found matching operation: " +
+                            "${match.specId}/${match.operationId}"
                     )
 
-                    val endpointState = currentState.getEndpointState(key = match.key)
+                    val endpointState = currentState.getOperationState(key = match.key)
 
                     if (endpointState == null) {
                         println(
-                            message = "$LOG_PREFIX No state found for endpoint key: ${match.key.compositeKey}"
+                            message = "$LOG_PREFIX No state found for operation key: ${match.key.compositeKey}"
                         )
                         println(
-                            message = "$LOG_PREFIX Available endpoint states: ${currentState.endpointStates.keys}"
+                            message = "$LOG_PREFIX Available operation states: ${currentState.operationStates.keys}"
                         )
                         println(message = "$LOG_PREFIX Using actual network")
                         println(message = "$LOG_PREFIX ========================================")
@@ -210,18 +208,18 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
 
                     println(
                         message =
-                            "$LOG_PREFIX Endpoint state: ${
+                            "$LOG_PREFIX Operation state: ${
                                 when (endpointState) {
-                                    is EndpointMockState.Network -> "network"
-                                    is EndpointMockState.Mock ->
-                                        "mock, file=${endpointState.responseFile}, " +
-                                            "status=${endpointState.statusCode}"
+                                    is OperationMockState.Network -> "network"
+                                    is OperationMockState.Mock ->
+                                        "mock, status=${endpointState.statusCode}, " +
+                                            "example=${endpointState.exampleName}"
                                 }
                             }"
                     )
 
                     when (endpointState) {
-                        is EndpointMockState.Network -> {
+                        is OperationMockState.Network -> {
                             println(
                                 message = "$LOG_PREFIX Endpoint mock not enabled"
                             )
@@ -230,17 +228,18 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                                 message = "$LOG_PREFIX ========================================"
                             )
                         }
-                        is EndpointMockState.Mock -> {
+                        is OperationMockState.Mock -> {
                             println(
-                                message = "$LOG_PREFIX Mock is enabled with file: " +
-                                    endpointState.responseFile
+                                message = "$LOG_PREFIX Mock is enabled with example: " +
+                                    endpointState.exampleName
                             )
 
                             @Suppress("TooGenericExceptionCaught")
                             try {
                                 val mockResponse = mockRepository.loadMockResponse(
                                     key = match.key,
-                                    fileName = endpointState.responseFile
+                                    statusCode = endpointState.statusCode,
+                                    exampleName = endpointState.exampleName
                                 )
 
                                 mockResponse?.let { response ->

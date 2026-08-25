@@ -10,7 +10,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
-import com.worldline.devview.networkmock.core.model.EndpointKey
+import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.fixtures.MockScreenTestData
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import io.kotest.matchers.shouldBe
@@ -48,19 +48,19 @@ class NetworkMockScreenTest {
 
 
     @Test
-    fun rendersGroupTabs_forContentState() = runComposeUiTest {
+    fun rendersSpecTabs_forContentState() = runComposeUiTest {
         setScreen(uiState = MockScreenTestData.contentState())
 
-        onNodeWithTag(testTag = "group_tab_example_staging").assertIsDisplayed()
-        onNodeWithTag(testTag = "group_tab_example_production").assertIsDisplayed()
+        onNodeWithTag(testTag = "spec_tab_example").assertIsDisplayed()
+        onNodeWithTag(testTag = "spec_tab_catalog").assertIsDisplayed()
     }
 
 
     @Test
-    fun initialSelectedTab_isFirstGroup() = runComposeUiTest {
+    fun initialSelectedTab_isFirstSpec() = runComposeUiTest {
         setScreen(uiState = MockScreenTestData.contentState())
 
-        onNodeWithTag(testTag = "group_tab_example_staging").assertIsSelected()
+        onNodeWithTag(testTag = "spec_tab_example").assertIsSelected()
 
     }
 
@@ -68,12 +68,12 @@ class NetworkMockScreenTest {
     fun tabSwitching_changesVisibleEndpoints() = runComposeUiTest {
         setScreen(uiState = MockScreenTestData.contentState())
 
-        onNodeWithTag(testTag = "endpoint_card_example_staging_getUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
 
-        onNodeWithTag(testTag = "group_tab_example_production").performClick()
+        onNodeWithTag(testTag = "spec_tab_catalog").performClick()
         waitForIdle()
 
-        onNodeWithTag(testTag = "endpoint_card_example_production_getUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_catalog_getUser").assertIsDisplayed()
     }
 
 
@@ -116,34 +116,30 @@ class NetworkMockScreenTest {
 
     @Test
     fun endpointSelection_invokesSelectEndpointCallback() = runComposeUiTest {
-        var selected: EndpointKey? = null
+        var selected: OperationKey? = null
 
         setScreen(
             uiState = MockScreenTestData.contentState(),
-            navigateToEndpointScreen = { endpointKey -> selected = endpointKey }
+            navigateToEndpointScreen = { operationKey -> selected = operationKey }
         )
 
-        onNodeWithTag(testTag = "endpoint_card_example_staging_getUser").performClick()
+        onNodeWithTag(testTag = "endpoint_card_example_getUser").performClick()
 
-        selected shouldBe EndpointKey(
-            groupId = "example",
-            environmentId = "staging",
-            endpointId = "getUser"
-        )
+        selected shouldBe OperationKey(specId = "example", operationId = "getUser")
     }
 
     @Test
     fun multipleEndpointCardsAllRender() = runComposeUiTest {
         setScreen(uiState = MockScreenTestData.contentState())
 
-        onNodeWithTag(testTag = "endpoint_card_example_staging_getUser").assertIsDisplayed()
-        onNodeWithTag(testTag = "endpoint_card_example_staging_createUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
     }
 
     private fun ComposeUiTest.setScreen(
         uiState: NetworkMockUiState,
         onGlobalToggle: (Boolean) -> Unit = {},
-        navigateToEndpointScreen: (EndpointKey) -> Unit = { },
+        navigateToEndpointScreen: (OperationKey) -> Unit = { },
     ) {
         setContent {
             MaterialTheme {

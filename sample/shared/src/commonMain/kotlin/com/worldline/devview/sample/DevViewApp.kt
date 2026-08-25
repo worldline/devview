@@ -49,7 +49,11 @@ public fun DevViewApp() {
         module(module = TimeCapsule)
         module(
             module = NetworkMock(
-                resourceLoader = { path -> Res.readBytes(path = path) }
+                resourceLoader = { path -> Res.readBytes(path = path) },
+                specPaths = listOf(
+                    "files/networkmocks/specs/jsonplaceholder.json",
+                    "files/networkmocks/specs/sample-api.json"
+                )
             )
         )
         module(module = TestModule)

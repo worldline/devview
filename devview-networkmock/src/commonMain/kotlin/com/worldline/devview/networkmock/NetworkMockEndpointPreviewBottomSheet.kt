@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.worldline.devview.networkmock.components.EndpointStateChip
 import com.worldline.devview.networkmock.components.InlineDiffContent
 import com.worldline.devview.networkmock.components.SplitDiffContent
-import com.worldline.devview.networkmock.core.model.EndpointMockState
+import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.networkmock.preview.PreviewSheetStatePreviewParameterProvider
 import kotlinx.coroutines.launch
 
@@ -95,8 +95,8 @@ internal fun NetworkMockEndpointPreviewBottomSheet(
                 is PreviewSheetState.Compare -> if (previewSheetState.useInlineDiff) {
                     InlineDiffContent(
                         diff = previewSheetState.lineDiff,
-                        leftLabel = previewSheetState.first.fileName,
-                        rightLabel = previewSheetState.second.fileName
+                        leftLabel = previewSheetState.first.displayName,
+                        rightLabel = previewSheetState.second.displayName
                     )
                 } else {
                     SplitDiffContent(
@@ -144,8 +144,9 @@ private fun PreviewHeader(
                 when (previewSheetState) {
                     is PreviewSheetState.Single -> {
                         EndpointStateChip(
-                            endpointMockState = EndpointMockState.Mock(
-                                responseFile = previewSheetState.response.fileName
+                            endpointMockState = OperationMockState.Mock(
+                                statusCode = previewSheetState.response.statusCode,
+                                exampleName = previewSheetState.response.exampleName
                             ),
                             label = previewSheetState.response.displayName
                         )
@@ -153,8 +154,9 @@ private fun PreviewHeader(
 
                     is PreviewSheetState.Compare -> {
                         EndpointStateChip(
-                            endpointMockState = EndpointMockState.Mock(
-                                responseFile = previewSheetState.first.fileName
+                            endpointMockState = OperationMockState.Mock(
+                                statusCode = previewSheetState.first.statusCode,
+                                exampleName = previewSheetState.first.exampleName
                             ),
                             label = previewSheetState.first.displayName
                         )
@@ -164,8 +166,9 @@ private fun PreviewHeader(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         EndpointStateChip(
-                            endpointMockState = EndpointMockState.Mock(
-                                responseFile = previewSheetState.second.fileName
+                            endpointMockState = OperationMockState.Mock(
+                                statusCode = previewSheetState.second.statusCode,
+                                exampleName = previewSheetState.second.exampleName
                             ),
                             label = previewSheetState.second.displayName
                         )

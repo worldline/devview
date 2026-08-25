@@ -17,8 +17,7 @@ import com.worldline.devview.networkmock.core.NETWORK_MOCK_DATASTORE_NAME
 import com.worldline.devview.networkmock.core.NetworkMockDataStoreDelegate
 import com.worldline.devview.networkmock.core.NetworkMockInitializer
 import com.worldline.devview.networkmock.core.NetworkMockResourceLoader
-import com.worldline.devview.networkmock.core.model.EndpointKey
-import com.worldline.devview.networkmock.core.repository.MockConfigRepository
+import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.viewmodel.NetworkMockEndpointViewModel
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
 import com.worldline.devview.utils.DataStoreDelegate
@@ -44,7 +43,7 @@ public sealed interface NetworkMockDestination : NavKey {
     public data object Main : NetworkMockDestination
 
     @Serializable
-    public data class Endpoint(val endpointKey: EndpointKey) : NetworkMockDestination
+    public data class Endpoint(val operationKey: OperationKey) : NetworkMockDestination
 }
 
 /**
@@ -69,7 +68,8 @@ public sealed interface NetworkMockDestination : NavKey {
  * ```kotlin
  * val modules = rememberModules {
  *     module(NetworkMock(
- *         resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }
+ *         resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) },
+ *         specPaths = listOf("files/networkmocks/specs/my-backend.json")
  *     ))
  * }
  * ```
@@ -82,13 +82,12 @@ public sealed interface NetworkMockDestination : NavKey {
  * ```
  *
  * @property resourceLoader [NetworkMockResourceLoader] provided by the integrator's resource system
- * @property configPath Path to the `mocks.json` configuration file relative to
- * composeResources. Defaults to `"files/networkmocks/mocks.json"`.
+ * @property specPaths Paths to the OpenAPI spec files relative to composeResources, one per
+ * API group (e.g. `listOf("files/networkmocks/specs/my-backend.json")`).
  */
 public class NetworkMock(
     private val resourceLoader: NetworkMockResourceLoader,
-    private val configPath: String = "files/networkmocks/mocks.json",
-    private val responseSuffixes: List<String> = MockConfigRepository.DEFAULT_RESPONSE_SUFFIXES
+    private val specPaths: List<String>
 ) : Module,
     RequiresDataStore {
     override val dataStoreName: String = NETWORK_MOCK_DATASTORE_NAME
@@ -113,15 +112,14 @@ public class NetworkMock(
     override fun initModule() {
         NetworkMockInitializer.initialize(
             dataStore = dataStoreDelegate.get(),
-            configPath = configPath,
+            specPaths = specPaths,
             resourceLoader = { path ->
                 try {
                     resourceLoader.load(path = path)
                 } catch (e: MissingResourceException) {
                     throw IllegalStateException(e.message, e)
                 }
-            },
-            responseSuffixes = responseSuffixes
+            }
         )
     }
 
@@ -174,8 +172,8 @@ public class NetworkMock(
                 },
                 bottomPadding = bottomPadding,
                 resetToNetworkSharedFlow = onResetToNetwork,
-                navigateToEndpointScreen = { endpointKey ->
-                    onNavigate(NetworkMockDestination.Endpoint(endpointKey = endpointKey))
+                navigateToEndpointScreen = { operationKey ->
+                    onNavigate(NetworkMockDestination.Endpoint(operationKey = operationKey))
                 }
             )
         }
@@ -186,7 +184,7 @@ public class NetworkMock(
                     .fillMaxSize(),
                 viewModel = viewModel {
                     NetworkMockEndpointViewModel(
-                        endpointKey = it.endpointKey,
+                        operationKey = it.operationKey,
                         configRepository = NetworkMockInitializer.requireConfigRepository(),
                         stateRepository = NetworkMockInitializer.requireStateRepository()
                     )

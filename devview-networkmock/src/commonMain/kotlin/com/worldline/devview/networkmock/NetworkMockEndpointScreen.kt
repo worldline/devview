@@ -49,22 +49,22 @@ import com.worldline.devview.networkmock.components.ErrorState
 import com.worldline.devview.networkmock.components.LoadingState
 import com.worldline.devview.networkmock.components.MockItem
 import com.worldline.devview.networkmock.components.NetworkItem
-import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.core.model.MockResponse
+import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.networkmock.core.model.StatusCodeFamily
-import com.worldline.devview.networkmock.model.EndpointUiModel
-import com.worldline.devview.networkmock.preview.EndpointUiModelPreviewParameterProvider
+import com.worldline.devview.networkmock.model.OperationUiModel
+import com.worldline.devview.networkmock.preview.OperationUiModelPreviewParameterProvider
 import com.worldline.devview.networkmock.viewmodel.NetworkMockEndpointUiState
 import com.worldline.devview.networkmock.viewmodel.NetworkMockEndpointViewModel
 
 /**
- * Detail screen for a single API endpoint, showing all available mock responses and
+ * Detail screen for a single API operation, showing all available mock responses and
  * allowing the user to activate one or revert to the actual network.
  *
  * Driven entirely by [viewModel], which is constructed and provided by
  * [NetworkMock.registerContent] inside the `entry<NetworkMockDestination.Endpoint>` lambda
  * so that it is scoped to the navigation entry and receives the correct
- * [com.worldline.devview.networkmock.core.model.EndpointKey].
+ * [com.worldline.devview.networkmock.core.model.OperationKey].
  *
  * Renders three possible states from [NetworkMockEndpointViewModel.uiState]:
  * - [NetworkMockEndpointUiState.Loading] — shown while mock response files are being discovered
@@ -109,21 +109,24 @@ internal fun NetworkMockEndpointScreen(
 @Composable
 private fun NetworkMockEndpointScreenContent(
     content: NetworkMockEndpointUiState.Content,
-    onSelectResponse: (responseFileName: String?) -> Unit,
+    onSelectResponse: (response: MockResponse?) -> Unit,
     onPreviewClick: (MockResponse) -> Unit,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp
 ) {
-    val endpointUiModel = content.endpointUiModel
+    val endpointUiModel = content.operationUiModel
     val descriptor = endpointUiModel.descriptor
     val groupedResponses = descriptor.availableResponses.groupBy {
         StatusCodeFamily.fromStatusCode(statusCode = it.statusCode)
     }
     val selectedResponse = when (val currentState = endpointUiModel.currentState) {
-        is EndpointMockState.Mock ->
-            descriptor.availableResponses.find { it.fileName == currentState.responseFile }
+        is OperationMockState.Mock ->
+            descriptor.availableResponses.find {
+                it.statusCode == currentState.statusCode &&
+                    it.exampleName == currentState.exampleName
+            }
 
-        EndpointMockState.Network -> null
+        OperationMockState.Network -> null
     }
 
     var previewSheetState: PreviewSheetState by remember {
@@ -243,15 +246,17 @@ private fun NetworkMockEndpointScreenContent(
                     }
                     itemsIndexed(
                         items = mockResponses,
-                        key = { _, mockResponse -> "mock_item_${mockResponse.fileName}" }
+                        key = { _, mockResponse ->
+                            "mock_item_${mockResponse.statusCode}_${mockResponse.exampleName}"
+                        }
                     ) { index, mockResponse ->
                         MockItem(
                             mockResponse = mockResponse,
                             modifier = Modifier
                                 .background(color = MaterialTheme.colorScheme.background)
                                 .padding(horizontal = 16.dp),
-                            selected = selectedResponse?.fileName == mockResponse.fileName,
-                            onClick = { onSelectResponse(mockResponse.fileName) },
+                            selected = selectedResponse == mockResponse,
+                            onClick = { onSelectResponse(mockResponse) },
                             onLongClick = {
                                 previewSheetState =
                                     previewSheetState.transition(response = mockResponse)
@@ -299,14 +304,14 @@ private fun NetworkMockEndpointScreenContent(
 @Composable
 private fun NetworkMockEndpointScreenPreview(
     @PreviewParameter(
-        provider = EndpointUiModelPreviewParameterProvider::class
-    ) endpointUiModel: EndpointUiModel
+        provider = OperationUiModelPreviewParameterProvider::class
+    ) endpointUiModel: OperationUiModel
 ) {
     MaterialTheme {
         Surface {
             NetworkMockEndpointScreenContent(
                 content = NetworkMockEndpointUiState.Content(
-                    endpointUiModel = endpointUiModel
+                    operationUiModel = endpointUiModel
                 ),
                 onSelectResponse = {},
                 onPreviewClick = {}

@@ -4,21 +4,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Module Does
 
-`devview-networkmock` is the Compose UI layer for the network mocking feature. It depends on `devview-networkmock-core` (which owns the mock engine: JSON config parsing, request matching, DataStore state) and surfaces it as a DevView `Module` with two navigation screens.
+`devview-networkmock` is the Compose UI layer for the network mocking feature. It depends on `devview-networkmock-core` (which owns the mock engine: OpenAPI spec parsing, request matching, DataStore state) and surfaces it as a DevView `Module` with two navigation screens.
 
 ## Public API
 
 **`NetworkMock`** (`NetworkMock.kt`) — the sole entry point for integrators. Implements `Module` and `RequiresDataStore`. Registered via:
 ```kotlin
 rememberModules {
-    module(NetworkMock(resourceLoader = { path -> Res.readBytes(path) }))
+    module(NetworkMock(
+        resourceLoader = { path -> Res.readBytes(path) },
+        specPaths = listOf("files/networkmocks/specs/my-backend.json")
+    ))
 }
 ```
-`configPath` defaults to `"files/networkmocks/mocks.json"`.
+`specPaths` lists every OpenAPI spec file to load — one per API group. There is no default; every spec must be listed explicitly.
 
 **`NetworkMockDestination`** — sealed nav key interface with two destinations:
-- `Main` — the full endpoint list screen
-- `Endpoint(endpointKey: EndpointKey)` — the detail screen for one endpoint
+- `Main` — the full operation list screen
+- `Endpoint(operationKey: OperationKey)` — the detail screen for one operation
 
 **Public composable**: `NetworkMockScreen` (main list). `NetworkMockEndpointScreen` is `internal`.
 
@@ -26,7 +29,9 @@ rememberModules {
 
 **Public UI states**: `NetworkMockUiState` (Loading / Error / Empty / Content) and `NetworkMockEndpointUiState` (Loading / Error / Content).
 
-**Public UI models**: `GroupEnvironmentUiModel` (one per group + environment tab) and `EndpointUiModel` (pairs a static `EndpointDescriptor` with a live `EndpointMockState`).
+**Public UI models**: `ApiSpecUiModel` (one per spec tab) and `OperationUiModel` (pairs a static `OperationDescriptor` with a live `OperationMockState`).
+
+**Naming note**: internal Compose component names (`EndpointCard`, `EndpointStateChip`, `EndpointHeaderCard`, `MockItem`) and their test tags intentionally keep "endpoint" vocabulary — they're DevView's own UI implementation detail, not one of the types renamed to OpenAPI vocabulary by the 0.2.0 migration (`ApiSpecUiModel`, `OperationUiModel`, `OperationKey`, etc.).
 
 ## Internal Architecture
 
@@ -41,16 +46,16 @@ rememberModules {
 ### ViewModel state model
 
 Both ViewModels combine two sources via `combine(...)` stateIn `WhileSubscribed(5000ms)`:
-- A one-shot coroutine that loads config / discovers response files from `MockConfigRepository`
+- A one-shot coroutine that loads config / discovers response variants from `MockConfigRepository`
 - A live `Flow<NetworkMockState>` from `MockStateRepository.observeState()`
 
 ### "Reset to Network" toolbar action
 
-Wired via a `MutableSharedFlow<Unit>` (capacity 1, `DROP_OLDEST`) created in `NetworkMock` and passed into `NetworkMockScreen`. `resetAllToNetwork()` resets every endpoint in the parsed config (not just those stored in DataStore) to avoid gaps for endpoints the user has never touched.
+Wired via a `MutableSharedFlow<Unit>` (capacity 1, `DROP_OLDEST`) created in `NetworkMock` and passed into `NetworkMockScreen`. `resetAllToNetwork()` resets every operation in the parsed config (not just those stored in DataStore) to avoid gaps for operations the user has never touched.
 
 ### Preview bottom sheet state machine
 
-`PreviewSheetState` (in `NetworkMockEndpointScreen.kt`) is a sealed interface with three states: `Hidden`, `Single(response)`, `Compare(first, second)`. Toggling a response via long-press calls `transition(response)`, which cycles: Hidden → Single → Compare (second long-press) → back to Single (deselect one) → Hidden (deselect last).
+`PreviewSheetState` (in `NetworkMockEndpointScreen.kt`) is a sealed interface with three states: `Hidden`, `Single(response)`, `Compare(first, second)`. Toggling a response via long-press calls `transition(response)`, which cycles: Hidden → Single → Compare (second long-press) → back to Single (deselect one) → Hidden (deselect last). Selection identity is the whole `MockResponse` (effectively its `(statusCode, exampleName)` pair), not a file name.
 
 ### Diff rendering pipeline
 
@@ -62,11 +67,11 @@ When the sheet is in `Compare` state, responses are diffed:
 
 ### Status code colors and icons
 
-`ModelUtils.kt` provides internal extension properties (`EndpointMockState.icon`, `.contentColor`, `.containerColor`) that map HTTP status families (1xx–5xx) to hardcoded `Color` and `ImageVector` values. These are the only place to update if chip colours need changing.
+`ModelUtils.kt` provides internal extension properties (`OperationMockState.icon`, `.contentColor`, `.containerColor`) that map HTTP status families (1xx–5xx) to hardcoded `Color` and `ImageVector` values. These are the only place to update if chip colours need changing.
 
 ### Fake data for previews
 
-`ModelUtils.kt` adds `fake(...)` functions on the `Companion` objects of `GroupEnvironmentUiModel`, `EndpointDescriptor`, `EndpointUiModel`, and `MockResponse`. Compose `@Preview` parameters use these via `*PreviewParameterProvider` classes in the `preview/` package.
+`ModelUtils.kt` adds `fake(...)` functions on the `Companion` objects of `ApiSpecUiModel`, `OperationDescriptor`, `OperationUiModel`, and `MockResponse`. Compose `@Preview` parameters use these via `*PreviewParameterProvider` classes in the `preview/` package.
 
 ## Testing
 

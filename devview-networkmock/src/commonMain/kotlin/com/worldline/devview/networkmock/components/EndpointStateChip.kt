@@ -17,20 +17,20 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import com.worldline.devview.networkmock.core.model.EndpointMockState
-import com.worldline.devview.networkmock.model.EndpointUiModel
-import com.worldline.devview.networkmock.preview.EndpointUiModelPreviewParameterProvider
+import com.worldline.devview.networkmock.core.model.OperationMockState
+import com.worldline.devview.networkmock.model.OperationUiModel
+import com.worldline.devview.networkmock.preview.OperationUiModelPreviewParameterProvider
 import com.worldline.devview.networkmock.utils.containerColor
 import com.worldline.devview.networkmock.utils.contentColor
 import com.worldline.devview.networkmock.utils.icon
 
 @Composable
 internal fun EndpointStateChip(
-    endpointMockState: EndpointMockState,
+    endpointMockState: OperationMockState,
     modifier: Modifier = Modifier,
     label: String = when (endpointMockState) {
-        is EndpointMockState.Mock -> endpointMockState.statusCode.toString()
-        EndpointMockState.Network -> endpointMockState.displayName
+        is OperationMockState.Mock -> endpointMockState.statusCode.toString()
+        OperationMockState.Network -> endpointMockState.displayName
     },
     chipTestTag: String = "endpoint_state_chip",
     labelTestTag: String = "endpoint_state_chip_label"
@@ -69,8 +69,8 @@ internal fun EndpointStateChip(
 @Composable
 private fun EndpointStateChipPreview(
     @PreviewParameter(
-        EndpointUiModelPreviewParameterProvider::class
-    ) endpoint: EndpointUiModel
+        OperationUiModelPreviewParameterProvider::class
+    ) endpoint: OperationUiModel
 ) {
     MaterialTheme {
         Surface {

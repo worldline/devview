@@ -9,11 +9,11 @@ import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.ui.graphics.Color
-import com.worldline.devview.networkmock.core.model.EndpointDescriptor
-import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.core.model.MockResponse
-import com.worldline.devview.networkmock.model.EndpointUiModel
-import com.worldline.devview.networkmock.model.GroupEnvironmentUiModel
+import com.worldline.devview.networkmock.core.model.OperationDescriptor
+import com.worldline.devview.networkmock.core.model.OperationMockState
+import com.worldline.devview.networkmock.model.ApiSpecUiModel
+import com.worldline.devview.networkmock.model.OperationUiModel
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
@@ -57,8 +57,8 @@ class ModelUtilsTest {
     }
 
     @Test
-    fun `endpoint state extension properties use network defaults`() {
-        val state = EndpointMockState.Network
+    fun `operation state extension properties use network defaults`() {
+        val state = OperationMockState.Network
 
         state.icon shouldBe Icons.Rounded.Wifi
         state.contentColor shouldBe Color(color = 0xFF0D1F3A)
@@ -66,8 +66,8 @@ class ModelUtilsTest {
     }
 
     @Test
-    fun `endpoint state extension properties use mock status code mapping`() {
-        val state = EndpointMockState.Mock(responseFile = "response-404.json")
+    fun `operation state extension properties use mock status code mapping`() {
+        val state = OperationMockState.Mock(statusCode = 404, exampleName = "default")
 
         state.icon shouldBe Icons.Rounded.ErrorOutline
         state.contentColor shouldBe Color(color = 0xFF6F1111)
@@ -75,45 +75,41 @@ class ModelUtilsTest {
     }
 
     @Test
-    fun `fake GroupEnvironmentUiModel creates requested amount with nested endpoints`() {
-        val groups = GroupEnvironmentUiModel.fake(amount = 3)
+    fun `fake ApiSpecUiModel creates requested amount with nested operations`() {
+        val specs = ApiSpecUiModel.fake(amount = 3)
 
-        groups shouldHaveSize 3
-        groups[0].groupId shouldBe "group"
-        groups[0].environmentId shouldBe "development"
-        groups[0].name shouldBe "Group - Development"
-        groups[0].url shouldBe "https://group.development.api.com"
-        groups[0].endpoints shouldHaveSize 7
+        specs shouldHaveSize 3
+        specs[0].specId shouldBe "spec"
+        specs[0].name shouldBe "Spec"
+        specs[0].operations shouldHaveSize 7
     }
 
     @Test
-    fun `fake EndpointDescriptor creates requested amount and response count`() {
-        val descriptors = EndpointDescriptor.fake(
+    fun `fake OperationDescriptor creates requested amount and response count`() {
+        val descriptors = OperationDescriptor.fake(
             amount = 2,
             availableResponsesAmount = 4,
-            groupId = "qa",
-            environmentId = "staging"
+            specId = "qa"
         )
 
         descriptors shouldHaveSize 2
-        descriptors[0].groupId shouldBe "qa"
-        descriptors[0].environmentId shouldBe "staging"
-        descriptors[0].endpointId shouldBe "endpoint-1"
-        descriptors[0].config.path shouldBe "/endpoint1"
+        descriptors[0].specId shouldBe "qa"
+        descriptors[0].operationId shouldBe "operation-1"
+        descriptors[0].config.path shouldBe "/operation1"
         descriptors[0].availableResponses shouldHaveSize 4
     }
 
     @Test
-    fun `fake EndpointUiModel and MockResponse create requested amount`() {
-        val endpoints = EndpointUiModel.fake(amount = 5, availableResponsesAmount = 2)
+    fun `fake OperationUiModel and MockResponse create requested amount`() {
+        val operations = OperationUiModel.fake(amount = 5, availableResponsesAmount = 2)
         val responses = MockResponse.fake(amount = 4)
 
-        endpoints shouldHaveSize 5
-        endpoints[0].descriptor.availableResponses shouldHaveSize 2
-        endpoints[0].currentState shouldBe EndpointMockState.Mock(responseFile = "response-100.json")
+        operations shouldHaveSize 5
+        operations[0].descriptor.availableResponses shouldHaveSize 2
+        operations[0].currentState shouldBe OperationMockState.Mock(statusCode = 100, exampleName = "default")
 
         responses shouldHaveSize 4
-        responses[1].fileName shouldBe "response-201.json"
+        responses[1].exampleName shouldBe "default"
         responses[1].statusCode shouldBe 200
         responses[1].displayName shouldBe "Response 1"
     }
