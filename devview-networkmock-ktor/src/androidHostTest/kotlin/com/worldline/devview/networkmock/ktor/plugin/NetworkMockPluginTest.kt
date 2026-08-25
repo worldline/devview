@@ -1,7 +1,7 @@
 package com.worldline.devview.networkmock.ktor.plugin
 
-import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.core.model.NetworkMockState
+import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.networkmock.core.repository.MockConfigRepository
 import com.worldline.devview.networkmock.core.repository.MockStateRepository
 import com.worldline.devview.networkmock.ktor.fixtures.KtorPluginTestData
@@ -48,8 +48,8 @@ class NetworkMockPluginTest {
     fun returnsMockResponse_whenEndpointIsMocked() = runTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
-            endpointStates = mapOf(
-                "example-staging-getUser" to EndpointMockState.Mock(responseFile = "getUser-200.json")
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
             )
         )
         val client = buildClient(
@@ -70,8 +70,8 @@ class NetworkMockPluginTest {
     fun returnsMockResponse_withCorrectStatusCode_404() = runTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
-            endpointStates = mapOf(
-                "example-staging-getUser" to EndpointMockState.Mock(responseFile = "getUser-404.json")
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 404, exampleName = "default")
             )
         )
         val client = buildClient(
@@ -92,8 +92,8 @@ class NetworkMockPluginTest {
     fun returnsMockResponse_forPostEndpoint() = runTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
-            endpointStates = mapOf(
-                "example-staging-createUser" to EndpointMockState.Mock(responseFile = "createUser-201.json")
+            operationStates = mapOf(
+                "example-createUser" to OperationMockState.Mock(statusCode = 201, exampleName = "default")
             )
         )
         val client = buildClient(
@@ -116,8 +116,8 @@ class NetworkMockPluginTest {
     fun returnsMockResponse_forDifferentHost_production() = runTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
-            endpointStates = mapOf(
-                "example-production-getProduct" to EndpointMockState.Mock(responseFile = "getProduct-200.json")
+            operationStates = mapOf(
+                "example-getProduct" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
             )
         )
         val client = buildClient(
@@ -175,8 +175,8 @@ class NetworkMockPluginTest {
         // getUser is GET-only; sending POST should fall through to network
         val state = NetworkMockState(
             globalMockingEnabled = true,
-            endpointStates = mapOf(
-                "example-staging-getUser" to EndpointMockState.Mock(responseFile = "getUser-200.json")
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
             )
         )
         val client = buildClient(
@@ -194,10 +194,10 @@ class NetworkMockPluginTest {
 
     @Test
     fun requestPassesThrough_whenEndpointStateIsNetwork() = runTest {
-        // Global mocking on, but endpoint left as Network — should pass through
+        // Global mocking on, but operation left as Network — should pass through
         val state = NetworkMockState(
             globalMockingEnabled = true,
-            endpointStates = mapOf("example-staging-getUser" to EndpointMockState.Network)
+            operationStates = mapOf("example-getUser" to OperationMockState.Network)
         )
         val client = buildClient(
             engine = networkEngine(body = """{"source":"network"}"""),
@@ -214,10 +214,10 @@ class NetworkMockPluginTest {
 
     @Test
     fun requestPassesThrough_whenEndpointHasNoStoredState() = runTest {
-        // Global mocking on, endpoint exists in config but has no entry in endpointStates
+        // Global mocking on, operation exists in config but has no entry in operationStates
         val state = NetworkMockState(
             globalMockingEnabled = true,
-            endpointStates = emptyMap()
+            operationStates = emptyMap()
         )
         val client = buildClient(
             engine = networkEngine(body = """{"source":"network"}"""),
@@ -240,8 +240,8 @@ class NetworkMockPluginTest {
     fun pathParameterMatching_matchesDifferentConcreteValues() = runTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
-            endpointStates = mapOf(
-                "example-staging-getUser" to EndpointMockState.Mock(responseFile = "getUser-200.json")
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
             )
         )
         val client = buildClient(
@@ -264,12 +264,12 @@ class NetworkMockPluginTest {
     @Test
     fun requestFallsBackToNetwork_whenResponseFileIsMissing() = runTest {
         val resourcesWithoutResponseFile = KtorPluginTestData.responseResources
-            .filterKeys { key -> key != "files/networkmocks/responses/example/staging/getUser/getUser-200.json" }
+            .filterKeys { key -> key != "files/networkmocks/responses/getUser-200.json" }
 
         val state = NetworkMockState(
             globalMockingEnabled = true,
-            endpointStates = mapOf(
-                "example-staging-getUser" to EndpointMockState.Mock(responseFile = "getUser-200.json")
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
             )
         )
         val client = buildClient(
@@ -289,7 +289,7 @@ class NetworkMockPluginTest {
     @Test
     fun requestFallsBackToNetwork_whenConfigurationIsMissing() = runTest {
         val resourcesWithoutConfig = KtorPluginTestData.responseResources
-            .filterKeys { key -> key != "files/networkmocks/mocks.json" }
+            .filterKeys { key -> key != KtorPluginTestData.SPEC_PATH }
 
         val state = NetworkMockState(globalMockingEnabled = true)
         val client = buildClient(
@@ -308,13 +308,13 @@ class NetworkMockPluginTest {
     @Test
     fun requestFallsBackToNetwork_whenConfigurationIsMalformed_butEndpointStateIsMocked() = runTest {
         val resourcesWithMalformedConfig = KtorPluginTestData.responseResources + mapOf(
-            "files/networkmocks/mocks.json" to """{ "apiGroups": [ {"""
+            KtorPluginTestData.SPEC_PATH to """{ "paths": { """
         )
 
         val state = NetworkMockState(
             globalMockingEnabled = true,
-            endpointStates = mapOf(
-                "example-staging-getUser" to EndpointMockState.Mock(responseFile = "getUser-200.json")
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
             )
         )
         val client = buildClient(
@@ -331,24 +331,20 @@ class NetworkMockPluginTest {
     }
 
     @Test
-    fun requestFallsBackToNetwork_whenResponseFileNameIsMalformed() = runTest {
-        val resourcesWithMalformedFileName = KtorPluginTestData.responseResources + mapOf(
-            "files/networkmocks/responses/example/staging/getUser/getUser-invalid.json" to """{"id":1}"""
-        )
-
+    fun requestFallsBackToNetwork_whenSelectedExampleIsNotDeclared() = runTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
-            endpointStates = mapOf(
-                "example-staging-getUser" to EndpointMockState.Mock(responseFile = "getUser-invalid.json")
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "doesNotExist")
             )
         )
         val client = buildClient(
             engine = networkEngine(body = """{"source":"network"}"""),
-            configRepository = configRepository(resources = resourcesWithMalformedFileName),
+            configRepository = configRepository(),
             stateRepository = stateRepositoryMock(state = state)
         )
 
-        // File exists, but MockResponse.fromFile cannot parse status from the malformed name.
+        // The (statusCode, exampleName) pair isn't declared in the spec — falls back to network.
         val response: HttpResponse = client.get(
             urlString = "https://staging.api.example.com/api/users/42"
         )
@@ -389,7 +385,7 @@ class NetworkMockPluginTest {
     private fun configRepository(
         resources: Map<String, String> = KtorPluginTestData.responseResources
     ): MockConfigRepository = MockConfigRepository(
-        configPath = "files/networkmocks/mocks.json",
+        specPaths = listOf(KtorPluginTestData.SPEC_PATH),
         resourceLoader = KtorPluginTestData.resourceLoader(resources = resources)
     )
 

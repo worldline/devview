@@ -7,12 +7,12 @@ import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
-import com.worldline.devview.networkmock.core.model.EndpointConfig
-import com.worldline.devview.networkmock.core.model.EndpointDescriptor
-import com.worldline.devview.networkmock.core.model.EndpointKey
-import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.core.model.MockResponse
-import com.worldline.devview.networkmock.model.EndpointUiModel
+import com.worldline.devview.networkmock.core.model.Operation
+import com.worldline.devview.networkmock.core.model.OperationDescriptor
+import com.worldline.devview.networkmock.core.model.OperationKey
+import com.worldline.devview.networkmock.core.model.OperationMockState
+import com.worldline.devview.networkmock.model.OperationUiModel
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
@@ -115,15 +115,11 @@ class EndpointCardTest {
         ).assertIsDisplayed()
     }
 
-    private fun networkEndpoint() = EndpointUiModel(
-        descriptor = EndpointDescriptor(
-            key = EndpointKey(
-                groupId = "test",
-                environmentId = "staging",
-                endpointId = "getUser"
-            ),
-            config = EndpointConfig(
-                id = "getUser",
+    private fun networkEndpoint() = OperationUiModel(
+        descriptor = OperationDescriptor(
+            key = OperationKey(specId = "test", operationId = "getUser"),
+            config = Operation(
+                operationId = "getUser",
                 name = "Get User",
                 path = "/api/users/{userId}",
                 method = "GET"
@@ -131,24 +127,20 @@ class EndpointCardTest {
             availableResponses = listOf(
                 MockResponse(
                     statusCode = 200,
-                    fileName = "getUser-200.json",
+                    exampleName = "default",
                     displayName = "Success (200)",
                     content = "{}"
                 )
             )
         ),
-        currentState = EndpointMockState.Network
+        currentState = OperationMockState.Network
     )
 
-    private fun mockEndpoint() = EndpointUiModel(
-        descriptor = EndpointDescriptor(
-            key = EndpointKey(
-                groupId = "test",
-                environmentId = "staging",
-                endpointId = "getUser"
-            ),
-            config = EndpointConfig(
-                id = "getUser",
+    private fun mockEndpoint() = OperationUiModel(
+        descriptor = OperationDescriptor(
+            key = OperationKey(specId = "test", operationId = "getUser"),
+            config = Operation(
+                operationId = "getUser",
                 name = "Get User",
                 path = "/api/users/{userId}",
                 method = "GET"
@@ -156,17 +148,17 @@ class EndpointCardTest {
             availableResponses = listOf(
                 MockResponse(
                     statusCode = 200,
-                    fileName = "getUser-200.json",
+                    exampleName = "default",
                     displayName = "Success (200)",
                     content = "{}"
                 )
             )
         ),
-        currentState = EndpointMockState.Mock(responseFile = "getUser-200.json")
+        currentState = OperationMockState.Mock(statusCode = 200, exampleName = "default")
     )
 
     private fun ComposeUiTest.setEndpointCard(
-        endpoint: EndpointUiModel,
+        endpoint: OperationUiModel,
         openEndpointDetails: () -> Unit = {},
         showFileName: Boolean = false
     ) {

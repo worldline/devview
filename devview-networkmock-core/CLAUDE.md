@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Module Does
 
-`devview-networkmock-core` is the shared engine for the network mocking feature. It owns JSON config parsing, request matching, response file discovery, and DataStore state persistence. It is a dependency of both `devview-networkmock` (UI) and `devview-networkmock-ktor` (Ktor plugin), which do not depend on each other — the module exists specifically to avoid that circular dependency.
+`devview-networkmock-core` is the shared engine for the network mocking feature. It owns OpenAPI 3.x spec parsing (JSON, and YAML on a best-effort basis), request matching, response variant discovery, and DataStore state persistence. It is a dependency of both `devview-networkmock` (UI) and `devview-networkmock-ktor` (Ktor plugin), which do not depend on each other — the module exists specifically to avoid that circular dependency.
 
 ## Commands
 
@@ -24,68 +24,73 @@ Single test class:
 
 | Class / Object | Role |
 |---|---|
-| `MockConfigRepository` | Loads `mocks.json`, discovers/loads response files, matches requests to endpoints |
+| `MockConfigRepository` | Loads OpenAPI specs, discovers/loads response variants, matches requests to operations |
 | `MockStateRepository` | Reads and writes `NetworkMockState` from/to DataStore |
 | `NetworkMockInitializer` | Process-level singleton holding both repos; `@Composable fun initialize(...)` is called once by `devview-networkmock` |
 | `NetworkMockDataStoreDelegate` | Top-level `val` holding the shared `DataStoreDelegate`; both UI and Ktor plugin reference this same instance |
-| `MockConfiguration` / `ApiGroupConfig` / `EnvironmentConfig` / `EndpointConfig` / `EndpointOverride` | `@Serializable` model hierarchy parsed from `mocks.json` |
-| `EndpointKey` | Value type `(groupId, environmentId, endpointId)` with `.compositeKey` property (`"groupId-environmentId-endpointId"`) used everywhere as DataStore key and map key |
-| `MockMatch` | Returned by `findMatchingMock()`; carries `EndpointKey` + resolved `EndpointConfig` |
-| `EndpointDescriptor` | Static snapshot of an endpoint + its discovered responses; used by the UI layer |
-| `NetworkMockState` | Persisted state: `globalMockingEnabled`, `endpointStates: Map<String, EndpointMockState>`, `lastModified` |
-| `EndpointMockState` | Sealed interface: `Network` (pass-through) or `Mock(responseFile: String)` |
-| `ApiGroupConfig.effectiveEndpoints(environment)` | Extension function — the single source of truth for endpoint resolution (shared + overrides + additionalEndpoints) |
+| `MockConfiguration` / `ApiSpec` / `Operation` | `@Serializable` model hierarchy, one `ApiSpec` per parsed OpenAPI document |
+| `OperationKey` | Value type `(specId, operationId)` with `.compositeKey` property (`"specId-operationId"`) used everywhere as DataStore key and map key |
+| `MockMatch` | Returned by `findMatchingMock()`; carries `OperationKey` + resolved `Operation` — kept unrenamed, see naming note below |
+| `OperationDescriptor` | Static snapshot of an operation + its discovered responses; used by the UI layer |
+| `NetworkMockState` | Persisted state: `globalMockingEnabled`, `operationStates: Map<String, OperationMockState>`, `lastModified` |
+| `OperationMockState` | Sealed interface: `Network` (pass-through) or `Mock(statusCode: Int, exampleName: String)` |
+
+**Naming note**: `MockResponse` and `MockMatch` are deliberately *not* renamed to OpenAPI vocabulary — they model DevView's own runtime mocking behavior (a served response, a request-to-operation match), which OpenAPI has no concept of. Everything that models something the spec itself describes uses OpenAPI terms (`ApiSpec`, `Operation`, `OperationKey`).
 
 ## Mock Engine Architecture
 
-### JSON Config Format (`mocks.json`)
+### OpenAPI Spec Format
 
-Place at `composeResources/files/networkmocks/mocks.json`:
+One spec file (JSON, or YAML best-effort) is one API group — place anywhere under `composeResources/files/networkmocks/`, e.g. `composeResources/files/networkmocks/specs/my-backend.json`:
 
 ```json
 {
-  "apiGroups": [
-    {
-      "id": "my-backend",
-      "name": "My Backend",
-      "endpoints": [
-        { "id": "getUser", "name": "Get User", "path": "/v1/users/{userId}", "method": "GET" }
-      ],
-      "environments": [
-        { "id": "staging", "name": "Staging", "url": "https://staging.api.example.com" },
-        {
-          "id": "production", "name": "Production", "url": "https://api.example.com",
-          "endpointOverrides": [{ "id": "getUser", "path": "/v2/users/{userId}" }],
-          "additionalEndpoints": [{ "id": "getLegacy", "name": "Legacy", "path": "/users", "method": "GET" }]
+  "info": { "title": "My Backend" },
+  "servers": [
+    { "url": "https://staging.api.example.com" },
+    { "url": "https://api.example.com" }
+  ],
+  "x-devview": { "delayMs": 200 },
+  "paths": {
+    "/v1/users/{userId}": {
+      "get": {
+        "operationId": "getUser",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "responses/getUser/getUser-200.json" }
+                }
+              }
+            }
+          }
         }
-      ]
+      }
     }
-  ]
+  }
 }
 ```
 
+There is no environment axis and no manifest file. `servers[]` lists every base URL the group can be reached at; a group spanning multiple API versions is just multiple `paths` entries (distinct `operationId`s) in the same document.
+
 ### Request Matching (`MockConfigRepository.findMatchingMock`)
 
-1. Extract hostname from each `EnvironmentConfig.url` (strips scheme, port, path)
-2. Compare against incoming request host — **case-insensitive**
-3. On hostname match, call `ApiGroupConfig.effectiveEndpoints(environment)` to get the resolved endpoint list
-4. Match path via `RequestMatcher.matchesPath` — splits by `/`, requires identical segment count; `{param}` segments match any value; non-param segments are **case-sensitive**
-5. Match HTTP method — **case-sensitive exact match** (use uppercase: `"GET"`, not `"get"`)
+1. Compare the incoming request host — **case-insensitive** — against every hostname in each spec's `servers[]`.
+2. On a host match, check that spec's operations for a path/method/query match; if none matches, fall through and try the next spec (two specs may legitimately share a host — first spec with an actual match wins).
+3. Match path via `RequestMatcher.matchesPath` — splits by `/`, requires identical segment count; `{param}` segments match any value; non-param segments are **case-sensitive**.
+4. Match HTTP method — **case-sensitive exact match** (use uppercase: `"GET"`, not `"get"`).
+5. Match query parameters via `RequestMatcher.matchesQueryParams` against `Operation.queryParameters`, sourced at parse time from `parameters` entries with `in: query` and a literal `example` value.
 
-**There is no stored active-environment selection.** The environment is determined purely from the request hostname at interception time, allowing simultaneous different-environment use across groups.
+**There is no stored active-server selection.** The matching server is determined purely from the request hostname at interception time.
 
-### Response File Discovery
+### Response Variant Discovery
 
-Files live under `composeResources/files/networkmocks/responses/`:
+`discoverResponseFiles()` / `loadMockResponse()` read exactly the `(statusCode, exampleName)` pairs declared in the spec's `responses.<code>.content.*.examples` — **there is no probing** of status codes or file-name suffixes. `externalValue` resolves relative to the spec file's own location (or root-relative if it starts with `/`), loaded through the same `NetworkMockResourceLoader` used for the spec itself.
 
-```
-responses/{groupId}/{environmentId}/{endpointId}/{endpointId}-{status}[-{suffix}].json  ← highest priority
-responses/{groupId}/{endpointId}/{endpointId}-{status}[-{suffix}].json                  ← shared fallback
-```
+`$ref` (in `parameters`, `responses`, or `examples`) resolves one level deep, locally against `#/components/...` in the same document, or externally against another file's `components` via `./other.json#/components/...`.
 
-`discoverResponseFiles()` probes `DEFAULT_STATUS_CODES` × `["", "-simple", "-detailed", "-error", "-success"]`. The status code is extracted by `String.parseStatusCode()` (internal extension), which matches the **last** `-{3 digits}` segment via regex — robust to hyphenated endpoint IDs like `get-user`.
-
-`MockConfigRepository` accepts a custom `statusCodesToDiscover` list; pass it if your API uses codes outside the defaults (200, 201, 202, 204, 400, 401, 403, 404, 409, 422, 429, 500, 502, 503, 504).
+There is no version-tagging support in 0.2.0 — `/v1/x` and `/v2/x` are simply two distinct operations with distinct `operationId`s; a display-only version tag is a separate, later feature.
 
 ### DataStore Schema (`MockStateRepository`)
 
@@ -93,26 +98,35 @@ responses/{groupId}/{endpointId}/{endpointId}-{status}[-{suffix}].json          
 |---|---|---|
 | `network_mock_global_enabled` | Boolean | Master toggle |
 | `network_mock_last_modified` | Long | Epoch ms of last change |
-| `network_mock_endpoint_{compositeKey}` | String (JSON) | `EndpointMockState` per endpoint |
+| `network_mock_schema_version` | Int | Gates the one-shot pre-0.2.0 migration |
+| `network_mock_operation_{compositeKey}` | String (JSON) | `OperationMockState` per operation |
 
-`EndpointMockState` is serialized as `{"type":"network"}` or `{"type":"mock","responseFile":"getUser-200.json"}` (discriminator field `type`).
+`OperationMockState` is serialized as `{"type":"network"}` or `{"type":"mock","statusCode":200,"exampleName":"default"}` (discriminator field `type`).
 
-Each endpoint is stored under its own key, so updating one endpoint never overwrites another.
+Each operation is stored under its own key, so updating one operation never overwrites another.
 
-**`registerEndpoints(List<EndpointKey>)`** pre-populates the in-memory `endpointKeys` registry after config load. Call this before the first write; otherwise `resetKnownEndpointsToNetwork()` can only reset endpoints that were already written this session.
+**Pre-0.2.0 upgrade**: on first launch, every `network_mock_endpoint_*` entry from the old `EndpointKey`/file-name-based shape is wiped once (gated by `network_mock_schema_version`) — the key shape and the `Mock` payload shape both changed, so a translation wasn't attempted. `network_mock_global_enabled` and `network_mock_last_modified` are untouched.
+
+**`registerOperations(List<OperationKey>)`** pre-populates the in-memory `operationKeys` registry after config load. Call this before the first write; otherwise `resetKnownOperationsToNetwork()` can only reset operations that were already written this session.
 
 ## Non-Obvious Patterns
 
 **`NetworkMockInitializer.initialize()` is `@Composable`** even though it is a process-level singleton. It uses `remember` internally so that the repo objects are tied to the Composition. Subsequent calls are early-returned no-ops (`if (stateRepository != null) return`).
 
-**`MockConfigRepository` caches** the parsed `MockConfiguration` in `cachedConfig` after the first successful load. Tests verify this with a recording resource loader that asserts the file is read exactly once.
+**`MockConfigRepository` caches** the parsed `MockConfiguration` in `cachedConfig` after the first successful load. Tests verify this with a recording resource loader that asserts each spec file is read exactly once.
 
-**`MockStateRepository.observeState()`** rebuilds the full `NetworkMockState` on every DataStore emission by scanning all keys with the `network_mock_endpoint_` prefix. This means new endpoints written by another process/session are automatically picked up without requiring `registerEndpoints()` — but `registerEndpoints()` is still needed for the write-side helpers to know about untouched endpoints.
+**`MockStateRepository.observeState()`** rebuilds the full `NetworkMockState` on every DataStore emission by scanning all keys with the `network_mock_operation_` prefix. This means new operations written by another process/session are automatically picked up without requiring `registerOperations()` — but `registerOperations()` is still needed for the write-side helpers to know about untouched operations.
+
+**YAML support is best-effort.** kaml's repository is archived (0.104.0 is the final release); every kaml-specific reference is quarantined inside `openapi/YamlSupport.kt` so dropping it later, if a future Kotlin/kotlinx-serialization upgrade breaks it, is a one-line removal plus deleting that file — not a broader refactor.
+
+## The `openapi` Package Is a Pure Seam
+
+`devview-networkmock-core/.../core/openapi/` contains the OpenAPI-specific parser (`OpenApiDocument`, `OpenApiParser`, `YamlSupport`) — all `internal`. No OpenAPI-shaped type may be imported outside this package; `MockConfigRepository` is the only consumer, and it converts everything into the public model (`ApiSpec`, `Operation`, `MockResponse`) before returning. This is what keeps a second, lower-ceremony config format cheap to add later without touching anything downstream.
 
 ## Testing
 
 All tests live in `commonTest` and run on the JVM — no emulator needed. The test harness injects dependencies via constructor:
 
-- `MockConfigRepository` takes a `resourceLoader: suspend (String) -> ByteArray` lambda; tests pass a `Map<String, String>` as a virtual filesystem.
+- `MockConfigRepository` takes `specPaths: List<String>` and a `resourceLoader: NetworkMockResourceLoader`; tests pass a `Map<String, String>`-backed loader as a virtual filesystem, with inline OpenAPI JSON strings as spec fixtures.
 - `MockStateRepository` takes a `DataStore<Preferences>`; tests supply `FakePreferencesDataStore` (from `devview-test`) or `ThrowingPreferencesDataStore` (local fixture) for IOException recovery tests.
-- `MockTestData` (internal fixture object) provides named builders for all model types to keep test bodies focused on behaviour.
+- `MockTestData` (internal fixture object) provides named builders for `ApiSpec`/`Operation`/`OperationMockState`/`NetworkMockState` to keep test bodies focused on behaviour.

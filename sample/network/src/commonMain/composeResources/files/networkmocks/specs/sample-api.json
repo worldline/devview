@@ -1,0 +1,106 @@
+{
+  "info": { "title": "Sample API" },
+  "servers": [
+    { "url": "https://sample.api.staging.com" },
+    { "url": "https://sample.api.com" }
+  ],
+  "x-devview": { "delayMs": 200 },
+  "paths": {
+    "/api/v1/profile/{userId}": {
+      "get": {
+        "operationId": "getUserProfile",
+        "summary": "Get User Profile",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/sample-api/getUserProfile/getUserProfile-200.json" }
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/sample-api/getUserProfile/getUserProfile-401.json" }
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/sample-api/getUserProfile/getUserProfile-404.json" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/profile/{userId}": {
+      "get": {
+        "operationId": "getUserProfileV2",
+        "summary": "Get User Profile (v2)",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/sample-api/getUserProfileV2/getUserProfile-200.json" }
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/sample-api/getUserProfileV2/getUserProfile-401.json" }
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/sample-api/getUserProfileV2/getUserProfile-404.json" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile": {
+      "put": {
+        "operationId": "updateProfile",
+        "summary": "Update Profile",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/sample-api/updateProfile/updateProfile-200.json" }
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/sample-api/updateProfile/updateProfile-400.json" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

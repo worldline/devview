@@ -34,19 +34,19 @@ The plugin hooks into Ktor's `HttpSend` phase during `install`:
 1. Every request is intercepted before it reaches the engine.
 2. `stateRepository.getState()` is called (suspend; reads DataStore via `devview-networkmock-core`).
 3. If `globalMockingEnabled` is `false` → `execute(requestBuilder)` (real network, no mock lookup).
-4. If enabled, `mockRepository.findMatchingMock(host, path, method)` is called. Path matching supports `{param}` placeholders.
+4. If enabled, `mockRepository.findMatchingMock(host, path, method, queryParameters)` is called. Path matching supports `{param}` placeholders; matching considers every server declared across every configured spec — there is no environment axis.
 5. If no match → real network.
-6. If matched, `currentState.getEndpointState(match.key)` is read:
-   - `EndpointMockState.Network` or `null` → real network.
-   - `EndpointMockState.Mock(responseFile)` → load the response file via `mockRepository.loadMockResponse(key, fileName)`.
+6. If matched, `currentState.getOperationState(match.key)` is read:
+   - `OperationMockState.Network` or `null` → real network.
+   - `OperationMockState.Mock(statusCode, exampleName)` → load that declared response variant via `mockRepository.loadMockResponse(key, statusCode, exampleName)`.
 7. On a successful load, `createMockHttpClientCall(...)` builds a `MockHttpClientCall` with `HttpResponseData` (HTTP/1.1, empty headers, `ByteReadChannel` body) and returns it — **no network call is made**.
-8. On any failure (null response, exception, malformed file name) → falls back to real network and logs; never throws.
+8. On any failure (variant not declared in the spec, exception) → falls back to real network and logs; never throws.
 
 ## Non-obvious Patterns and Constraints
 
 **Zero-config dependency on `NetworkMockInitializer`**: When `mockRepository`/`stateRepository` are left `null`, `NetworkMockConfig.resolvedMockRepository()` calls `NetworkMockInitializer.requireConfigRepository()`, which throws if the `NetworkMock` module was not registered via `rememberModules { }`. Always override both repos explicitly in tests.
 
-**Response file naming encodes the HTTP status code**: The file name must follow the pattern `{endpointId}-{statusCode}.json` (e.g. `getUser-200.json`). Files whose name cannot be parsed to extract a status code are treated as missing and fall back to the real network — this is enforced inside `devview-networkmock-core`'s `MockResponse.fromFile`.
+**Response variant identity is `(statusCode, exampleName)`, not a file name**: what file backs a variant is an implementation detail of the spec's `externalValue` — moving the file doesn't change which variant a user has selected.
 
 **`MockHttpClientCall` is public because of Ktor internals**: `HttpClientCall(client)` is the only available constructor; the class must be public to be instantiable from the plugin object. Its `rawContent` override is annotated `@InternalAPI` — if Ktor's internal API changes, this class is the first breakage point.
 
@@ -59,4 +59,4 @@ The plugin hooks into Ktor's `HttpSend` phase during `install`:
 Tests live in `src/androidHostTest/` and run on the JVM (no device required). They use:
 - Ktor's `MockEngine` to simulate "real network" responses.
 - MockK to stub `MockStateRepository` (both `getState()` and `observeState()`).
-- A real `MockConfigRepository` wired to an in-memory resource map from `KtorPluginTestData`.
+- A real `MockConfigRepository` wired to an in-memory resource map from `KtorPluginTestData`, backed by an inline OpenAPI JSON spec fixture.

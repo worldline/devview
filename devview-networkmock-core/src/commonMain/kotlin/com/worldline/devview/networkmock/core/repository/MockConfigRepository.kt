@@ -1,244 +1,77 @@
 package com.worldline.devview.networkmock.core.repository
 
 import com.worldline.devview.networkmock.core.NetworkMockResourceLoader
-import com.worldline.devview.networkmock.core.model.EndpointKey
 import com.worldline.devview.networkmock.core.model.MockConfiguration
 import com.worldline.devview.networkmock.core.model.MockMatch
 import com.worldline.devview.networkmock.core.model.MockResponse
-import com.worldline.devview.networkmock.core.model.effectiveEndpoints
-import com.worldline.devview.networkmock.core.repository.MockConfigRepository.Companion.DEFAULT_STATUS_CODES
+import com.worldline.devview.networkmock.core.model.OperationKey
+import com.worldline.devview.networkmock.core.openapi.OpenApiParser
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.Json
 
 /**
- * Repository for loading mock configuration and response files from resources.
+ * Repository for loading OpenAPI-based mock configuration and response files from resources.
  *
  * This repository is responsible for:
- * - Loading and parsing the `mocks.json` configuration file
- * - Discovering available mock response files based on naming convention
- * - Loading individual response file contents
- * - Matching incoming HTTP requests to configured endpoints
+ * - Loading and parsing OpenAPI 3.x spec files (JSON or YAML), one per configured API group
+ * - Discovering the response variants declared for each operation
+ * - Loading individual response variant contents
+ * - Matching incoming HTTP requests to a configured operation
  *
- * This repository is intentionally agnostic of any specific HTTP client
- * implementation — it operates purely on file paths and raw content, making
- * it usable by any HTTP client module (Ktor, Retrofit, OkHttp, etc.).
+ * Format parsing is delegated entirely to [OpenApiParser] — this repository never sees
+ * OpenAPI-shaped types itself, only the resulting [MockConfiguration] and a plain response
+ * index (`specId -> operationId -> statusCode -> exampleName -> file path`) used by
+ * [discoverResponseFiles] and [loadMockResponse].
  *
- * ## File Organization
- * All mock-related files should be placed in the integrator's project at:
- * ```
- * composeResources/files/networkmocks/
- * ├── mocks.json                              # Main configuration
- * └── responses/
- *     └── {groupId}/
- *         ├── {environmentId}/                # Environment-specific responses (highest priority)
- *         │   └── {endpointId}/
- *         │       └── {endpointId}-200.json
- *         └── {endpointId}/                   # Shared fallback responses (lowest priority)
- *             └── {endpointId}-200.json
- * ```
+ * This repository is intentionally agnostic of any specific HTTP client implementation — it
+ * operates purely on file paths and raw content, making it usable by any HTTP client module
+ * (Ktor, Retrofit, OkHttp, etc.).
  *
- * ## Usage
- *
- * ### Creating the Repository
- * ```kotlin
- * @OptIn(ExperimentalResourceApi::class)
- * val repository = MockConfigRepository(
- *     configPath = "files/networkmocks/mocks.json",
- *     resourceLoader = { path -> Res.readBytes(path) }
- * )
- * ```
- *
- * ### Loading Configuration
- * ```kotlin
- * val configResult = repository.loadConfiguration()
- * configResult.onSuccess { config ->
- *     config.apiGroups.forEach { group ->
- *         println("Group: ${group.id}")
- *         group.environments.forEach { env ->
- *             println("  Environment: ${env.id} - ${env.url}")
- *         }
- *         group.endpoints.forEach { endpoint ->
- *             println("  ${endpoint.method} ${endpoint.path}")
- *         }
- *     }
- * }
- * ```
- *
- * ### Discovering Response Files
- * ```kotlin
- * val key = EndpointKey(groupId = "my-backend", environmentId = "staging", endpointId = "getUser")
- * val responses = repository.discoverResponseFiles(key = key)
- * responses.forEach { response ->
- *     println("${response.displayName}: ${response.fileName}")
- * }
- * ```
- *
- * ### Matching Requests
- * ```kotlin
- * val match = repository.findMatchingMock(
- *     host = "staging.api.example.com",
- *     path = "/v1/users/123",
- *     method = "GET"
- * )
- *
- * match?.let {
- *     println("Matched: ${it.key.compositeKey}")
- * }
- * ```
- *
- * ### Loading Response Content
- * ```kotlin
- * val key = EndpointKey(groupId = "my-backend", environmentId = "staging", endpointId = "getUser")
- * val response = repository.loadMockResponse(key = key, fileName = "getUser-200.json")
- *
- * response?.let {
- *     println("Status: ${it.statusCode}")
- *     println("Content: ${it.content}")
- * }
- * ```
- *
- * ## Error Handling
- * - [loadConfiguration] returns a [Result] that can be success or failure
- * - [findMatchingMock] returns `null` if no match is found
- * - [loadMockResponse] returns `null` if the file cannot be loaded in either location
- * - [discoverResponseFiles] returns empty list if no files are found
- *
- * @property configPath The path to the mocks.json file relative to composeResources
+ * @property specPaths Paths to the OpenAPI spec files, relative to composeResources. One
+ *   spec file is one [com.worldline.devview.networkmock.core.model.ApiSpec].
  * @property resourceLoader [NetworkMockResourceLoader] that provides resource bytes from a path
- * @property statusCodesToDiscover The list of HTTP status codes to probe when
- * discovering response files. Defaults to [DEFAULT_STATUS_CODES]. Override this
- * to include non-standard status codes used by your API.
  * @see MockConfiguration
  * @see MockResponse
  * @see MockMatch
  * @see RequestMatcher
  */
 public class MockConfigRepository(
-    private val configPath: String,
-    private val resourceLoader: NetworkMockResourceLoader,
-    private val statusCodesToDiscover: List<Int> = DEFAULT_STATUS_CODES,
-    private val responseSuffixes: List<String> = DEFAULT_RESPONSE_SUFFIXES
+    private val specPaths: List<String>,
+    private val resourceLoader: NetworkMockResourceLoader
 ) {
-    private val json = Json { ignoreUnknownKeys = true }
-
-    // Cache the loaded configuration to avoid re-parsing
+    // Cache the loaded configuration to avoid re-parsing every spec on every call.
     private var cachedConfig: MockConfiguration? = null
 
-    public companion object {
-        /**
-         * The default set of HTTP status codes probed during response file discovery.
-         *
-         * Covers the most common success, client error, and server error codes.
-         * Pass a custom list to [MockConfigRepository] if your API uses additional
-         * or non-standard status codes.
-         */
-        public val DEFAULT_STATUS_CODES: List<Int> = listOf(
-            // 2xx Success
-            200, 201, 202, 204,
-            // 4xx Client Errors
-            400, 401, 403, 404, 409, 422, 429,
-            // 5xx Server Errors
-            500, 502, 503, 504
-        )
-
-        /**
-         * The default set of file suffixes probed during response file discovery.
-         *
-         * Files are expected to follow the naming pattern `{endpointId}-{statusCode}[-{suffix}].json`.
-         * Pass a custom list to [MockConfigRepository] to support additional suffixes used by your project.
-         */
-        public val DEFAULT_RESPONSE_SUFFIXES: List<String> = listOf(
-            "",
-            "-simple",
-            "-detailed",
-            "-error",
-            "-success"
-        )
-    }
+    /** `specId -> operationId -> statusCode -> exampleName -> resolved response file path`. */
+    @Suppress("DocumentationOverPrivateProperty")
+    private var responseIndex: Map<String, Map<String, Map<Int, Map<String, String>>>> = emptyMap()
 
     /**
-     * Loads and parses the mock configuration from the JSON file.
+     * Loads and parses every configured OpenAPI spec.
      *
-     * This method reads the configuration file from Compose Resources, parses
-     * the JSON, and returns a [MockConfiguration] object containing all API groups,
-     * their environments, and shared endpoint definitions.
+     * The result is cached after the first successful load — subsequent calls return the
+     * cached value without re-reading or re-parsing any spec file.
      *
-     * The configuration is cached after the first successful load to improve
-     * performance on subsequent calls.
-     *
-     * ## File Format
-     * The configuration file should be valid JSON following this structure:
-     * ```json
-     * {
-     *   "apiGroups": [
-     *     {
-     *       "id": "my-backend",
-     *       "name": "My Backend",
-     *       "endpoints": [
-     *         {
-     *           "id": "getUser",
-     *           "name": "Get User",
-     *           "path": "/v1/users/{userId}",
-     *           "method": "GET"
-     *         }
-     *       ],
-     *       "environments": [
-     *         { "id": "staging", "name": "Staging", "url": "https://staging.api.example.com" },
-     *         { "id": "production", "name": "Production", "url": "https://api.example.com" }
-     *       ]
-     *     }
-     *   ]
-     * }
-     * ```
-     *
-     * ## Error Handling
-     * Returns a [Result] that will be:
-     * - **Success**: Configuration loaded and parsed successfully
-     * - **Failure**: File not found, invalid JSON, or I/O error
-     *
-     * @return A [Result] containing the [MockConfiguration] on success, or an error on failure
+     * @return A [Result] containing the [MockConfiguration] on success, or an error
+     *   (spec not found, malformed JSON/YAML, missing `operationId`, unresolvable `$ref`)
+     *   on failure.
      */
     public suspend fun loadConfiguration(): Result<MockConfiguration> {
         // ponytail: explicit try-catch instead of runCatching — K/N's inline expansion of runCatching
         // does not reliably catch exceptions thrown by suspend calls in the generated state machine.
         return try {
-            cachedConfig?.let {
-                println(
-                    message = "[NetworkMock][Config] Using cached configuration with ${it.apiGroups.size} group(s)"
-                )
-                return Result.success(value = it)
+            cachedConfig?.let { return Result.success(value = it) }
+
+            val parsed = specPaths.map { specPath ->
+                OpenApiParser.parse(specPath = specPath, resourceLoader = resourceLoader)
             }
-
-            println(message = "[NetworkMock][Config] Loading configuration from: $configPath")
-
-            val configBytes = resourceLoader.load(path = configPath)
-            val configJson = configBytes.decodeToString()
-
-            val config = json
-                .decodeFromString<MockConfiguration>(
-                    string = configJson
-                )
+            val config = MockConfiguration(specs = parsed.map { it.apiSpec })
             cachedConfig = config
+            responseIndex = parsed.associate { it.apiSpec.id to it.responseIndex }
 
-            println(message = "[NetworkMock][Config] Successfully loaded configuration:")
-            config.apiGroups.forEach { group ->
-                println(
-                    message = "[NetworkMock][Config]   Group: ${group.id} " +
-                        "with ${group.endpoints.size} shared endpoint(s) " +
-                        "and ${group.environments.size} environment(s)"
-                )
-                group.environments.forEach { env ->
-                    println(
-                        message = "[NetworkMock][Config]     Environment: ${env.id} (${env.url})"
-                    )
-                }
-                group.endpoints.forEach { endpoint ->
-                    println(
-                        message = "[NetworkMock][Config]     - ${endpoint.method} ${endpoint.path} (${endpoint.id})"
-                    )
-                }
-            }
-
+            println(
+                message = "[NetworkMock][Config] Loaded ${config.specs.size} spec(s): " +
+                    config.specs.joinToString { "${it.id} (${it.operations.size} operations)" }
+            )
             Result.success(value = config)
         } catch (e: IllegalStateException) {
             println(
@@ -254,349 +87,121 @@ public class MockConfigRepository(
     }
 
     /**
-     * Finds a matching endpoint configuration for an incoming HTTP request.
+     * Finds a matching operation for an incoming HTTP request.
      *
-     * The environment is derived entirely from the request URL — there is no stored
-     * active environment selection. This allows the app to simultaneously target
-     * different environments for different API groups without any manual switching.
-     *
-     * ## Matching Steps
-     * 1. Iterate over all [com.worldline.devview.networkmock.core.model.ApiGroupConfig] entries
-     * 2. For each group, iterate over its [com.worldline.devview.networkmock.core.model.EnvironmentConfig] entries
-     * 3. Extract the hostname from [com.worldline.devview.networkmock.core.model.EnvironmentConfig.url]
-     *    and compare against the request host (case-insensitive)
-     * 4. On a hostname match, build the effective endpoint list for that group+environment
-     *    via [ApiGroupConfig.effectiveEndpoints][com.worldline.devview.networkmock.core.model.effectiveEndpoints]
-     *    (shared pool + overrides + additions)
-     * 5. Match the request path and method against the effective endpoint list
-     * 6. Return a [MockMatch] carrying [MockMatch.groupId], [MockMatch.environmentId],
-     *    [MockMatch.endpointId], and the resolved [MockMatch.config]
-     *
-     * ## Matching Rules
-     * - **Host matching**: Compares hostnames extracted from URLs (case-insensitive)
-     * - **Path matching**: Uses [RequestMatcher.matchesPath] for path parameter support
-     * - **Method matching**: Exact match (case-sensitive)
+     * Specs are checked in configuration order. Within a spec whose [servers][com.worldline.devview.networkmock.core.model.ApiSpec.servers]
+     * include a hostname matching [host], the first operation whose path, method, and query
+     * parameters all match wins. If no operation in that spec matches, the next spec is
+     * tried — two specs may legitimately share a hostname, and the first spec that actually
+     * has a matching operation wins.
      *
      * @param host The request hostname (e.g., `"staging.api.example.com"`)
      * @param path The request path (e.g., `"/v1/users/123"`)
      * @param method The HTTP method (e.g., `"GET"`, `"POST"`)
-     * @return A [MockMatch] if a matching endpoint is found, or `null` otherwise
+     * @return A [MockMatch] if a matching operation is found, or `null` otherwise
      */
-    @Suppress("ReturnCount", "LongMethod")
     public suspend fun findMatchingMock(
         host: String,
         path: String,
         method: String,
         queryParameters: Map<String, List<String>> = emptyMap()
     ): MockMatch? {
-        println(message = "[NetworkMock][Matching] Looking for match: $method $host$path")
+        val config = loadConfiguration().getOrNull() ?: return null
 
-        val config = loadConfiguration().getOrNull()
-        if (config == null) {
-            println(message = "[NetworkMock][Matching] ERROR: Configuration not loaded")
+        val match = config.specs.firstNotNullOfOrNull { spec ->
+            val hostMatches = spec.servers.any {
+                extractHostname(url = it).equals(other = host, ignoreCase = true)
+            }
+            if (!hostMatches) return@firstNotNullOfOrNull null
+
+            val matchingOperation = spec.operations.firstOrNull { operation ->
+                RequestMatcher.matchesPath(configPath = operation.path, requestPath = path) &&
+                    operation.method == method &&
+                    RequestMatcher.matchesQueryParams(
+                        configQueryParams = operation.queryParameters,
+                        requestQueryParams = queryParameters
+                    )
+            } ?: return@firstNotNullOfOrNull null
+
+            spec to matchingOperation
+        }
+
+        if (match == null) {
+            println(message = "[NetworkMock][Matching] No match for $method $host$path")
             return null
         }
 
+        val (spec, matchingOperation) = match
         println(
-            message = "[NetworkMock][Matching] Comparing against ${config.apiGroups.size} group(s):"
+            message = "[NetworkMock][Matching] Matched $method $path -> " +
+                "${spec.id}/${matchingOperation.operationId}"
         )
-
-        for (group in config.apiGroups) {
-            println(message = "[NetworkMock][Matching]   Group '${group.id}':")
-            for (environment in group.environments) {
-                val configHostname = extractHostname(url = environment.url)
-                val hostMatches = configHostname.equals(other = host, ignoreCase = true)
-                println(
-                    message = "[NetworkMock][Matching]     Environment '${environment.id}': " +
-                        "$configHostname vs $host = $hostMatches"
-                )
-
-                if (!hostMatches) continue
-
-                println(
-                    message = "[NetworkMock][Matching]     Host matched — " +
-                        "resolving effective endpoints for '${group.id}/${environment.id}'"
-                )
-
-                val effectiveEndpoints = group.effectiveEndpoints(environment = environment)
-                println(
-                    message = "[NetworkMock][Matching]     Checking ${effectiveEndpoints.size} effective endpoint(s)"
-                )
-
-                val matchingEndpoint = effectiveEndpoints.firstOrNull { endpoint ->
-                    val pathMatches = RequestMatcher.matchesPath(
-                        configPath = endpoint.path,
-                        requestPath = path
-                    )
-                    val methodMatches = endpoint.method == method
-                    val queryMatches = RequestMatcher.matchesQueryParams(
-                        configQueryParams = endpoint.queryParams,
-                        requestQueryParams = queryParameters
-                    )
-                    println(message = "[NetworkMock][Matching]       Endpoint '${endpoint.id}':")
-                    println(
-                        message = "[NetworkMock][Matching]         Path: ${endpoint.path} vs " +
-                            "$path = $pathMatches"
-                    )
-                    println(
-                        message = "[NetworkMock][Matching]         Method: ${endpoint.method} vs " +
-                            "$method = $methodMatches"
-                    )
-                    println(
-                        message =
-                            "[NetworkMock][Matching]         Query: ${endpoint.queryParams} vs " +
-                                "$queryParameters = $queryMatches"
-                    )
-                    pathMatches && methodMatches && queryMatches
-                }
-
-                if (matchingEndpoint != null) {
-                    println(
-                        message = "[NetworkMock][Matching] SUCCESS: Matched endpoint " +
-                            "'${matchingEndpoint.id}' in group '${group.id}', " +
-                            "environment '${environment.id}'"
-                    )
-                    return MockMatch(
-                        key = EndpointKey(
-                            groupId = group.id,
-                            environmentId = environment.id,
-                            endpointId = matchingEndpoint.id
-                        ),
-                        config = matchingEndpoint,
-                        delayMs = matchingEndpoint.delayMs ?: group.defaultDelayMs
-                    )
-                }
-
-                println(
-                    message = "[NetworkMock][Matching]     ERROR: No matching endpoint found " +
-                        "for $method $path in group '${group.id}', environment '${environment.id}'"
-                )
-            }
-        }
-
-        println(message = "[NetworkMock][Matching] ERROR: No match found for $method $host$path")
-        return null
+        return MockMatch(
+            key = OperationKey(specId = spec.id, operationId = matchingOperation.operationId),
+            config = matchingOperation,
+            delayMs = matchingOperation.delayMs ?: spec.delayMs
+        )
     }
 
     /**
-     * Discovers available mock response files for a specific group, environment, and endpoint.
+     * Discovers the response variants declared for a specific operation.
      *
-     * Uses a two-tier resolution strategy — environment-specific files take priority over
-     * shared fallback files. For each status code in [statusCodesToDiscover] and each
-     * known suffix, the method first tries the environment-specific path, then the shared
-     * path. Results are merged and deduplicated by file name, with environment-specific
-     * files winning on any conflict.
+     * Reads the variants declared in the spec's `responses.<code>.content.*.examples` for
+     * this operation — there is no probing, every returned variant corresponds to a
+     * `(statusCode, exampleName)` pair the spec author explicitly declared.
      *
-     * ## Resolution Order
-     * For each candidate file name:
-     * 1. `files/networkmocks/responses/{groupId}/{environmentId}/{endpointId}/{fileName}` ← tried first
-     * 2. `files/networkmocks/responses/{groupId}/{endpointId}/{fileName}` ← fallback
-     *
-     * ## Naming Convention
-     * - `getUser-200.json` → Success response
-     * - `getUser-404-simple.json` → Not found with simple error body
-     * - `getUser-404-detailed.json` → Not found with detailed error body
-     * - `getUser-500.json` → Server error
-     *
-     * @param key The [EndpointKey] identifying the group, environment, and endpoint
-     * @return A deduplicated, status-code-sorted list of discovered [MockResponse] objects
-     *   (may be empty if no files are found in either location)
+     * @param key The [OperationKey] identifying the spec and operation
+     * @return The declared response variants, sorted by status code (may be empty if the
+     *   spec is not loaded or the operation declares no examples)
      */
-    public suspend fun discoverResponseFiles(key: EndpointKey): List<MockResponse> =
-        discoverResponseFiles(
-            groupId = key.groupId,
-            environmentId = key.environmentId,
-            endpointId = key.endpointId
-        )
-
-    /**
-     * Discovers available mock response files for a specific group, environment, and endpoint.
-     *
-     * Uses a two-tier resolution strategy — environment-specific files take priority over
-     * shared fallback files. For each status code in [statusCodesToDiscover] and each
-     * known suffix, the method first tries the environment-specific path, then the shared
-     * path. Results are merged and deduplicated by file name, with environment-specific
-     * files winning on any conflict.
-     *
-     * ## Resolution Order
-     * For each candidate file name:
-     * 1. `files/networkmocks/responses/{groupId}/{environmentId}/{endpointId}/{fileName}` ← tried first
-     * 2. `files/networkmocks/responses/{groupId}/{endpointId}/{fileName}` ← fallback
-     *
-     * ## Naming Convention
-     * - `getUser-200.json` → Success response
-     * - `getUser-404-simple.json` → Not found with simple error body
-     * - `getUser-404-detailed.json` → Not found with detailed error body
-     * - `getUser-500.json` → Server error
-     *
-     * @param groupId The [com.worldline.devview.networkmock.core.model.ApiGroupConfig] identifier
-     * @param environmentId The [com.worldline.devview.networkmock.core.model.EnvironmentConfig] identifier
-     * @param endpointId The [com.worldline.devview.networkmock.core.model.EndpointConfig] identifier
-     * @return A deduplicated, status-code-sorted list of discovered [MockResponse] objects
-     *   (may be empty if no files are found in either location)
-     */
-    public suspend fun discoverResponseFiles(
-        groupId: String,
-        environmentId: String,
-        endpointId: String
-    ): List<MockResponse> {
-        println(
-            message = "[NetworkMock][Discovery] Discovering response files for " +
-                "$groupId/$environmentId/$endpointId"
-        )
-
-        val environmentPath = "files/networkmocks/responses/$groupId/$environmentId/$endpointId"
-        val sharedPath = "files/networkmocks/responses/$groupId/$endpointId"
-
-        val suffixesToTry = responseSuffixes
-
-        // Use a LinkedHashMap keyed by fileName so that environment-specific entries
-        // automatically win over shared ones when both exist for the same file name.
-        val discovered = linkedMapOf<String, MockResponse>()
-
-        for (statusCode in statusCodesToDiscover) {
-            for (suffix in suffixesToTry) {
-                val fileName = "$endpointId-$statusCode$suffix.json"
-
-                // Tier 1 — environment-specific
-                val envResponse = loadMockResponseFromPath(
-                    filePath = "$environmentPath/$fileName",
-                    fileName = fileName
-                )
-                if (envResponse != null) {
-                    println(
-                        message = "[NetworkMock][Discovery]   Found (env-specific): $fileName " +
-                            "(status ${envResponse.statusCode})"
+    public suspend fun discoverResponseFiles(key: OperationKey): List<MockResponse> {
+        loadConfiguration()
+        val variantsByStatusCode = responseIndex[key.specId]?.get(
+            key = key.operationId
+        ) ?: return emptyList()
+        return variantsByStatusCode
+            .flatMap { (statusCode, examplesByName) ->
+                examplesByName.mapNotNull { (exampleName, path) ->
+                    loadResponseFromPath(
+                        path = path,
+                        statusCode = statusCode,
+                        exampleName = exampleName
                     )
-                    discovered[fileName] = envResponse
-                    continue
                 }
-
-                // Tier 2 — shared fallback
-                val sharedResponse = loadMockResponseFromPath(
-                    filePath = "$sharedPath/$fileName",
-                    fileName = fileName
-                )
-                if (sharedResponse != null) {
-                    println(
-                        message = "[NetworkMock][Discovery]   Found (shared): $fileName " +
-                            "(status ${sharedResponse.statusCode})"
-                    )
-                    discovered[fileName] = sharedResponse
-                }
-            }
-        }
-
-        println(
-            message = "[NetworkMock][Discovery] Discovered ${discovered.size} response file(s) " +
-                "for '$groupId/$environmentId/$endpointId'"
-        )
-
-        // A custom statusCodesToDiscover list may accidentally include duplicates.
-        // Deduplicate by file name so callers get a stable set of discovered files.
-        return discovered
-            .values
-            .distinctBy { it.fileName }
-            .sortedBy { it.statusCode }
+            }.sortedBy { it.statusCode }
     }
 
     /**
-     * Loads a specific mock response file for a given endpoint key.
+     * Loads one specific response variant's content for an operation.
      *
-     * Convenience overload of [loadMockResponse] that accepts an [EndpointKey] instead of
-     * three separate string identifiers. Delegates directly to the three-param overload.
-     *
-     * @param key The [EndpointKey] identifying the group, environment, and endpoint
-     * @param fileName The response filename (e.g., `"getUser-200.json"`)
-     * @return A [MockResponse] if the file is found in either location, or `null` on error
-     */
-    public suspend fun loadMockResponse(key: EndpointKey, fileName: String): MockResponse? =
-        loadMockResponse(
-            groupId = key.groupId,
-            environmentId = key.environmentId,
-            endpointId = key.endpointId,
-            fileName = fileName
-        )
-
-    /**
-     * Loads a specific mock response file for a given group, environment, and endpoint.
-     *
-     * Uses the same two-tier resolution strategy as [discoverResponseFiles]:
-     * the environment-specific path is tried first, and the shared fallback path
-     * is used if the file is not found there.
-     *
-     * ## Resolution Order
-     * 1. `files/networkmocks/responses/{groupId}/{environmentId}/{endpointId}/{fileName}` ← tried first
-     * 2. `files/networkmocks/responses/{groupId}/{endpointId}/{fileName}` ← fallback
-     *
-     * @param groupId The [com.worldline.devview.networkmock.core.model.ApiGroupConfig] identifier
-     * @param environmentId The [com.worldline.devview.networkmock.core.model.EnvironmentConfig] identifier
-     * @param endpointId The [com.worldline.devview.networkmock.core.model.EndpointConfig] identifier
-     * @param fileName The response filename (e.g., `"getUser-200.json"`)
-     * @return A [MockResponse] if the file is found in either location, or `null` on error
+     * @param key The [OperationKey] identifying the spec and operation
+     * @param statusCode The variant's HTTP status code
+     * @param exampleName The variant's OpenAPI example name
+     * @return The loaded [MockResponse], or `null` if the variant isn't declared or its file
+     *   can't be read
      */
     public suspend fun loadMockResponse(
-        groupId: String,
-        environmentId: String,
-        endpointId: String,
-        fileName: String
+        key: OperationKey,
+        statusCode: Int,
+        exampleName: String
     ): MockResponse? {
-        println(
-            message = "[NetworkMock][Loading] Loading response: $groupId/$environmentId/$endpointId/$fileName"
-        )
-
-        // Tier 1 — environment-specific
-        val envPath = "files/networkmocks/responses/$groupId/$environmentId/$endpointId/$fileName"
-        val envResponse = loadMockResponseFromPath(filePath = envPath, fileName = fileName)
-        if (envResponse != null) {
-            println(
-                message = "[NetworkMock][Loading] Successfully loaded (env-specific): $fileName " +
-                    "(status ${envResponse.statusCode})"
-            )
-            return envResponse
-        }
-
-        // Tier 2 — shared fallback
-        val sharedPath = "files/networkmocks/responses/$groupId/$endpointId/$fileName"
-        val sharedResponse = loadMockResponseFromPath(filePath = sharedPath, fileName = fileName)
-        if (sharedResponse != null) {
-            println(
-                message = "[NetworkMock][Loading] Successfully loaded (shared): $fileName " +
-                    "(status ${sharedResponse.statusCode})"
-            )
-            return sharedResponse
-        }
-
-        println(
-            message = "[NetworkMock][Loading] ERROR: Failed to load '$fileName' from " +
-                "either '$envPath' or '$sharedPath'"
-        )
-        return null
+        loadConfiguration()
+        val path = responseIndex[key.specId]
+            ?.get(key = key.operationId)
+            ?.get(key = statusCode)
+            ?.get(key = exampleName)
+            ?: return null
+        return loadResponseFromPath(path = path, statusCode = statusCode, exampleName = exampleName)
     }
 
-    /**
-     * Loads a mock response from a specific file path.
-     *
-     * Internal helper used by both [loadMockResponse] and [discoverResponseFiles].
-     * Returns `null` silently on any I/O error — callers treat `null` as "file not found"
-     * and fall through to the next resolution tier.
-     *
-     * @param filePath The full path to the response file relative to composeResources
-     * @param fileName The filename (used for status code parsing and display name generation)
-     * @return A [MockResponse] if the file exists and parses successfully, or `null` otherwise
-     */
     @Suppress("DocumentationOverPrivateFunction")
-    private suspend fun loadMockResponseFromPath(
-        filePath: String,
-        fileName: String
+    private suspend fun loadResponseFromPath(
+        path: String,
+        statusCode: Int,
+        exampleName: String
     ): MockResponse? = try {
-        val responseBytes = resourceLoader.load(path = filePath)
-        val content = responseBytes.decodeToString()
-        MockResponse.Companion
-            .fromFile(
-                fileName = fileName,
-                content = content
-            )
+        val content = resourceLoader.load(path = path).decodeToString()
+        MockResponse.create(statusCode = statusCode, exampleName = exampleName, content = content)
     } catch (@Suppress("SwallowedException") e: IllegalStateException) {
         null
     }

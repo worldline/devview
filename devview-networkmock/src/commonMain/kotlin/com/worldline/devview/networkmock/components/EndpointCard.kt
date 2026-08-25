@@ -23,22 +23,22 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import com.worldline.devview.networkmock.model.EndpointUiModel
-import com.worldline.devview.networkmock.preview.EndpointUiModelPreviewParameterProvider
+import com.worldline.devview.networkmock.model.OperationUiModel
+import com.worldline.devview.networkmock.preview.OperationUiModelPreviewParameterProvider
 
 /**
- * Card component for displaying and configuring a single API endpoint mock.
+ * Card component for displaying and configuring a single API operation mock.
  *
- * Shows the endpoint details, a toggle for enabling/disabling the mock,
+ * Shows the operation details, a toggle for enabling/disabling the mock,
  * and a dropdown to select which mock response to return.
  *
- * @param endpoint The endpoint UI model pairing static config with live state
+ * @param endpoint The operation UI model pairing static config with live state
  * @param openEndpointDetails Callback invoked when the card is tapped
  * @param modifier Optional modifier
  */
 @Composable
 internal fun EndpointCard(
-    endpoint: EndpointUiModel,
+    endpoint: OperationUiModel,
     openEndpointDetails: () -> Unit,
     modifier: Modifier = Modifier,
     showFileName: Boolean = false
@@ -63,7 +63,7 @@ internal fun EndpointCard(
         ) {
             Text(
                 modifier = Modifier.testTag(
-                    tag = "endpoint_name_${endpoint.descriptor.endpointId}"
+                    tag = "endpoint_name_${endpoint.descriptor.operationId}"
                 ),
                 text = endpoint.descriptor.config.name,
                 style = MaterialTheme.typography.titleMedium
@@ -81,7 +81,7 @@ internal fun EndpointCard(
                 ) {
                     Text(
                         modifier = Modifier.testTag(
-                            tag = "endpoint_method_${endpoint.descriptor.endpointId}"
+                            tag = "endpoint_method_${endpoint.descriptor.operationId}"
                         ),
                         text = endpoint.descriptor.config.method,
                         style = MaterialTheme.typography.labelSmall,
@@ -91,7 +91,7 @@ internal fun EndpointCard(
                 }
                 Text(
                     modifier = Modifier.testTag(
-                        tag = "endpoint_path_${endpoint.descriptor.endpointId}"
+                        tag = "endpoint_path_${endpoint.descriptor.operationId}"
                     ),
                     text = endpoint.descriptor.config.path,
                     style = MaterialTheme.typography.bodySmall,
@@ -104,7 +104,7 @@ internal fun EndpointCard(
             ) {
                 Text(
                     modifier = Modifier.testTag(
-                        tag = "endpoint_state_${endpoint.descriptor.endpointId}"
+                        tag = "endpoint_state_${endpoint.descriptor.operationId}"
                     ),
                     text = endpoint.currentState.displayName,
                     style = MaterialTheme.typography.bodySmall,
@@ -114,8 +114,8 @@ internal fun EndpointCard(
         }
         EndpointStateChip(
             endpointMockState = endpoint.currentState,
-            chipTestTag = "endpoint_state_chip_${endpoint.descriptor.endpointId}",
-            labelTestTag = "endpoint_state_chip_label_${endpoint.descriptor.endpointId}"
+            chipTestTag = "endpoint_state_chip_${endpoint.descriptor.operationId}",
+            labelTestTag = "endpoint_state_chip_label_${endpoint.descriptor.operationId}"
         )
     }
 }
@@ -124,8 +124,8 @@ internal fun EndpointCard(
 @Composable
 private fun EndpointCardPreview(
     @PreviewParameter(
-        EndpointUiModelPreviewParameterProvider::class
-    ) endpoint: EndpointUiModel
+        OperationUiModelPreviewParameterProvider::class
+    ) endpoint: OperationUiModel
 ) {
     MaterialTheme {
         Surface {
@@ -141,8 +141,8 @@ private fun EndpointCardPreview(
 @Composable
 private fun EndpointCardWithFileNamePreview(
     @PreviewParameter(
-        EndpointUiModelPreviewParameterProvider::class
-    ) endpoint: EndpointUiModel
+        OperationUiModelPreviewParameterProvider::class
+    ) endpoint: OperationUiModel
 ) {
     MaterialTheme {
         Surface {

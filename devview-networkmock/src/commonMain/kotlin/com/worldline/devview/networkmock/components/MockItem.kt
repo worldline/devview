@@ -29,8 +29,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.core.model.MockResponse
+import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.networkmock.preview.MockResponsePreviewParameterProvider
 import com.worldline.devview.networkmock.utils.containerColor
 import com.worldline.devview.networkmock.utils.containerColorForStatusCode
@@ -54,7 +54,7 @@ internal fun MockItem(
     MockItemContent(
         modifier = modifier,
         statusCode = mockResponse.statusCode,
-        label = mockResponse.fileName,
+        label = mockResponse.displayName,
         selected = selected,
         onClick = onClick,
         onLongClick = onLongClick,
@@ -71,7 +71,7 @@ internal fun NetworkItem(
     MockItemContent(
         modifier = modifier,
         statusCode = null,
-        label = EndpointMockState.Network.displayName,
+        label = OperationMockState.Network.displayName,
         selected = selected,
         isNetwork = true,
         onClick = onClick,
@@ -93,7 +93,7 @@ private fun MockItemContent(
 ) {
     val (icon, contentColor, containerColor) = when (isNetwork) {
         true -> {
-            val state = EndpointMockState.Network
+            val state = OperationMockState.Network
             Triple(
                 first = state.icon,
                 second = state.contentColor,

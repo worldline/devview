@@ -1,11 +1,13 @@
 package com.worldline.devview.networkmock.core.repository
 
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import app.cash.turbine.test
+import com.worldline.devview.networkmock.core.fixtures.MockTestData
 import com.worldline.devview.networkmock.core.fixtures.ThrowingPreferencesDataStore
+import com.worldline.devview.networkmock.core.model.OperationKey
+import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.test.FakePreferencesDataStore
-import com.worldline.devview.networkmock.core.model.EndpointKey
-import com.worldline.devview.networkmock.core.model.EndpointMockState
-import com.worldline.devview.networkmock.core.model.NetworkMockState
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.maps.shouldNotContainKey
 import io.kotest.matchers.shouldBe
@@ -15,13 +17,9 @@ import kotlinx.coroutines.test.runTest
 
 class MockStateRepositoryTest {
 
-    private val groupId: String = "example"
+    private val specId: String = "example"
 
-    private fun key(environmentId: String, endpointId: String): EndpointKey = EndpointKey(
-        groupId = groupId,
-        environmentId = environmentId,
-        endpointId = endpointId
-    )
+    private fun key(operationId: String): OperationKey = OperationKey(specId = specId, operationId = operationId)
 
     private fun createRepository(): MockStateRepository =
         MockStateRepository(dataStore = FakePreferencesDataStore())
@@ -34,16 +32,16 @@ class MockStateRepositoryTest {
 
         val state = repository.getState()
 
-        state.globalMockingEnabled shouldBe false
+        state.globalMockingEnabled shouldBe MockTestData.defaultNetworkMockState.globalMockingEnabled
     }
 
     @Test
-    fun `initial state has no endpoint states`() = runTest {
+    fun `initial state has no operation states`() = runTest {
         val repository = createRepository()
 
         val state = repository.getState()
 
-        state.endpointStates shouldBe emptyMap()
+        state.operationStates shouldBe emptyMap()
     }
 
     // endregion
@@ -88,68 +86,43 @@ class MockStateRepositoryTest {
 
     // endregion
 
-    // region Endpoint state persistence
+    // region Operation state persistence
 
     @Test
-    fun `setEndpointMockState persists mock state for an endpoint`() = runTest {
+    fun `setOperationMockState persists mock state for an operation`() = runTest {
         val repository = createRepository()
 
-        repository.setEndpointMockState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser",
-            state = EndpointMockState.Mock(responseFile = "getUser-200.json")
+        repository.setOperationMockState(
+            key = key(operationId = "getUser"),
+            state = OperationMockState.Mock(statusCode = 200, exampleName = "default")
         )
 
-        val endpointState = repository.getState().getEndpointState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser"
-        )
-        endpointState.shouldBeInstanceOf<EndpointMockState.Mock>()
-        endpointState.responseFile shouldBe "getUser-200.json"
+        val operationState = repository.getState().getOperationState(key = key(operationId = "getUser"))
+        operationState.shouldBeInstanceOf<OperationMockState.Mock>()
+        operationState.statusCode shouldBe 200
+        operationState.exampleName shouldBe "default"
     }
 
     @Test
-    fun `setEndpointMockState persists network state for an endpoint`() = runTest {
+    fun `setOperationMockState persists network state for an operation`() = runTest {
         val repository = createRepository()
 
-        // First set to mock, then back to network
-        repository.setEndpointMockState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser",
-            state = EndpointMockState.Mock(responseFile = "getUser-200.json")
-        )
-        repository.setEndpointMockState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser",
-            state = EndpointMockState.Network
-        )
+        repository.setOperationMockState(key = key(operationId = "getUser"), state = MockTestData.mockState200())
+        repository.setOperationMockState(key = key(operationId = "getUser"), state = OperationMockState.Network)
 
-        val endpointState = repository.getState().getEndpointState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser"
-        )
-        endpointState shouldBe EndpointMockState.Network
+        val operationState = repository.getState().getOperationState(key = key(operationId = "getUser"))
+        operationState shouldBe OperationMockState.Network
     }
 
     @Test
-    fun `setEndpointMockState is reflected in observeState`() = runTest {
+    fun `setOperationMockState is reflected in observeState`() = runTest {
         val repository = createRepository()
 
         repository.observeState().test {
-            awaitItem().endpointStates shouldNotContainKey key("staging", "getUser").compositeKey
+            awaitItem().operationStates shouldNotContainKey key(operationId = "getUser").compositeKey
 
-            repository.setEndpointMockState(
-                groupId = groupId,
-                environmentId = "staging",
-                endpointId = "getUser",
-                state = EndpointMockState.Mock(responseFile = "getUser-200.json")
-            )
-            awaitItem().endpointStates shouldContainKey key("staging", "getUser").compositeKey
+            repository.setOperationMockState(key = key(operationId = "getUser"), state = MockTestData.mockState200())
+            awaitItem().operationStates shouldContainKey key(operationId = "getUser").compositeKey
 
             cancelAndIgnoreRemainingEvents()
         }
@@ -157,104 +130,40 @@ class MockStateRepositoryTest {
 
     // endregion
 
-    // region Multiple endpoints tracked independently
+    // region Multiple operations tracked independently
 
     @Test
-    fun `multiple endpoint states are tracked independently`() = runTest {
+    fun `multiple operation states are tracked independently`() = runTest {
         val repository = createRepository()
 
-        repository.setEndpointMockState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser",
-            state = EndpointMockState.Mock(responseFile = "getUser-200.json")
-        )
-        repository.setEndpointMockState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "createUser",
-            state = EndpointMockState.Mock(responseFile = "createUser-201.json")
+        repository.setOperationMockState(key = key(operationId = "getUser"), state = MockTestData.mockState200())
+        repository.setOperationMockState(
+            key = key(operationId = "createUser"),
+            state = OperationMockState.Mock(statusCode = 201, exampleName = "default")
         )
 
         val state = repository.getState()
-        val getUserState = state.getEndpointState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser"
-        )
-        val createUserState = state.getEndpointState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "createUser"
-        )
+        val getUserState = state.getOperationState(key = key(operationId = "getUser"))
+        val createUserState = state.getOperationState(key = key(operationId = "createUser"))
 
-        (getUserState as EndpointMockState.Mock).responseFile shouldBe "getUser-200.json"
-        (createUserState as EndpointMockState.Mock).responseFile shouldBe "createUser-201.json"
+        (getUserState as OperationMockState.Mock).statusCode shouldBe 200
+        (createUserState as OperationMockState.Mock).statusCode shouldBe 201
     }
 
     @Test
-    fun `updating one endpoint does not affect another`() = runTest {
+    fun `updating one operation does not affect another`() = runTest {
         val repository = createRepository()
 
-        repository.setEndpointMockState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser",
-            state = EndpointMockState.Mock(responseFile = "getUser-200.json")
-        )
-        repository.setEndpointMockState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "createUser",
-            state = EndpointMockState.Mock(responseFile = "createUser-201.json")
+        repository.setOperationMockState(key = key(operationId = "getUser"), state = MockTestData.mockState200())
+        repository.setOperationMockState(
+            key = key(operationId = "createUser"),
+            state = OperationMockState.Mock(statusCode = 201, exampleName = "default")
         )
 
-        // Update only getUser
-        repository.setEndpointMockState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser",
-            state = EndpointMockState.Mock(responseFile = "getUser-404.json")
-        )
+        repository.setOperationMockState(key = key(operationId = "getUser"), state = MockTestData.mockState404())
 
-        val createUserState = repository.getState().getEndpointState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "createUser"
-        )
-        (createUserState as EndpointMockState.Mock).responseFile shouldBe "createUser-201.json"
-    }
-
-    @Test
-    fun `endpoints on different environments are tracked independently`() = runTest {
-        val repository = createRepository()
-
-        repository.setEndpointMockState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser",
-            state = EndpointMockState.Mock(responseFile = "getUser-200.json")
-        )
-        repository.setEndpointMockState(
-            groupId = groupId,
-            environmentId = "production",
-            endpointId = "getUser",
-            state = EndpointMockState.Mock(responseFile = "getUser-500.json")
-        )
-
-        val stagingState = repository.getState().getEndpointState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser"
-        )
-        val productionState = repository.getState().getEndpointState(
-            groupId = groupId,
-            environmentId = "production",
-            endpointId = "getUser"
-        )
-
-        (stagingState as EndpointMockState.Mock).responseFile shouldBe "getUser-200.json"
-        (productionState as EndpointMockState.Mock).responseFile shouldBe "getUser-500.json"
+        val createUserState = repository.getState().getOperationState(key = key(operationId = "createUser"))
+        (createUserState as OperationMockState.Mock).statusCode shouldBe 201
     }
 
     // endregion
@@ -262,77 +171,60 @@ class MockStateRepositoryTest {
     // region Reset operations
 
     @Test
-    fun `resetKnownEndpointsToNetwork resets all previously written endpoints`() = runTest {
+    fun `resetKnownOperationsToNetwork resets all previously written operations`() = runTest {
         val repository = createRepository()
 
-        repository.setEndpointMockState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser",
-            state = EndpointMockState.Mock(responseFile = "getUser-200.json")
-        )
-        repository.setEndpointMockState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "createUser",
-            state = EndpointMockState.Mock(responseFile = "createUser-201.json")
+        repository.setOperationMockState(key = key(operationId = "getUser"), state = MockTestData.mockState200())
+        repository.setOperationMockState(
+            key = key(operationId = "createUser"),
+            state = OperationMockState.Mock(statusCode = 201, exampleName = "default")
         )
 
-        repository.resetKnownEndpointsToNetwork()
+        repository.resetKnownOperationsToNetwork()
 
         val state = repository.getState()
-        state.getEndpointState(groupId = groupId, environmentId = "staging", endpointId = "getUser") shouldBe EndpointMockState.Network
-        state.getEndpointState(groupId = groupId, environmentId = "staging", endpointId = "createUser") shouldBe EndpointMockState.Network
+        state.getOperationState(key = key(operationId = "getUser")) shouldBe OperationMockState.Network
+        state.getOperationState(key = key(operationId = "createUser")) shouldBe OperationMockState.Network
     }
 
     @Test
-    fun `resetKnownEndpointsToNetwork does not change global mocking state`() = runTest {
+    fun `resetKnownOperationsToNetwork does not change global mocking state`() = runTest {
         val repository = createRepository()
 
         repository.setGlobalMockingEnabled(enabled = true)
-        repository.setEndpointMockState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser",
-            state = EndpointMockState.Mock(responseFile = "getUser-200.json")
-        )
+        repository.setOperationMockState(key = key(operationId = "getUser"), state = MockTestData.mockState200())
 
-        repository.resetKnownEndpointsToNetwork()
+        repository.resetKnownOperationsToNetwork()
 
         repository.getState().globalMockingEnabled shouldBe true
     }
 
     @Test
-    fun `setAllEndpointStates overwrites all endpoint states`() = runTest {
+    fun `setAllOperationStates overwrites all operation states`() = runTest {
         val repository = createRepository()
 
-        repository.setEndpointMockState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser",
-            state = EndpointMockState.Mock(responseFile = "getUser-200.json")
-        )
+        repository.setOperationMockState(key = key(operationId = "getUser"), state = MockTestData.mockState200())
 
-        repository.setAllEndpointStates(
+        repository.setAllOperationStates(
             states = mapOf(
-                key("staging", "getUser") to EndpointMockState.Network,
-                key("staging", "createUser") to EndpointMockState.Network
+                key(operationId = "getUser") to OperationMockState.Network,
+                key(operationId = "createUser") to OperationMockState.Network
             )
         )
 
         val state = repository.getState()
-        state.getEndpointState(groupId = groupId, environmentId = "staging", endpointId = "getUser") shouldBe EndpointMockState.Network
-        state.getEndpointState(groupId = groupId, environmentId = "staging", endpointId = "createUser") shouldBe EndpointMockState.Network
+        state.getOperationState(key = key(operationId = "getUser")) shouldBe OperationMockState.Network
+        state.getOperationState(key = key(operationId = "createUser")) shouldBe OperationMockState.Network
     }
 
     @Test
-    fun `setAllEndpointStates does not change global mocking state`() = runTest {
+    fun `setAllOperationStates does not change global mocking state`() = runTest {
         val repository = createRepository()
 
         repository.setGlobalMockingEnabled(enabled = true)
 
-        repository.setAllEndpointStates(
-            states = mapOf(key("staging", "getUser") to EndpointMockState.Network)
+        repository.setAllOperationStates(
+            states = mapOf(key(operationId = "getUser") to OperationMockState.Network)
         )
 
         repository.getState().globalMockingEnabled shouldBe true
@@ -340,52 +232,33 @@ class MockStateRepositoryTest {
 
     // endregion
 
-    // region Non-existent endpoint lookup
+    // region Non-existent operation lookup
 
     @Test
-    fun `getEndpointState returns null for endpoint that has never been set`() = runTest {
+    fun `getOperationState returns null for operation that has never been set`() = runTest {
         val repository = createRepository()
 
-        val state = repository.getState().getEndpointState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "nonExistent"
-        )
+        val state = repository.getState().getOperationState(key = key(operationId = "nonExistent"))
 
         state shouldBe null
     }
 
     // endregion
 
-    // region registerEndpoints
+    // region registerOperations
 
     @Test
-    fun `registerEndpoints pre-populates keys so resetKnownEndpointsToNetwork covers them`() = runTest {
+    fun `registerOperations pre-populates keys so resetKnownOperationsToNetwork covers them`() = runTest {
         val repository = createRepository()
 
-        // Register endpoints without any prior writes
-        repository.registerEndpoints(
-            endpoints = listOf(
-                key("staging", "getUser"),
-                key("staging", "createUser")
-            )
+        repository.registerOperations(
+            operations = listOf(key(operationId = "getUser"), key(operationId = "createUser"))
         )
+        repository.setOperationMockState(key = key(operationId = "getUser"), state = MockTestData.mockState200())
 
-        // Write a mock state so there is something to reset for one of them
-        repository.setEndpointMockState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser",
-            state = EndpointMockState.Mock(responseFile = "getUser-200.json")
-        )
+        repository.resetKnownOperationsToNetwork()
 
-        repository.resetKnownEndpointsToNetwork()
-
-        repository.getState().getEndpointState(
-            groupId = groupId,
-            environmentId = "staging",
-            endpointId = "getUser"
-        ) shouldBe EndpointMockState.Network
+        repository.getState().getOperationState(key = key(operationId = "getUser")) shouldBe OperationMockState.Network
     }
 
     // endregion
@@ -400,9 +273,48 @@ class MockStateRepositoryTest {
         repository.observeState().test {
             val state = awaitItem()
             state.globalMockingEnabled shouldBe false
-            state.endpointStates shouldBe emptyMap()
+            state.operationStates shouldBe emptyMap()
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    // endregion
+
+    // region Pre-0.2.0 legacy state pruning
+
+    @Test
+    fun `pre-0_2_0 endpoint keys are removed on first read`() = runTest {
+        val dataStore = FakePreferencesDataStore()
+        dataStore.updateData { preferences ->
+            preferences.toMutablePreferences().apply {
+                this[stringPreferencesKey(name = "network_mock_endpoint_example-staging-getUser")] =
+                    """{"type":"mock","responseFile":"getUser-200.json"}"""
+                this[booleanPreferencesKey(name = "network_mock_global_enabled")] = true
+            }
+        }
+        val repository = MockStateRepository(dataStore = dataStore)
+
+        val state = repository.getState()
+
+        state.operationStates shouldBe emptyMap()
+        state.globalMockingEnabled shouldBe true
+    }
+
+    @Test
+    fun `pre-0_2_0 pruning does not remove state written after migration`() = runTest {
+        val dataStore = FakePreferencesDataStore()
+        dataStore.updateData { preferences ->
+            preferences.toMutablePreferences().apply {
+                this[stringPreferencesKey(name = "network_mock_endpoint_example-staging-getUser")] = "legacy"
+            }
+        }
+        val repository = MockStateRepository(dataStore = dataStore)
+        repository.getState()
+        repository.setOperationMockState(key = key(operationId = "getUser"), state = MockTestData.mockState200())
+
+        val state = repository.getState()
+
+        state.operationStates shouldContainKey key(operationId = "getUser").compositeKey
     }
 
     // endregion

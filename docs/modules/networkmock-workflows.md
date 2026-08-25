@@ -2,89 +2,126 @@
 
 Step-by-step guides for common network mocking tasks.
 
-## Adding a new mock endpoint
+## Adding a new mock operation
 
-### 1. Add the endpoint to mocks.json
+### 1. Add the operation to a spec file
 
 ```json
 {
-  "apiGroups": [{
-    "id": "my-backend",
-    "name": "My Backend",
-    "endpoints": [
-      { "id": "getUser", "name": "Get User", "path": "/v1/users/{userId}", "method": "GET" }
-    ],
-    "environments": [
-      { "id": "staging", "name": "Staging", "url": "https://staging.api.example.com" }
-    ]
-  }]
+  "info": { "title": "My Backend" },
+  "servers": [{ "url": "https://staging.api.example.com" }],
+  "paths": {
+    "/v1/users/{userId}": {
+      "get": {
+        "operationId": "getUser",
+        "summary": "Get User",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "responses/my-backend/getUser/getUser-200.json" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ```
 
 ### 2. Create response files
 
-Place response files under `composeResources/files/networkmocks/responses/`:
+Place response files wherever `externalValue` points them — a `{specId}/{operationId}/` layout keeps things organized:
 
 ```
-responses/my-backend/getUser/getUser-200.json      ← shared (all environments)
-responses/my-backend/staging/getUser/getUser-200.json  ← staging-specific (takes priority)
+responses/my-backend/getUser/getUser-200.json
+responses/my-backend/getUser/getUser-200-simple.json
+responses/my-backend/getUser/getUser-404.json
+responses/my-backend/getUser/getUser-500.json
 ```
 
-File naming: `{endpointId}-{statusCode}[-{suffix}].json`
-
-```
-getUser-200.json         ← default 200 response
-getUser-200-simple.json  ← alternate 200 response (simple variant)
-getUser-404.json         ← 404 error response
-getUser-500.json         ← server error response
-```
+Each file must be referenced by an `examples.<name>.externalValue` entry under the matching status code — there is no filename convention the parser relies on, since discovery reads exactly what the spec declares.
 
 ### 3. Launch the app
 
-Open DevView → Network Mock. Your new endpoint appears in the list for its group/environment tab.
+Open DevView → Network Mock. Your new operation appears in the list under its spec's tab.
 
 ## Testing an error scenario
 
-1. Open DevView → Network Mock → tap your endpoint.
-2. Tap a 4xx or 5xx response file to activate it.
-3. The endpoint chip turns red/orange. The Ktor plugin now returns that response for matching requests.
+1. Open DevView → Network Mock → tap your operation.
+2. Tap a 4xx or 5xx response variant to activate it.
+3. The state chip turns red/orange. The Ktor plugin now returns that response for matching requests.
 4. After testing, tap "No mock" or use the "Reset to Network" toolbar action to restore pass-through.
 
-## Using environment-specific responses
+## Naming response variants
 
-To serve a different response for production vs staging, place environment-specific files at higher priority:
-
-```
-responses/my-backend/getUser/getUser-200.json          ← shared fallback
-responses/my-backend/production/getUser/getUser-200.json  ← production-specific
-```
-
-The environment is determined at interception time from the request hostname — no manual selection needed.
-
-## Using endpoint path overrides per environment
-
-In `mocks.json`, add `endpointOverrides` to a specific environment:
+Multiple examples can be declared for the same status code — useful for a "simple" vs. "detailed" error body, or an empty vs. populated list response:
 
 ```json
-{
-  "id": "production",
-  "url": "https://api.example.com",
-  "endpointOverrides": [
-    { "id": "getUser", "path": "/v2/users/{userId}" }
-  ]
+"404": {
+  "content": {
+    "application/json": {
+      "examples": {
+        "default":  { "externalValue": "responses/getUser/getUser-404.json" },
+        "detailed": { "externalValue": "responses/getUser/getUser-404-detailed.json" }
+      }
+    }
+  }
 }
 ```
 
-The production environment now uses `/v2/users/{userId}` for `getUser` while staging keeps `/v1/users/{userId}`.
+By convention, the primary/original response for a status code is named `"default"` — any other name shows up as a suffix in the UI (e.g. `"detailed"` → "Not Found - Detailed (404)").
+
+## Serving different API versions from one spec
+
+There is no environment axis, so "staging returns v1, production returns v2" doesn't apply — instead, declare both versions as distinct operations in the same spec, and let the app's actual request determine which one gets matched:
+
+```json
+{
+  "info": { "title": "My Backend" },
+  "servers": [
+    { "url": "https://staging.api.example.com" },
+    { "url": "https://api.example.com" }
+  ],
+  "paths": {
+    "/v1/users/{userId}": {
+      "get": { "operationId": "getUser", "responses": { "...": "..." } }
+    },
+    "/v2/users/{userId}": {
+      "get": { "operationId": "getUserV2", "responses": { "...": "..." } }
+    }
+  }
+}
+```
+
+Both operations appear in the same tab. The engine mocks whichever path the app actually calls — it does not rewrite or force a version (that is a deliberately separate, deferred feature).
+
+## Simulating response delay
+
+Set `x-devview.delayMs` at the document root for a spec-wide default, and/or per operation to override it:
+
+```yaml
+x-devview:
+  delayMs: 200
+
+paths:
+  /v1/users/{userId}:
+    get:
+      x-devview:
+        delayMs: 500  # overrides the 200ms default for this operation only
+```
 
 ## Resetting all mocks
 
 - **UI**: Open DevView → Network Mock → tap the restore icon in the top toolbar.
-- **All mocks are reset to `Network` state**, including endpoints the user has never explicitly touched.
+- **All mocks are reset to `Network` state**, including operations the user has never explicitly touched.
 
 ## Related Modules
 
 - [NetworkMock](networkmock.md): Overview and installation.
-- [NetworkMock Core](networkmock-core.md): Config format details, request matching.
+- [NetworkMock Core](networkmock-core.md): Spec format details, request matching.
 - [NetworkMock UI](networkmock-ui.md): Screen descriptions.
 - [NetworkMock Ktor](networkmock-ktor.md): Plugin installation.

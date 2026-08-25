@@ -11,7 +11,10 @@ When `NetworkMock` is registered via `rememberModules`, the plugin resolves its 
 ```kotlin
 // Register the NetworkMock module in your app
 val modules = rememberModules {
-    module(NetworkMock(resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }))
+    module(NetworkMock(
+        resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) },
+        specPaths = listOf("files/networkmocks/specs/my-backend.json")
+    ))
 }
 
 // Install the plugin in your Ktor client — no configuration needed
@@ -39,14 +42,14 @@ For every outgoing request, the plugin:
 
 1. Calls `stateRepository.getState()` to read the current mock state.
 2. If `globalMockingEnabled` is `false` → sends the real request.
-3. Calls `mockRepository.findMatchingMock(host, path, method)`.
+3. Calls `mockRepository.findMatchingMock(host, path, method, queryParameters)`.
 4. If no match → sends the real request.
-5. If matched, reads the endpoint's `EndpointMockState`:
+5. If matched, reads the operation's `OperationMockState`:
    - `Network` or `null` → sends the real request.
-   - `Mock(responseFile)` → loads the response file and returns a synthetic response.
-6. On any error (missing file, malformed name, exception) → falls back to the real network and logs the reason. **The plugin never throws.**
+   - `Mock(statusCode, exampleName)` → loads that declared response variant and returns a synthetic response.
+6. On any error (undeclared variant, missing file, exception) → falls back to the real network and logs the reason. **The plugin never throws.**
 
-Mock responses are returned with HTTP/1.1 status, an empty header set, and the file contents as the body.
+Mock responses are returned with HTTP/1.1 status, an empty header set, and the response body as the content.
 
 ## Platform Actuals
 

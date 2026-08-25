@@ -14,87 +14,68 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.intl.Locale
-import com.worldline.devview.networkmock.core.model.EndpointConfig
-import com.worldline.devview.networkmock.core.model.EndpointDescriptor
-import com.worldline.devview.networkmock.core.model.EndpointKey
-import com.worldline.devview.networkmock.core.model.EndpointMockState
 import com.worldline.devview.networkmock.core.model.MockResponse
-import com.worldline.devview.networkmock.model.EndpointUiModel
-import com.worldline.devview.networkmock.model.GroupEnvironmentUiModel
+import com.worldline.devview.networkmock.core.model.Operation
+import com.worldline.devview.networkmock.core.model.OperationDescriptor
+import com.worldline.devview.networkmock.core.model.OperationKey
+import com.worldline.devview.networkmock.core.model.OperationMockState
+import com.worldline.devview.networkmock.model.ApiSpecUiModel
+import com.worldline.devview.networkmock.model.OperationUiModel
 import kotlinx.collections.immutable.toPersistentList
 
-internal fun GroupEnvironmentUiModel.Companion.fake(
-    amount: Int = 4
-): List<GroupEnvironmentUiModel> = List(size = amount) { index ->
-    val groupId = "group${if (index <= 2) "" else index / 3 % 3}"
-    val environmentId = when (index % 3) {
-        0 -> "development"
-        1 -> "staging"
-        2 -> "production"
-        else -> "staging"
+internal fun ApiSpecUiModel.Companion.fake(amount: Int = 4): List<ApiSpecUiModel> =
+    List(size = amount) { index ->
+        val specId = "spec${if (index <= 2) "" else index / 3 % 3}"
+        ApiSpecUiModel(
+            specId = specId,
+            name = specId.capitalize(locale = Locale.current),
+            operations = OperationUiModel.fake(specId = specId).toPersistentList()
+        )
     }
-    GroupEnvironmentUiModel(
-        groupId = groupId,
-        environmentId = environmentId,
-        name = groupId.capitalize(
-            locale = Locale.current
-        ) + " - " + environmentId.capitalize(locale = Locale.current),
-        url = "https://$groupId.$environmentId.api.com",
-        endpoints = EndpointUiModel
-            .fake(
-                groupId = groupId,
-                environmentId = environmentId
-            ).toPersistentList()
-    )
-}
 
-internal fun EndpointDescriptor.Companion.fake(
+internal fun OperationDescriptor.Companion.fake(
     amount: Int = 7,
     availableResponsesAmount: Int = 3,
-    groupId: String = "group",
-    environmentId: String = "staging"
-): List<EndpointDescriptor> = List(size = amount) { index ->
-    EndpointDescriptor(
-        key = EndpointKey(
-            groupId = groupId,
-            environmentId = environmentId,
-            endpointId = "endpoint-${index + 1}"
-        ),
-        config = EndpointConfig(
-            id = "endpoint-${index + 1}",
-            name = "Endpoint ${index + 1}",
+    specId: String = "spec"
+): List<OperationDescriptor> = List(size = amount) { index ->
+    OperationDescriptor(
+        key = OperationKey(specId = specId, operationId = "operation-${index + 1}"),
+        config = Operation(
+            operationId = "operation-${index + 1}",
+            name = "Operation ${index + 1}",
             method = "GET",
-            path = "/endpoint${index + 1}"
+            path = "/operation${index + 1}"
         ),
         availableResponses = MockResponse.fake(amount = availableResponsesAmount)
     )
 }
 
-internal fun EndpointUiModel.Companion.fake(
+internal fun OperationUiModel.Companion.fake(
     amount: Int = 7,
     availableResponsesAmount: Int = 3,
-    groupId: String = "group",
-    environmentId: String = "staging"
-): List<EndpointUiModel> = EndpointDescriptor
+    specId: String = "spec"
+): List<OperationUiModel> = OperationDescriptor
     .fake(
         amount = amount,
         availableResponsesAmount = availableResponsesAmount,
-        groupId = groupId,
-        environmentId = environmentId
+        specId = specId
     ).mapIndexed { index, descriptor ->
-        EndpointUiModel(
+        OperationUiModel(
             descriptor = descriptor,
             currentState = when (index) {
-                in 0..5 -> EndpointMockState.Mock(responseFile = responseFile(index = index))
-                else -> EndpointMockState.Network
+                in 0..5 -> OperationMockState.Mock(
+                    statusCode = exampleStatusCode(index = index),
+                    exampleName = "default"
+                )
+                else -> OperationMockState.Network
             }
         )
     }
 
-internal val EndpointMockState.icon: ImageVector
+internal val OperationMockState.icon: ImageVector
     get() = when (this) {
-        is EndpointMockState.Mock -> iconForStatusCode(statusCode = statusCode)
-        EndpointMockState.Network -> Icons.Rounded.Wifi
+        is OperationMockState.Mock -> iconForStatusCode(statusCode = statusCode)
+        OperationMockState.Network -> Icons.Rounded.Wifi
     }
 
 internal fun iconForStatusCode(statusCode: Int?): ImageVector = when (statusCode) {
@@ -106,10 +87,10 @@ internal fun iconForStatusCode(statusCode: Int?): ImageVector = when (statusCode
     else -> Icons.AutoMirrored.Rounded.HelpOutline
 }
 
-internal val EndpointMockState.contentColor: Color
+internal val OperationMockState.contentColor: Color
     get() = when (this) {
-        is EndpointMockState.Mock -> contentColorForStatusCode(statusCode = statusCode)
-        EndpointMockState.Network -> Color(color = 0xFF0D1F3A)
+        is OperationMockState.Mock -> contentColorForStatusCode(statusCode = statusCode)
+        OperationMockState.Network -> Color(color = 0xFF0D1F3A)
     }
 
 internal fun contentColorForStatusCode(statusCode: Int?): Color = when (statusCode) {
@@ -121,10 +102,10 @@ internal fun contentColorForStatusCode(statusCode: Int?): Color = when (statusCo
     else -> Color(color = 0xFF3D3D3D)
 }
 
-internal val EndpointMockState.containerColor: Color
+internal val OperationMockState.containerColor: Color
     get() = when (this) {
-        is EndpointMockState.Mock -> containerColorForStatusCode(statusCode = statusCode)
-        EndpointMockState.Network -> Color(color = 0xFFABC4ED)
+        is OperationMockState.Mock -> containerColorForStatusCode(statusCode = statusCode)
+        OperationMockState.Network -> Color(color = 0xFFABC4ED)
     }
 
 internal fun containerColorForStatusCode(statusCode: Int?): Color = when (statusCode) {
@@ -139,11 +120,11 @@ internal fun containerColorForStatusCode(statusCode: Int?): Color = when (status
 internal fun MockResponse.Companion.fake(amount: Int = 3): List<MockResponse> =
     List(size = amount) { index ->
         MockResponse(
-            fileName = responseFile(index = index),
-            statusCode = (index + 1) % 6 * 100,
+            statusCode = exampleStatusCode(index = index),
+            exampleName = "default",
             displayName = "Response $index",
             content = "{\n  \"message\": \"This is a mock response $index\"\n}"
         )
     }
 
-private fun responseFile(index: Int) = "response-${(index + 1) % 6 * 100 + index}.json"
+private fun exampleStatusCode(index: Int) = (index + 1) % 6 * 100

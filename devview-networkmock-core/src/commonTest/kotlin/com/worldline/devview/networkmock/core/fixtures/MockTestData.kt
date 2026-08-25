@@ -1,12 +1,11 @@
 package com.worldline.devview.networkmock.core.fixtures
 
-import com.worldline.devview.networkmock.core.model.ApiGroupConfig
-import com.worldline.devview.networkmock.core.model.EndpointConfig
-import com.worldline.devview.networkmock.core.model.EndpointKey
-import com.worldline.devview.networkmock.core.model.EndpointMockState
-import com.worldline.devview.networkmock.core.model.EnvironmentConfig
+import com.worldline.devview.networkmock.core.model.ApiSpec
 import com.worldline.devview.networkmock.core.model.MockConfiguration
 import com.worldline.devview.networkmock.core.model.NetworkMockState
+import com.worldline.devview.networkmock.core.model.Operation
+import com.worldline.devview.networkmock.core.model.OperationKey
+import com.worldline.devview.networkmock.core.model.OperationMockState
 
 /**
  * Shared test data fixtures for the networkmock-core module.
@@ -18,182 +17,133 @@ import com.worldline.devview.networkmock.core.model.NetworkMockState
 internal object MockTestData {
 
     // -------------------------------------------------------------------------
-    // EndpointConfig builders
+    // Operation builders
     // -------------------------------------------------------------------------
 
-    /** A minimal GET endpoint with no path parameters. */
-    fun endpointConfig(
-        id: String = "getUser",
+    /** A minimal GET operation with no path parameters. */
+    fun operation(
+        operationId: String = "getUser",
         name: String = "Get User",
         path: String = "/api/users",
         method: String = "GET",
-    ): EndpointConfig = EndpointConfig(id = id, name = name, path = path, method = method)
+    ): Operation = Operation(operationId = operationId, name = name, path = path, method = method)
 
-    /** An endpoint whose path contains a single path parameter. */
-    fun endpointConfigWithParam(
-        id: String = "getUserById",
+    /** An operation whose path contains a single path parameter. */
+    fun operationWithParam(
+        operationId: String = "getUserById",
         name: String = "Get User By ID",
         path: String = "/api/users/{userId}",
         method: String = "GET",
-    ): EndpointConfig = EndpointConfig(id = id, name = name, path = path, method = method)
+    ): Operation = Operation(operationId = operationId, name = name, path = path, method = method)
 
-    /** A POST endpoint (no path parameters). */
-    fun postEndpointConfig(
-        id: String = "createUser",
+    /** A POST operation (no path parameters). */
+    fun postOperation(
+        operationId: String = "createUser",
         name: String = "Create User",
         path: String = "/api/users",
         method: String = "POST",
-    ): EndpointConfig = EndpointConfig(id = id, name = name, path = path, method = method)
+    ): Operation = Operation(operationId = operationId, name = name, path = path, method = method)
 
     // -------------------------------------------------------------------------
-    // Environment / ApiGroup builders
+    // ApiSpec / MockConfiguration builders
     // -------------------------------------------------------------------------
 
-    /** A staging environment. */
-    fun stagingEnvironment(
-        id: String = "staging",
-        name: String = "Staging",
-        url: String = "https://staging.api.example.com",
-    ): EnvironmentConfig = EnvironmentConfig(id = id, name = name, url = url)
-
-    /** A production environment. */
-    fun productionEnvironment(
-        id: String = "production",
-        name: String = "Production",
-        url: String = "https://api.example.com",
-    ): EnvironmentConfig = EnvironmentConfig(id = id, name = name, url = url)
-
-    /** A single API group with the provided environments and endpoints. */
-    fun apiGroupConfig(
+    /** A single spec with the provided servers and operations. */
+    fun apiSpec(
         id: String = "example",
         name: String = "Example",
-        environments: List<EnvironmentConfig> = listOf(stagingEnvironment()),
-        endpoints: List<EndpointConfig> = listOf(endpointConfig()),
-    ): ApiGroupConfig = ApiGroupConfig(
-        id = id,
-        name = name,
-        endpoints = endpoints,
-        environments = environments,
-    )
+        servers: List<String> = listOf("https://staging.api.example.com"),
+        operations: List<Operation> = listOf(operation()),
+    ): ApiSpec = ApiSpec(id = id, name = name, servers = servers, operations = operations)
 
-    /** An API group with multiple endpoints (GET + POST + DELETE). */
-    fun multiEndpointApiGroup(
+    /** A spec with multiple operations (GET + POST + DELETE). */
+    fun multiOperationApiSpec(
         id: String = "example",
         name: String = "Example",
-        environments: List<EnvironmentConfig> = listOf(stagingEnvironment()),
-    ): ApiGroupConfig = ApiGroupConfig(
+        servers: List<String> = listOf("https://staging.api.example.com"),
+    ): ApiSpec = ApiSpec(
         id = id,
         name = name,
-        environments = environments,
-        endpoints = listOf(
-            endpointConfig(id = "getUser", path = "/api/users/{userId}", method = "GET"),
-            postEndpointConfig(id = "createUser", path = "/api/users", method = "POST"),
-            endpointConfig(id = "deleteUser", path = "/api/users/{userId}", method = "DELETE"),
+        servers = servers,
+        operations = listOf(
+            operation(operationId = "getUser", path = "/api/users/{userId}", method = "GET"),
+            postOperation(operationId = "createUser", path = "/api/users", method = "POST"),
+            operation(operationId = "deleteUser", path = "/api/users/{userId}", method = "DELETE"),
         ),
     )
 
-    // -------------------------------------------------------------------------
-    // MockConfiguration builders
-    // -------------------------------------------------------------------------
+    /** A configuration with a single spec. */
+    fun singleSpecConfig(spec: ApiSpec = apiSpec()): MockConfiguration = MockConfiguration(specs = listOf(spec))
 
-    /** A configuration with one API group and one environment. */
-    fun singleGroupConfig(
-        group: ApiGroupConfig = apiGroupConfig(),
-    ): MockConfiguration = MockConfiguration(apiGroups = listOf(group))
-
-    /** A configuration with one API group and both staging + production environments. */
-    fun multiEnvironmentGroupConfig(): MockConfiguration = MockConfiguration(
-        apiGroups = listOf(
-            apiGroupConfig(
-                environments = listOf(stagingEnvironment(), productionEnvironment())
-            )
+    /** A configuration with two specs. */
+    fun multiSpecConfig(): MockConfiguration = MockConfiguration(
+        specs = listOf(
+            apiSpec(id = "example", name = "Example"),
+            apiSpec(id = "catalog", name = "Catalog")
         )
     )
 
-    /** A configuration with two API groups. */
-    fun multiGroupConfig(): MockConfiguration = MockConfiguration(
-        apiGroups = listOf(
-            apiGroupConfig(id = "example", name = "Example"),
-            apiGroupConfig(id = "catalog", name = "Catalog")
-        )
-    )
-
-    /** An empty configuration with no API groups. */
-    fun emptyConfig(): MockConfiguration = MockConfiguration(apiGroups = emptyList())
+    /** An empty configuration with no specs. */
+    fun emptyConfig(): MockConfiguration = MockConfiguration(specs = emptyList())
 
     // -------------------------------------------------------------------------
-    // EndpointMockState variations
+    // OperationMockState variations
     // -------------------------------------------------------------------------
 
-    /** Network (pass-through) state — the default for every endpoint. */
-    val networkState: EndpointMockState = EndpointMockState.Network
+    /** Network (pass-through) state — the default for every operation. */
+    val networkState: OperationMockState = OperationMockState.Network
 
-    /** A mock state backed by a 200 OK response file. */
-    fun mockState200(endpointId: String = "getUser"): EndpointMockState.Mock =
-        EndpointMockState.Mock(responseFile = "$endpointId-200.json")
+    /** A mock state selecting the `default` 200 OK example. */
+    fun mockState200(): OperationMockState.Mock = OperationMockState.Mock(statusCode = 200, exampleName = "default")
 
-    /** A mock state backed by a 404 Not Found response file. */
-    fun mockState404(endpointId: String = "getUser"): EndpointMockState.Mock =
-        EndpointMockState.Mock(responseFile = "$endpointId-404.json")
+    /** A mock state selecting the `default` 404 Not Found example. */
+    fun mockState404(): OperationMockState.Mock = OperationMockState.Mock(statusCode = 404, exampleName = "default")
 
-    /** A mock state backed by a 500 Internal Server Error response file. */
-    fun mockState500(endpointId: String = "getUser"): EndpointMockState.Mock =
-        EndpointMockState.Mock(responseFile = "$endpointId-500.json")
+    /** A mock state selecting the `default` 500 Internal Server Error example. */
+    fun mockState500(): OperationMockState.Mock = OperationMockState.Mock(statusCode = 500, exampleName = "default")
 
-    /** A mock state with an explicit suffix in the file name (e.g. `getUser-404-simple.json`). */
-    fun mockStateWithSuffix(
-        endpointId: String = "getUser",
+    /** A mock state selecting a named example other than `default`. */
+    fun mockStateWithExample(
         statusCode: Int = 404,
-        suffix: String = "simple",
-    ): EndpointMockState.Mock =
-        EndpointMockState.Mock(responseFile = "$endpointId-$statusCode-$suffix.json")
+        exampleName: String = "simple",
+    ): OperationMockState.Mock = OperationMockState.Mock(statusCode = statusCode, exampleName = exampleName)
 
     // -------------------------------------------------------------------------
     // NetworkMockState builders
     // -------------------------------------------------------------------------
 
-    /** Default state: global mocking disabled, no endpoint states. */
+    /** Default state: global mocking disabled, no operation states. */
     val defaultNetworkMockState: NetworkMockState = NetworkMockState()
 
-    /** State with global mocking enabled but no individual endpoint overrides. */
+    /** State with global mocking enabled but no individual operation overrides. */
     val globalMockingEnabled: NetworkMockState = NetworkMockState(globalMockingEnabled = true)
 
     /**
-     * State with global mocking enabled and a single endpoint set to a 200 mock.
+     * State with global mocking enabled and a single operation set to a 200 mock.
      *
-     * Key used: `"example-staging-getUser"`.
+     * Key used: `"example-getUser"`.
      */
-    val singleEndpointMocked: NetworkMockState = NetworkMockState(
+    val singleOperationMocked: NetworkMockState = NetworkMockState(
         globalMockingEnabled = true,
-        endpointStates = mapOf(
-            EndpointKey(
-                groupId = "example",
-                environmentId = "staging",
-                endpointId = "getUser"
-            ).compositeKey to EndpointMockState.Mock(responseFile = "getUser-200.json")
+        operationStates = mapOf(
+            OperationKey(specId = "example", operationId = "getUser").compositeKey to
+                OperationMockState.Mock(statusCode = 200, exampleName = "default")
         )
     )
 
     /**
-     * State with global mocking enabled and two endpoints configured
-     * with different mock responses.
+     * State with global mocking enabled and two operations configured with different mock
+     * responses.
      *
-     * Keys used: `"example-staging-getUser"`, `"example-staging-createUser"`.
+     * Keys used: `"example-getUser"`, `"example-createUser"`.
      */
-    val multipleEndpointsMocked: NetworkMockState = NetworkMockState(
+    val multipleOperationsMocked: NetworkMockState = NetworkMockState(
         globalMockingEnabled = true,
-        endpointStates = mapOf(
-            EndpointKey(
-                groupId = "example",
-                environmentId = "staging",
-                endpointId = "getUser"
-            ).compositeKey to EndpointMockState.Mock(responseFile = "getUser-200.json"),
-            EndpointKey(
-                groupId = "example",
-                environmentId = "staging",
-                endpointId = "createUser"
-            ).compositeKey to EndpointMockState.Mock(responseFile = "createUser-201.json"),
+        operationStates = mapOf(
+            OperationKey(specId = "example", operationId = "getUser").compositeKey to
+                OperationMockState.Mock(statusCode = 200, exampleName = "default"),
+            OperationKey(specId = "example", operationId = "createUser").compositeKey to
+                OperationMockState.Mock(statusCode = 201, exampleName = "default"),
         )
     )
 }
-

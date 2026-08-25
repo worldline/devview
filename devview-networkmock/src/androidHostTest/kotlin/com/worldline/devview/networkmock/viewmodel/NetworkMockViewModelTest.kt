@@ -1,13 +1,12 @@
 package com.worldline.devview.networkmock.viewmodel
 
-import com.worldline.devview.networkmock.core.model.ApiGroupConfig
-import com.worldline.devview.networkmock.core.model.EndpointConfig
-import com.worldline.devview.networkmock.core.model.EndpointKey
-import com.worldline.devview.networkmock.core.model.EndpointMockState
-import com.worldline.devview.networkmock.core.model.EnvironmentConfig
+import com.worldline.devview.networkmock.core.model.ApiSpec
 import com.worldline.devview.networkmock.core.model.MockConfiguration
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.NetworkMockState
+import com.worldline.devview.networkmock.core.model.Operation
+import com.worldline.devview.networkmock.core.model.OperationKey
+import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.networkmock.core.repository.MockConfigRepository
 import com.worldline.devview.networkmock.core.repository.MockStateRepository
 import com.worldline.devview.test.ViewModelTest
@@ -70,18 +69,18 @@ class NetworkMockViewModelTest : ViewModelTest() {
         collectState(viewModel.uiState)
 
         val content = viewModel.uiState.value.shouldBeInstanceOf<NetworkMockUiState.Content>()
-        content.groups.shouldHaveSize(2)
-        content.groups.first { it.groupId == "user-api" && it.environmentId == "staging" }
-            .endpoints.shouldHaveSize(2)
-        content.groups.first { it.groupId == "catalog-api" && it.environmentId == "production" }
-            .endpoints.shouldHaveSize(1)
+        content.specs.shouldHaveSize(2)
+        content.specs.first { it.specId == "user-api" }
+            .operations.shouldHaveSize(2)
+        content.specs.first { it.specId == "catalog-api" }
+            .operations.shouldHaveSize(1)
     }
 
     @Test
-    fun emitsContent_withEmptyGroups_whenConfigHasNoGroups() = runTest {
+    fun emitsContent_withEmptySpecs_whenConfigHasNoSpecs() = runTest {
         val stateFlow = MutableStateFlow(NetworkMockState())
         val configRepository = createConfigRepositoryMock(
-            loadResult = Result.success(MockConfiguration(apiGroups = emptyList()))
+            loadResult = Result.success(MockConfiguration(specs = emptyList()))
         )
         val stateRepository = createStateRepositoryMock(stateFlow)
 
@@ -91,7 +90,7 @@ class NetworkMockViewModelTest : ViewModelTest() {
 
         viewModel.uiState.value
             .shouldBeInstanceOf<NetworkMockUiState.Content>()
-            .groups shouldHaveSize 0
+            .specs shouldHaveSize 0
     }
 
     @Test
@@ -142,7 +141,7 @@ class NetworkMockViewModelTest : ViewModelTest() {
     }
 
     @Test
-    fun setEndpointMockState_persistsMockAndNetworkTransitions() = runTest {
+    fun setOperationMockState_persistsMockAndNetworkTransitions() = runTest {
         val stateFlow = MutableStateFlow(NetworkMockState())
         val configRepository =
             createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
@@ -150,16 +149,19 @@ class NetworkMockViewModelTest : ViewModelTest() {
 
         val viewModel = NetworkMockViewModel(configRepository, stateRepository)
 
-        val key =
-            EndpointKey(groupId = "user-api", environmentId = "staging", endpointId = "getUser")
+        val key = OperationKey(specId = "user-api", operationId = "getUser")
+        val response = MockResponse(statusCode = 200, exampleName = "default", displayName = "Success (200)", content = "{}")
 
-        viewModel.setEndpointMockState(key, "getUser-200.json")
-        stateFlow.value.getEndpointState(key)
-            .shouldBeInstanceOf<EndpointMockState.Mock>()
-            .responseFile shouldBe "getUser-200.json"
+        viewModel.setOperationMockState(key, response)
+        stateFlow.value.getOperationState(key)
+            .shouldBeInstanceOf<OperationMockState.Mock>()
+            .let {
+                it.statusCode shouldBe 200
+                it.exampleName shouldBe "default"
+            }
 
-        viewModel.setEndpointMockState(key, null)
-        stateFlow.value.getEndpointState(key) shouldBe EndpointMockState.Network
+        viewModel.setOperationMockState(key, null)
+        stateFlow.value.getOperationState(key) shouldBe OperationMockState.Network
     }
 
     @Test
@@ -171,44 +173,28 @@ class NetworkMockViewModelTest : ViewModelTest() {
 
         val viewModel = NetworkMockViewModel(configRepository, stateRepository)
 
-        viewModel.setEndpointMockState(
-            key = EndpointKey(
-                groupId = "user-api",
-                environmentId = "staging",
-                endpointId = "getUser"
-            ),
-            responseFileName = "getUser-200.json"
+        viewModel.setOperationMockState(
+            key = OperationKey(specId = "user-api", operationId = "getUser"),
+            response = MockResponse(statusCode = 200, exampleName = "default", displayName = "Success (200)", content = "{}")
         )
-        viewModel.setEndpointMockState(
-            key = EndpointKey(
-                groupId = "catalog-api",
-                environmentId = "production",
-                endpointId = "getProduct"
-            ),
-            responseFileName = "getProduct-200.json"
+        viewModel.setOperationMockState(
+            key = OperationKey(specId = "catalog-api", operationId = "getProduct"),
+            response = MockResponse(statusCode = 200, exampleName = "default", displayName = "Success (200)", content = "{}")
         )
 
-        val statesSlot = slot<Map<EndpointKey, EndpointMockState>>()
-        coEvery { stateRepository.setAllEndpointStates(states = capture(statesSlot)) } coAnswers {
+        val statesSlot = slot<Map<OperationKey, OperationMockState>>()
+        coEvery { stateRepository.setAllOperationStates(states = capture(statesSlot)) } coAnswers {
             stateFlow.value = stateFlow.value.copy(
-                endpointStates = statesSlot.captured.mapKeys { (key, _) -> key.compositeKey }
+                operationStates = statesSlot.captured.mapKeys { (key, _) -> key.compositeKey }
             )
         }
 
         viewModel.resetAllToNetwork()
 
         val allNetwork = statesSlot.captured
-        allNetwork[EndpointKey("user-api", "staging", "getUser")] shouldBe EndpointMockState.Network
-        allNetwork[EndpointKey(
-            "user-api",
-            "staging",
-            "createUser"
-        )] shouldBe EndpointMockState.Network
-        allNetwork[EndpointKey(
-            "catalog-api",
-            "production",
-            "getProduct"
-        )] shouldBe EndpointMockState.Network
+        allNetwork[OperationKey("user-api", "getUser")] shouldBe OperationMockState.Network
+        allNetwork[OperationKey("user-api", "createUser")] shouldBe OperationMockState.Network
+        allNetwork[OperationKey("catalog-api", "getProduct")] shouldBe OperationMockState.Network
     }
 
     private fun createConfigRepositoryMock(
@@ -224,27 +210,11 @@ class NetworkMockViewModelTest : ViewModelTest() {
             loadResult
         }
 
-        coEvery { repository.discoverResponseFiles(any<EndpointKey>()) } coAnswers {
-            when (firstArg<EndpointKey>().endpointId) {
-                "getUser" -> listOf(MockResponse(200, "getUser-200.json", "Success (200)", "{}"))
-                "createUser" -> listOf(
-                    MockResponse(
-                        201,
-                        "createUser-201.json",
-                        "Created (201)",
-                        "{}"
-                    )
-                )
-
-                "getProduct" -> listOf(
-                    MockResponse(
-                        200,
-                        "getProduct-200.json",
-                        "Success (200)",
-                        "{}"
-                    )
-                )
-
+        coEvery { repository.discoverResponseFiles(any<OperationKey>()) } coAnswers {
+            when (firstArg<OperationKey>().operationId) {
+                "getUser" -> listOf(MockResponse(200, "default", "Success (200)", "{}"))
+                "createUser" -> listOf(MockResponse(201, "default", "Created (201)", "{}"))
+                "getProduct" -> listOf(MockResponse(200, "default", "Success (200)", "{}"))
                 else -> emptyList()
             }
         }
@@ -261,23 +231,23 @@ class NetworkMockViewModelTest : ViewModelTest() {
             val enabled = firstArg<Boolean>()
             stateFlow.value = stateFlow.value.copy(globalMockingEnabled = enabled)
         }
-        coEvery { repository.setEndpointMockState(any<EndpointKey>(), any()) } coAnswers {
-            val key = firstArg<EndpointKey>()
-            val state = secondArg<EndpointMockState>()
-            stateFlow.value = stateFlow.value.withEndpointState(key, state)
+        coEvery { repository.setOperationMockState(any<OperationKey>(), any()) } coAnswers {
+            val key = firstArg<OperationKey>()
+            val state = secondArg<OperationMockState>()
+            stateFlow.value = stateFlow.value.withOperationState(key, state)
         }
-        coEvery { repository.setAllEndpointStates(any()) } coAnswers {
-            val states = firstArg<Map<EndpointKey, EndpointMockState>>()
+        coEvery { repository.setAllOperationStates(any()) } coAnswers {
+            val states = firstArg<Map<OperationKey, OperationMockState>>()
             stateFlow.value = stateFlow.value.copy(
-                endpointStates = states.mapKeys { (key, _) -> key.compositeKey }
+                operationStates = states.mapKeys { (key, _) -> key.compositeKey }
             )
         }
-        coEvery { repository.resetKnownEndpointsToNetwork() } coAnswers {
+        coEvery { repository.resetKnownOperationsToNetwork() } coAnswers {
             stateFlow.value = stateFlow.value.resetAllToNetwork()
         }
 
         every { repository.observeState() } returns stateFlow
-        every { repository.registerEndpoints(any()) } just Runs
+        every { repository.registerOperations(any()) } just Runs
 
         coEvery { repository.getState() } coAnswers { stateFlow.value }
 
@@ -285,48 +255,36 @@ class NetworkMockViewModelTest : ViewModelTest() {
     }
 
     private fun testConfiguration(): MockConfiguration = MockConfiguration(
-        apiGroups = listOf(
-            ApiGroupConfig(
+        specs = listOf(
+            ApiSpec(
                 id = "user-api",
                 name = "User API",
-                endpoints = listOf(
-                    EndpointConfig(
-                        id = "getUser",
+                servers = listOf("https://staging.api.example.com"),
+                operations = listOf(
+                    Operation(
+                        operationId = "getUser",
                         name = "Get User",
                         path = "/api/users/{userId}",
                         method = "GET"
                     ),
-                    EndpointConfig(
-                        id = "createUser",
+                    Operation(
+                        operationId = "createUser",
                         name = "Create User",
                         path = "/api/users",
                         method = "POST"
                     )
-                ),
-                environments = listOf(
-                    EnvironmentConfig(
-                        id = "staging",
-                        name = "Staging",
-                        url = "https://staging.api.example.com"
-                    )
                 )
             ),
-            ApiGroupConfig(
+            ApiSpec(
                 id = "catalog-api",
                 name = "Catalog API",
-                endpoints = listOf(
-                    EndpointConfig(
-                        id = "getProduct",
+                servers = listOf("https://api.example.com"),
+                operations = listOf(
+                    Operation(
+                        operationId = "getProduct",
                         name = "Get Product",
                         path = "/api/products/{productId}",
                         method = "GET"
-                    )
-                ),
-                environments = listOf(
-                    EnvironmentConfig(
-                        id = "production",
-                        name = "Production",
-                        url = "https://api.example.com"
                     )
                 )
             )

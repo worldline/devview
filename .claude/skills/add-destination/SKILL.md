@@ -8,7 +8,7 @@ You are adding a new Navigation3 destination to an existing DevView module. Thre
 ## 0. Determine destination type
 
 **`data object`** — singleton screen, no parameters (e.g. `Main`, `Settings`)
-**`data class`** — parameterized screen (e.g. `Detail(val id: String)`, `Endpoint(val key: EndpointKey)`)
+**`data class`** — parameterized screen (e.g. `Detail(val id: String)`, `Endpoint(val operationKey: OperationKey)`)
 
 This choice determines which `withTitle()` extension to use.
 

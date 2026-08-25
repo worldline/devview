@@ -303,7 +303,7 @@ private fun ResponseContentPane(
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-            text = response.fileName,
+            text = response.displayName,
             style = MaterialTheme.typography.labelSmall,
             color = colors.onGutterContainer()
         )

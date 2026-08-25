@@ -13,6 +13,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   state back into that screen from the DevView overlay. History resets automatically when
   the screen leaves composition.
 
+### Changed
+- **Breaking:** `devview-networkmock-core` now parses OpenAPI 3.x documents (JSON, and YAML
+  on a best-effort basis) instead of the bespoke `mocks.json` format. One spec file is one
+  API group — the environment axis is gone entirely; a group's request-matching hosts come
+  from the spec's `servers[]` list, and an app talking to two hosts for the same API is
+  simply two operations with different paths in one document. `NetworkMock(configPath: String)`
+  is now `NetworkMock(specPaths: List<String>)`. (`devview-networkmock-core`, `devview-networkmock`,
+  `devview-networkmock-ktor`)
+- Renamed to OpenAPI vocabulary throughout the networkmock modules: `ApiGroupConfig` →
+  `ApiSpec`, `EndpointConfig` → `Operation`, `EndpointKey` → `OperationKey` (drops the
+  `environmentId` component), `EndpointDescriptor` → `OperationDescriptor`,
+  `EndpointMockState` → `OperationMockState`, `GroupEnvironmentUiModel` → `ApiSpecUiModel`,
+  `EndpointUiModel` → `OperationUiModel`. `MockResponse` and `MockMatch` are deliberately
+  **not** renamed — they model DevView's own runtime mocking behavior, not something OpenAPI
+  describes. `EnvironmentConfig`, `EndpointOverride`, and `effectiveEndpoints` are deleted.
+- Response variant discovery now reads the spec's declared
+  `responses.<code>.content.*.examples` instead of probing status-code/suffix combinations
+  against the filesystem. `OperationMockState.Mock` is now keyed by `(statusCode,
+  exampleName)` instead of a response file name. (`devview-networkmock-core`)
+- Response delay simulation is now declared via the `x-devview.delayMs` OpenAPI
+  Specification Extension, at the document root (spec-wide default) and/or per operation
+  (overrides the default) — replacing `ApiGroupConfig.defaultDelayMs` /
+  `EndpointConfig.delayMs`. (`devview-networkmock-core`)
+- DataStore entries written under the pre-0.2.0 key shape
+  (`network_mock_endpoint_{groupId}-{environmentId}-{endpointId}`) are wiped once on first
+  launch after upgrading — the key shape and the `Mock` payload shape both changed, so a
+  translation wasn't attempted. The global mocking toggle is unaffected. (`devview-networkmock-core`)
+
 ## [0.1.4] - 2026-07-22
 
 ### Changed

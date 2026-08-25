@@ -1,0 +1,127 @@
+{
+  "info": { "title": "JSONPlaceholder" },
+  "servers": [
+    { "url": "https://jsonplaceholder.typicode.com" }
+  ],
+  "paths": {
+    "/users/{userId}": {
+      "get": {
+        "operationId": "getUser",
+        "summary": "Get User by ID",
+        "x-devview": { "delayMs": 500 },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/jsonplaceholder/getUser/getUser-200.json" }
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/jsonplaceholder/getUser/getUser-404.json" },
+                  "detailed": { "externalValue": "/files/networkmocks/responses/jsonplaceholder/getUser/getUser-404-detailed.json" }
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/jsonplaceholder/getUser/getUser-500.json" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "operationId": "listUsers",
+        "summary": "List All Users",
+        "parameters": [
+          { "name": "type", "in": "query", "example": "user" }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/jsonplaceholder/listUsers/listUsers-200.json" },
+                  "empty": { "externalValue": "/files/networkmocks/responses/jsonplaceholder/listUsers/listUsers-200-empty.json" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts": {
+      "post": {
+        "operationId": "createPost",
+        "summary": "Create Post",
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/jsonplaceholder/createPost/createPost-201.json" }
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/jsonplaceholder/createPost/createPost-400.json" }
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/jsonplaceholder/createPost/createPost-401.json" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/{postId}": {
+      "get": {
+        "operationId": "getPost",
+        "summary": "Get Post by ID",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/jsonplaceholder/getPost/getPost-200.json" }
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": { "externalValue": "/files/networkmocks/responses/jsonplaceholder/getPost/getPost-404.json" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -6,7 +6,7 @@ The `devview-networkmock` module provides the Compose UI for the network mocking
 
 ### Main screen — endpoint list
 
-The main screen shows a global mock toggle at the top, followed by a scrollable tab row with one tab per API group + environment combination (e.g. "My Backend – Staging"). Each tab lists the endpoints for that group/environment with their current mock state.
+The main screen shows a global mock toggle at the top, followed by a scrollable tab row with one tab per OpenAPI spec (e.g. "My Backend"). Each tab lists every operation declared in that spec with its current mock state — there is no environment axis, so a spec spanning multiple API versions shows all of its operations side by side in one tab.
 
 - **Global toggle**: enables or disables all mocking globally. When off, all requests go to the real network regardless of per-endpoint settings.
 - **Endpoint cards**: show the endpoint name, HTTP method, path, and current state chip (Network / HTTP status code). Tap an endpoint to open its detail screen.
@@ -25,12 +25,13 @@ Shows the full endpoint info and all discovered mock response files, grouped by 
 ```kotlin
 val modules = rememberModules {
     module(NetworkMock(
-        resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }
+        resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) },
+        specPaths = listOf("files/networkmocks/specs/my-backend.json")
     ))
 }
 ```
 
-`configPath` defaults to `"files/networkmocks/mocks.json"`. Pass a custom value if your config lives elsewhere.
+`specPaths` lists every OpenAPI spec file to load — one per API group. There is no default; pass every spec your app should mock.
 
 ## Related Modules
 

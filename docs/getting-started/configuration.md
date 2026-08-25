@@ -17,7 +17,10 @@ val modules = rememberModules {
         module(FeatureFlip)
     }
     if (isNetworkMockEnabled) {
-        module(NetworkMock(resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }))
+        module(NetworkMock(
+            resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) },
+            specPaths = listOf("files/networkmocks/specs/my-backend.json")
+        ))
     }
 }
 ```
