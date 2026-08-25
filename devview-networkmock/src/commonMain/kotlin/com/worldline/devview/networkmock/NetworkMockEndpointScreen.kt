@@ -92,13 +92,9 @@ internal fun NetworkMockEndpointScreen(
         )
 
         is NetworkMockEndpointUiState.Content -> {
-            // Stub for Step 3 — will be replaced with the preview sheet
-            var previewingResponse by remember { mutableStateOf<MockResponse?>(value = null) }
-
             NetworkMockEndpointScreenContent(
                 content = state,
                 onSelectResponse = viewModel::setMockState,
-                onPreviewClick = { previewingResponse = it },
                 modifier = modifier,
                 bottomPadding = bottomPadding
             )
@@ -110,7 +106,6 @@ internal fun NetworkMockEndpointScreen(
 private fun NetworkMockEndpointScreenContent(
     content: NetworkMockEndpointUiState.Content,
     onSelectResponse: (responseFileName: String?) -> Unit,
-    onPreviewClick: (MockResponse) -> Unit,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp
 ) {
@@ -308,8 +303,7 @@ private fun NetworkMockEndpointScreenPreview(
                 content = NetworkMockEndpointUiState.Content(
                     endpointUiModel = endpointUiModel
                 ),
-                onSelectResponse = {},
-                onPreviewClick = {}
+                onSelectResponse = {}
             )
         }
     }
