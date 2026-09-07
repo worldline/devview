@@ -29,7 +29,7 @@ mrmans0n-detekt-compose-rules = "0.6.3"
 turbine = "1.2.1"
 
 # Kotlin only dependencies
-kotlin = "2.3.21"
+kotlin = "2.4.20"
 kover = "0.9.8"
 kotlinx-collections-immutable = "0.5.1"
 kotlinx-coroutines = "1.11.0"
