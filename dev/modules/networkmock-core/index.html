@@ -326,6 +326,8 @@
       
         
       
+        
+      
     
     
     
@@ -1382,6 +1384,8 @@
       
         
       
+        
+      
     
     
     
@@ -1449,6 +1453,33 @@
     
   
   Integration Guide
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/migrating-to-openapi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Migrating to OpenAPI
 
     
   </span>
@@ -2358,7 +2389,7 @@ configurable.</p>
 </tbody>
 </table>
 <p><code>OperationMockState</code> is serialized as <code>{"type":"network"}</code> (pass-through) or <code>{"type":"mock","statusCode":200,"exampleName":"default"}</code>.</p>
-<p><strong>Upgrading from a pre-0.2.0 release</strong>: the operation-state key shape changed (<code>{groupId}-{environmentId}-{endpointId}</code> → <code>{specId}-{operationId}</code>), and so did the <code>Mock</code> payload (a response file name → <code>(statusCode, exampleName)</code>). On first launch after upgrading, every <code>network_mock_endpoint_*</code> entry from the old shape is wiped once — this is disabled-by-default developer-tooling state, not user data, so previously-selected mocks are reset rather than translated. The global mocking toggle is unaffected.</p>
+<p><strong>Upgrading from a pre-0.2.0 release</strong>: the operation-state key shape changed (<code>{groupId}-{environmentId}-{endpointId}</code> → <code>{specId}-{operationId}</code>), and so did the <code>Mock</code> payload (a response file name → <code>(statusCode, exampleName)</code>). On first launch after upgrading, every <code>network_mock_endpoint_*</code> entry from the old shape is wiped once — this is disabled-by-default developer-tooling state, not user data, so previously-selected mocks are reset rather than translated. The global mocking toggle is unaffected. See the <a href="../../guides/migrating-to-openapi/">migration guide</a> for converting an existing <code>mocks.json</code>.</p>
 <h2 id="networkmockresourceloader">NetworkMockResourceLoader</h2>
 <p><em>Added in v0.1.3.</em></p>
 <p><code>NetworkMockResourceLoader</code> is a <code>fun interface</code> that abstracts how mock resource bytes are loaded from a path. It exists to support DI-friendly architectures where the spec files live in a different Gradle module than the one constructing <code>NetworkMock</code>.</p>
