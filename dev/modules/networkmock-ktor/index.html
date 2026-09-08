@@ -2171,13 +2171,16 @@
 <p>When <code>NetworkMock</code> is registered via <code>rememberModules</code>, the plugin resolves its repositories automatically:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// Register the NetworkMock module in your app</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rememberModules</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="n">module</span><span class="p">(</span><span class="n">NetworkMock</span><span class="p">(</span><span class="n">resourceLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Res</span><span class="p">.</span><span class="na">readBytes</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">}))</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">}</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1">// Install the plugin in your Ktor client — no configuration needed</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="kd">val</span><span class="w"> </span><span class="nv">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">HttpClient</span><span class="p">(</span><span class="n">OkHttp</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="n">install</span><span class="p">(</span><span class="n">NetworkMockPlugin</span><span class="p">)</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">}</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="n">module</span><span class="p">(</span><span class="n">NetworkMock</span><span class="p">(</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">        </span><span class="n">resourceLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Res</span><span class="p">.</span><span class="na">readBytes</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">},</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="n">specPaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span><span class="s">"files/networkmocks/specs/my-backend.json"</span><span class="p">)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="p">))</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">}</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="c1">// Install the plugin in your Ktor client — no configuration needed</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="kd">val</span><span class="w"> </span><span class="nv">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">HttpClient</span><span class="p">(</span><span class="n">OkHttp</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="n">install</span><span class="p">(</span><span class="n">NetworkMockPlugin</span><span class="p">)</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><code>rememberModules { }</code> must be called (and composed) before any request reaches the network layer.</p>
 <h3 id="explicit-repository-injection-for-tests-or-advanced-di">Explicit repository injection (for tests or advanced DI)</h3>
@@ -2193,14 +2196,14 @@
 <ol>
 <li>Calls <code>stateRepository.getState()</code> to read the current mock state.</li>
 <li>If <code>globalMockingEnabled</code> is <code>false</code> → sends the real request.</li>
-<li>Calls <code>mockRepository.findMatchingMock(host, path, method)</code>.</li>
+<li>Calls <code>mockRepository.findMatchingMock(host, path, method, queryParameters)</code>.</li>
 <li>If no match → sends the real request.</li>
-<li>If matched, reads the endpoint's <code>EndpointMockState</code>:</li>
+<li>If matched, reads the operation's <code>OperationMockState</code>:</li>
 <li><code>Network</code> or <code>null</code> → sends the real request.</li>
-<li><code>Mock(responseFile)</code> → loads the response file and returns a synthetic response.</li>
-<li>On any error (missing file, malformed name, exception) → falls back to the real network and logs the reason. <strong>The plugin never throws.</strong></li>
+<li><code>Mock(statusCode, exampleName)</code> → loads that declared response variant and returns a synthetic response.</li>
+<li>On any error (undeclared variant, missing file, exception) → falls back to the real network and logs the reason. <strong>The plugin never throws.</strong></li>
 </ol>
-<p>Mock responses are returned with HTTP/1.1 status, an empty header set, and the file contents as the body.</p>
+<p>Mock responses are returned with HTTP/1.1 status, an empty header set, and the response body as the content.</p>
 <h2 id="platform-actuals">Platform Actuals</h2>
 <ul>
 <li><strong>Android</strong>: Use <code>HttpClient(OkHttp)</code> as the engine.</li>

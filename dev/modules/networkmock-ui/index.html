@@ -2157,7 +2157,7 @@
 <p>The <code>devview-networkmock</code> module provides the Compose UI for the network mocking feature. It implements the <code>Module</code> interface and surfaces two navigation screens backed by <code>devview-networkmock-core</code>.</p>
 <h2 id="screens">Screens</h2>
 <h3 id="main-screen-endpoint-list">Main screen — endpoint list</h3>
-<p>The main screen shows a global mock toggle at the top, followed by a scrollable tab row with one tab per API group + environment combination (e.g. "My Backend – Staging"). Each tab lists the endpoints for that group/environment with their current mock state.</p>
+<p>The main screen shows a global mock toggle at the top, followed by a scrollable tab row with one tab per OpenAPI spec (e.g. "My Backend"). Each tab lists every operation declared in that spec with its current mock state — there is no environment axis, so a spec spanning multiple API versions shows all of its operations side by side in one tab.</p>
 <ul>
 <li><strong>Global toggle</strong>: enables or disables all mocking globally. When off, all requests go to the real network regardless of per-endpoint settings.</li>
 <li><strong>Endpoint cards</strong>: show the endpoint name, HTTP method, path, and current state chip (Network / HTTP status code). Tap an endpoint to open its detail screen.</li>
@@ -2173,11 +2173,12 @@
 <h2 id="registration">Registration</h2>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rememberModules</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">module</span><span class="p">(</span><span class="n">NetworkMock</span><span class="p">(</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">        </span><span class="n">resourceLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Res</span><span class="p">.</span><span class="na">readBytes</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="p">))</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">}</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">        </span><span class="n">resourceLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Res</span><span class="p">.</span><span class="na">readBytes</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">},</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">        </span><span class="n">specPaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span><span class="s">"files/networkmocks/specs/my-backend.json"</span><span class="p">)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="p">))</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">}</span>
 </span></code></pre></div>
-<p><code>configPath</code> defaults to <code>"files/networkmocks/mocks.json"</code>. Pass a custom value if your config lives elsewhere.</p>
+<p><code>specPaths</code> lists every OpenAPI spec file to load — one per API group. There is no default; pass every spec your app should mock.</p>
 <h2 id="related-modules">Related Modules</h2>
 <ul>
 <li><a href="../networkmock-core/">NetworkMock Core</a>: Shared config and state.</li>

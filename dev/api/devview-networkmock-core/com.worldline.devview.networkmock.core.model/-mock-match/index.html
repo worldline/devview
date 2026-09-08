@@ -93,24 +93,24 @@
   <div class="breadcrumbs"><a href="../../index.html">devview-networkmock-core</a><span class="delimiter">/</span><a href="../index.html">com.worldline.devview.networkmock.core.model</a><span class="delimiter">/</span><span class="current">MockMatch</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Mock</span><wbr><span><span>Match</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/compose/runtime/Immutable.html"><span class="token annotation builtin">Immutable</span></a></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">MockMatch</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>key<span class="token operator">: </span><a href="../-endpoint-key/index.html">EndpointKey</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>config<span class="token operator">: </span><a href="../-endpoint-config/index.html">EndpointConfig</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>delayMs<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div><p class="paragraph">Represents a matched mock configuration for an incoming HTTP request.</p><p class="paragraph">When the network mock plugin intercepts a request, it uses the active environment, the request host, path, and method to find a matching endpoint configuration. If found, this data class contains the necessary information to locate and load the appropriate mock response.</p><h2 class="">Matching Process</h2><ol><li><p class="paragraph">Iterate over all <a href="../-api-group-config/index.html">ApiGroupConfig</a> entries in the configuration</p></li><li><p class="paragraph">For each group, find the <a href="../-environment-config/index.html">EnvironmentConfig</a> whose hostname extracted from     <a href="../-environment-config/url.html">EnvironmentConfig.url</a> matches the incoming request host</p></li><li><p class="paragraph">Build the effective endpoint list for this group+environment (shared + overrides + additions)</p></li><li><p class="paragraph">Find the <a href="../-endpoint-config/index.html">EndpointConfig</a> matching the request path and method</p></li><li><p class="paragraph">Return a <a href="index.html">MockMatch</a> with the resolved identifiers</p></li></ol><h2 class="">Usage in Plugin</h2><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">val mockMatch = mockRepository.findMatchingMock(<br>    host = "staging.api.example.com",<br>    path = "/v1/users/123",<br>    method = "GET"<br>)<br><br>mockMatch?.let { match -&gt;<br>    val endpointState = currentState.endpointStates[match.key.compositeKey]<br>    // ...<br>}</code></pre><span class="copy-tooltip"><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div><span class="copy-icon"></span></span></div><h4 class="tableheader">See also</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-mock-configuration/index.html"><span>Mock</span><wbr><span><span>Configuration</span></span></a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-api-group-config/index.html"><span>Api</span><wbr><span>Group</span><wbr><span><span>Config</span></span></a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-environment-config/index.html"><span>Environment</span><wbr><span><span>Config</span></span></a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-endpoint-config/index.html"><span>Endpoint</span><wbr><span><span>Config</span></span></a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-endpoint-key/index.html"><span>Endpoint</span><wbr><span><span>Key</span></span></a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../../com.worldline.devview.networkmock.core.repository/-mock-config-repository/find-matching-mock.html"><span>Mock</span><wbr><span>Config</span><wbr><span>Repository.</span><wbr><span>find</span><wbr><span>Matching</span><wbr><span><span>Mock</span></span></a></div></span></div><div></div></div></div></div></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/compose/runtime/Immutable.html"><span class="token annotation builtin">Immutable</span></a></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">MockMatch</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>key<span class="token operator">: </span><a href="../-operation-key/index.html">OperationKey</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>config<span class="token operator">: </span><a href="../-operation/index.html">Operation</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>delayMs<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div><p class="paragraph">A matched operation for an incoming HTTP request, returned by <a href="../../com.worldline.devview.networkmock.core.repository/-mock-config-repository/find-matching-mock.html">com.worldline.devview.networkmock.core.repository.MockConfigRepository.findMatchingMock</a>.</p><h4 class="tableheader">See also</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-operation-key/index.html"><span>Operation</span><wbr><span><span>Key</span></span></a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-operation/index.html"><span><span>Operation</span></span></a></div></span></div><div></div></div></div></div></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="tableheader">Constructors</h2>
-        <div class="table"><a data-name="-313104869%2FConstructors%2F-715053934" anchor-label="MockMatch" id="-313104869%2FConstructors%2F-715053934" data-filterable-set=":devview-networkmock-core/commonMain"></a>
+        <div class="table"><a data-name="1892555685%2FConstructors%2F-715053934" anchor-label="MockMatch" id="1892555685%2FConstructors%2F-715053934" data-filterable-set=":devview-networkmock-core/commonMain"></a>
           <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-mock-match.html"><span>Mock</span><wbr><span><span>Match</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-313104869%2FConstructors%2F-715053934"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1892555685%2FConstructors%2F-715053934"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">key<span class="token operator">: </span><a href="../-endpoint-key/index.html">EndpointKey</a><span class="token punctuation">, </span></span><span class="parameter ">config<span class="token operator">: </span><a href="../-endpoint-config/index.html">EndpointConfig</a><span class="token punctuation">, </span></span><span class="parameter ">delayMs<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">key<span class="token operator">: </span><a href="../-operation-key/index.html">OperationKey</a><span class="token punctuation">, </span></span><span class="parameter ">config<span class="token operator">: </span><a href="../-operation/index.html">Operation</a><span class="token punctuation">, </span></span><span class="parameter ">delayMs<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -129,7 +129,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="config.html">config</a><span class="token operator">: </span><a href="../-endpoint-config/index.html">EndpointConfig</a></div><div class="brief "><p class="paragraph">The complete effective endpoint configuration after override resolution</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="config.html">config</a><span class="token operator">: </span><a href="../-operation/index.html">Operation</a></div><div class="brief "><p class="paragraph">The matched <a href="../-operation/index.html">Operation</a></p></div></div></div>
                 </div>
               </div>
             </div>
@@ -144,52 +144,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="delay-ms.html">delayMs</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-271075261%2FProperties%2F-715053934" anchor-label="endpointId" id="-271075261%2FProperties%2F-715053934" data-filterable-set=":devview-networkmock-core/commonMain"></a>
-          <div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="endpoint-id.html"><span>endpoint</span><wbr><span><span>Id</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-271075261%2FProperties%2F-715053934"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="endpoint-id.html">endpointId</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The <a href="../-endpoint-config/id.html">EndpointConfig.id</a> of the matched endpoint. Convenience accessor for <a href="../-endpoint-key/endpoint-id.html">EndpointKey.endpointId</a>.</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1903965465%2FProperties%2F-715053934" anchor-label="environmentId" id="1903965465%2FProperties%2F-715053934" data-filterable-set=":devview-networkmock-core/commonMain"></a>
-          <div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="environment-id.html"><span>environment</span><wbr><span><span>Id</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1903965465%2FProperties%2F-715053934"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="environment-id.html">environmentId</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The <a href="../-environment-config/id.html">EnvironmentConfig.id</a> of the matched environment. Convenience accessor for <a href="../-endpoint-key/environment-id.html">EndpointKey.environmentId</a>.</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="572585133%2FProperties%2F-715053934" anchor-label="groupId" id="572585133%2FProperties%2F-715053934" data-filterable-set=":devview-networkmock-core/commonMain"></a>
-          <div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="group-id.html"><span>group</span><wbr><span><span>Id</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="572585133%2FProperties%2F-715053934"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="group-id.html">groupId</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The <a href="../-api-group-config/id.html">ApiGroupConfig.id</a> of the matched group. Convenience accessor for <a href="../-endpoint-key/group-id.html">EndpointKey.groupId</a>.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="delay-ms.html">delayMs</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">The resolved response delay for this match — <a href="../-operation/delay-ms.html">Operation.delayMs</a> falling back to the owning <a href="../-api-spec/delay-ms.html">ApiSpec.delayMs</a>, or <code class="lang-kotlin">null</code> if neither declares one</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -204,7 +159,37 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="key.html">key</a><span class="token operator">: </span><a href="../-endpoint-key/index.html">EndpointKey</a></div><div class="brief "><p class="paragraph">The <a href="../-endpoint-key/index.html">EndpointKey</a> carrying the matched group, environment, and endpoint identifiers</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="key.html">key</a><span class="token operator">: </span><a href="../-operation-key/index.html">OperationKey</a></div><div class="brief "><p class="paragraph">The <a href="../-operation-key/index.html">OperationKey</a> carrying the matched spec and operation identifiers</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1104093125%2FProperties%2F-715053934" anchor-label="operationId" id="1104093125%2FProperties%2F-715053934" data-filterable-set=":devview-networkmock-core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="operation-id.html"><span>operation</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1104093125%2FProperties%2F-715053934"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="operation-id.html">operationId</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The <a href="../-operation/operation-id.html">Operation.operationId</a> of the match. Convenience accessor for <a href="../-operation-key/operation-id.html">OperationKey.operationId</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="488321373%2FProperties%2F-715053934" anchor-label="specId" id="488321373%2FProperties%2F-715053934" data-filterable-set=":devview-networkmock-core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":devview-networkmock-core/commonMain" data-filterable-set=":devview-networkmock-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="spec-id.html"><span>spec</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="488321373%2FProperties%2F-715053934"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="spec-id.html">specId</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The <a href="../-api-spec/id.html">ApiSpec.id</a> of the matched spec. Convenience accessor for <a href="../-operation-key/spec-id.html">OperationKey.specId</a>.</p></div></div></div>
                 </div>
               </div>
             </div>
