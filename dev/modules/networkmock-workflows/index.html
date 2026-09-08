@@ -2285,7 +2285,7 @@
 </span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">  </span><span class="p">}</span>
 </span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>Both operations appear in the same tab. The engine mocks whichever path the app actually calls — it does not rewrite or force a version (that is a deliberately separate, deferred feature).</p>
+<p>Both operations appear in the same tab, each labeled with a version chip (<code>v1</code>/<code>v2</code>, extracted from the <code>/v{n}/</code> path segment) that the tab's version filter can narrow on. The engine mocks whichever path the app actually calls — it does not rewrite or force a version (that is a deliberately separate, deferred feature).</p>
 <h2 id="simulating-response-delay">Simulating response delay</h2>
 <p>Set <code>x-devview.delayMs</code> at the document root for a spec-wide default, and/or per operation to override it:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">x-devview</span><span class="p">:</span>

@@ -1093,6 +1093,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#version-tags" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Version Tags
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#request-matching" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2272,6 +2283,14 @@
 - <strong><code>parameters</code> with <code>in: query</code></strong> → a literal <code>example</code> value on a query parameter becomes a required match for that operation (e.g. <code>listUsers</code> only matches requests carrying <code>?type=user</code>).
 - <strong><code>x-devview.delayMs</code></strong> → simulated response delay, at the document root (spec-wide default) and/or per operation (overrides the default). See <a href="#x-devview-extension">x-devview extension</a> below.
 - <strong><code>{param}</code> placeholders</strong>: Path segments like <code>{userId}</code> match any value during request matching.</p>
+<h2 id="version-tags">Version Tags</h2>
+<p><code>Operation.version</code> is a display-only tag extracted from a <code>/v{n}/</code> segment in the operation's
+path (e.g. <code>/api/v2/x</code> → <code>"v2"</code>, <code>/health</code> → <code>null</code>). It drives the version chip and filter in
+the NetworkMock UI — see <a href="../networkmock-ui/">NetworkMock UI</a>.</p>
+<p>This is purely a UI label: request matching is unaffected, so <code>/api/v1/x</code> and <code>/api/v2/x</code>
+remain two distinct operations matched only by path, method, and query params (see
+<a href="#request-matching">Request Matching</a> below). The extraction pattern is not currently
+configurable.</p>
 <h2 id="request-matching">Request Matching</h2>
 <p><code>MockConfigRepository.findMatchingMock(host, path, method, queryParameters)</code> resolves a mock in three steps:</p>
 <ol>
@@ -2283,6 +2302,7 @@
 <h2 id="response-variant-discovery">Response Variant Discovery</h2>
 <p>Response bodies live wherever <code>externalValue</code> points them — the sample app uses <code>composeResources/files/networkmocks/responses/{specId}/{operationId}/{operationId}-{status}[-{suffix}].json</code>, but this is only a convention, not a requirement.</p>
 <p>Discovery reads exactly the <code>(statusCode, exampleName)</code> pairs declared in the spec — <strong>there is no probing</strong> of status codes or file-name suffixes. If a variant isn't declared, it doesn't exist.</p>
+<p><code>discoverResponseFiles</code>/<code>loadMockResponse</code> read and decode response body files — this is real I/O, on top of the one-time spec parse. <code>MockConfigRepository</code> doesn't call either eagerly; <code>devview-networkmock</code>'s main operation list is built from parsed spec metadata alone (<code>OperationDescriptor</code> carries only <code>key</code> and <code>config</code>, no responses), and a given operation's variants are only discovered when its detail screen actually opens. See <a href="../networkmock-ui/">NetworkMock UI</a>.</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">MockConfigRepository</span><span class="p">(</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">specPaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span><span class="s">"files/networkmocks/specs/my-backend.json"</span><span class="p">),</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="n">resourceLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Res</span><span class="p">.</span><span class="na">readBytes</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
