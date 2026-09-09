@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Kermit-based logging into the same view, closing the one remaining gap
   (`NSLog`/`os_log` on iOS with no debugger attached). Log-level colors are configurable
   via a `LocalLogColorScheme` CompositionLocal. (`devview-consolelogger`)
+- TimeCapsule rows now show a per-state change summary (e.g. `count 3 → 4`) derived from a
+  `key=value`-shaped label, expandable to reveal the full label with changed values
+  highlighted, plus a wall-clock timestamp alongside the existing delta pill. The screen now
+  shows a header naming the recorded owner. (`devview-timecapsule`)
 
 ### Changed
 - **Breaking:** `devview-networkmock-core` now parses OpenAPI 3.x documents (JSON, and YAML
@@ -56,6 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   body on app start. Response variants are now only loaded when an operation's detail screen
   actually opens (`NetworkMockEndpointUiState.Content.responses`). (`devview-networkmock-core`,
   `devview-networkmock`)
+- `TimeCapsuleEffect` gains a `subtitle` parameter, inserted between `label` and `maxEntries`.
+  Callers passing `maxEntries` positionally must switch to a named argument.
+  (`devview-timecapsule`)
 
 ## [0.1.5] - 2026-09-08
 

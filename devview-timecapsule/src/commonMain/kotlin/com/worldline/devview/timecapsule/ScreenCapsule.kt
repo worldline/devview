@@ -21,12 +21,22 @@ internal data class Recorded<out S : Any>(
 internal class ScreenCapsule<S : Any>(
     private val owner: TimeCapsuleOwner<S>,
     private val label: (S) -> String,
-    private val maxEntries: Int
+    private val maxEntries: Int,
+    subtitleOverride: String? = null
 ) {
     private val recordedEntries = mutableStateListOf<Recorded<S>>()
     private var nextId = 0L
 
     val entries: List<Recorded<S>> get() = recordedEntries
+
+    /**
+     * Identifies which screen is recording, shown as a header above the timeline.
+     *
+     * ponytail: R8 would obfuscate this in a minified build. DevView is a debug-only overlay
+     * so that combination shouldn't arise; integrators who hit it pass `subtitleOverride`
+     * explicitly.
+     */
+    val subtitle: String? = subtitleOverride ?: owner::class.simpleName
 
     fun record(state: S) {
         if (recordedEntries.size == maxEntries) {

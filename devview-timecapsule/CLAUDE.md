@@ -15,7 +15,7 @@ disk — the history is in-memory only, for the lifetime of the recording compos
 | Symbol | Kind | Description |
 |---|---|---|
 | `TimeCapsuleOwner<S>` | interface | Contract implemented by a screen's state holder: `state: StateFlow<S>` and `fun restoreState(state: S)` |
-| `TimeCapsuleEffect(owner, label, maxEntries)` | `@Composable` | Records `owner.state` for as long as it stays in composition; registers/unregisters with `TimeCapsule` via `DisposableEffect` |
+| `TimeCapsuleEffect(owner, label, subtitle, maxEntries)` | `@Composable` | Records `owner.state` for as long as it stays in composition; registers/unregisters with `TimeCapsule` via `DisposableEffect`. `subtitle` names the recorded screen in the Time Capsule header, defaulting to `owner`'s class name |
 | `TimeCapsule` | `object : Module` | Module entry point; registered with no arguments, like `FeatureFlip` |
 | `TimeCapsule.DEFAULT_MAX_ENTRIES` | `const Int` | Default retention (50) when `TimeCapsuleEffect` doesn't specify `maxEntries` |
 | `TimeCapsuleDestination.Main` | `@Serializable data object` | Only navigation destination; title "Time Capsule" |
@@ -27,8 +27,8 @@ all screen recording and retention logic lives there, but integrators only ever 
 ## Internal Architecture
 
 ```
-TimeCapsuleEffect(owner, label, maxEntries)
-    ├─ remember { ScreenCapsule(owner, label, maxEntries) }
+TimeCapsuleEffect(owner, label, subtitle, maxEntries)
+    ├─ remember { ScreenCapsule(owner, label, maxEntries, subtitleOverride = subtitle) }
     ├─ DisposableEffect: TimeCapsule.register(capsule) → onDispose { TimeCapsule.unregister(capsule) }
     └─ LaunchedEffect: owner.state.collect(capsule::record)
 
@@ -40,6 +40,7 @@ TimeCapsule (object : Module)
 
 ScreenCapsule<S>
     ├─ recordedEntries: SnapshotStateList<Recorded<S>>
+    ├─ subtitle: String? = subtitleOverride ?: owner::class.simpleName
     ├─ record(state): appends, drops oldest at maxEntries
     ├─ restore(id): owner.restoreState(entry.state) — no cast, entry is typed S
     └─ clear()
@@ -70,9 +71,24 @@ registry is a list instead: the outgoing capsule is removed from wherever it sit
   registry is read directly from the object inside `TimeCapsuleScreen`. There's exactly
   one consumer (the module's own screen) and no host-app use case for reading the registry
   elsewhere, so the extra indirection isn't justified here.
-- **Row delta, not wall-clock time.** `TimeCapsuleRow` shows the time elapsed since the
-  previous entry (`+120ms`), not an absolute timestamp — more useful for a state timeline
-  and avoids a date-formatting dependency.
+- **Row shows both a delta and a wall-clock timestamp.** `TimeCapsuleRow` shows the time
+  elapsed since the previous entry as a pill (`+120ms`, or `initial` for the oldest entry)
+  and the wall-clock time (`HH:mm:ss`, via `kotlinx.datetime` — this module's only consumer
+  of that dependency). They're rendered as visually separate elements (timestamp left, pill
+  right) rather than joined with `·`, which read ambiguously as fractional seconds
+  (`13:12:07 · +120ms` looked like `13:12:07.120`).
+- **The row's headline is a change summary, not the raw label.** `StateDiff.kt` parses a
+  `key=value`-shaped label (what `toString()` produces on a data class) and diffs it against
+  the previous entry's label, so the row reads `count 3 → 4` instead of the full
+  `CounterState(count=4, ...)`. A label with no parseable `key=value` pairs falls back to
+  showing itself verbatim, unchanged from the original behavior. Expanding a row reveals the
+  full label below a divider, with the changed values highlighted — this is also the only way
+  to read a label that's been truncated at two lines.
+- **Header subtitle defaults to the owner's class name.** `TimeCapsuleEffect`'s `subtitle`
+  parameter is shown as "Recording {subtitle}" above the timeline, so a tester can confirm
+  which screen they're looking at. Defaulting to `owner::class.simpleName` (rather than
+  `null`) means most integrators get this for free; `simpleName` is `null` for an anonymous
+  class, which integrators must override explicitly in that case.
 
 ## Platform-Specific Code
 

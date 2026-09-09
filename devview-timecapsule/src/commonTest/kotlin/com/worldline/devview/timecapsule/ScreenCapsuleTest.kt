@@ -78,6 +78,29 @@ internal class ScreenCapsuleTest {
         capsule.entries.shouldBeEmpty()
     }
 
+    @Test
+    fun `subtitle defaults to the owner's class name`() {
+        val capsule = ScreenCapsule(
+            owner = FakeOwner(initial = CounterState(count = 0)),
+            label = { it.count.toString() },
+            maxEntries = 10
+        )
+
+        capsule.subtitle shouldBe "FakeOwner"
+    }
+
+    @Test
+    fun `subtitle override wins over the owner's class name`() {
+        val capsule = ScreenCapsule(
+            owner = FakeOwner(initial = CounterState(count = 0)),
+            label = { it.count.toString() },
+            maxEntries = 10,
+            subtitleOverride = "Counter screen"
+        )
+
+        capsule.subtitle shouldBe "Counter screen"
+    }
+
     private data class CounterState(val count: Int)
 
     private class FakeOwner(initial: CounterState) : TimeCapsuleOwner<CounterState> {

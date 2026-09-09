@@ -28,6 +28,9 @@ import androidx.compose.runtime.remember
  * @param owner The screen's state holder, typically a `ViewModel`.
  * @param label Produces the one-line description shown for each recorded entry. Defaults to
  *   `state.toString()`.
+ * @param subtitle Identifies the recorded screen in the Time Capsule header (e.g. `"Recording
+ *   CounterViewModel"`). Defaults to `owner`'s class name, which is `null` for an anonymous
+ *   class — pass this explicitly in that case.
  * @param maxEntries Maximum number of retained entries; the oldest is dropped once reached.
  *
  * @see TimeCapsuleOwner
@@ -37,10 +40,16 @@ import androidx.compose.runtime.remember
 public fun <S : Any> TimeCapsuleEffect(
     owner: TimeCapsuleOwner<S>,
     label: (S) -> String = { it.toString() },
+    subtitle: String? = null,
     maxEntries: Int = TimeCapsule.DEFAULT_MAX_ENTRIES
 ) {
     val capsule = remember(key1 = owner) {
-        ScreenCapsule(owner = owner, label = label, maxEntries = maxEntries)
+        ScreenCapsule(
+            owner = owner,
+            label = label,
+            maxEntries = maxEntries,
+            subtitleOverride = subtitle
+        )
     }
 
     DisposableEffect(key1 = capsule) {

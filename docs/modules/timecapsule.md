@@ -47,13 +47,22 @@ Call once per screen, inside the screen's top-level composable:
 public fun <S : Any> TimeCapsuleEffect(
     owner: TimeCapsuleOwner<S>,
     label: (S) -> String = { it.toString() },
+    subtitle: String? = null,
     maxEntries: Int = TimeCapsule.DEFAULT_MAX_ENTRIES
 )
 ```
 
 `label` produces the one-line description shown for each recorded entry — defaults to
-`state.toString()`. `maxEntries` bounds retention; the oldest entry is dropped once
-reached.
+`state.toString()`. When a label is shaped like `key=value, key=value` (what `toString()`
+produces on a data class), the timeline shows a change summary against the previous entry
+instead — e.g. `count 3 → 4` — and expanding a row reveals the full label with changed
+values highlighted. A label with no parseable `key=value` pairs is shown verbatim, exactly
+as before.
+
+`subtitle` names the recorded screen in the Time Capsule header ("Recording {subtitle}"),
+so a tester can confirm which screen they're looking at. Defaults to `owner`'s class name;
+pass this explicitly if `owner` is an anonymous class, where the class name is unavailable.
+`maxEntries` bounds retention; the oldest entry is dropped once reached.
 
 ### `TimeCapsule`
 
@@ -87,16 +96,19 @@ class CounterViewModel : ViewModel(), TimeCapsuleOwner<CounterState> {
 fun CounterScreen(viewModel: CounterViewModel) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    TimeCapsuleEffect(owner = viewModel, label = { "Count = ${it.count}" })
+    TimeCapsuleEffect(owner = viewModel)
 
     // ...screen content
 }
 ```
 
 With this wired up, incrementing the counter records a new entry on every change. Opening
-DevView → Time Capsule shows the history newest-first; tapping **Restore** on any entry
-calls `restoreState` with that entry's value, and the running screen reflects it
-immediately. Navigating away from `CounterScreen` and back starts a fresh, empty history.
+DevView → Time Capsule shows a "Recording CounterViewModel" header, then the history
+newest-first: `CounterState`'s default `toString()`-shaped label lets each row show a
+change summary (`count 3 → 4`) instead of the full state, expandable to see the rest.
+Tapping **Restore** on any entry calls `restoreState` with that entry's value, and the
+running screen reflects it immediately. Navigating away from `CounterScreen` and back
+starts a fresh, empty history.
 
 ## Sample
 
