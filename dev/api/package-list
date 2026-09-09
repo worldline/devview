@@ -8,6 +8,10 @@ com.worldline.devview.internal.components
 module:devview-analytics
 com.worldline.devview.analytics
 com.worldline.devview.analytics.model
+module:devview-consolelogger
+com.worldline.devview.consolelogger
+com.worldline.devview.consolelogger.model
+com.worldline.devview.consolelogger.theme
 module:devview-featureflip
 com.worldline.devview.featureflip
 com.worldline.devview.featureflip.model

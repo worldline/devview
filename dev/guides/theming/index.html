@@ -284,6 +284,8 @@
       
         
       
+        
+      
     
     
     
@@ -786,6 +788,8 @@
       
         
       
+        
+      
     
     
     
@@ -899,6 +903,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../modules/consolelogger/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Console Logger
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../modules/timecapsule/" class="md-nav__link">
         
   
@@ -951,10 +982,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_6" >
         
           
-          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_6" id="__nav_3_6_label" tabindex="0">
             
   
   
@@ -971,8 +1002,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1462,6 +1493,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#console-log-level-colors" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Console Log Level Colors
+      </span>
+    </span>
+  </a>
   
 </li>
       
@@ -2261,13 +2303,41 @@ module's <code>Section</code> palette colors. Each section has its own brand-pal
 </tbody>
 </table>
 <p>You only need to override <code>containerColor</code>/<code>contentColor</code> if your module requires a color outside its section's default.</p>
+<h2 id="console-log-level-colors">Console Log Level Colors</h2>
+<p>Unlike most of DevView, the Console Logger module's per-<a href="../../modules/consolelogger/"><code>LogLevel</code></a>
+colors (a debug teal, a warning yellow, an error red, etc.) are <strong>not</strong> derived from
+<code>MaterialTheme.colorScheme</code> — they are two complete, hand-tuned palettes (<code>LogColorScheme.Light</code>
+and <code>LogColorScheme.Dark</code>) chosen for contrast and consistency regardless of your app's brand
+colors.</p>
+<p>Provide the palette where you already configure your app's <code>MaterialTheme</code>, so it switches
+alongside your light/dark theme:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">MaterialTheme</span><span class="p">(</span><span class="n">colorScheme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">darkTheme</span><span class="p">)</span><span class="w"> </span><span class="n">darkColorScheme</span><span class="p">()</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">lightColorScheme</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">CompositionLocalProvider</span><span class="p">(</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">        </span><span class="n">LocalLogColorScheme</span><span class="w"> </span><span class="n">provides</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">darkTheme</span><span class="p">)</span><span class="w"> </span><span class="n">LogColorScheme</span><span class="p">.</span><span class="na">Dark</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">LogColorScheme</span><span class="p">.</span><span class="na">Light</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">        </span><span class="c1">// ... DevView content ...</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>Override individual levels with <code>copy()</code>:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">LogColorScheme</span><span class="p">.</span><span class="na">Dark</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LogColorScheme</span><span class="p">.</span><span class="na">Dark</span><span class="p">.</span><span class="na">error</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Color</span><span class="p">.</span><span class="na">Magenta</span><span class="p">)</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="p">)</span>
+</span></code></pre></div>
+<p><strong>If <code>LocalLogColorScheme</code> is never provided</strong>, the console logs a one-time warning (tag
+<code>DevViewConsole</code>) and falls back to <code>LogColorScheme.Light</code>/<code>LogColorScheme.Dark</code> guessed from
+the ambient <code>MaterialTheme</code>'s surface luminance — usually correct, but the warning is your cue
+to wire up <code>LocalLogColorScheme</code> explicitly. The fallback deliberately does not use
+<code>isSystemInDarkTheme()</code>, since DevView's theme may be driven by something other than the
+system setting (e.g. a feature flag), and the theme actually in effect is the only reliable
+signal.</p>
 <h2 id="customising-typography">Customising Typography</h2>
 <p>Use your app's typography settings in custom modules:
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">Text</span><span class="p">(</span><span class="s">"DevView"</span><span class="p">,</span><span class="w"> </span><span class="n">style</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MaterialTheme</span><span class="p">.</span><span class="na">typography</span><span class="p">.</span><span class="na">titleLarge</span><span class="p">)</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">Text</span><span class="p">(</span><span class="s">"DevView"</span><span class="p">,</span><span class="w"> </span><span class="n">style</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MaterialTheme</span><span class="p">.</span><span class="na">typography</span><span class="p">.</span><span class="na">titleLarge</span><span class="p">)</span>
 </span></code></pre></div></p>
 <h2 id="customising-icons">Customising Icons</h2>
 <p>Use Compose icons or your own vector assets:
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">icon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Icons</span><span class="p">.</span><span class="na">Default</span><span class="p">.</span><span class="na">Build</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">override</span><span class="w"> </span><span class="kd">val</span><span class="w"> </span><span class="nv">icon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Icons</span><span class="p">.</span><span class="na">Default</span><span class="p">.</span><span class="na">Build</span>
 </span></code></pre></div></p>
 <h2 id="best-practices">Best Practices</h2>
 <ul>

@@ -284,6 +284,8 @@
       
         
       
+        
+      
     
     
     
@@ -786,6 +788,8 @@
       
         
       
+        
+      
     
     
     
@@ -899,6 +903,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../modules/consolelogger/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Console Logger
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../modules/timecapsule/" class="md-nav__link">
         
   
@@ -951,10 +982,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_6" >
         
           
-          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_6" id="__nav_3_6_label" tabindex="0">
             
   
   
@@ -971,8 +1002,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2384,6 +2415,13 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
   body on app start. Response variants are now only loaded when an operation's detail screen
   actually opens (<code>NetworkMockEndpointUiState.Content.responses</code>). (<code>devview-networkmock-core</code>,
   <code>devview-networkmock</code>)</li>
+<li><code>devview-consolelogger</code> module: displays the app's native console output (logcat on
+  Android, a stdout/stderr redirect on iOS) inside the DevView overlay, with per-level
+  filter chips, a text filter, and auto-follow. Capture works on an untethered device
+  (no debugger required) on both platforms; an optional <code>DevViewLogWriter</code> routes
+  Kermit-based logging into the same view, closing the one remaining gap
+  (<code>NSLog</code>/<code>os_log</code> on iOS with no debugger attached). Log-level colors are configurable
+  via a <code>LocalLogColorScheme</code> CompositionLocal. (<code>devview-consolelogger</code>)</li>
 </ul>
 <h2 id="015-2026-09-08"><a href="https://github.com/worldline/DevView/compare/v0.1.4...v0.1.5">0.1.5</a> - 2026-09-08</h2>
 <h3 id="added_1">Added</h3>
