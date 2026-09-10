@@ -24,6 +24,7 @@ kotlin {
 
                 api(libs.kotlinx.collections.immutable)
                 api(projects.devviewUtils)
+                implementation(libs.jetbrains.androidx.lifecycle.viewmodel.navigation3)
             }
         }
     }
