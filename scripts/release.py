@@ -8,7 +8,7 @@ import subprocess
 from pathlib import Path
 from datetime import date
 
-GRADLEW = "gradlew.bat" if os.name == "nt" else "./gradlew"
+GRADLEW = ".\\gradlew.bat" if os.name == "nt" else "./gradlew"
 
 
 def run(cmd: list[str], check: bool = True) -> None:
