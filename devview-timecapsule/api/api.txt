@@ -24,7 +24,7 @@ package com.worldline.devview.timecapsule {
   }
 
   public final class TimeCapsuleEffectKt {
-    method @KotlinOnly @androidx.compose.runtime.Composable public static <S> void TimeCapsuleEffect(com.worldline.devview.timecapsule.TimeCapsuleOwner<S> owner, optional kotlin.jvm.functions.Function1<S,java.lang.String> label, optional int maxEntries);
+    method @KotlinOnly @androidx.compose.runtime.Composable public static <S> void TimeCapsuleEffect(com.worldline.devview.timecapsule.TimeCapsuleOwner<S> owner, optional kotlin.jvm.functions.Function1<S,java.lang.String> label, optional String? subtitle, optional int maxEntries);
   }
 
   public interface TimeCapsuleOwner<S> {

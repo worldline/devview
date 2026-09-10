@@ -27,7 +27,7 @@ internal fun CounterScreen(modifier: Modifier = Modifier) {
     val viewModel = remember { CounterViewModel() }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    TimeCapsuleEffect(owner = viewModel, label = { it.label })
+    TimeCapsuleEffect(owner = viewModel)
 
     Row(
         modifier = modifier,

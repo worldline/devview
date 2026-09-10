@@ -21,6 +21,7 @@ kotlin {
                 api(projects.devview)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.collections.immutable)
+                implementation(libs.kotlinx.datetime)
             }
         }
     }
