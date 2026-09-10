@@ -2258,12 +2258,20 @@ observe and restore its state:</p>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kd">public</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="o">&lt;</span><span class="n">S</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">TimeCapsuleEffect</span><span class="p">(</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="n">owner</span><span class="p">:</span><span class="w"> </span><span class="n">TimeCapsuleOwner</span><span class="o">&lt;</span><span class="n">S</span><span class="o">&gt;</span><span class="p">,</span>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="n">label</span><span class="p">:</span><span class="w"> </span><span class="p">(</span><span class="n">S</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">it</span><span class="p">.</span><span class="na">toString</span><span class="p">()</span><span class="w"> </span><span class="p">},</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="n">maxEntries</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TimeCapsule</span><span class="p">.</span><span class="na">DEFAULT_MAX_ENTRIES</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="p">)</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="n">subtitle</span><span class="p">:</span><span class="w"> </span><span class="kt">String?</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="n">maxEntries</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TimeCapsule</span><span class="p">.</span><span class="na">DEFAULT_MAX_ENTRIES</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">)</span>
 </span></code></pre></div>
 <p><code>label</code> produces the one-line description shown for each recorded entry — defaults to
-<code>state.toString()</code>. <code>maxEntries</code> bounds retention; the oldest entry is dropped once
-reached.</p>
+<code>state.toString()</code>. When a label is shaped like <code>key=value, key=value</code> (what <code>toString()</code>
+produces on a data class), the timeline shows a change summary against the previous entry
+instead — e.g. <code>count 3 → 4</code> — and expanding a row reveals the full label with changed
+values highlighted. A label with no parseable <code>key=value</code> pairs is shown verbatim, exactly
+as before.</p>
+<p><code>subtitle</code> names the recorded screen in the Time Capsule header ("Recording {subtitle}"),
+so a tester can confirm which screen they're looking at. Defaults to <code>owner</code>'s class name;
+pass this explicitly if <code>owner</code> is an anonymous class, where the class name is unavailable.
+<code>maxEntries</code> bounds retention; the oldest entry is dropped once reached.</p>
 <h3 id="timecapsule"><code>TimeCapsule</code></h3>
 <p>The DevView module. Registered with no arguments, like <code>FeatureFlip</code>:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rememberModules</span><span class="w"> </span><span class="p">{</span>
@@ -2290,15 +2298,18 @@ reached.</p>
 </span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">CounterScreen</span><span class="p">(</span><span class="n">viewModel</span><span class="p">:</span><span class="w"> </span><span class="n">CounterViewModel</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">state</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">viewModel</span><span class="p">.</span><span class="na">state</span><span class="p">.</span><span class="na">collectAsStateWithLifecycle</span><span class="p">()</span>
 </span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>
-</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">    </span><span class="n">TimeCapsuleEffect</span><span class="p">(</span><span class="n">owner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewModel</span><span class="p">,</span><span class="w"> </span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">"Count = </span><span class="si">${</span><span class="nb">it</span><span class="p">.</span><span class="na">count</span><span class="si">}</span><span class="s">"</span><span class="w"> </span><span class="p">})</span>
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">    </span><span class="n">TimeCapsuleEffect</span><span class="p">(</span><span class="n">owner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewModel</span><span class="p">)</span>
 </span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>
 </span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="w">    </span><span class="c1">// ...screen content</span>
 </span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>With this wired up, incrementing the counter records a new entry on every change. Opening
-DevView → Time Capsule shows the history newest-first; tapping <strong>Restore</strong> on any entry
-calls <code>restoreState</code> with that entry's value, and the running screen reflects it
-immediately. Navigating away from <code>CounterScreen</code> and back starts a fresh, empty history.</p>
+DevView → Time Capsule shows a "Recording CounterViewModel" header, then the history
+newest-first: <code>CounterState</code>'s default <code>toString()</code>-shaped label lets each row show a
+change summary (<code>count 3 → 4</code>) instead of the full state, expandable to see the rest.
+Tapping <strong>Restore</strong> on any entry calls <code>restoreState</code> with that entry's value, and the
+running screen reflects it immediately. Navigating away from <code>CounterScreen</code> and back
+starts a fresh, empty history.</p>
 <h2 id="sample">Sample</h2>
 <p>See <code>sample/shared/.../CounterScreen.kt</code> for a runnable end-to-end example, including a
 toggle that demonstrates the history resetting when the screen is disposed.</p>

@@ -2387,6 +2387,10 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
   Kermit-based logging into the same view, closing the one remaining gap
   (<code>NSLog</code>/<code>os_log</code> on iOS with no debugger attached). Log-level colors are configurable
   via a <code>LocalLogColorScheme</code> CompositionLocal. (<code>devview-consolelogger</code>)</li>
+<li>TimeCapsule rows now show a per-state change summary (e.g. <code>count 3 → 4</code>) derived from a
+  <code>key=value</code>-shaped label, expandable to reveal the full label with changed values
+  highlighted, plus a wall-clock timestamp alongside the existing delta pill. The screen now
+  shows a header naming the recorded owner. (<code>devview-timecapsule</code>)</li>
 </ul>
 <h3 id="changed">Changed</h3>
 <ul>
@@ -2422,6 +2426,9 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
   body on app start. Response variants are now only loaded when an operation's detail screen
   actually opens (<code>NetworkMockEndpointUiState.Content.responses</code>). (<code>devview-networkmock-core</code>,
   <code>devview-networkmock</code>)</li>
+<li><code>TimeCapsuleEffect</code> gains a <code>subtitle</code> parameter, inserted between <code>label</code> and <code>maxEntries</code>.
+  Callers passing <code>maxEntries</code> positionally must switch to a named argument.
+  (<code>devview-timecapsule</code>)</li>
 </ul>
 <h2 id="015-2026-09-08"><a href="https://github.com/worldline/DevView/compare/0.1.4...0.1.5">0.1.5</a> - 2026-09-08</h2>
 <h3 id="added_1">Added</h3>
