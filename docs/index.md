@@ -24,11 +24,25 @@
 
 ## What's New
 
-### v0.1.5
+### v0.2.0-alpha01
 
 **Added**
 
-- `devview-timecapsule` module: records the state history of the currently visible screen via `TimeCapsuleEffect`/`TimeCapsuleOwner`, and lets a developer restore any earlier state back into that screen from the DevView overlay. History resets automatically when the screen leaves composition.
+- `Operation.version`: a display-only version tag extracted from a `/v{n}/` path segment (e.g. `/api/v2/x` → `"v2"`), shown as a chip on each operation in the NetworkMock UI. Purely a UI label — request matching is unaffected. (`devview-networkmock-core`, `devview-networkmock`)
+- NetworkMock UI: a search field (filters by name, path, or operationId) and a per-tab version filter row, both client-side over already-loaded data. (`devview-networkmock`)
+- A [migration guide](guides/migrating-to-openapi.md) and a `scripts/mocks_json_to_openapi.py` conversion script for integrators upgrading from a pre-0.2.0 `mocks.json` config.
+- `devview-consolelogger` module: displays the app's native console output (logcat on Android, a stdout/stderr redirect on iOS) inside the DevView overlay, with per-level filter chips, a text filter, and auto-follow. Capture works on an untethered device (no debugger required) on both platforms; an optional `DevViewLogWriter` routes Kermit-based logging into the same view, closing the one remaining gap (`NSLog`/`os_log` on iOS with no debugger attached). Log-level colors are configurable via a `LocalLogColorScheme` CompositionLocal. (`devview-consolelogger`)
+- TimeCapsule rows now show a per-state change summary (e.g. `count 3 → 4`) derived from a `key=value`-shaped label, expandable to reveal the full label with changed values highlighted, plus a wall-clock timestamp alongside the existing delta pill. The screen now shows a header naming the recorded owner. (`devview-timecapsule`)
+
+**Changed**
+
+- **Breaking:** `devview-networkmock-core` now parses OpenAPI 3.x documents (JSON, and YAML on a best-effort basis) instead of the bespoke `mocks.json` format. One spec file is one API group — the environment axis is gone entirely; a group's request-matching hosts come from the spec's `servers[]` list, and an app talking to two hosts for the same API is simply two operations with different paths in one document. `NetworkMock(configPath: String)` is now `NetworkMock(specPaths: List<String>)`. See the [migration guide](guides/migrating-to-openapi.md). (`devview-networkmock-core`, `devview-networkmock`, `devview-networkmock-ktor`)
+- Renamed to OpenAPI vocabulary throughout the networkmock modules: `ApiGroupConfig` → `ApiSpec`, `EndpointConfig` → `Operation`, `EndpointKey` → `OperationKey` (drops the `environmentId` component), `EndpointDescriptor` → `OperationDescriptor`, `EndpointMockState` → `OperationMockState`, `GroupEnvironmentUiModel` → `ApiSpecUiModel`, `EndpointUiModel` → `OperationUiModel`. `MockResponse` and `MockMatch` are deliberately **not** renamed — they model DevView's own runtime mocking behavior, not something OpenAPI describes. `EnvironmentConfig`, `EndpointOverride`, and `effectiveEndpoints` are deleted.
+- Response variant discovery now reads the spec's declared `responses.<code>.content.*.examples` instead of probing status-code/suffix combinations against the filesystem. `OperationMockState.Mock` is now keyed by `(statusCode, exampleName)` instead of a response file name. (`devview-networkmock-core`)
+- Response delay simulation is now declared via the `x-devview.delayMs` OpenAPI Specification Extension, at the document root (spec-wide default) and/or per operation (overrides the default) — replacing `ApiGroupConfig.defaultDelayMs` / `EndpointConfig.delayMs`. (`devview-networkmock-core`)
+- DataStore entries written under the pre-0.2.0 key shape (`network_mock_endpoint_{groupId}-{environmentId}-{endpointId}`) are wiped once on first launch after upgrading — the key shape and the `Mock` payload shape both changed, so a translation wasn't attempted. The global mocking toggle is unaffected. (`devview-networkmock-core`)
+- `OperationDescriptor` no longer carries `availableResponses` — the main operation list never read them, so `NetworkMockViewModel` no longer eagerly discovers and decodes every response body on app start. Response variants are now only loaded when an operation's detail screen actually opens (`NetworkMockEndpointUiState.Content.responses`). (`devview-networkmock-core`, `devview-networkmock`)
+- `TimeCapsuleEffect` gains a `subtitle` parameter, inserted between `label` and `maxEntries`. Callers passing `maxEntries` positionally must switch to a named argument. (`devview-timecapsule`)
 
 ---
 

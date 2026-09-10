@@ -1,0 +1,117 @@
+// Signature format: 4.0
+package com.worldline.devview.featureflip {
+
+  public final class FeatureFlip implements com.worldline.devview.core.Module com.worldline.devview.utils.RequiresDataStore {
+    method @InaccessibleFromKotlin public com.worldline.devview.utils.DataStoreDelegate getDataStoreDelegate();
+    method @InaccessibleFromKotlin public String getDataStoreName();
+    method @InaccessibleFromKotlin public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> getDestinations();
+    method @InaccessibleFromKotlin public androidx.navigation3.runtime.NavKey getEntryDestination();
+    method @InaccessibleFromKotlin public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<? super androidx.navigation3.runtime.NavKey>,kotlin.Unit> getRegisterSerializers();
+    method @InaccessibleFromKotlin public com.worldline.devview.core.Section getSection();
+    method @KotlinOnly public void registerContent(androidx.navigation3.runtime.EntryProviderScope<androidx.navigation3.runtime.NavKey>, kotlin.jvm.functions.Function0<kotlin.Unit> onNavigateBack, kotlin.jvm.functions.Function1<androidx.navigation3.runtime.NavKey,kotlin.Unit> onNavigate, androidx.compose.ui.unit.Dp bottomPadding);
+    property public com.worldline.devview.utils.DataStoreDelegate dataStoreDelegate;
+    property public String dataStoreName;
+    property public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> destinations;
+    property public androidx.navigation3.runtime.NavKey entryDestination;
+    property public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<androidx.navigation3.runtime.NavKey>,kotlin.Unit> registerSerializers;
+    property public com.worldline.devview.core.Section section;
+    field public static final com.worldline.devview.featureflip.FeatureFlip INSTANCE;
+  }
+
+  public sealed exhaustive interface FeatureFlipDestination extends androidx.navigation3.runtime.NavKey {
+  }
+
+  @kotlinx.serialization.Serializable public static final class FeatureFlipDestination.Main implements com.worldline.devview.featureflip.FeatureFlipDestination {
+    field public static final com.worldline.devview.featureflip.FeatureFlipDestination.Main INSTANCE;
+  }
+
+  public final class FeatureFlipScreenKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void FeatureFlipScreen(optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding);
+  }
+
+}
+
+package com.worldline.devview.featureflip.model {
+
+  public sealed exhaustive interface Feature {
+    method @InaccessibleFromKotlin public String? getDescription();
+    method @InaccessibleFromKotlin public String getName();
+    method @InaccessibleFromKotlin public boolean isEnabled();
+    property public abstract String? description;
+    property public abstract boolean isEnabled;
+    property public abstract String name;
+    field public static final com.worldline.devview.featureflip.model.Feature.Companion Companion;
+  }
+
+  public static final class Feature.Companion {
+  }
+
+  public static final class Feature.LocalFeature implements com.worldline.devview.featureflip.model.Feature {
+    ctor public Feature.LocalFeature(String name, String? description, boolean isEnabled);
+    method public String component1();
+    method public String? component2();
+    method public boolean component3();
+    method public com.worldline.devview.featureflip.model.Feature.LocalFeature copy(optional String name, optional String? description, optional boolean isEnabled);
+    method @InaccessibleFromKotlin public String? getDescription();
+    method @InaccessibleFromKotlin public String getName();
+    method @InaccessibleFromKotlin public boolean isEnabled();
+    property public String? description;
+    property public boolean isEnabled;
+    property public String name;
+  }
+
+  public static final class Feature.RemoteFeature implements com.worldline.devview.featureflip.model.Feature {
+    ctor public Feature.RemoteFeature(String name, String? description, boolean defaultRemoteValue, com.worldline.devview.featureflip.model.FeatureState state);
+    method public String component1();
+    method public String? component2();
+    method public boolean component3();
+    method public com.worldline.devview.featureflip.model.FeatureState component4();
+    method public com.worldline.devview.featureflip.model.Feature.RemoteFeature copy(optional String name, optional String? description, optional boolean defaultRemoteValue, optional com.worldline.devview.featureflip.model.FeatureState state);
+    method @InaccessibleFromKotlin public boolean getDefaultRemoteValue();
+    method @InaccessibleFromKotlin public String? getDescription();
+    method @InaccessibleFromKotlin public String getName();
+    method @InaccessibleFromKotlin public com.worldline.devview.featureflip.model.FeatureState getState();
+    method @InaccessibleFromKotlin public boolean isEnabled();
+    property public boolean defaultRemoteValue;
+    property public String? description;
+    property public boolean isEnabled;
+    property public String name;
+    property public com.worldline.devview.featureflip.model.FeatureState state;
+  }
+
+  public final class FeatureHandler {
+    ctor public FeatureHandler(androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> dataStore, java.util.List<? extends com.worldline.devview.featureflip.model.Feature> initialFeatures);
+    method public suspend Object? addFeatures(java.util.List<? extends com.worldline.devview.featureflip.model.Feature> featuresToAdd, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+    method @KotlinOnly @androidx.compose.runtime.Composable public androidx.compose.runtime.State<java.lang.Boolean> isFeatureEnabled(String featureName);
+    method public kotlinx.coroutines.flow.Flow<java.lang.Boolean> isFeatureEnabledFlow(String featureName);
+  }
+
+  public final class FeatureHandlerKt {
+    method @InaccessibleFromKotlin public static androidx.compose.runtime.ProvidableCompositionLocal<com.worldline.devview.featureflip.model.FeatureHandler> getLocalFeatureHandler();
+    method @KotlinOnly @androidx.compose.runtime.Composable public static com.worldline.devview.featureflip.model.FeatureHandler rememberFeatureHandler(java.util.List<com.worldline.devview.featureflip.model.Feature> features);
+    property public static androidx.compose.runtime.ProvidableCompositionLocal<com.worldline.devview.featureflip.model.FeatureHandler> LocalFeatureHandler;
+  }
+
+  public enum FeatureState {
+    enum_constant public static final com.worldline.devview.featureflip.model.FeatureState LOCAL_OFF;
+    enum_constant public static final com.worldline.devview.featureflip.model.FeatureState LOCAL_ON;
+    enum_constant public static final com.worldline.devview.featureflip.model.FeatureState REMOTE;
+    field public static final com.worldline.devview.featureflip.model.FeatureState.Companion Companion;
+  }
+
+  public static final class FeatureState.Companion {
+    method public com.worldline.devview.featureflip.model.FeatureState fromOrdinal(int ordinal);
+  }
+
+  public enum FeatureType {
+    enum_constant public static final com.worldline.devview.featureflip.model.FeatureType LOCAL;
+    enum_constant public static final com.worldline.devview.featureflip.model.FeatureType REMOTE;
+    field public static final com.worldline.devview.featureflip.model.FeatureType.Companion Companion;
+  }
+
+  public static final class FeatureType.Companion {
+    method public com.worldline.devview.featureflip.model.FeatureType fromOrdinal(int ordinal);
+  }
+
+}
+
