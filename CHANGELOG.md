@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0-alpha03] - 2026-09-11
+
 ### Added
 - NetworkMock status-family chip colors (2xx green, 4xx/5xx red, etc.) are now configurable via
   a `LocalMockColorScheme` CompositionLocal, mirroring `devview-consolelogger`'s
@@ -230,7 +232,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added and expanded unit test coverage for all primary `devview-*` modules.
 - Added Konsist architecture enforcement tests and Kover coverage reporting across the module set.
 
-[Unreleased]: https://github.com/worldline/DevView/compare/0.2.0-alpha02...HEAD
+[Unreleased]: https://github.com/worldline/DevView/compare/0.2.0-alpha03...HEAD
+[0.2.0-alpha03]: https://github.com/worldline/DevView/compare/0.2.0-alpha02...0.2.0-alpha03
 [0.2.0-alpha02]: https://github.com/worldline/DevView/compare/0.2.0-alpha01...0.2.0-alpha02
 [0.2.0-alpha01]: https://github.com/worldline/DevView/compare/0.1.5...0.2.0-alpha01
 [0.1.5]: https://github.com/worldline/DevView/compare/0.1.4...0.1.5

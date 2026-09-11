@@ -1,0 +1,201 @@
+// Signature format: 4.0
+package com.worldline.devview.networkmock {
+
+  public final class NetworkMock implements com.worldline.devview.core.Module com.worldline.devview.utils.RequiresDataStore {
+    ctor public NetworkMock(com.worldline.devview.networkmock.core.NetworkMockResourceLoader resourceLoader, java.util.List<java.lang.String> specPaths);
+    method @InaccessibleFromKotlin public com.worldline.devview.utils.DataStoreDelegate getDataStoreDelegate();
+    method @InaccessibleFromKotlin public String getDataStoreName();
+    method @InaccessibleFromKotlin public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> getDestinations();
+    method @InaccessibleFromKotlin public androidx.navigation3.runtime.NavKey getEntryDestination();
+    method @InaccessibleFromKotlin public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<? super androidx.navigation3.runtime.NavKey>,kotlin.Unit> getRegisterSerializers();
+    method @InaccessibleFromKotlin public com.worldline.devview.core.Section getSection();
+    method @KotlinOnly @androidx.compose.runtime.Composable public void initModule();
+    method @KotlinOnly public void registerContent(androidx.navigation3.runtime.EntryProviderScope<androidx.navigation3.runtime.NavKey>, kotlin.jvm.functions.Function0<kotlin.Unit> onNavigateBack, kotlin.jvm.functions.Function1<androidx.navigation3.runtime.NavKey,kotlin.Unit> onNavigate, androidx.compose.ui.unit.Dp bottomPadding);
+    property public com.worldline.devview.utils.DataStoreDelegate dataStoreDelegate;
+    property public String dataStoreName;
+    property public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> destinations;
+    property public androidx.navigation3.runtime.NavKey entryDestination;
+    property public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<androidx.navigation3.runtime.NavKey>,kotlin.Unit> registerSerializers;
+    property public com.worldline.devview.core.Section section;
+  }
+
+  public sealed exhaustive interface NetworkMockDestination extends androidx.navigation3.runtime.NavKey {
+  }
+
+  @kotlinx.serialization.Serializable public static final class NetworkMockDestination.Main implements com.worldline.devview.networkmock.NetworkMockDestination {
+    field public static final com.worldline.devview.networkmock.NetworkMockDestination.Main INSTANCE;
+  }
+
+  public final class NetworkMockScreenKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void NetworkMockScreen(kotlinx.coroutines.flow.SharedFlow<kotlin.Unit> resetToNetworkSharedFlow, com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel viewModel, optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding);
+  }
+
+}
+
+package com.worldline.devview.networkmock.model {
+
+  @androidx.compose.runtime.Immutable public final class ApiSpecUiModel {
+    ctor public ApiSpecUiModel(String specId, String name, kotlinx.collections.immutable.PersistentList<com.worldline.devview.networkmock.model.OperationUiModel> operations);
+    method public String component1();
+    method public String component2();
+    method public kotlinx.collections.immutable.PersistentList<com.worldline.devview.networkmock.model.OperationUiModel> component3();
+    method public com.worldline.devview.networkmock.model.ApiSpecUiModel copy(optional String specId, optional String name, optional kotlinx.collections.immutable.PersistentList<com.worldline.devview.networkmock.model.OperationUiModel> operations);
+    method @InaccessibleFromKotlin public String getName();
+    method @InaccessibleFromKotlin public kotlinx.collections.immutable.PersistentList<com.worldline.devview.networkmock.model.OperationUiModel> getOperations();
+    method @InaccessibleFromKotlin public String getSpecId();
+    property public String name;
+    property public kotlinx.collections.immutable.PersistentList<com.worldline.devview.networkmock.model.OperationUiModel> operations;
+    property public String specId;
+    field public static final com.worldline.devview.networkmock.model.ApiSpecUiModel.Companion Companion;
+  }
+
+  public static final class ApiSpecUiModel.Companion {
+  }
+
+  @androidx.compose.runtime.Immutable public final class OperationUiModel {
+    ctor public OperationUiModel(com.worldline.devview.networkmock.core.model.OperationDescriptor descriptor, com.worldline.devview.networkmock.core.model.OperationMockState currentState);
+    method public com.worldline.devview.networkmock.core.model.OperationDescriptor component1();
+    method public com.worldline.devview.networkmock.core.model.OperationMockState component2();
+    method public com.worldline.devview.networkmock.model.OperationUiModel copy(optional com.worldline.devview.networkmock.core.model.OperationDescriptor descriptor, optional com.worldline.devview.networkmock.core.model.OperationMockState currentState);
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.model.OperationMockState getCurrentState();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.model.OperationDescriptor getDescriptor();
+    property public com.worldline.devview.networkmock.core.model.OperationMockState currentState;
+    property public com.worldline.devview.networkmock.core.model.OperationDescriptor descriptor;
+    field public static final com.worldline.devview.networkmock.model.OperationUiModel.Companion Companion;
+  }
+
+  public static final class OperationUiModel.Companion {
+  }
+
+}
+
+package com.worldline.devview.networkmock.theme {
+
+  public final class LocalMockColorSchemeKt {
+    method @InaccessibleFromKotlin public static androidx.compose.runtime.ProvidableCompositionLocal<com.worldline.devview.networkmock.theme.MockColorScheme?> getLocalMockColorScheme();
+    property public static androidx.compose.runtime.ProvidableCompositionLocal<com.worldline.devview.networkmock.theme.MockColorScheme?> LocalMockColorScheme;
+  }
+
+  @androidx.compose.runtime.Immutable public final class MockColorScheme {
+    ctor public MockColorScheme(com.worldline.devview.networkmock.theme.StatusColors informational, com.worldline.devview.networkmock.theme.StatusColors successful, com.worldline.devview.networkmock.theme.StatusColors redirection, com.worldline.devview.networkmock.theme.StatusColors clientError, com.worldline.devview.networkmock.theme.StatusColors serverError, com.worldline.devview.networkmock.theme.StatusColors unknown, com.worldline.devview.networkmock.theme.StatusColors network);
+    method public com.worldline.devview.networkmock.theme.StatusColors component1();
+    method public com.worldline.devview.networkmock.theme.StatusColors component2();
+    method public com.worldline.devview.networkmock.theme.StatusColors component3();
+    method public com.worldline.devview.networkmock.theme.StatusColors component4();
+    method public com.worldline.devview.networkmock.theme.StatusColors component5();
+    method public com.worldline.devview.networkmock.theme.StatusColors component6();
+    method public com.worldline.devview.networkmock.theme.StatusColors component7();
+    method public com.worldline.devview.networkmock.theme.MockColorScheme copy(optional com.worldline.devview.networkmock.theme.StatusColors informational, optional com.worldline.devview.networkmock.theme.StatusColors successful, optional com.worldline.devview.networkmock.theme.StatusColors redirection, optional com.worldline.devview.networkmock.theme.StatusColors clientError, optional com.worldline.devview.networkmock.theme.StatusColors serverError, optional com.worldline.devview.networkmock.theme.StatusColors unknown, optional com.worldline.devview.networkmock.theme.StatusColors network);
+    method public operator com.worldline.devview.networkmock.theme.StatusColors get(com.worldline.devview.networkmock.core.model.StatusCodeFamily family);
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.StatusColors getClientError();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.StatusColors getInformational();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.StatusColors getNetwork();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.StatusColors getRedirection();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.StatusColors getServerError();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.StatusColors getSuccessful();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.StatusColors getUnknown();
+    property public com.worldline.devview.networkmock.theme.StatusColors clientError;
+    property public com.worldline.devview.networkmock.theme.StatusColors informational;
+    property public com.worldline.devview.networkmock.theme.StatusColors network;
+    property public com.worldline.devview.networkmock.theme.StatusColors redirection;
+    property public com.worldline.devview.networkmock.theme.StatusColors serverError;
+    property public com.worldline.devview.networkmock.theme.StatusColors successful;
+    property public com.worldline.devview.networkmock.theme.StatusColors unknown;
+    field public static final com.worldline.devview.networkmock.theme.MockColorScheme.Companion Companion;
+  }
+
+  public static final class MockColorScheme.Companion {
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.MockColorScheme getDark();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.MockColorScheme getLight();
+    property public com.worldline.devview.networkmock.theme.MockColorScheme Dark;
+    property public com.worldline.devview.networkmock.theme.MockColorScheme Light;
+  }
+
+  @androidx.compose.runtime.Immutable public final class StatusColors {
+    ctor @KotlinOnly public StatusColors(androidx.compose.ui.graphics.Color container, androidx.compose.ui.graphics.Color content);
+    method @KotlinOnly public operator androidx.compose.ui.graphics.Color component1();
+    method @KotlinOnly public operator androidx.compose.ui.graphics.Color component2();
+    method @KotlinOnly public com.worldline.devview.networkmock.theme.StatusColors copy(optional androidx.compose.ui.graphics.Color container, optional androidx.compose.ui.graphics.Color content);
+    property public androidx.compose.ui.graphics.Color container;
+    property public androidx.compose.ui.graphics.Color content;
+  }
+
+}
+
+package com.worldline.devview.networkmock.viewmodel {
+
+  @androidx.compose.runtime.Immutable public sealed exhaustive interface NetworkMockUiState {
+  }
+
+  @androidx.compose.runtime.Immutable public static final class NetworkMockUiState.Content implements com.worldline.devview.networkmock.viewmodel.NetworkMockUiState {
+    ctor public NetworkMockUiState.Content(boolean globalMockingEnabled, kotlinx.collections.immutable.PersistentList<com.worldline.devview.networkmock.model.ApiSpecUiModel> specs);
+    method public boolean component1();
+    method public kotlinx.collections.immutable.PersistentList<com.worldline.devview.networkmock.model.ApiSpecUiModel> component2();
+    method public com.worldline.devview.networkmock.viewmodel.NetworkMockUiState.Content copy(optional boolean globalMockingEnabled, optional kotlinx.collections.immutable.PersistentList<com.worldline.devview.networkmock.model.ApiSpecUiModel> specs);
+    method @InaccessibleFromKotlin public boolean getGlobalMockingEnabled();
+    method @InaccessibleFromKotlin public kotlinx.collections.immutable.PersistentList<com.worldline.devview.networkmock.model.ApiSpecUiModel> getSpecs();
+    property public boolean globalMockingEnabled;
+    property public kotlinx.collections.immutable.PersistentList<com.worldline.devview.networkmock.model.ApiSpecUiModel> specs;
+  }
+
+  @androidx.compose.runtime.Immutable public static final class NetworkMockUiState.Empty implements com.worldline.devview.networkmock.viewmodel.NetworkMockUiState {
+    field public static final com.worldline.devview.networkmock.viewmodel.NetworkMockUiState.Empty INSTANCE;
+  }
+
+  @androidx.compose.runtime.Immutable public static final class NetworkMockUiState.Error implements com.worldline.devview.networkmock.viewmodel.NetworkMockUiState {
+    ctor public NetworkMockUiState.Error(String message);
+    method public String component1();
+    method public com.worldline.devview.networkmock.viewmodel.NetworkMockUiState.Error copy(optional String message);
+    method @InaccessibleFromKotlin public String getMessage();
+    property public String message;
+  }
+
+  @androidx.compose.runtime.Immutable public static final class NetworkMockUiState.Loading implements com.worldline.devview.networkmock.viewmodel.NetworkMockUiState {
+    field public static final com.worldline.devview.networkmock.viewmodel.NetworkMockUiState.Loading INSTANCE;
+  }
+
+  public final class NetworkMockViewModel extends androidx.lifecycle.ViewModel {
+    ctor public NetworkMockViewModel(com.worldline.devview.networkmock.core.repository.MockConfigRepository configRepository, com.worldline.devview.networkmock.core.repository.MockStateRepository stateRepository);
+    method public void closeSheet();
+    method @InaccessibleFromKotlin public kotlinx.coroutines.flow.StateFlow<com.worldline.devview.networkmock.viewmodel.OperationSheetState> getSheetState();
+    method @InaccessibleFromKotlin public kotlinx.coroutines.flow.StateFlow<com.worldline.devview.networkmock.viewmodel.NetworkMockUiState> getUiState();
+    method public void openOperation(com.worldline.devview.networkmock.core.model.OperationKey key);
+    method public void resetAllToNetwork();
+    method public void setGlobalMockingEnabled(boolean enabled);
+    method public void setOperationMockState(com.worldline.devview.networkmock.core.model.OperationKey key, com.worldline.devview.networkmock.core.model.MockResponse? response);
+    property public kotlinx.coroutines.flow.StateFlow<com.worldline.devview.networkmock.viewmodel.OperationSheetState> sheetState;
+    property public kotlinx.coroutines.flow.StateFlow<com.worldline.devview.networkmock.viewmodel.NetworkMockUiState> uiState;
+  }
+
+  @androidx.compose.runtime.Immutable public sealed exhaustive interface OperationSheetState {
+  }
+
+  @androidx.compose.runtime.Immutable public static final class OperationSheetState.Content implements com.worldline.devview.networkmock.viewmodel.OperationSheetState {
+    ctor public OperationSheetState.Content(com.worldline.devview.networkmock.model.OperationUiModel operationUiModel, kotlinx.collections.immutable.PersistentList<com.worldline.devview.networkmock.core.model.MockResponse> responses);
+    method public com.worldline.devview.networkmock.model.OperationUiModel component1();
+    method public kotlinx.collections.immutable.PersistentList<com.worldline.devview.networkmock.core.model.MockResponse> component2();
+    method public com.worldline.devview.networkmock.viewmodel.OperationSheetState.Content copy(optional com.worldline.devview.networkmock.model.OperationUiModel operationUiModel, optional kotlinx.collections.immutable.PersistentList<com.worldline.devview.networkmock.core.model.MockResponse> responses);
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.model.OperationUiModel getOperationUiModel();
+    method @InaccessibleFromKotlin public kotlinx.collections.immutable.PersistentList<com.worldline.devview.networkmock.core.model.MockResponse> getResponses();
+    property public com.worldline.devview.networkmock.model.OperationUiModel operationUiModel;
+    property public kotlinx.collections.immutable.PersistentList<com.worldline.devview.networkmock.core.model.MockResponse> responses;
+  }
+
+  @androidx.compose.runtime.Immutable public static final class OperationSheetState.Error implements com.worldline.devview.networkmock.viewmodel.OperationSheetState {
+    ctor public OperationSheetState.Error(String message);
+    method public String component1();
+    method public com.worldline.devview.networkmock.viewmodel.OperationSheetState.Error copy(optional String message);
+    method @InaccessibleFromKotlin public String getMessage();
+    property public String message;
+  }
+
+  @androidx.compose.runtime.Immutable public static final class OperationSheetState.Hidden implements com.worldline.devview.networkmock.viewmodel.OperationSheetState {
+    field public static final com.worldline.devview.networkmock.viewmodel.OperationSheetState.Hidden INSTANCE;
+  }
+
+  @androidx.compose.runtime.Immutable public static final class OperationSheetState.Loading implements com.worldline.devview.networkmock.viewmodel.OperationSheetState {
+    field public static final com.worldline.devview.networkmock.viewmodel.OperationSheetState.Loading INSTANCE;
+  }
+
+}
+
