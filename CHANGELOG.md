@@ -21,13 +21,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   constants, `DefaultMethods` for canonical ordering), replacing the raw `String` on
   `Operation.method` — without adding a Ktor dependency to `devview-networkmock-core`.
   (`devview-networkmock-core`)
+- NetworkMock UI: a "Mocked"/"Network" filter chip row, and a mocked-operation count
+  (e.g. "3 of 47 mocked") on the global mocking toggle, computed across every spec — both
+  answer "what have I left mocked" at a glance. (`devview-networkmock`)
 
 ### Changed
 - **Breaking:** `Operation.method` is now `HttpMethod` instead of `String`.
   (`devview-networkmock-core`)
 - NetworkMock UI: the search field and version filter row moved from the top of the screen into
   a `Scaffold` bottom bar (alongside the new method filter), matching FeatureFlip, Analytics, and
-  ConsoleLogger's existing layout for one-handed reach. (`devview-networkmock`)
+  ConsoleLogger's existing layout for one-handed reach. Only the search field and an expand
+  chevron are visible by default; the mock-state, version, and method filter rows collapse
+  behind the chevron (matching Analytics' bottom bar). (`devview-networkmock`)
+- NetworkMock UI: each operation row now shows a leading colour rail (the state chip's colour)
+  and a colour-coded HTTP method badge; the row's separate state-summary line — which duplicated
+  the status code already shown in the state chip — is gone, and the chip's label now shows the
+  full `"$statusCode - $exampleName"` instead of a bare status code (#115).
+  (`devview-networkmock`)
 
 ## [0.2.0-alpha02] - 2026-09-11
 

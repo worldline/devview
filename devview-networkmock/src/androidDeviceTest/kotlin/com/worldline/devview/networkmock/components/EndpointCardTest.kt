@@ -4,7 +4,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -69,32 +68,6 @@ class EndpointCardTest {
         ).performClick()
 
         clicked shouldBe true
-    }
-
-    @Test
-    fun showFileName_isFalse_stateTextIsNotDisplayed() = runComposeUiTest {
-        setEndpointCard(
-            endpoint = mockEndpoint(),
-            showFileName = false
-        )
-
-        onNodeWithTag(
-            testTag = "endpoint_state_getUser",
-            useUnmergedTree = true
-        ).assertIsNotDisplayed()
-    }
-
-    @Test
-    fun showFileName_isTrue_stateTextIsDisplayed() = runComposeUiTest {
-        setEndpointCard(
-            endpoint = mockEndpoint(),
-            showFileName = true
-        )
-
-        onNodeWithTag(
-            testTag = "endpoint_state_getUser",
-            useUnmergedTree = true
-        ).assertIsDisplayed()
     }
 
     @Test
@@ -166,15 +139,13 @@ class EndpointCardTest {
 
     private fun ComposeUiTest.setEndpointCard(
         endpoint: OperationUiModel,
-        openEndpointDetails: () -> Unit = {},
-        showFileName: Boolean = false
+        openEndpointDetails: () -> Unit = {}
     ) {
         setContent {
             MaterialTheme {
                 EndpointCard(
                     endpoint = endpoint,
-                    openEndpointDetails = openEndpointDetails,
-                    showFileName = showFileName
+                    openEndpointDetails = openEndpointDetails
                 )
             }
         }

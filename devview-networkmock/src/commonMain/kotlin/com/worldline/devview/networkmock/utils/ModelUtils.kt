@@ -10,6 +10,7 @@ import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Wifi
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
@@ -113,6 +114,34 @@ internal val OperationMockState.containerColor: Color
 @ReadOnlyComposable
 internal fun containerColorForStatusCode(statusCode: Int?): Color =
     rememberMockColorScheme()[statusCode.toStatusCodeFamily()].container
+
+/**
+ * Background colour for an [HttpMethod] badge, mapped onto [MaterialTheme] colour-scheme
+ * roles (not a fixed palette like [containerColor]) — a method badge is a navigational aid,
+ * not a status signal, so it should track the host app's brand colours.
+ */
+internal val HttpMethod.badgeContainerColor: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = when (this) {
+        HttpMethod.Get -> MaterialTheme.colorScheme.primaryContainer
+        HttpMethod.Post -> MaterialTheme.colorScheme.tertiaryContainer
+        HttpMethod.Put, HttpMethod.Patch -> MaterialTheme.colorScheme.secondaryContainer
+        HttpMethod.Delete -> MaterialTheme.colorScheme.errorContainer
+        else -> MaterialTheme.colorScheme.surfaceVariant
+    }
+
+/** Content colour paired with [badgeContainerColor]. */
+internal val HttpMethod.badgeContentColor: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = when (this) {
+        HttpMethod.Get -> MaterialTheme.colorScheme.onPrimaryContainer
+        HttpMethod.Post -> MaterialTheme.colorScheme.onTertiaryContainer
+        HttpMethod.Put, HttpMethod.Patch -> MaterialTheme.colorScheme.onSecondaryContainer
+        HttpMethod.Delete -> MaterialTheme.colorScheme.onErrorContainer
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
 
 private fun Int?.toStatusCodeFamily(): StatusCodeFamily =
     this?.let { StatusCodeFamily.fromStatusCode(statusCode = it) } ?: StatusCodeFamily.UNKNOWN
