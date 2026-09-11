@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0-alpha02] - 2026-09-11
+
 ### Fixed
 - Fixed ViewModel persistence during navigation: the `rememberViewModelStoreNavEntryDecorator()` was 
   not applied to the `NavDisplay`'s `entryDecorators` causing `ViewModel`s to persist once instantiated.
@@ -178,7 +180,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added and expanded unit test coverage for all primary `devview-*` modules.
 - Added Konsist architecture enforcement tests and Kover coverage reporting across the module set.
 
-[Unreleased]: https://github.com/worldline/DevView/compare/0.2.0-alpha01...HEAD
+[Unreleased]: https://github.com/worldline/DevView/compare/0.2.0-alpha02...HEAD
+[0.2.0-alpha02]: https://github.com/worldline/DevView/compare/0.2.0-alpha01...0.2.0-alpha02
 [0.2.0-alpha01]: https://github.com/worldline/DevView/compare/0.1.5...0.2.0-alpha01
 [0.1.5]: https://github.com/worldline/DevView/compare/0.1.4...0.1.5
 [0.1.4]: https://github.com/worldline/DevView/compare/0.1.3...0.1.4
