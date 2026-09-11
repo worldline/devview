@@ -18,6 +18,7 @@ com.worldline.devview.featureflip.model
 module:devview-networkmock
 com.worldline.devview.networkmock
 com.worldline.devview.networkmock.model
+com.worldline.devview.networkmock.theme
 com.worldline.devview.networkmock.viewmodel
 module:devview-networkmock-core
 com.worldline.devview.networkmock.core

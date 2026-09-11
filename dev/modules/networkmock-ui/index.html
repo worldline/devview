@@ -1181,6 +1181,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#theming" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Theming
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#registration" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2236,6 +2247,11 @@
 <li><strong>Response items</strong>: tap to activate a mock response (shown with its status code chip); long-press to open a preview bottom sheet.</li>
 <li><strong>Preview bottom sheet</strong>: shows the response file contents. Long-press a second response to enter compare mode, which renders a side-by-side or inline diff (LCS-based, collapses long unchanged runs).</li>
 </ul>
+<h2 id="theming">Theming</h2>
+<p>Status-family colors (2xx green, 4xx/5xx red, etc.) are a fixed, hand-tuned palette per
+theme, not derived from <code>MaterialTheme.colorScheme</code> — see the
+<a href="../../guides/theming/#network-mock-status-colors">Theming guide</a> for how to provide and
+override them.</p>
 <h2 id="registration">Registration</h2>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rememberModules</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">module</span><span class="p">(</span><span class="n">NetworkMock</span><span class="p">(</span>

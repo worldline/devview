@@ -1998,6 +1998,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Unreleased">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Added
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2041,7 +2058,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#added" class="md-nav__link">
+  <a href="#added_1" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Added
@@ -2080,7 +2097,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#added_1" class="md-nav__link">
+  <a href="#added_2" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Added
@@ -2158,7 +2175,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#added_2" class="md-nav__link">
+  <a href="#added_3" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Added
@@ -2286,7 +2303,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#added_3" class="md-nav__link">
+  <a href="#added_4" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Added
@@ -2410,6 +2427,14 @@
 <p>The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>,
 and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
 <h2 id="unreleased"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha02...HEAD">Unreleased</a></h2>
+<h3 id="added">Added</h3>
+<ul>
+<li>NetworkMock status-family chip colors (2xx green, 4xx/5xx red, etc.) are now configurable via
+  a <code>LocalMockColorScheme</code> CompositionLocal, mirroring <code>devview-consolelogger</code>'s
+  <code>LocalLogColorScheme</code>. Also fixes these colors rendering as washed-out light pastels on dark
+  surfaces — <code>MockColorScheme.Dark</code> is a proper hand-tuned dark palette rather than the light
+  values reused verbatim. (<code>devview-networkmock</code>)</li>
+</ul>
 <h2 id="020-alpha02-2026-09-11"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha01...0.2.0-alpha02">0.2.0-alpha02</a> - 2026-09-11</h2>
 <h3 id="fixed">Fixed</h3>
 <ul>
@@ -2417,7 +2442,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
   not applied to the <code>NavDisplay</code>'s <code>entryDecorators</code> causing <code>ViewModel</code>s to persist once instantiated.</li>
 </ul>
 <h2 id="020-alpha01-2026-09-10"><a href="https://github.com/worldline/DevView/compare/0.1.5...0.2.0-alpha01">0.2.0-alpha01</a> - 2026-09-10</h2>
-<h3 id="added">Added</h3>
+<h3 id="added_1">Added</h3>
 <ul>
 <li><code>Operation.version</code>: a display-only version tag extracted from a <code>/v{n}/</code> path segment
   (e.g. <code>/api/v2/x</code> → <code>"v2"</code>), shown as a chip on each operation in the NetworkMock UI. Purely
@@ -2477,7 +2502,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
   (<code>devview-timecapsule</code>)</li>
 </ul>
 <h2 id="015-2026-09-08"><a href="https://github.com/worldline/DevView/compare/0.1.4...0.1.5">0.1.5</a> - 2026-09-08</h2>
-<h3 id="added_1">Added</h3>
+<h3 id="added_2">Added</h3>
 <ul>
 <li><code>devview-timecapsule</code> module: records the state history of the currently visible screen
   via <code>TimeCapsuleEffect</code>/<code>TimeCapsuleOwner</code>, and lets a developer restore any earlier
@@ -2514,7 +2539,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <li>Added Compose List Keys rules to the contributing guide (<code>code-style.md</code>): LazyColumn/LazyRow keys must be unique, stable under state changes, and semantically meaningful. Added matching item to the PR checklist.</li>
 </ul>
 <h2 id="013-2026-07-21"><a href="https://github.com/worldline/DevView/compare/0.1.2...0.1.3">0.1.3</a> - 2026-07-21</h2>
-<h3 id="added_2">Added</h3>
+<h3 id="added_3">Added</h3>
 <ul>
 <li><code>NetworkMockResourceLoader</code> fun interface in <code>devview-networkmock-core</code>: provides a named type for DI frameworks (Koin, Hilt, etc.) to bind, eliminating the need for a custom bridge interface in multi-module KMP projects where mock resource files live in a different module than where <code>NetworkMock</code> is constructed. Both <code>devview-networkmock</code> and <code>devview-networkmock-ktor</code> now expose <code>devview-networkmock-core</code> as an <code>api</code> dependency so the type is available to all integrators.</li>
 </ul>
@@ -2552,7 +2577,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <li>Enabled automatic Maven Central publishing.</li>
 </ul>
 <h2 id="010-2026-07-15"><a href="https://github.com/worldline/DevView/releases/tag/v0.1.0">0.1.0</a> - 2026-07-15</h2>
-<h3 id="added_3">Added</h3>
+<h3 id="added_4">Added</h3>
 <ul>
 <li><code>devview</code>: core DevView framework with module registry DSL, section-based home screen, type-safe Navigation3 integration, and per-destination top-app-bar metadata/actions.</li>
 <li><code>devview-featureflip</code>: feature flag tooling with local and remote features, tri-state remote override support, DataStore-backed persistence, and a built-in Compose management screen. Feature type badge and filter support for granular feature browsing.</li>
