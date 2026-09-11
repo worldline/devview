@@ -1,0 +1,2817 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A Kotlin Multiplatform developer tools framework for Android and iOS">
+      
+      
+        <meta name="author" content="Maxime Michel">
+      
+      
+        <link rel="canonical" href="https://worldline.github.io/devview/0.2.0-alpha03/changelog/">
+      
+      
+        <link rel="prev" href="../contributing/code-of-conduct/">
+      
+      
+        <link rel="next" href="../license/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/branding/devview-icon-mono.svg">
+      <meta name="generator" content="zensical-0.0.60">
+    
+    
+      
+        <title>Changelog - DevView</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.ce62732f.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../assets/stylesheets/modern/palette.812a03bb.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetbrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Jetbrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/branding.css">
+    
+    <script>__md_scope=new URL("..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="./.." title="DevView" class="md-header__button md-logo" aria-label="DevView" data-md-component="logo">
+      
+  <img src="../assets/branding/devview-icon-light.svg" alt="DevView">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            DevView
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-sun-moon" viewBox="0 0 24 24"><path d="M12 2v2M14.837 16.385a6 6 0 1 1-7.223-7.222c.624-.147.97.66.715 1.248a4 4 0 0 0 5.26 5.259c.589-.255 1.396.09 1.248.715M16 12a4 4 0 0 0-4-4M19 5l-1.256 1.256M20 12h2"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/worldline/devview" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M216.5 362.5c-66-8-112.5-55.5-112.5-117 0-25 9-52 24-70-6.5-16.5-5.5-51.5 2-66 20-2.5 47 8 63 22.5 19-6 39-9 63.5-9s44.5 3 62.5 8.5c15.5-14 43-24.5 63-22 7 13.5 8 48.5 1.5 65.5 16 19 24.5 44.5 24.5 70.5 0 61.5-46.5 108-113.5 116.5 17 11 28.5 35 28.5 62.5v52c0 15 12.5 23.5 27.5 17.5C441 459.5 512 369 512 257 512 115.5 397 0 255.5 0S0 115.5 0 257c0 111 70.5 203 165.5 237.5 13.5 5 26.5-4 26.5-17.5v-40c-7 3-16 5-24 5-33 0-52.5-18-66.5-51.5-5.5-13.5-11.5-21.5-23-23-6-.5-8-3-8-6 0-6 10-10.5 20-10.5 14.5 0 27 9 40 27.5 10 14.5 20.5 21 33 21s20.5-4.5 32-16c8.5-8.5 15-16 21-21"/></svg>
+  </div>
+  <div class="md-source__repository">
+    worldline/devview
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="./.." class="md-tabs__link">
+        
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../getting-started/" class="md-tabs__link">
+          
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../modules/" class="md-tabs__link">
+          
+  
+  Modules
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../guides/" class="md-tabs__link">
+          
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../api/index.html" class="md-tabs__link">
+        
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../examples/" class="md-tabs__link">
+          
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../contributing/" class="md-tabs__link">
+          
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="././" class="md-tabs__link">
+        
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../license/" class="md-tabs__link">
+        
+  
+  License
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="./.." title="DevView" class="md-nav__button md-logo" aria-label="DevView" data-md-component="logo">
+      
+  <img src="../assets/branding/devview-icon-light.svg" alt="DevView">
+
+    </a>
+    DevView
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/worldline/devview" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M216.5 362.5c-66-8-112.5-55.5-112.5-117 0-25 9-52 24-70-6.5-16.5-5.5-51.5 2-66 20-2.5 47 8 63 22.5 19-6 39-9 63.5-9s44.5 3 62.5 8.5c15.5-14 43-24.5 63-22 7 13.5 8 48.5 1.5 65.5 16 19 24.5 44.5 24.5 70.5 0 61.5-46.5 108-113.5 116.5 17 11 28.5 35 28.5 62.5v52c0 15 12.5 23.5 27.5 17.5C441 459.5 512 369 512 257 512 115.5 397 0 255.5 0S0 115.5 0 257c0 111 70.5 203 165.5 237.5 13.5 5 26.5-4 26.5-17.5v-40c-7 3-16 5-24 5-33 0-52.5-18-66.5-51.5-5.5-13.5-11.5-21.5-23-23-6-.5-8-3-8-6 0-6 10-10.5 20-10.5 14.5 0 27 9 40 27.5 10 14.5 20.5 21 33 21s20.5-4.5 32-16c8.5-8.5 15-16 21-21"/></svg>
+  </div>
+  <div class="md-source__repository">
+    worldline/devview
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Home
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../getting-started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Getting Started
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Getting Started
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/prerequisites/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Prerequisites
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Installation
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/quick-start/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Quick Start
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Configuration
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/troubleshooting-faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Troubleshooting & FAQ
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../modules/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Modules
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Modules
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/featureflip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  FeatureFlip
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Analytics
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/consolelogger/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Console Logger
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/timecapsule/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  TimeCapsule
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_6" id="__nav_3_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  NetworkMock
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  NetworkMock
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/networkmock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Overview
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/networkmock-core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Core
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/networkmock-ui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  UI
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/networkmock-ktor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Ktor Plugin
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/networkmock-workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Workflows
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/custom-modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Creating Custom Modules
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../guides/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Guides
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Guides
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/integration-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Integration Guide
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/migrating-to-openapi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Migrating to OpenAPI
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/module-development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Module Development
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/navigation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Navigation
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/theming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Theming
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/best-practices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Best Practices
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/common-pitfalls/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Common Pitfalls
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  API Reference
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../examples/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Examples
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Examples
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/android/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Android Setup
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/ios/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  iOS Setup
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/feature-flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Feature Flags
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/analytics-tracking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Analytics Tracking
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/advanced-examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Advanced Examples
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../contributing/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Contributing
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Contributing
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Development Setup
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/code-style/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Code Style
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/pull-requests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Pull Requests
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/publishing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Publishing a Release
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/code-of-conduct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Code of Conduct
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Changelog
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Changelog
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#unreleased" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Unreleased
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-alpha03-2026-09-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.2.0-alpha03 - 2026-09-11
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.0-alpha03 - 2026-09-11">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Added
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Changed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-alpha02-2026-09-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.2.0-alpha02 - 2026-09-11
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.0-alpha02 - 2026-09-11">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Fixed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-alpha01-2026-09-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.2.0-alpha01 - 2026-09-10
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.0-alpha01 - 2026-09-10">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Added
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Changed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#015-2026-09-08" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.1.5 - 2026-09-08
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.5 - 2026-09-08">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Added
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#014-2026-07-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.1.4 - 2026-07-22
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.4 - 2026-07-22">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Changed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Fixed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Documentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#013-2026-07-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.1.3 - 2026-07-21
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.3 - 2026-07-21">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Added
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Fixed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#012-2026-07-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.1.2 - 2026-07-17
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.2 - 2026-07-17">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Fixed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Changed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#011-2026-07-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.1.1 - 2026-07-16
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.1 - 2026-07-16">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Changed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Documentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Quality
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#010-2026-07-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.1.0 - 2026-07-15
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.0 - 2026-07-15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Added
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Changed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Fixed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Documentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quality_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Quality
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  License
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+  
+
+
+<h1 id="changelog">Changelog</h1>
+<p>All notable changes to this project will be documented in this file.</p>
+<p>The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>,
+and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<h2 id="unreleased"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha03...HEAD">Unreleased</a></h2>
+<h2 id="020-alpha03-2026-09-11"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha02...0.2.0-alpha03">0.2.0-alpha03</a> - 2026-09-11</h2>
+<h3 id="added">Added</h3>
+<ul>
+<li>NetworkMock status-family chip colors (2xx green, 4xx/5xx red, etc.) are now configurable via
+  a <code>LocalMockColorScheme</code> CompositionLocal, mirroring <code>devview-consolelogger</code>'s
+  <code>LocalLogColorScheme</code>. Also fixes these colors rendering as washed-out light pastels on dark
+  surfaces — <code>MockColorScheme.Dark</code> is a proper hand-tuned dark palette rather than the light
+  values reused verbatim. (<code>devview-networkmock</code>)</li>
+<li>NetworkMock UI: a multi-select HTTP method filter chip row, alongside the existing version
+  filter. No chip selected shows every method; selecting one or more narrows the list to
+  operations using any of the selected methods, combined with the version filter and search
+  via AND. (<code>devview-networkmock</code>)</li>
+<li><code>HttpMethod</code>: a value class modeled after Ktor's own <code>HttpMethod</code> (open set, companion
+  constants, <code>DefaultMethods</code> for canonical ordering), replacing the raw <code>String</code> on
+  <code>Operation.method</code> — without adding a Ktor dependency to <code>devview-networkmock-core</code>.
+  (<code>devview-networkmock-core</code>)</li>
+<li>NetworkMock UI: a "Mocked"/"Network" filter chip row, and a mocked-operation count
+  (e.g. "3 of 47 mocked") on the global mocking toggle, computed across every spec — both
+  answer "what have I left mocked" at a glance. (<code>devview-networkmock</code>)</li>
+</ul>
+<h3 id="changed">Changed</h3>
+<ul>
+<li><strong>Breaking:</strong> <code>Operation.method</code> is now <code>HttpMethod</code> instead of <code>String</code>.
+  (<code>devview-networkmock-core</code>)</li>
+<li><strong>Breaking:</strong> NetworkMock's operation detail screen is now a bottom sheet over the operation
+  list instead of a second navigation destination — tapping an operation opens the response
+  picker directly, without leaving the list, and picking a response dismisses the sheet.
+  Removed: <code>NetworkMockDestination.Endpoint</code>, <code>NetworkMockEndpointViewModel</code>,
+  <code>NetworkMockEndpointUiState</code>, and <code>NetworkMockScreen</code>'s <code>navigateToEndpointScreen</code> parameter.
+  Added to <code>NetworkMockViewModel</code>: <code>sheetState: StateFlow&lt;OperationSheetState&gt;</code>,
+  <code>openOperation(key)</code>, <code>closeSheet()</code> — response variant discovery (previously
+  <code>NetworkMockEndpointViewModel</code>'s job) now happens here, once per sheet open. Marking a
+  response for preview/compare is now an explicit eye-icon toggle on each row instead of a
+  long-press, and the preview/diff view is a second page of the same sheet (reached via a
+  "Preview"/"Compare 2 responses" button) rather than a separate bottom sheet stacked on top of
+  the detail screen. (<code>devview-networkmock</code>)</li>
+<li>NetworkMock UI: the search field and version filter row moved from the top of the screen into
+  a <code>Scaffold</code> bottom bar (alongside the new method filter), matching FeatureFlip, Analytics, and
+  ConsoleLogger's existing layout for one-handed reach. Only the search field and an expand
+  chevron are visible by default; the mock-state, version, and method filter rows collapse
+  behind the chevron (matching Analytics' bottom bar). (<code>devview-networkmock</code>)</li>
+<li>NetworkMock UI: each operation row now shows a leading colour rail (the state chip's colour)
+  and a colour-coded HTTP method badge; the row's separate state-summary line — which duplicated
+  the status code already shown in the state chip — is gone (#115). The row's per-operation
+  version badge is also gone: <code>Operation.version</code> is parsed from the very path segment shown
+  right next to it, so the badge never showed anything the path wasn't already showing, and it
+  crowded the state chip. The path itself no longer truncates — it wraps instead, so a long URL
+  is never cut off. The operation sheet's picker-page header shares the same fix, since it shows
+  the same operation identity — except the header drops the state chip entirely: the picker
+  list right below already marks the active response with a checkmark, its full label, and a
+  family icon/colour, so a bare-status-code chip in the header would only repeat that.
+  (<code>devview-networkmock</code>)</li>
+</ul>
+<h2 id="020-alpha02-2026-09-11"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha01...0.2.0-alpha02">0.2.0-alpha02</a> - 2026-09-11</h2>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li>Fixed ViewModel persistence during navigation: the <code>rememberViewModelStoreNavEntryDecorator()</code> was 
+  not applied to the <code>NavDisplay</code>'s <code>entryDecorators</code> causing <code>ViewModel</code>s to persist once instantiated.</li>
+</ul>
+<h2 id="020-alpha01-2026-09-10"><a href="https://github.com/worldline/DevView/compare/0.1.5...0.2.0-alpha01">0.2.0-alpha01</a> - 2026-09-10</h2>
+<h3 id="added_1">Added</h3>
+<ul>
+<li><code>Operation.version</code>: a display-only version tag extracted from a <code>/v{n}/</code> path segment
+  (e.g. <code>/api/v2/x</code> → <code>"v2"</code>), shown as a chip on each operation in the NetworkMock UI. Purely
+  a UI label — request matching is unaffected. (<code>devview-networkmock-core</code>, <code>devview-networkmock</code>)</li>
+<li>NetworkMock UI: a search field (filters by name, path, or operationId) and a per-tab version
+  filter row, both client-side over already-loaded data. (<code>devview-networkmock</code>)</li>
+<li>A <a href="../guides/migrating-to-openapi/">migration guide</a> and a <code>scripts/mocks_json_to_openapi.py</code>
+  conversion script for integrators upgrading from a pre-0.2.0 <code>mocks.json</code> config.</li>
+<li><code>devview-consolelogger</code> module: displays the app's native console output (logcat on
+  Android, a stdout/stderr redirect on iOS) inside the DevView overlay, with per-level
+  filter chips, a text filter, and auto-follow. Capture works on an untethered device
+  (no debugger required) on both platforms; an optional <code>DevViewLogWriter</code> routes
+  Kermit-based logging into the same view, closing the one remaining gap
+  (<code>NSLog</code>/<code>os_log</code> on iOS with no debugger attached). Log-level colors are configurable
+  via a <code>LocalLogColorScheme</code> CompositionLocal. (<code>devview-consolelogger</code>)</li>
+<li>TimeCapsule rows now show a per-state change summary (e.g. <code>count 3 → 4</code>) derived from a
+  <code>key=value</code>-shaped label, expandable to reveal the full label with changed values
+  highlighted, plus a wall-clock timestamp alongside the existing delta pill. The screen now
+  shows a header naming the recorded owner. (<code>devview-timecapsule</code>)</li>
+</ul>
+<h3 id="changed_1">Changed</h3>
+<ul>
+<li><strong>Breaking:</strong> <code>devview-networkmock-core</code> now parses OpenAPI 3.x documents (JSON, and YAML
+  on a best-effort basis) instead of the bespoke <code>mocks.json</code> format. One spec file is one
+  API group — the environment axis is gone entirely; a group's request-matching hosts come
+  from the spec's <code>servers[]</code> list, and an app talking to two hosts for the same API is
+  simply two operations with different paths in one document. <code>NetworkMock(configPath: String)</code>
+  is now <code>NetworkMock(specPaths: List&lt;String&gt;)</code>. See the
+  <a href="../guides/migrating-to-openapi/">migration guide</a>. (<code>devview-networkmock-core</code>,
+  <code>devview-networkmock</code>, <code>devview-networkmock-ktor</code>)</li>
+<li>Renamed to OpenAPI vocabulary throughout the networkmock modules: <code>ApiGroupConfig</code> →
+  <code>ApiSpec</code>, <code>EndpointConfig</code> → <code>Operation</code>, <code>EndpointKey</code> → <code>OperationKey</code> (drops the
+  <code>environmentId</code> component), <code>EndpointDescriptor</code> → <code>OperationDescriptor</code>,
+  <code>EndpointMockState</code> → <code>OperationMockState</code>, <code>GroupEnvironmentUiModel</code> → <code>ApiSpecUiModel</code>,
+  <code>EndpointUiModel</code> → <code>OperationUiModel</code>. <code>MockResponse</code> and <code>MockMatch</code> are deliberately
+  <strong>not</strong> renamed — they model DevView's own runtime mocking behavior, not something OpenAPI
+  describes. <code>EnvironmentConfig</code>, <code>EndpointOverride</code>, and <code>effectiveEndpoints</code> are deleted.</li>
+<li>Response variant discovery now reads the spec's declared
+  <code>responses.&lt;code&gt;.content.*.examples</code> instead of probing status-code/suffix combinations
+  against the filesystem. <code>OperationMockState.Mock</code> is now keyed by <code>(statusCode,
+  exampleName)</code> instead of a response file name. (<code>devview-networkmock-core</code>)</li>
+<li>Response delay simulation is now declared via the <code>x-devview.delayMs</code> OpenAPI
+  Specification Extension, at the document root (spec-wide default) and/or per operation
+  (overrides the default) — replacing <code>ApiGroupConfig.defaultDelayMs</code> /
+  <code>EndpointConfig.delayMs</code>. (<code>devview-networkmock-core</code>)</li>
+<li>DataStore entries written under the pre-0.2.0 key shape
+  (<code>network_mock_endpoint_{groupId}-{environmentId}-{endpointId}</code>) are wiped once on first
+  launch after upgrading — the key shape and the <code>Mock</code> payload shape both changed, so a
+  translation wasn't attempted. The global mocking toggle is unaffected. (<code>devview-networkmock-core</code>)</li>
+<li><code>OperationDescriptor</code> no longer carries <code>availableResponses</code> — the main operation list never
+  read them, so <code>NetworkMockViewModel</code> no longer eagerly discovers and decodes every response
+  body on app start. Response variants are now only loaded when an operation's detail screen
+  actually opens (<code>NetworkMockEndpointUiState.Content.responses</code>). (<code>devview-networkmock-core</code>,
+  <code>devview-networkmock</code>)</li>
+<li><code>TimeCapsuleEffect</code> gains a <code>subtitle</code> parameter, inserted between <code>label</code> and <code>maxEntries</code>.
+  Callers passing <code>maxEntries</code> positionally must switch to a named argument.
+  (<code>devview-timecapsule</code>)</li>
+</ul>
+<h2 id="015-2026-09-08"><a href="https://github.com/worldline/DevView/compare/0.1.4...0.1.5">0.1.5</a> - 2026-09-08</h2>
+<h3 id="added_2">Added</h3>
+<ul>
+<li><code>devview-timecapsule</code> module: records the state history of the currently visible screen
+  via <code>TimeCapsuleEffect</code>/<code>TimeCapsuleOwner</code>, and lets a developer restore any earlier
+  state back into that screen from the DevView overlay. History resets automatically when
+  the screen leaves composition.</li>
+</ul>
+<h2 id="014-2026-07-22"><a href="https://github.com/worldline/DevView/compare/0.1.3...0.1.4">0.1.4</a> - 2026-07-22</h2>
+<h3 id="changed_2">Changed</h3>
+<ul>
+<li>Applied logo-inspired color palette to the sample app: custom light/dark <code>ColorScheme</code> using violet/indigo/magenta tones from the DevView brand, including the full <code>surfaceContainer</code> tonal ramp. (<code>sample</code>)</li>
+<li>Module icon containers on the home screen now use per-section colors derived from the logo palette; icon shape changed from circle to squircle (<code>RoundedCornerShape(8.dp)</code>) and module names are now <code>SemiBold</code>. Chevron indicator removed — touch ripple is the navigation affordance. (<code>devview</code>)</li>
+<li>Section headers on the home screen now use <code>primary</code> color instead of <code>outline</code>, and the DevView chameleon icon appears as a subtle watermark behind the module list. (<code>devview</code>)</li>
+<li>Analytics log items now display a <code>3dp</code> leading color strip matching the event category, making the log stream scannable by category at a glance. (<code>devview-analytics</code>)</li>
+<li>Feature type labels ("Local" / "Remote") are now rendered as small pill badges instead of plain text. (<code>devview-featureflip</code>)</li>
+<li>HTTP method labels on endpoint cards and the endpoint detail header are now rendered as proper badges with a <code>primaryContainer</code> background, matching the visual language of API explorer tools. (<code>devview-networkmock</code>)</li>
+<li>NetworkMock empty, error, and loading state screens now use Material icons instead of an emoji, with consistent typography and <code>onSurfaceVariant</code> text colors. (<code>devview-networkmock</code>)</li>
+<li>Added empty state to <code>FeatureFlipScreen</code> when the feature list is empty or no features match the active filter. (<code>devview-featureflip</code>)</li>
+<li>The endpoint detail hint card now shows a <code>TouchApp</code> icon for visual clarity. (<code>devview-networkmock</code>)</li>
+<li>Top app bar titles across all DevView screens are now <code>SemiBold</code> weight. (<code>devview</code>)</li>
+<li>Unified surface backgrounds: the <code>surfaceContainer</code> explicit color has been removed from the Analytics highlighted-logs header and the NetworkMock global toggle wrapper — backgrounds now inherit from <code>MaterialTheme</code> uniformly. (<code>devview-analytics</code>, <code>devview-networkmock</code>)</li>
+<li>Diff colors shifted from generic blue to lavender (<code>#DDD8FF</code>) to align with the brand palette. (<code>devview-networkmock</code>)</li>
+</ul>
+<h3 id="fixed_1">Fixed</h3>
+<ul>
+<li>Fixed excessive recompositions and broken Switch animation on <code>FeatureFlipScreen</code>: item keys now use the stable <code>feature.name</code> instead of <code>hashCode()</code>, <code>FeatureHandler</code> caches its Flow to prevent <code>collectAsStateWithLifecycle</code> from restarting on every recomposition, and redundant explicit <code>remember</code> keys have been removed from <code>derivedStateOf</code> blocks. (<code>devview-featureflip</code>)</li>
+<li>Added <code>distinctUntilChanged()</code> to <code>FeatureHandler.isFeatureEnabledFlow</code> and <code>getFeatures</code> to suppress recompositions when DataStore emits structurally identical values. (<code>devview-featureflip</code>)</li>
+<li>Fixed <code>AnalyticsScreen</code> <code>LazyColumn</code> item key: <code>log.hashCode()</code> was replaced by <code>log.timestamp</code>, then <code>log.timestamp</code> caused a crash because multiple events can share the same millisecond; the key is now the log's original position in the append-only <code>AnalyticsLogger.logs</code> list via <code>withIndex()</code>. Redundant explicit keys also removed from all <code>derivedStateOf</code> blocks. (<code>devview-analytics</code>)</li>
+<li>Fixed <code>HomeScreen</code> <code>LazyColumn</code> using <code>module.hashCode()</code> as item key instead of the stable <code>module.moduleName</code>. (<code>devview</code>)</li>
+<li>Fixed <code>NetworkMockScreen</code> using <code>collectAsState()</code> instead of <code>collectAsStateWithLifecycle()</code>, causing unnecessary state collection when the screen is off-stack or the app is backgrounded. (<code>devview-networkmock</code>)</li>
+<li>Added <code>distinctUntilChanged()</code> to <code>MockStateRepository.observeState()</code> to suppress recompositions triggered by structurally equal <code>NetworkMockState</code> emissions from DataStore. (<code>devview-networkmock-core</code>)</li>
+</ul>
+<h3 id="documentation">Documentation</h3>
+<ul>
+<li>Added Compose List Keys rules to the contributing guide (<code>code-style.md</code>): LazyColumn/LazyRow keys must be unique, stable under state changes, and semantically meaningful. Added matching item to the PR checklist.</li>
+</ul>
+<h2 id="013-2026-07-21"><a href="https://github.com/worldline/DevView/compare/0.1.2...0.1.3">0.1.3</a> - 2026-07-21</h2>
+<h3 id="added_3">Added</h3>
+<ul>
+<li><code>NetworkMockResourceLoader</code> fun interface in <code>devview-networkmock-core</code>: provides a named type for DI frameworks (Koin, Hilt, etc.) to bind, eliminating the need for a custom bridge interface in multi-module KMP projects where mock resource files live in a different module than where <code>NetworkMock</code> is constructed. Both <code>devview-networkmock</code> and <code>devview-networkmock-ktor</code> now expose <code>devview-networkmock-core</code> as an <code>api</code> dependency so the type is available to all integrators.</li>
+</ul>
+<h3 id="fixed_2">Fixed</h3>
+<ul>
+<li>Fixed DevView overlay back navigation: the overlay's back handler now correctly yields priority to the host app when closed, preventing it from silently consuming back events.</li>
+<li>Fixed crash on Network Mock screen startup: <code>MissingResourceException</code> thrown by Compose Resources when probing absent response files was not caught by the <code>IllegalStateException</code> handler in <code>MockConfigRepository</code>, causing a fatal crash. The exception is now normalised at the <code>NetworkMock</code> boundary before reaching the core module.</li>
+</ul>
+<h2 id="012-2026-07-17"><a href="https://github.com/worldline/DevView/compare/0.1.1...0.1.2">0.1.2</a> - 2026-07-17</h2>
+<h3 id="fixed_3">Fixed</h3>
+<ul>
+<li>Preserved Kotlin module metadata in Android packaging by replacing broad <code>META-INF/**</code> excludes with selective license/signature excludes.</li>
+<li>Fixed docs list rendering on Home (<code>What's New</code>) and License (<code>Third-Party Licences</code>) pages.</li>
+</ul>
+<h3 id="changed_3">Changed</h3>
+<ul>
+<li>Updated sample <code>DevViewApp</code> feature setup to include a local feature entry fix and a remote feature example.</li>
+</ul>
+<h2 id="011-2026-07-16"><a href="https://github.com/worldline/DevView/compare/v0.1.0...0.1.1">0.1.1</a> - 2026-07-16</h2>
+<h3 id="changed_4">Changed</h3>
+<ul>
+<li>Downgraded Kotlin from 2.4.10 to 2.3.21 for broader consumer compatibility.</li>
+<li>Removed <code>compose-stability-analyzer</code> plugin (KMP incompatible).</li>
+</ul>
+<h3 id="documentation_1">Documentation</h3>
+<ul>
+<li>Updated minimum Kotlin version requirement to 2.3.21 in installation guide.</li>
+<li>Added acknowledgment for chrisbanes/haze inspiration.</li>
+<li>Added GitHub issue templates for bugs and feature requests.</li>
+</ul>
+<h3 id="quality">Quality</h3>
+<ul>
+<li>Added Metalava API tracking to all published modules.</li>
+<li>Improved CI infrastructure: split workflows to Linux/macOS, added snapshot deploy, replaced <code>release.sh</code> with platform-agnostic <code>release.py</code>.</li>
+<li>Enabled automatic Maven Central publishing.</li>
+</ul>
+<h2 id="010-2026-07-15"><a href="https://github.com/worldline/DevView/releases/tag/v0.1.0">0.1.0</a> - 2026-07-15</h2>
+<h3 id="added_4">Added</h3>
+<ul>
+<li><code>devview</code>: core DevView framework with module registry DSL, section-based home screen, type-safe Navigation3 integration, and per-destination top-app-bar metadata/actions.</li>
+<li><code>devview-featureflip</code>: feature flag tooling with local and remote features, tri-state remote override support, DataStore-backed persistence, and a built-in Compose management screen. Feature type badge and filter support for granular feature browsing.</li>
+<li><code>devview-analytics</code>: in-app analytics log capture with typed log events, real-time Compose UI, highlighted log categories, and clear-log action support.</li>
+<li><code>devview-networkmock-core</code>: shared network mock engine with JSON configuration loading (<code>mocks.json</code>), endpoint/request matching (including path parameters), mock response discovery/loading, and persisted endpoint/global state.</li>
+<li><code>devview-networkmock</code>: DevView UI module for network mocking with host tabs, global mock toggle, endpoint state controls, and reset-to-network behavior.</li>
+<li><code>devview-networkmock-ktor</code>: Ktor client plugin that intercepts requests, resolves endpoint mock state, returns synthetic HTTP responses when configured, and falls back to real network calls on misses/errors.</li>
+<li><code>devview-utils</code>: shared multiplatform utilities for DataStore setup (<code>createDataStore</code>), reusable <code>DataStoreDelegate</code>, and <code>RequiresDataStore</code> initialization contract.</li>
+<li><code>devview-test</code>: shared multiplatform test utilities including <code>FakePreferencesDataStore</code> and Turbine-based Flow assertion helpers.</li>
+<li>Pre-commit hooks enforcing gitleaks secret scanning and Detekt static analysis on every commit.</li>
+</ul>
+<h3 id="changed_5">Changed</h3>
+<ul>
+<li>Refactored module architecture to support destination-level metadata (screen titles and action buttons) across DevView modules.</li>
+<li>Standardized DataStore initialization flow in <code>rememberModules</code>, allowing modules and plugin-facing components to share persistent state safely.</li>
+<li>Improved module UIs (home, analytics, feature flags, and network mock) with cleaner layouts and more actionable controls.</li>
+<li>Removed dead endpoint selection state from NetworkMock.</li>
+<li>Updated Kotlin to 2.4.10 and Compose Multiplatform to 2.11.0; bulk transitive dependency upgrades via Renovate.</li>
+<li>Migrated documentation site from MkDocs to Zensical.</li>
+</ul>
+<h3 id="fixed_4">Fixed</h3>
+<ul>
+<li>Resolved Dokka unresolved link warnings and broken KDoc links across all modules.</li>
+<li>Fixed Detekt <code>MaxLineLength</code> violations in KDoc link references.</li>
+<li>Fixed documentation site rendering issues and stale content.</li>
+<li>Fixed CI configuration to correctly handle Renovate dependency update branches.</li>
+</ul>
+<h3 id="documentation_2">Documentation</h3>
+<ul>
+<li>Rewrote README as an integrator quick-start guide; removed TODO.md.</li>
+<li>Added CLAUDE.md guidance files for root and all sub-modules.</li>
+<li>Documented git workflow conventions: branch naming, PR title format, and gitmoji commit style.</li>
+<li>Expanded Dokka API documentation and module samples for all public APIs.</li>
+<li>Added Renovate custom manager to keep documentation version badges in sync with dependency updates.</li>
+</ul>
+<h3 id="quality_1">Quality</h3>
+<ul>
+<li>Added and expanded unit test coverage for all primary <code>devview-*</code> modules.</li>
+<li>Added Konsist architecture enforcement tests and Kover coverage reporting across the module set.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../contributing/code-of-conduct/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Code of Conduct">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Code of Conduct
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../license/" class="md-footer__link md-footer__link--next" aria-label="Next: License">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                License
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Maxime Michel
+
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/worldline" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M216.5 362.5c-66-8-112.5-55.5-112.5-117 0-25 9-52 24-70-6.5-16.5-5.5-51.5 2-66 20-2.5 47 8 63 22.5 19-6 39-9 63.5-9s44.5 3 62.5 8.5c15.5-14 43-24.5 63-22 7 13.5 8 48.5 1.5 65.5 16 19 24.5 44.5 24.5 70.5 0 61.5-46.5 108-113.5 116.5 17 11 28.5 35 28.5 62.5v52c0 15 12.5 23.5 27.5 17.5C441 459.5 512 369 512 257 512 115.5 397 0 255.5 0S0 115.5 0 257c0 111 70.5 203 165.5 237.5 13.5 5 26.5-4 26.5-17.5v-40c-7 3-16 5-24 5-33 0-52.5-18-66.5-51.5-5.5-13.5-11.5-21.5-23-23-6-.5-8-3-8-6 0-6 10-10.5 20-10.5 14.5 0 27 9 40 27.5 10 14.5 20.5 21 33 21s20.5-4.5 32-16c8.5-8.5 15-16 21-21"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","navigation.tracking","search.highlight","toc.follow","toc.integrate"],"search":"../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":{"alias":true,"provider":"mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.88ee1349.min.js"></script>
+      
+        <script src="../javascripts/branding-theme.js"></script>
+      
+    
+  </body>
+</html>
