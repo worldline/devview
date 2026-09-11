@@ -197,6 +197,60 @@ class NetworkMockScreenTest {
         onAllNodesWithTag(testTag = "version_filter_row_catalog").assertCountEquals(expectedSize = 0)
     }
 
+    @Test
+    fun methodFilterChip_narrowsToThatMethod() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+
+        onNodeWithTag(testTag = "method_filter_example_POST").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
+        onAllNodesWithTag(testTag = "endpoint_card_example_getUser").assertCountEquals(expectedSize = 0)
+        onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
+    }
+
+    @Test
+    fun methodFilterChip_deselecting_restoresFullList() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+
+        onNodeWithTag(testTag = "method_filter_example_POST").performClick()
+        waitForIdle()
+        onNodeWithTag(testTag = "method_filter_example_POST").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
+    }
+
+    @Test
+    fun methodFilterChips_unionMultipleSelections() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+
+        onNodeWithTag(testTag = "method_filter_example_GET").performClick()
+        waitForIdle()
+        onNodeWithTag(testTag = "method_filter_example_POST").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
+    }
+
+    @Test
+    fun methodAndVersionFilters_intersect() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+
+        onNodeWithTag(testTag = "version_filter_example_v1").performClick()
+        waitForIdle()
+        onNodeWithTag(testTag = "method_filter_example_GET").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
+        onAllNodesWithTag(testTag = "endpoint_card_example_createUser").assertCountEquals(expectedSize = 0)
+        onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
+    }
+
     private fun ComposeUiTest.setScreen(
         uiState: NetworkMockUiState,
         onGlobalToggle: (Boolean) -> Unit = {},
