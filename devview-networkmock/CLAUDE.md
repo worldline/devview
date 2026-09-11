@@ -129,7 +129,14 @@ composable (not the ViewModel — see `PreviewSheetState` below):
 
 - **Picker page** (`OperationPickerPage`, `internal` rather than `private` specifically so
   device tests can exercise it without going through `ModalBottomSheet`'s chrome/animation,
-  which has no established testing pattern in this codebase): the operation header, then
+  which has no established testing pattern in this codebase): `OperationPickerHeader` mirrors
+  `EndpointCard`'s row anatomy (see "Endpoint row anatomy" above) for the name/method/path —
+  no version badge, wrapping instead of truncating path — since it renders the same operation
+  identity, just above the response list instead of in a list row. Unlike `EndpointCard`, the
+  header has **no** state chip: the currently-active response is already marked with a
+  checkmark, its full `displayName`, and a family icon/colour by `MockItemContent` in the list
+  right below, so a second, bare-status-code chip in the header would only repeat it — the same
+  "don't show it twice" reasoning as the deleted version badge. Below the header,
   `NetworkItem` + `MockItem` rows grouped by `StatusCodeFamily`. Tapping a row calls
   `onSelectResponse` and dismisses the sheet. Each `MockItem` also has an eye-icon preview
   toggle (`isMarkedForPreview`/`onToggleMarkedForPreview`) that marks it *without* dismissing;

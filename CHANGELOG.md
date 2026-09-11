@@ -51,7 +51,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   version badge is also gone: `Operation.version` is parsed from the very path segment shown
   right next to it, so the badge never showed anything the path wasn't already showing, and it
   crowded the state chip. The path itself no longer truncates — it wraps instead, so a long URL
-  is never cut off. (`devview-networkmock`)
+  is never cut off. The operation sheet's picker-page header shares the same fix, since it shows
+  the same operation identity — except the header drops the state chip entirely: the picker
+  list right below already marks the active response with a checkmark, its full label, and a
+  family icon/colour, so a bare-status-code chip in the header would only repeat that.
+  (`devview-networkmock`)
 
 ## [0.2.0-alpha02] - 2026-09-11
 

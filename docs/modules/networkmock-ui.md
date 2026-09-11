@@ -21,7 +21,7 @@ The main screen shows a global mock toggle at the top, followed by a scrollable 
 
 A bottom sheet over the operation list — opened by tapping a row, not a navigation destination — showing every discovered mock response for that operation, grouped by status code family (2xx, 4xx, 5xx, etc.). Two pages:
 
-- **Picker page** (opens first): a "No mock" row to route the operation to the actual network, plus one row per response variant. Tapping a row activates it and dismisses the sheet. Each response row also has a preview toggle (an eye icon) that marks it without dismissing the sheet — marking one response reveals a "Preview `statusCode - exampleName`" button at the bottom; marking a second changes it to "Compare 2 responses". Tapping that button opens the preview page.
+- **Picker page** (opens first): a header showing the operation's name, method, and path (wraps instead of truncating, no version badge — same anatomy as the list row above, minus its state chip: the active response is already marked below, so the header doesn't repeat it), then a "No mock" row to route the operation to the actual network, plus one row per response variant. Tapping a row activates it and dismisses the sheet. Each response row also has a preview toggle (an eye icon) that marks it without dismissing the sheet — marking one response reveals a "Preview `statusCode - exampleName`" button at the bottom; marking a second changes it to "Compare 2 responses". Tapping that button opens the preview page.
 - **Preview page**: shows the marked response's body, or — when two are marked — a diff between them (a side-by-side or inline diff, LCS-based, collapsing long unchanged runs). A back arrow returns to the picker page without losing the marks.
 
 ## Theming

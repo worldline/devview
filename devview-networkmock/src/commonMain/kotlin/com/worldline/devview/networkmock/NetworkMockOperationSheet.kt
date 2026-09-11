@@ -42,7 +42,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import com.worldline.devview.networkmock.components.EndpointStateChip
 import com.worldline.devview.networkmock.components.ErrorState
 import com.worldline.devview.networkmock.components.LoadingState
 import com.worldline.devview.networkmock.components.MockItem
@@ -276,7 +275,7 @@ private fun OperationPickerHeader(
             .fillMaxWidth()
             .padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
         Column(
             modifier = Modifier.weight(weight = 1f)
@@ -289,7 +288,7 @@ private fun OperationPickerHeader(
             )
             Row(
                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
                 Box(
                     modifier = Modifier
@@ -306,33 +305,13 @@ private fun OperationPickerHeader(
                     )
                 }
                 Text(
-                    modifier = Modifier.weight(weight = 1f, fill = false),
                     text = endpoint.descriptor.config.path,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontFamily = FontFamily.Monospace,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    fontFamily = FontFamily.Monospace
                 )
-                endpoint.descriptor.config.version?.let { version ->
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                color = MaterialTheme.colorScheme.secondaryContainer,
-                                shape = RoundedCornerShape(size = 4.dp)
-                            ).padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = version,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            fontFamily = FontFamily.Monospace
-                        )
-                    }
-                }
             }
         }
-        EndpointStateChip(endpointMockState = endpoint.currentState)
         IconButton(
             modifier = Modifier.testTag(tag = "operation_sheet_close_button"),
             onClick = onClose
