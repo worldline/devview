@@ -31,6 +31,8 @@ rememberModules {
 
 **Public UI models**: `ApiSpecUiModel` (one per spec tab) and `OperationUiModel` (pairs a static `OperationDescriptor` with a live `OperationMockState`).
 
+**Public theming**: `MockColorScheme` / `StatusColors` (`theme/MockColorScheme.kt`) and the `LocalMockColorScheme` CompositionLocal (`theme/LocalMockColorScheme.kt`) — see "Status colour theming" below.
+
 **Naming note**: internal Compose component names (`EndpointCard`, `EndpointStateChip`, `EndpointHeaderCard`, `MockItem`) and their test tags intentionally keep "endpoint" vocabulary — they're DevView's own UI implementation detail, not one of the types renamed to OpenAPI vocabulary by the 0.2.0 migration (`ApiSpecUiModel`, `OperationUiModel`, `OperationKey`, etc.).
 
 ## Internal Architecture
@@ -80,7 +82,11 @@ When the sheet is in `Compare` state, responses are diffed:
 
 ### Status code colors and icons
 
-`ModelUtils.kt` provides internal extension properties (`OperationMockState.icon`, `.contentColor`, `.containerColor`) that map HTTP status families (1xx–5xx) to hardcoded `Color` and `ImageVector` values. These are the only place to update if chip colours need changing.
+`ModelUtils.kt` provides internal extension properties (`OperationMockState.icon`, `.contentColor`, `.containerColor`) that map HTTP status families (1xx–5xx) to `ImageVector` values and — via `theme/MockColorScheme.kt` — theme-aware `Color` values. `iconForStatusCode`/`contentColorForStatusCode`/`containerColorForStatusCode` are the free-function equivalents used where there's no `OperationMockState` to hang the extension off of (e.g. `MockItem`'s per-response rows). The icon mapping is a plain `when` on numeric ranges; colours resolve through `theme/LocalMockColorScheme.kt`'s `rememberMockColorScheme()` — see "Status colour theming" below.
+
+### Status colour theming
+
+Mirrors `devview-consolelogger`'s `LogColorScheme` pattern exactly: `MockColorScheme` (`theme/MockColorScheme.kt`) holds two complete, hand-tuned palettes (`Light`/`Dark`) — one `StatusColors(container, content)` pair per `StatusCodeFamily` plus one for the `Network` pass-through state — deliberately not derived from `MaterialTheme.colorScheme`, since a 2xx chip needs to read as "success" regardless of the host's brand palette. Hosts provide a palette via the public `LocalMockColorScheme` CompositionLocal at their `MaterialTheme` site; `rememberMockColorScheme()` (internal, in `theme/LocalMockColorScheme.kt`) resolves it, falling back to a luminance-based guess against the ambient `MaterialTheme.colorScheme.surface` (not `isSystemInDarkTheme()` — DevView's theme may not track the system setting) with a one-time Kermit warning if the CompositionLocal was never provided. Because the colour extensions in `ModelUtils.kt` are themselves `@Composable @ReadOnlyComposable`, their test coverage for anything beyond the pure `MockColorScheme.get()`/`copy()` (`MockColorSchemeTest.kt`, `commonTest`) lives in `androidDeviceTest` (`ModelUtilsColorTest.kt`, `MockColorSchemeResolutionTest.kt`), not `commonTest`.
 
 ### Fake data for previews
 

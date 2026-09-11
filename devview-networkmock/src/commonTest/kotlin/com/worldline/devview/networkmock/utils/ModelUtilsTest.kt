@@ -7,8 +7,6 @@ import androidx.compose.material.icons.rounded.CheckCircleOutline
 import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material.icons.rounded.Wifi
-import androidx.compose.ui.graphics.Color
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.OperationDescriptor
 import com.worldline.devview.networkmock.core.model.OperationMockState
@@ -18,6 +16,9 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
+// contentColorForStatusCode/containerColorForStatusCode and OperationMockState.contentColor/
+// containerColor are @Composable (they read LocalMockColorScheme) — covered in the
+// androidDeviceTest ModelUtilsColorTest instead, which can provide a composition.
 class ModelUtilsTest {
 
     @Test
@@ -30,48 +31,6 @@ class ModelUtilsTest {
 
         iconForStatusCode(statusCode = null) shouldBe Icons.AutoMirrored.Rounded.HelpOutline
         iconForStatusCode(statusCode = 42) shouldBe Icons.AutoMirrored.Rounded.HelpOutline
-    }
-
-    @Test
-    fun `contentColorForStatusCode maps HTTP families and fallback`() {
-        contentColorForStatusCode(statusCode = 150) shouldBe Color(color = 0xFF184559)
-        contentColorForStatusCode(statusCode = 250) shouldBe Color(color = 0xFF103C13)
-        contentColorForStatusCode(statusCode = 350) shouldBe Color(color = 0xFF603610)
-        contentColorForStatusCode(statusCode = 450) shouldBe Color(color = 0xFF6F1111)
-        contentColorForStatusCode(statusCode = 550) shouldBe Color(color = 0xFF611A59)
-
-        contentColorForStatusCode(statusCode = null) shouldBe Color(color = 0xFF3D3D3D)
-        contentColorForStatusCode(statusCode = 700) shouldBe Color(color = 0xFF3D3D3D)
-    }
-
-    @Test
-    fun `containerColorForStatusCode maps HTTP families and fallback`() {
-        containerColorForStatusCode(statusCode = 150) shouldBe Color(color = 0xFFB7DCEC)
-        containerColorForStatusCode(statusCode = 250) shouldBe Color(color = 0xFFB7ECBA)
-        containerColorForStatusCode(statusCode = 350) shouldBe Color(color = 0xFFF0CAA7)
-        containerColorForStatusCode(statusCode = 450) shouldBe Color(color = 0xFFECB7B7)
-        containerColorForStatusCode(statusCode = 550) shouldBe Color(color = 0xFFECB7E6)
-
-        containerColorForStatusCode(statusCode = null) shouldBe Color(color = 0xFFD1D1D1)
-        containerColorForStatusCode(statusCode = 700) shouldBe Color(color = 0xFFD1D1D1)
-    }
-
-    @Test
-    fun `operation state extension properties use network defaults`() {
-        val state = OperationMockState.Network
-
-        state.icon shouldBe Icons.Rounded.Wifi
-        state.contentColor shouldBe Color(color = 0xFF0D1F3A)
-        state.containerColor shouldBe Color(color = 0xFFABC4ED)
-    }
-
-    @Test
-    fun `operation state extension properties use mock status code mapping`() {
-        val state = OperationMockState.Mock(statusCode = 404, exampleName = "default")
-
-        state.icon shouldBe Icons.Rounded.ErrorOutline
-        state.contentColor shouldBe Color(color = 0xFF6F1111)
-        state.containerColor shouldBe Color(color = 0xFFECB7B7)
     }
 
     @Test

@@ -10,6 +10,8 @@ import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Wifi
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.capitalize
@@ -19,8 +21,10 @@ import com.worldline.devview.networkmock.core.model.Operation
 import com.worldline.devview.networkmock.core.model.OperationDescriptor
 import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.model.OperationMockState
+import com.worldline.devview.networkmock.core.model.StatusCodeFamily
 import com.worldline.devview.networkmock.model.ApiSpecUiModel
 import com.worldline.devview.networkmock.model.OperationUiModel
+import com.worldline.devview.networkmock.theme.rememberMockColorScheme
 import kotlinx.collections.immutable.toPersistentList
 
 internal fun ApiSpecUiModel.Companion.fake(amount: Int = 4): List<ApiSpecUiModel> =
@@ -84,34 +88,33 @@ internal fun iconForStatusCode(statusCode: Int?): ImageVector = when (statusCode
 }
 
 internal val OperationMockState.contentColor: Color
+    @Composable
+    @ReadOnlyComposable
     get() = when (this) {
         is OperationMockState.Mock -> contentColorForStatusCode(statusCode = statusCode)
-        OperationMockState.Network -> Color(color = 0xFF0D1F3A)
+        OperationMockState.Network -> rememberMockColorScheme().network.content
     }
 
-internal fun contentColorForStatusCode(statusCode: Int?): Color = when (statusCode) {
-    in 100..199 -> Color(color = 0xFF184559)
-    in 200..299 -> Color(color = 0xFF103C13)
-    in 300..399 -> Color(color = 0xFF603610)
-    in 400..499 -> Color(color = 0xFF6F1111)
-    in 500..599 -> Color(color = 0xFF611A59)
-    else -> Color(color = 0xFF3D3D3D)
-}
+@Composable
+@ReadOnlyComposable
+internal fun contentColorForStatusCode(statusCode: Int?): Color =
+    rememberMockColorScheme()[statusCode.toStatusCodeFamily()].content
 
 internal val OperationMockState.containerColor: Color
+    @Composable
+    @ReadOnlyComposable
     get() = when (this) {
         is OperationMockState.Mock -> containerColorForStatusCode(statusCode = statusCode)
-        OperationMockState.Network -> Color(color = 0xFFABC4ED)
+        OperationMockState.Network -> rememberMockColorScheme().network.container
     }
 
-internal fun containerColorForStatusCode(statusCode: Int?): Color = when (statusCode) {
-    in 100..199 -> Color(color = 0xFFB7DCEC)
-    in 200..299 -> Color(color = 0xFFB7ECBA)
-    in 300..399 -> Color(color = 0xFFF0CAA7)
-    in 400..499 -> Color(color = 0xFFECB7B7)
-    in 500..599 -> Color(color = 0xFFECB7E6)
-    else -> Color(color = 0xFFD1D1D1)
-}
+@Composable
+@ReadOnlyComposable
+internal fun containerColorForStatusCode(statusCode: Int?): Color =
+    rememberMockColorScheme()[statusCode.toStatusCodeFamily()].container
+
+private fun Int?.toStatusCodeFamily(): StatusCodeFamily =
+    this?.let { StatusCodeFamily.fromStatusCode(statusCode = it) } ?: StatusCodeFamily.UNKNOWN
 
 internal fun MockResponse.Companion.fake(amount: Int = 3): List<MockResponse> =
     List(size = amount) { index ->

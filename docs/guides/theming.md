@@ -74,6 +74,41 @@ to wire up `LocalLogColorScheme` explicitly. The fallback deliberately does not 
 system setting (e.g. a feature flag), and the theme actually in effect is the only reliable
 signal.
 
+## Network Mock Status Colors
+
+Like the Console Logger's `LogColorScheme`, the Network Mock module's per-status-family colors
+(2xx green, 4xx/5xx red, etc.) are **not** derived from `MaterialTheme.colorScheme` — a mocked
+2xx response needs to read as "success" regardless of your app's brand colors. `MockColorScheme.Light`
+and `MockColorScheme.Dark` are two complete, hand-tuned palettes chosen for contrast in each theme.
+
+Provide the palette where you already configure your app's `MaterialTheme`, so it switches
+alongside your light/dark theme:
+
+```kotlin
+MaterialTheme(colorScheme = if (darkTheme) darkColorScheme() else lightColorScheme()) {
+    CompositionLocalProvider(
+        LocalMockColorScheme provides if (darkTheme) MockColorScheme.Dark else MockColorScheme.Light
+    ) {
+        // ... DevView content ...
+    }
+}
+```
+
+Override individual status families with `copy()`:
+
+```kotlin
+MockColorScheme.Dark.copy(
+    serverError = MockColorScheme.Dark.serverError.copy(content = Color.Magenta)
+)
+```
+
+**If `LocalMockColorScheme` is never provided**, the module logs a one-time warning (tag
+`DevViewNetworkMock`) and falls back to `MockColorScheme.Light`/`MockColorScheme.Dark` guessed
+from the ambient `MaterialTheme`'s surface luminance — usually correct, but the warning is your
+cue to wire up `LocalMockColorScheme` explicitly. As with the console, the fallback deliberately
+does not use `isSystemInDarkTheme()`, since DevView's theme may be driven by something other
+than the system setting.
+
 ## Customising Typography
 Use your app's typography settings in custom modules:
 ```kotlin

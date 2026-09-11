@@ -22,6 +22,13 @@ Shows the full endpoint info and all discovered mock response files, grouped by 
 - **Response items**: tap to activate a mock response (shown with its status code chip); long-press to open a preview bottom sheet.
 - **Preview bottom sheet**: shows the response file contents. Long-press a second response to enter compare mode, which renders a side-by-side or inline diff (LCS-based, collapses long unchanged runs).
 
+## Theming
+
+Status-family colors (2xx green, 4xx/5xx red, etc.) are a fixed, hand-tuned palette per
+theme, not derived from `MaterialTheme.colorScheme` — see the
+[Theming guide](../guides/theming.md#network-mock-status-colors) for how to provide and
+override them.
+
 ## Registration
 
 ```kotlin

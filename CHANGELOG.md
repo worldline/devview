@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- NetworkMock status-family chip colors (2xx green, 4xx/5xx red, etc.) are now configurable via
+  a `LocalMockColorScheme` CompositionLocal, mirroring `devview-consolelogger`'s
+  `LocalLogColorScheme`. Also fixes these colors rendering as washed-out light pastels on dark
+  surfaces — `MockColorScheme.Dark` is a proper hand-tuned dark palette rather than the light
+  values reused verbatim. (`devview-networkmock`)
+
 ## [0.2.0-alpha02] - 2026-09-11
 
 ### Fixed
