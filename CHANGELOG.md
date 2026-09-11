@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed ViewModel persistence during navigation: the `rememberViewModelStoreNavEntryDecorator()` was 
+  not applied to the `NavDisplay`'s `entryDecorators` causing `ViewModel`s to persist once instantiated.
+
 ## [0.2.0-alpha01] - 2026-09-10
 
 ### Added
