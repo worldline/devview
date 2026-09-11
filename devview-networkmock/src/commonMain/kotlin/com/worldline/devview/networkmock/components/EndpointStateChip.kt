@@ -30,7 +30,10 @@ import com.worldline.devview.networkmock.utils.icon
 internal fun EndpointStateChip(
     endpointMockState: OperationMockState,
     modifier: Modifier = Modifier,
-    label: String = endpointMockState.displayName,
+    label: String = when (endpointMockState) {
+        is OperationMockState.Mock -> endpointMockState.statusCode.toString()
+        OperationMockState.Network -> endpointMockState.displayName
+    },
     chipTestTag: String = "endpoint_state_chip",
     labelTestTag: String = "endpoint_state_chip_label"
 ) {

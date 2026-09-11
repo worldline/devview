@@ -36,9 +36,10 @@ import com.worldline.devview.networkmock.utils.containerColor
 /**
  * Row component for displaying and configuring a single API operation mock.
  *
- * Shows the operation name, method, path and version, a leading colour rail that reflects
- * the current mock state (matching the state chip's colour, transparent for [OperationMockState.Network]),
- * and the state chip itself.
+ * Shows the operation name, method and path, a leading colour rail that reflects the current
+ * mock state (matching the state chip's colour, transparent for [OperationMockState.Network]),
+ * and the state chip itself. The path is never truncated — it wraps instead, since a cut-off
+ * URL segment can hide the difference between two otherwise-similar operations.
  *
  * @param endpoint The operation UI model pairing static config with live state
  * @param openEndpointDetails Callback invoked when the card is tapped
@@ -75,7 +76,7 @@ internal fun EndpointCard(
                 .weight(weight = 1f)
                 .padding(start = 13.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -92,7 +93,7 @@ internal fun EndpointCard(
                 )
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.Top
                 ) {
                     Box(
                         modifier = Modifier
@@ -112,37 +113,14 @@ internal fun EndpointCard(
                         )
                     }
                     Text(
-                        modifier = Modifier
-                            .weight(weight = 1f, fill = false)
-                            .testTag(
-                                tag = "endpoint_path_${endpoint.descriptor.operationId}"
-                            ),
+                        modifier = Modifier.testTag(
+                            tag = "endpoint_path_${endpoint.descriptor.operationId}"
+                        ),
                         text = endpoint.descriptor.config.path,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontFamily = FontFamily.Monospace,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        fontFamily = FontFamily.Monospace
                     )
-                    endpoint.descriptor.config.version?.let { version ->
-                        Box(
-                            modifier = Modifier
-                                .background(
-                                    color = MaterialTheme.colorScheme.secondaryContainer,
-                                    shape = RoundedCornerShape(size = 4.dp)
-                                ).padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                modifier = Modifier.testTag(
-                                    tag = "endpoint_version_${endpoint.descriptor.operationId}"
-                                ),
-                                text = version,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                fontFamily = FontFamily.Monospace
-                            )
-                        }
-                    }
                 }
             }
             EndpointStateChip(

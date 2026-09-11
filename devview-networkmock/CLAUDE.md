@@ -89,13 +89,24 @@ tab. This replaced the two-line "Mock responses enabled/disabled" explainer text
 
 ### Endpoint row anatomy
 
-`EndpointCard` is two lines (name; method badge + path + version badge) plus a leading 3.dp
-colour rail — the state chip's container colour for `Mock`, transparent for `Network` — following
+`EndpointCard` is two lines (name; method badge + path) plus a leading 3.dp colour rail — the
+state chip's container colour for `Mock`, transparent for `Network` — following
 `devview-analytics`'s `AnalyticsLogItem` rail pattern. There used to be a third line duplicating
-the state chip's status code (`OperationMockState.displayName`); `EndpointStateChip`'s label now
-defaults to the full `displayName` (`"$statusCode - $exampleName"`) instead of a bare status code,
-so the chip alone carries what the deleted line used to — see #115. HTTP method badges are
-coloured via `HttpMethod.badgeContainerColor`/`.badgeContentColor` (`ModelUtils.kt`), mapped onto
+the state chip's status code (`OperationMockState.displayName`, see #115); that line is gone and
+`EndpointStateChip`'s default label is the bare status code (`"404"`), not the full
+`"$statusCode - $exampleName"` — a chip carrying both the code and the example name (e.g.
+`"404 - default"`) was wide enough to squeeze the path into truncation. The example name is
+still shown in full where it's actually chosen (`EndpointStateChip(label = ...)` call sites in
+the operation preview sheet). The path itself never truncates — it has no `maxLines`/`overflow`
+and simply wraps, since a cut-off URL segment can hide the difference between two similar
+operations; the method badge row uses `verticalAlignment = Alignment.Top` so the badge stays on
+the path's first line when it wraps. There is no version badge in the row: `Operation.version` is
+parsed out of the very path segment rendered next to it (see
+[Version Tags](../docs/modules/networkmock-core.md#version-tags)), so a separate badge could
+never show anything the path wasn't already showing — it only crowded the trailing state chip.
+The version *filter* in the bottom bar is unaffected; it still needs `Operation.version` to group
+operations, it's just not repeated as a badge on every row. HTTP method badges are coloured via
+`HttpMethod.badgeContainerColor`/`.badgeContentColor` (`ModelUtils.kt`), mapped onto
 `MaterialTheme` colour-scheme roles rather than a fixed palette — a method is a navigational aid,
 not a status signal, so it should track the host app's brand colours the way status colours
 deliberately don't (see "Status code colors and icons" below).

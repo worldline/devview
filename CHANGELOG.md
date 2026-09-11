@@ -35,9 +35,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   behind the chevron (matching Analytics' bottom bar). (`devview-networkmock`)
 - NetworkMock UI: each operation row now shows a leading colour rail (the state chip's colour)
   and a colour-coded HTTP method badge; the row's separate state-summary line — which duplicated
-  the status code already shown in the state chip — is gone, and the chip's label now shows the
-  full `"$statusCode - $exampleName"` instead of a bare status code (#115).
-  (`devview-networkmock`)
+  the status code already shown in the state chip — is gone (#115). The row's per-operation
+  version badge is also gone: `Operation.version` is parsed from the very path segment shown
+  right next to it, so the badge never showed anything the path wasn't already showing, and it
+  crowded the state chip. The path itself no longer truncates — it wraps instead, so a long URL
+  is never cut off. (`devview-networkmock`)
 
 ## [0.2.0-alpha02] - 2026-09-11
 
