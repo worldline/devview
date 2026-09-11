@@ -13,6 +13,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `LocalLogColorScheme`. Also fixes these colors rendering as washed-out light pastels on dark
   surfaces — `MockColorScheme.Dark` is a proper hand-tuned dark palette rather than the light
   values reused verbatim. (`devview-networkmock`)
+- NetworkMock UI: a multi-select HTTP method filter chip row, alongside the existing version
+  filter. No chip selected shows every method; selecting one or more narrows the list to
+  operations using any of the selected methods, combined with the version filter and search
+  via AND. (`devview-networkmock`)
+- `HttpMethod`: a value class modeled after Ktor's own `HttpMethod` (open set, companion
+  constants, `DefaultMethods` for canonical ordering), replacing the raw `String` on
+  `Operation.method` — without adding a Ktor dependency to `devview-networkmock-core`.
+  (`devview-networkmock-core`)
+
+### Changed
+- **Breaking:** `Operation.method` is now `HttpMethod` instead of `String`.
+  (`devview-networkmock-core`)
+- NetworkMock UI: the search field and version filter row moved from the top of the screen into
+  a `Scaffold` bottom bar (alongside the new method filter), matching FeatureFlip, Analytics, and
+  ConsoleLogger's existing layout for one-handed reach. (`devview-networkmock`)
 
 ## [0.2.0-alpha02] - 2026-09-11
 

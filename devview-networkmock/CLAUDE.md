@@ -57,12 +57,15 @@ bodies. `NetworkMockEndpointViewModel` (detail screen) additionally calls
 response body is actually read; its `NetworkMockEndpointUiState.Content.responses` carries the
 result alongside `operationUiModel`.
 
-### Search and version filter live in the composable, not the ViewModel
+### Search and filters live in the composable, not the ViewModel
 
-`NetworkMockScreen`'s search query and per-tab selected version are plain
-`remember { mutableStateOf(...) } ` in `ContentState` — both are pure client-side filters over
-data the ViewModel already loaded, so there's no reason to round-trip them through
-`NetworkMockUiState`.
+`NetworkMockScreen`'s search query, per-spec selected version, and per-spec selected methods are
+plain `remember`/`mutableStateMapOf` state in `ContentState` — all are pure client-side filters
+over data the ViewModel already loaded, so there's no reason to round-trip them through
+`NetworkMockUiState`. The version and method selections are keyed by `ApiSpec.id`
+(`mutableStateMapOf<String, ...>`) rather than living inside the pager's per-page scope, because
+the filter chip rows themselves render in the screen's `Scaffold` `bottomBar` — outside the
+`HorizontalPager` — and need to read/write the *current* tab's selection from there.
 
 ### "Reset to Network" toolbar action
 

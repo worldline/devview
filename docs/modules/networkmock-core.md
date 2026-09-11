@@ -71,6 +71,13 @@ configurable.
 2. **Path match** — splits path by `/`, compares segment by segment; `{param}` segments match any value; non-param segments are case-sensitive.
 3. **Method match** — case-sensitive exact match. Use uppercase (`"GET"`, `"POST"`).
 
+`Operation.method` is typed as `HttpMethod`, a small value class modeled after Ktor's own
+`io.ktor.http.HttpMethod` (open set, `HttpMethod.Get`/`.Post`/etc. constants, plus
+`HttpMethod.DefaultMethods` for canonical ordering) — this module has no dependency on Ktor
+itself, so the type exists to give the NetworkMock UI's method filter the same shape without
+pulling one in. `findMatchingMock`'s own `method` parameter stays a plain `String`, since it
+receives the raw wire value from `devview-networkmock-ktor`.
+
 There is no stored active-server selection. The matching server is determined purely from the request hostname at interception time.
 
 ## Response Variant Discovery
