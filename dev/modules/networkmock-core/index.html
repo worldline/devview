@@ -2362,6 +2362,12 @@ configurable.</p>
 <li><strong>Path match</strong> — splits path by <code>/</code>, compares segment by segment; <code>{param}</code> segments match any value; non-param segments are case-sensitive.</li>
 <li><strong>Method match</strong> — case-sensitive exact match. Use uppercase (<code>"GET"</code>, <code>"POST"</code>).</li>
 </ol>
+<p><code>Operation.method</code> is typed as <code>HttpMethod</code>, a small value class modeled after Ktor's own
+<code>io.ktor.http.HttpMethod</code> (open set, <code>HttpMethod.Get</code>/<code>.Post</code>/etc. constants, plus
+<code>HttpMethod.DefaultMethods</code> for canonical ordering) — this module has no dependency on Ktor
+itself, so the type exists to give the NetworkMock UI's method filter the same shape without
+pulling one in. <code>findMatchingMock</code>'s own <code>method</code> parameter stays a plain <code>String</code>, since it
+receives the raw wire value from <code>devview-networkmock-ktor</code>.</p>
 <p>There is no stored active-server selection. The matching server is determined purely from the request hostname at interception time.</p>
 <h2 id="response-variant-discovery">Response Variant Discovery</h2>
 <p>Response bodies live wherever <code>externalValue</code> points them — the sample app uses <code>composeResources/files/networkmocks/responses/{specId}/{operationId}/{operationId}-{status}[-{suffix}].json</code>, but this is only a convention, not a requirement.</p>
