@@ -1998,7 +1998,18 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Unreleased">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-alpha03-2026-09-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.2.0-alpha03 - 2026-09-11
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.0-alpha03 - 2026-09-11">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2437,7 +2448,8 @@
 <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>,
 and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
-<h2 id="unreleased"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha02...HEAD">Unreleased</a></h2>
+<h2 id="unreleased"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha03...HEAD">Unreleased</a></h2>
+<h2 id="020-alpha03-2026-09-11"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha02...0.2.0-alpha03">0.2.0-alpha03</a> - 2026-09-11</h2>
 <h3 id="added">Added</h3>
 <ul>
 <li>NetworkMock status-family chip colors (2xx green, 4xx/5xx red, etc.) are now configurable via
@@ -2461,6 +2473,18 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <ul>
 <li><strong>Breaking:</strong> <code>Operation.method</code> is now <code>HttpMethod</code> instead of <code>String</code>.
   (<code>devview-networkmock-core</code>)</li>
+<li><strong>Breaking:</strong> NetworkMock's operation detail screen is now a bottom sheet over the operation
+  list instead of a second navigation destination — tapping an operation opens the response
+  picker directly, without leaving the list, and picking a response dismisses the sheet.
+  Removed: <code>NetworkMockDestination.Endpoint</code>, <code>NetworkMockEndpointViewModel</code>,
+  <code>NetworkMockEndpointUiState</code>, and <code>NetworkMockScreen</code>'s <code>navigateToEndpointScreen</code> parameter.
+  Added to <code>NetworkMockViewModel</code>: <code>sheetState: StateFlow&lt;OperationSheetState&gt;</code>,
+  <code>openOperation(key)</code>, <code>closeSheet()</code> — response variant discovery (previously
+  <code>NetworkMockEndpointViewModel</code>'s job) now happens here, once per sheet open. Marking a
+  response for preview/compare is now an explicit eye-icon toggle on each row instead of a
+  long-press, and the preview/diff view is a second page of the same sheet (reached via a
+  "Preview"/"Compare 2 responses" button) rather than a separate bottom sheet stacked on top of
+  the detail screen. (<code>devview-networkmock</code>)</li>
 <li>NetworkMock UI: the search field and version filter row moved from the top of the screen into
   a <code>Scaffold</code> bottom bar (alongside the new method filter), matching FeatureFlip, Analytics, and
   ConsoleLogger's existing layout for one-handed reach. Only the search field and an expand
@@ -2472,7 +2496,11 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
   version badge is also gone: <code>Operation.version</code> is parsed from the very path segment shown
   right next to it, so the badge never showed anything the path wasn't already showing, and it
   crowded the state chip. The path itself no longer truncates — it wraps instead, so a long URL
-  is never cut off. (<code>devview-networkmock</code>)</li>
+  is never cut off. The operation sheet's picker-page header shares the same fix, since it shows
+  the same operation identity — except the header drops the state chip entirely: the picker
+  list right below already marks the active response with a checkmark, its full label, and a
+  family icon/colour, so a bare-status-code chip in the header would only repeat that.
+  (<code>devview-networkmock</code>)</li>
 </ul>
 <h2 id="020-alpha02-2026-09-11"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha01...0.2.0-alpha02">0.2.0-alpha02</a> - 2026-09-11</h2>
 <h3 id="fixed">Fixed</h3>
