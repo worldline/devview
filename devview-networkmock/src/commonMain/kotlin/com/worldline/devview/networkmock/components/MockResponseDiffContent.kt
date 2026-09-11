@@ -258,10 +258,10 @@ internal fun DiffLineRow(
  * Renders two mock response bodies in a vertically split view for cases where the
  * responses are too dissimilar for an inline diff.
  *
- * Each half takes equal vertical space, has its own independent [verticalScroll] and
- * [horizontalScroll], and is identified by a small chip header. A [HorizontalDivider]
- * separates the two halves. This layout is safe for portrait phone screens — no
- * side-by-side columns.
+ * Each half takes equal vertical space and has its own independent [verticalScroll] and
+ * [horizontalScroll]; identity (which response is which) comes from the caller's chip
+ * header, not from a per-pane label. A [HorizontalDivider] separates the two halves. This
+ * layout is safe for portrait phone screens — no side-by-side columns.
  *
  * When only one response is provided ([second] is `null`), only the top half is rendered,
  * making this composable reusable for the single-response preview case.
@@ -289,8 +289,8 @@ internal fun SplitDiffContent(
 }
 
 /**
- * A single scrollable pane showing the content of one [MockResponse] with a small
- * chip label header identifying the response by [MockResponse.displayName].
+ * A single scrollable pane showing the content of one [MockResponse]. Its identity
+ * ([MockResponse.displayName]) is shown by the caller's chip header, not repeated here.
  */
 @Composable
 private fun ResponseContentPane(
@@ -301,13 +301,6 @@ private fun ResponseContentPane(
     val lines = remember(key1 = response.content) { response.content.lines() }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-            text = response.displayName,
-            style = MaterialTheme.typography.labelSmall,
-            color = colors.onGutterContainer()
-        )
-        HorizontalDivider()
         Column(
             modifier = Modifier
                 .fillMaxWidth()

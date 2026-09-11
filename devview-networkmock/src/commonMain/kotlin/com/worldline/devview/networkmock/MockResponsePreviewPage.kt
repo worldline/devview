@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -54,6 +55,7 @@ internal fun MockResponsePreviewPage(
             previewSheetState = previewSheetState,
             onBack = onBack
         )
+        HorizontalDivider()
 
         when (previewSheetState) {
             is PreviewSheetState.Single -> {
