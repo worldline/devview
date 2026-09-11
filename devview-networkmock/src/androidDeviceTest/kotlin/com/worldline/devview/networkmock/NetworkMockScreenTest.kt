@@ -127,12 +127,12 @@ class NetworkMockScreenTest {
     }
 
     @Test
-    fun endpointSelection_invokesSelectEndpointCallback() = runComposeUiTest {
+    fun endpointSelection_invokesOnSelectOperationCallback() = runComposeUiTest {
         var selected: OperationKey? = null
 
         setScreen(
             uiState = MockScreenTestData.contentState(),
-            navigateToEndpointScreen = { operationKey -> selected = operationKey }
+            onSelectOperation = { operationKey -> selected = operationKey }
         )
 
         onNodeWithTag(testTag = "endpoint_card_example_getUser").performClick()
@@ -304,14 +304,14 @@ class NetworkMockScreenTest {
     private fun ComposeUiTest.setScreen(
         uiState: NetworkMockUiState,
         onGlobalToggle: (Boolean) -> Unit = {},
-        navigateToEndpointScreen: (OperationKey) -> Unit = { },
+        onSelectOperation: (OperationKey) -> Unit = { },
     ) {
         setContent {
             MaterialTheme {
                 NetworkMockScreenContent(
                     uiState = uiState,
                     onGlobalToggle = onGlobalToggle,
-                    navigateToEndpointScreen = navigateToEndpointScreen,
+                    onSelectOperation = onSelectOperation,
                 )
             }
         }

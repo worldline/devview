@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Module Does
 
-`devview-networkmock` is the Compose UI layer for the network mocking feature. It depends on `devview-networkmock-core` (which owns the mock engine: OpenAPI spec parsing, request matching, DataStore state) and surfaces it as a DevView `Module` with two navigation screens.
+`devview-networkmock` is the Compose UI layer for the network mocking feature. It depends on `devview-networkmock-core` (which owns the mock engine: OpenAPI spec parsing, request matching, DataStore state) and surfaces it as a DevView `Module` with a single navigation screen — the operation list. Picking a mock response happens in a bottom sheet over that screen, not a second destination; see "Operation sheet" below.
 
 ## Public API
 
@@ -19,17 +19,15 @@ rememberModules {
 ```
 `specPaths` lists every OpenAPI spec file to load — one per API group. There is no default; every spec must be listed explicitly.
 
-**`NetworkMockDestination`** — sealed nav key interface with two destinations:
-- `Main` — the full operation list screen
-- `Endpoint(operationKey: OperationKey)` — the detail screen for one operation
+**`NetworkMockDestination`** — sealed nav key interface with exactly one destination, `Main` (the operation list). Prior to the sheet-based redesign there was also an `Endpoint(operationKey: OperationKey)` destination pushing a full detail screen — removed as a breaking change; see the operation sheet section below.
 
-**Public composable**: `NetworkMockScreen` (main list). `NetworkMockEndpointScreen` is `internal`.
+**Public composable**: `NetworkMockScreen` (the operation list; internally also hosts `NetworkMockOperationSheet` when one is open). `NetworkMockOperationSheet`, `MockResponsePreviewPage`, and every component in `components/` are `internal`.
 
-**Public ViewModels**: `NetworkMockViewModel` and `NetworkMockEndpointViewModel` (both constructed by `NetworkMock.registerContent` via the `viewModel { }` factory, scoped to their navigation entry).
+**Public ViewModel**: `NetworkMockViewModel` (constructed by `NetworkMock.registerContent` via the `viewModel { }` factory, scoped to the navigation entry). Owns both the operation list (`uiState`) and the operation sheet (`sheetState`, `openOperation()`, `closeSheet()`) — there is no separate ViewModel per screen since there's no separate screen.
 
-**Public UI states**: `NetworkMockUiState` (Loading / Error / Empty / Content) and `NetworkMockEndpointUiState` (Loading / Error / Content).
+**Public UI states**: `NetworkMockUiState` (Loading / Error / Empty / Content) for the operation list, and `OperationSheetState` (Hidden / Loading / Error / Content) for the operation sheet.
 
-**Public UI models**: `ApiSpecUiModel` (one per spec tab) and `OperationUiModel` (pairs a static `OperationDescriptor` with a live `OperationMockState`).
+**Public UI models**: `ApiSpecUiModel` (one per spec tab) and `OperationUiModel` (pairs a static `OperationDescriptor` with a live `OperationMockState`) — the latter is reused as `OperationSheetState.Content.operationUiModel`.
 
 **Public theming**: `MockColorScheme` / `StatusColors` (`theme/MockColorScheme.kt`) and the `LocalMockColorScheme` CompositionLocal (`theme/LocalMockColorScheme.kt`) — see "Status colour theming" below.
 
@@ -45,17 +43,25 @@ rememberModules {
 
 `NetworkMock.dataStoreDelegate` points to `NetworkMockDataStoreDelegate` — a process-level singleton declared in `devview-networkmock-core`. Both this module and `devview-networkmock-ktor` reference the same object, so there is exactly one DataStore instance without a direct dependency between those two modules.
 
-### ViewModel state model
+### ViewModel state model: two independent `combine` chains, one ViewModel
 
-Both ViewModels combine two sources via `combine(...)` stateIn `WhileSubscribed(5000ms)`:
-- A one-shot coroutine that loads data from `MockConfigRepository`
-- A live `Flow<NetworkMockState>` from `MockStateRepository.observeState()`
+`NetworkMockViewModel` exposes two `StateFlow`s, each its own `combine(...).stateIn(WhileSubscribed(5000ms))`
+chain, re-emitting independently — opening the sheet doesn't touch `uiState`, and picking a
+response doesn't re-derive the whole operation list:
 
-`NetworkMockViewModel` (main list) only calls `loadConfiguration()` — spec metadata, no response
-bodies. `NetworkMockEndpointViewModel` (detail screen) additionally calls
-`discoverResponseFiles(operationKey)` for its one operation, since that's the only place a
-response body is actually read; its `NetworkMockEndpointUiState.Content.responses` carries the
-result alongside `operationUiModel`.
+- **`uiState`** (operation list): `privateConfiguration` (loaded once via `loadConfiguration()` —
+  spec metadata only, no response bodies) combined with `MockStateRepository.observeState()`.
+- **`sheetState`** (operation sheet): `privateOpenOperationKey` (`null` when hidden),
+  `privateLoadedOperation`, `privateSheetError`, and the *same* `observeState()` flow — four
+  sources, since `combine` supports up to 5. `openOperation(key)` is the only place
+  `discoverResponseFiles(key)` is called — this is where response bodies are actually read,
+  once per sheet-open, not eagerly for the whole list.
+
+`privateLoadedOperation` is a `LoadedOperation(key, descriptor, responses)`, not just the
+discovered data — `sheetState`'s combine checks `loaded.key == openKey` before treating it as
+current. Without that check, closing operation A's sheet and immediately opening operation B's
+could briefly show A's stale content while B is still discovering (a real race once one
+ViewModel handles every operation, not one ViewModel per opened operation).
 
 ### Search and filters live in the composable, not the ViewModel
 
@@ -115,9 +121,37 @@ deliberately don't (see "Status code colors and icons" below).
 
 Wired via a `MutableSharedFlow<Unit>` (capacity 1, `DROP_OLDEST`) created in `NetworkMock` and passed into `NetworkMockScreen`. `resetAllToNetwork()` resets every operation in the parsed config (not just those stored in DataStore) to avoid gaps for operations the user has never touched.
 
-### Preview bottom sheet state machine
+### Operation sheet: one sheet, two pages
 
-`PreviewSheetState` (in `NetworkMockEndpointScreen.kt`) is a sealed interface with three states: `Hidden`, `Single(response)`, `Compare(first, second)`. Toggling a response via long-press calls `transition(response)`, which cycles: Hidden → Single → Compare (second long-press) → back to Single (deselect one) → Hidden (deselect last). Selection identity is the whole `MockResponse` (effectively its `(statusCode, exampleName)` pair), not a file name.
+`NetworkMockOperationSheet.kt` renders `NetworkMockViewModel.sheetState` as a `ModalBottomSheet`
+with two pages switched by `AnimatedContent`, both plain local `remember` state in the sheet
+composable (not the ViewModel — see `PreviewSheetState` below):
+
+- **Picker page** (`OperationPickerPage`, `internal` rather than `private` specifically so
+  device tests can exercise it without going through `ModalBottomSheet`'s chrome/animation,
+  which has no established testing pattern in this codebase): the operation header, then
+  `NetworkItem` + `MockItem` rows grouped by `StatusCodeFamily`. Tapping a row calls
+  `onSelectResponse` and dismisses the sheet. Each `MockItem` also has an eye-icon preview
+  toggle (`isMarkedForPreview`/`onToggleMarkedForPreview`) that marks it *without* dismissing;
+  once ≥1 response is marked, a "Preview .../Compare 2 responses" button appears and switches
+  to the preview page.
+- **Preview page** (`MockResponsePreviewPage.kt`, replaces the pre-sheet `NetworkMockEndpointPreviewBottomSheet.kt`):
+  same diff-rendering body as before, now reached via a back arrow instead of a close button —
+  going back returns to the picker page without clearing the marks.
+
+Marking is driven by `combinedClickable`'s replacement, plain per-row `clickable`s — the sheet
+used to require a *long-press* to mark a response for preview (invisible enough that the old
+detail screen carried a permanent hint card explaining it); the eye toggle is a visible
+affordance, so the hint card is gone along with the long-press gesture.
+
+`PreviewSheetState` (`PreviewSheetState.kt`, unchanged by the sheet redesign) is a sealed
+interface with three states: `Hidden`, `Single(response)`, `Compare(first, second)`. Toggling a
+response calls `transition(response)`, which cycles: Hidden → Single → Compare (second toggle)
+→ back to Single (untoggle one) → Hidden (untoggle the last). Selection identity is the whole
+`MockResponse` (effectively its `(statusCode, exampleName)` pair), not a file name. What changed
+is *what triggers* a transition (an explicit eye-icon tap, not a long-press) and what the state
+*means* (which responses are marked, not "is a second sheet open" — that's now a separate
+`showingPreviewPage: Boolean` alongside it).
 
 ### Diff rendering pipeline
 

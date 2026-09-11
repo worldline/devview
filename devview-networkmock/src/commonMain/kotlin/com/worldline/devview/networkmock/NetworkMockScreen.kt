@@ -67,6 +67,7 @@ import com.worldline.devview.networkmock.model.OperationUiModel
 import com.worldline.devview.networkmock.preview.NetworkMockUiStatePreviewParameterProvider
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
+import com.worldline.devview.networkmock.viewmodel.OperationSheetState
 import kotlinx.coroutines.flow.SharedFlow
 
 /**
@@ -75,17 +76,14 @@ import kotlinx.coroutines.flow.SharedFlow
  * Displays all configured API endpoints with controls to:
  * - Toggle global mocking on/off
  * - Enable/disable individual endpoint mocks
- * - Select which mock response to return for each endpoint
+ * - Select which mock response to return for each endpoint, via [NetworkMockOperationSheet]
  * - Reset all mocks to use actual network
  *
  * @param resetToNetworkSharedFlow Shared flow emitted by [NetworkMock] when the user triggers
  *   the "Reset to Network" toolbar action. Collected here to call [NetworkMockViewModel.resetAllToNetwork].
- * @param navigateToEndpointScreen Callback invoked when the user taps an [EndpointCard],
- *   passing the corresponding [OperationKey] so the caller can push [NetworkMockDestination.Endpoint]
- *   onto the backstack.
  * @param viewModel The [NetworkMockViewModel] instance. Constructed and provided by
  *   [NetworkMock.registerContent] via the `viewModel { }` factory so that it is scoped to the
- *   navigation entry.
+ *   navigation entry. Also owns the operation sheet's state — see [NetworkMockViewModel.sheetState].
  * @param modifier Optional modifier for the screen.
  * @param bottomPadding Bottom inset padding provided by the DevView [androidx.compose.material3.Scaffold].
  *   Applied to the operation list so the last item is not obscured by system navigation bars.
@@ -93,12 +91,12 @@ import kotlinx.coroutines.flow.SharedFlow
 @Composable
 public fun NetworkMockScreen(
     resetToNetworkSharedFlow: SharedFlow<Unit>,
-    navigateToEndpointScreen: (OperationKey) -> Unit,
     viewModel: NetworkMockViewModel,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val sheetState by viewModel.sheetState.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = Unit) {
         resetToNetworkSharedFlow.collect {
@@ -109,17 +107,33 @@ public fun NetworkMockScreen(
     NetworkMockScreenContent(
         uiState = uiState,
         onGlobalToggle = viewModel::setGlobalMockingEnabled,
-        navigateToEndpointScreen = navigateToEndpointScreen,
+        onSelectOperation = viewModel::openOperation,
         modifier = modifier,
         bottomPadding = bottomPadding
     )
+
+    if (sheetState != OperationSheetState.Hidden) {
+        NetworkMockOperationSheet(
+            sheetState = sheetState,
+            onDismissRequest = viewModel::closeSheet,
+            onSelectResponse = { response ->
+                val openKey = (sheetState as? OperationSheetState.Content)
+                    ?.operationUiModel
+                    ?.descriptor
+                    ?.key
+                if (openKey != null) {
+                    viewModel.setOperationMockState(key = openKey, response = response)
+                }
+            }
+        )
+    }
 }
 
 @Composable
 internal fun NetworkMockScreenContent(
     uiState: NetworkMockUiState,
     onGlobalToggle: (Boolean) -> Unit,
-    navigateToEndpointScreen: (OperationKey) -> Unit,
+    onSelectOperation: (OperationKey) -> Unit,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp
 ) {
@@ -131,7 +145,7 @@ internal fun NetworkMockScreenContent(
             ContentState(
                 uiState = uiState,
                 onGlobalToggle = onGlobalToggle,
-                openEndpointDetails = navigateToEndpointScreen,
+                onSelectOperation = onSelectOperation,
                 modifier = modifier,
                 bottomPadding = bottomPadding
             )
@@ -143,7 +157,7 @@ internal fun NetworkMockScreenContent(
 private fun ContentState(
     uiState: NetworkMockUiState.Content,
     onGlobalToggle: (Boolean) -> Unit,
-    openEndpointDetails: (OperationKey) -> Unit,
+    onSelectOperation: (OperationKey) -> Unit,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp
 ) {
@@ -456,7 +470,7 @@ private fun ContentState(
                             ),
                             endpoint = operation,
                             openEndpointDetails = {
-                                openEndpointDetails(operation.descriptor.key)
+                                onSelectOperation(operation.descriptor.key)
                             }
                         )
                         if (index != filteredOperations.lastIndex) {
@@ -518,7 +532,7 @@ private fun NetworkMockScreenPreview(
             NetworkMockScreenContent(
                 uiState = uiState,
                 onGlobalToggle = {},
-                navigateToEndpointScreen = {}
+                onSelectOperation = {}
             )
         }
     }

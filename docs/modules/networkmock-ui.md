@@ -1,10 +1,10 @@
 # NetworkMock UI
 
-The `devview-networkmock` module provides the Compose UI for the network mocking feature. It implements the `Module` interface and surfaces two navigation screens backed by `devview-networkmock-core`.
+The `devview-networkmock` module provides the Compose UI for the network mocking feature. It implements the `Module` interface and surfaces a single navigation screen — the operation list — backed by `devview-networkmock-core`. Picking a mock response happens in a bottom sheet over that same screen, not a second destination.
 
 ## Screens
 
-### Main screen — endpoint list
+### Main screen — operation list
 
 The main screen shows a global mock toggle at the top, followed by a scrollable tab row with one tab per OpenAPI spec (e.g. "My Backend"). Each tab lists every operation declared in that spec with its current mock state — there is no environment axis, so a spec spanning multiple API versions shows all of its operations side by side in one tab.
 
@@ -14,16 +14,15 @@ The main screen shows a global mock toggle at the top, followed by a scrollable 
 - **Mock-state filter**: a row of "Mocked"/"Network" chips, not scoped to the current tab — selecting one persists across tab switches, since "what's mocked" is a question about every spec.
 - **Version filter**: a per-tab row of chips — "All" plus one per distinct `Operation.version` present among that tab's operations (see [Version Tags](networkmock-core.md#version-tags)). Hidden entirely when a spec has no versioned operations.
 - **Method filter**: a per-tab row of chips, one per distinct `Operation.method` present among that tab's operations, ordered `GET`/`POST`/`PUT`/`PATCH`/`DELETE`/`HEAD`/`OPTIONS`. Multi-select — no chip selected shows every method; selecting one or more narrows the list to operations using any of the selected methods.
-- **Endpoint rows**: a leading colour rail (the state chip's colour, transparent when not mocked) followed by the endpoint name, a colour-coded HTTP method badge, the path (wraps instead of truncating — never cut off), and the current state chip (Network / bare status code, e.g. "404"). There is no separate version badge — `Operation.version` is parsed from the path shown right next to it, so it would only repeat what's already visible. Tap a row to open its detail screen.
+- **Endpoint rows**: a leading colour rail (the state chip's colour, transparent when not mocked) followed by the endpoint name, a colour-coded HTTP method badge, the path (wraps instead of truncating — never cut off), and the current state chip (Network / bare status code, e.g. "404"). There is no separate version badge — `Operation.version` is parsed from the path shown right next to it, so it would only repeat what's already visible. Tap a row to open its operation sheet.
 - **Reset to Network**: toolbar action that resets every endpoint to `Network` state in one tap.
 
-### Endpoint detail screen
+### Operation sheet
 
-Shows the full endpoint info and all discovered mock response files, grouped by status code family (2xx, 4xx, 5xx, etc.).
+A bottom sheet over the operation list — opened by tapping a row, not a navigation destination — showing every discovered mock response for that operation, grouped by status code family (2xx, 4xx, 5xx, etc.). Two pages:
 
-- **"No mock" option**: tap to route this endpoint to the real network.
-- **Response items**: tap to activate a mock response (shown with its status code chip); long-press to open a preview bottom sheet.
-- **Preview bottom sheet**: shows the response file contents. Long-press a second response to enter compare mode, which renders a side-by-side or inline diff (LCS-based, collapses long unchanged runs).
+- **Picker page** (opens first): a "No mock" row to route the operation to the actual network, plus one row per response variant. Tapping a row activates it and dismisses the sheet. Each response row also has a preview toggle (an eye icon) that marks it without dismissing the sheet — marking one response reveals a "Preview `statusCode - exampleName`" button at the bottom; marking a second changes it to "Compare 2 responses". Tapping that button opens the preview page.
+- **Preview page**: shows the marked response's body, or — when two are marked — a diff between them (a side-by-side or inline diff, LCS-based, collapsing long unchanged runs). A back arrow returns to the picker page without losing the marks.
 
 ## Theming
 

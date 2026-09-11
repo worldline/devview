@@ -1,31 +1,27 @@
 package com.worldline.devview.networkmock.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.CheckBox
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
@@ -40,16 +36,27 @@ import com.worldline.devview.networkmock.utils.fake
 import com.worldline.devview.networkmock.utils.icon
 import com.worldline.devview.networkmock.utils.iconForStatusCode
 import com.worldline.devview.utils.preview.BooleanPreviewParameterProvider
-import kotlin.math.abs
 
+/**
+ * A single selectable response variant row in the operation picker sheet.
+ *
+ * @param mockResponse The response variant this row represents
+ * @param onClick Called when the row itself is tapped — activates this response and closes the sheet
+ * @param isMarkedForPreview Whether this response is currently marked for the preview/compare page
+ * @param onToggleMarkedForPreview Called when the trailing preview toggle is tapped
+ * @param selected Whether this response is the operation's currently active mock
+ * @param previewToggleTestTag Test tag for the trailing preview toggle button. Callers rendering
+ * more than one [MockItem] must pass a tag unique per response — the default is shared.
+ */
 @Composable
 internal fun MockItem(
     mockResponse: MockResponse,
     onClick: () -> Unit,
-    onLongClick: () -> Unit,
-    isInPreviewMode: Boolean,
+    isMarkedForPreview: Boolean,
+    onToggleMarkedForPreview: () -> Unit,
     modifier: Modifier = Modifier,
-    selected: Boolean = false
+    selected: Boolean = false,
+    previewToggleTestTag: String = "mock_item_preview_toggle"
 ) {
     MockItemContent(
         modifier = modifier,
@@ -57,11 +64,13 @@ internal fun MockItem(
         label = mockResponse.displayName,
         selected = selected,
         onClick = onClick,
-        onLongClick = onLongClick,
-        isInPreviewMode = isInPreviewMode
+        isMarkedForPreview = isMarkedForPreview,
+        onToggleMarkedForPreview = onToggleMarkedForPreview,
+        previewToggleTestTag = previewToggleTestTag
     )
 }
 
+/** The "no mock" row — routes the operation to the actual network. Has nothing to preview. */
 @Composable
 internal fun NetworkItem(
     onClick: () -> Unit,
@@ -75,8 +84,9 @@ internal fun NetworkItem(
         selected = selected,
         isNetwork = true,
         onClick = onClick,
-        onLongClick = null,
-        isInPreviewMode = false
+        isMarkedForPreview = false,
+        onToggleMarkedForPreview = null,
+        previewToggleTestTag = "mock_item_preview_toggle"
     )
 }
 
@@ -86,8 +96,9 @@ private fun MockItemContent(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
-    onLongClick: (() -> Unit)?,
-    isInPreviewMode: Boolean,
+    isMarkedForPreview: Boolean,
+    onToggleMarkedForPreview: (() -> Unit)?,
+    previewToggleTestTag: String,
     modifier: Modifier = Modifier,
     isNetwork: Boolean = false
 ) {
@@ -116,14 +127,13 @@ private fun MockItemContent(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .combinedClickable(
+            .clickable(
                 enabled = true,
                 onClick = {
                     if (!selected) {
                         onClick()
                     }
-                },
-                onLongClick = onLongClick
+                }
             ).then(
                 other = modifier
                     .minimumInteractiveComponentSize()
@@ -131,31 +141,13 @@ private fun MockItemContent(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = 16.dp)
     ) {
-        // Vertical-axis flip: animate from -1f (status icon side) to 1f (checkbox side).
-        // abs(flipProgress) drives scaleX so the icon collapses to 0 at the midpoint then
-        // expands back; the sign determines which icon is visible.
-        val flipTransition = updateTransition(
-            targetState = isInPreviewMode,
-            label = "leadingIconFlip"
-        )
-
-        val flipProgress by flipTransition.animateFloat(
-            transitionSpec = { tween(durationMillis = 300) },
-            label = "flipProgress"
-        ) { inPreview -> if (inPreview) 1f else -1f }
-
-        val displayedIcon by remember(key1 = icon) {
-            derivedStateOf { if (flipProgress >= 0f) Icons.Rounded.CheckBox else icon }
-        }
-
         Icon(
             modifier = Modifier
                 .padding(vertical = 4.dp)
                 .clip(shape = MaterialTheme.shapes.small)
                 .background(color = containerColor)
-                .padding(all = 4.dp)
-                .graphicsLayer { scaleX = abs(x = flipProgress) },
-            imageVector = displayedIcon,
+                .padding(all = 4.dp),
+            imageVector = icon,
             contentDescription = null,
             tint = contentColor
         )
@@ -165,13 +157,30 @@ private fun MockItemContent(
             text = label,
             style = MaterialTheme.typography.bodyLargeEmphasized
         )
-        AnimatedVisibility(
-            visible = selected
-        ) {
+        if (selected) {
             Icon(
                 imageVector = Icons.Rounded.Check,
                 contentDescription = null
             )
+        }
+        if (onToggleMarkedForPreview != null) {
+            IconButton(
+                modifier = Modifier.testTag(tag = previewToggleTestTag),
+                onClick = onToggleMarkedForPreview
+            ) {
+                Icon(
+                    imageVector = if (isMarkedForPreview) {
+                        Icons.Rounded.Visibility
+                    } else {
+                        Icons.Rounded.VisibilityOff
+                    },
+                    contentDescription = if (isMarkedForPreview) {
+                        "Remove from preview"
+                    } else {
+                        "Add to preview"
+                    }
+                )
+            }
         }
     }
 }
@@ -186,8 +195,8 @@ private fun MockItemPreview(
             MockItem(
                 mockResponse = mockResponse,
                 onClick = {},
-                onLongClick = {},
-                isInPreviewMode = false
+                isMarkedForPreview = false,
+                onToggleMarkedForPreview = {}
             )
         }
     }
@@ -219,8 +228,8 @@ private fun MockItemSelectedPreview(
                 mockResponse = MockResponse.fake().first(),
                 selected = selected,
                 onClick = {},
-                onLongClick = {},
-                isInPreviewMode = false
+                isMarkedForPreview = false,
+                onToggleMarkedForPreview = {}
             )
         }
     }
@@ -228,8 +237,8 @@ private fun MockItemSelectedPreview(
 
 @Preview(locale = "en")
 @Composable
-private fun MockItemPreviewModePreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) isInPreviewMode: Boolean
+private fun MockItemMarkedForPreviewPreview(
+    @PreviewParameter(BooleanPreviewParameterProvider::class) isMarkedForPreview: Boolean
 ) {
     MaterialTheme {
         Surface {
@@ -237,8 +246,8 @@ private fun MockItemPreviewModePreview(
                 mockResponse = MockResponse.fake().first(),
                 selected = false,
                 onClick = {},
-                onLongClick = {},
-                isInPreviewMode = isInPreviewMode
+                isMarkedForPreview = isMarkedForPreview,
+                onToggleMarkedForPreview = {}
             )
         }
     }

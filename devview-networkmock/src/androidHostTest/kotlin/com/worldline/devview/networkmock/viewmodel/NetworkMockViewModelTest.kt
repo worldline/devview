@@ -223,9 +223,168 @@ class NetworkMockViewModelTest : ViewModelTest() {
         allNetwork[OperationKey("catalog-api", "getProduct")] shouldBe OperationMockState.Network
     }
 
+    @Test
+    fun sheetState_isHidden_initially() = runTest {
+        val stateFlow = MutableStateFlow(NetworkMockState())
+        val configRepository =
+            createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val stateRepository = createStateRepositoryMock(stateFlow)
+
+        val viewModel = NetworkMockViewModel(configRepository, stateRepository)
+
+        collectStates(viewModel.uiState, viewModel.sheetState)
+
+        viewModel.sheetState.value shouldBe OperationSheetState.Hidden
+    }
+
+    @Test
+    fun openOperation_emitsLoading_whileDiscoveryInProgress() = runTest {
+        val stateFlow = MutableStateFlow(NetworkMockState())
+        val configRepository = createConfigRepositoryMock(
+            loadResult = Result.success(testConfiguration()),
+            discoveryDelayMs = 500
+        )
+        val stateRepository = createStateRepositoryMock(stateFlow)
+        val key = OperationKey(specId = "user-api", operationId = "getUser")
+
+        val viewModel = NetworkMockViewModel(configRepository, stateRepository)
+        collectStates(viewModel.uiState, viewModel.sheetState)
+
+        viewModel.openOperation(key = key)
+
+        viewModel.sheetState.value shouldBe OperationSheetState.Loading
+    }
+
+    @Test
+    fun openOperation_emitsContentState_afterSuccessfulDiscovery() = runTest {
+        val stateFlow = MutableStateFlow(NetworkMockState())
+        val configRepository = createConfigRepositoryMock(
+            loadResult = Result.success(testConfiguration())
+        )
+        val stateRepository = createStateRepositoryMock(stateFlow)
+        val key = OperationKey(specId = "user-api", operationId = "getUser")
+
+        val viewModel = NetworkMockViewModel(configRepository, stateRepository)
+        collectStates(viewModel.uiState, viewModel.sheetState)
+
+        viewModel.openOperation(key = key)
+
+        val content = viewModel.sheetState.value.shouldBeInstanceOf<OperationSheetState.Content>()
+        content.operationUiModel.descriptor.key shouldBe key
+        content.responses.size shouldBe 1
+        content.operationUiModel.currentState shouldBe OperationMockState.Network
+    }
+
+    @Test
+    fun openOperation_emitsErrorState_whenDiscoveryFails() = runTest {
+        val stateFlow = MutableStateFlow(NetworkMockState())
+        val configRepository = createConfigRepositoryMock(
+            loadResult = Result.success(testConfiguration()),
+            discoveryException = RuntimeException("disk error")
+        )
+        val stateRepository = createStateRepositoryMock(stateFlow)
+
+        val viewModel = NetworkMockViewModel(configRepository, stateRepository)
+        collectStates(viewModel.uiState, viewModel.sheetState)
+
+        viewModel.openOperation(key = OperationKey(specId = "user-api", operationId = "getUser"))
+
+        val error = viewModel.sheetState.value.shouldBeInstanceOf<OperationSheetState.Error>()
+        error.message shouldBe "disk error"
+    }
+
+    @Test
+    fun openOperation_emitsErrorState_whenOperationConfigNotFound() = runTest {
+        val stateFlow = MutableStateFlow(NetworkMockState())
+        val configRepository = createConfigRepositoryMock(
+            loadResult = Result.success(testConfiguration())
+        )
+        val stateRepository = createStateRepositoryMock(stateFlow)
+
+        val viewModel = NetworkMockViewModel(configRepository, stateRepository)
+        collectStates(viewModel.uiState, viewModel.sheetState)
+
+        viewModel.openOperation(key = OperationKey(specId = "unknown-api", operationId = "unknown"))
+
+        viewModel.sheetState.value.shouldBeInstanceOf<OperationSheetState.Error>()
+    }
+
+    @Test
+    fun closeSheet_resetsToHidden() = runTest {
+        val stateFlow = MutableStateFlow(NetworkMockState())
+        val configRepository = createConfigRepositoryMock(
+            loadResult = Result.success(testConfiguration())
+        )
+        val stateRepository = createStateRepositoryMock(stateFlow)
+
+        val viewModel = NetworkMockViewModel(configRepository, stateRepository)
+        collectStates(viewModel.uiState, viewModel.sheetState)
+
+        viewModel.openOperation(key = OperationKey(specId = "user-api", operationId = "getUser"))
+        viewModel.sheetState.value.shouldBeInstanceOf<OperationSheetState.Content>()
+
+        viewModel.closeSheet()
+
+        viewModel.sheetState.value shouldBe OperationSheetState.Hidden
+    }
+
+    @Test
+    fun openOperation_switchingToAnotherOperation_doesNotFlashPreviousContent() = runTest {
+        val stateFlow = MutableStateFlow(NetworkMockState())
+        val firstKey = OperationKey(specId = "user-api", operationId = "getUser")
+        val secondKey = OperationKey(specId = "user-api", operationId = "createUser")
+        val configRepository = mockk<MockConfigRepository>()
+        coEvery { configRepository.loadConfiguration() } returns Result.success(testConfiguration())
+        coEvery { configRepository.discoverResponseFiles(key = firstKey) } returns listOf(
+            MockResponse(statusCode = 200, exampleName = "default", displayName = "Success (200)", content = "{}")
+        )
+        coEvery { configRepository.discoverResponseFiles(key = secondKey) } coAnswers {
+            delay(timeMillis = 500)
+            listOf(MockResponse(statusCode = 201, exampleName = "default", displayName = "Created (201)", content = "{}"))
+        }
+        val stateRepository = createStateRepositoryMock(stateFlow)
+
+        val viewModel = NetworkMockViewModel(configRepository, stateRepository)
+        collectStates(viewModel.uiState, viewModel.sheetState)
+
+        viewModel.openOperation(key = firstKey)
+        viewModel.sheetState.value.shouldBeInstanceOf<OperationSheetState.Content>()
+
+        // Re-opening a second (still-discovering) operation must not show the first one's
+        // stale content — see LoadedOperation.key in NetworkMockViewModel.sheetState.
+        viewModel.openOperation(key = secondKey)
+
+        viewModel.sheetState.value shouldBe OperationSheetState.Loading
+    }
+
+    @Test
+    fun setOperationMockState_reflectsInSheetContent() = runTest {
+        val stateFlow = MutableStateFlow(NetworkMockState())
+        val configRepository = createConfigRepositoryMock(
+            loadResult = Result.success(testConfiguration())
+        )
+        val stateRepository = createStateRepositoryMock(stateFlow)
+        val key = OperationKey(specId = "user-api", operationId = "getUser")
+        val response = MockResponse(statusCode = 200, exampleName = "default", displayName = "Success (200)", content = "{}")
+
+        val viewModel = NetworkMockViewModel(configRepository, stateRepository)
+        collectStates(viewModel.uiState, viewModel.sheetState)
+
+        viewModel.openOperation(key = key)
+        viewModel.setOperationMockState(key = key, response = response)
+
+        val content = viewModel.sheetState.value.shouldBeInstanceOf<OperationSheetState.Content>()
+        content.operationUiModel.currentState shouldBe OperationMockState.Mock(statusCode = 200, exampleName = "default")
+    }
+
     private fun createConfigRepositoryMock(
         loadResult: Result<MockConfiguration>,
-        loadDelayMs: Long = 0L
+        loadDelayMs: Long = 0L,
+        discoveryResult: List<MockResponse> = listOf(
+            MockResponse(statusCode = 200, exampleName = "default", displayName = "Success (200)", content = "{}")
+        ),
+        discoveryException: Exception? = null,
+        discoveryDelayMs: Long = 0L
     ): MockConfigRepository {
         val repository = mockk<MockConfigRepository>()
 
@@ -234,6 +393,17 @@ class NetworkMockViewModelTest : ViewModelTest() {
                 delay(loadDelayMs)
             }
             loadResult
+        }
+
+        if (discoveryException != null) {
+            coEvery { repository.discoverResponseFiles(key = any()) } throws discoveryException
+        } else {
+            coEvery { repository.discoverResponseFiles(key = any()) } coAnswers {
+                if (discoveryDelayMs > 0) {
+                    delay(discoveryDelayMs)
+                }
+                discoveryResult
+            }
         }
 
         return repository
