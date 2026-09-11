@@ -77,6 +77,59 @@ package com.worldline.devview.networkmock.model {
 
 }
 
+package com.worldline.devview.networkmock.theme {
+
+  public final class LocalMockColorSchemeKt {
+    method @InaccessibleFromKotlin public static androidx.compose.runtime.ProvidableCompositionLocal<com.worldline.devview.networkmock.theme.MockColorScheme?> getLocalMockColorScheme();
+    property public static androidx.compose.runtime.ProvidableCompositionLocal<com.worldline.devview.networkmock.theme.MockColorScheme?> LocalMockColorScheme;
+  }
+
+  @androidx.compose.runtime.Immutable public final class MockColorScheme {
+    ctor public MockColorScheme(com.worldline.devview.networkmock.theme.StatusColors informational, com.worldline.devview.networkmock.theme.StatusColors successful, com.worldline.devview.networkmock.theme.StatusColors redirection, com.worldline.devview.networkmock.theme.StatusColors clientError, com.worldline.devview.networkmock.theme.StatusColors serverError, com.worldline.devview.networkmock.theme.StatusColors unknown, com.worldline.devview.networkmock.theme.StatusColors network);
+    method public com.worldline.devview.networkmock.theme.StatusColors component1();
+    method public com.worldline.devview.networkmock.theme.StatusColors component2();
+    method public com.worldline.devview.networkmock.theme.StatusColors component3();
+    method public com.worldline.devview.networkmock.theme.StatusColors component4();
+    method public com.worldline.devview.networkmock.theme.StatusColors component5();
+    method public com.worldline.devview.networkmock.theme.StatusColors component6();
+    method public com.worldline.devview.networkmock.theme.StatusColors component7();
+    method public com.worldline.devview.networkmock.theme.MockColorScheme copy(optional com.worldline.devview.networkmock.theme.StatusColors informational, optional com.worldline.devview.networkmock.theme.StatusColors successful, optional com.worldline.devview.networkmock.theme.StatusColors redirection, optional com.worldline.devview.networkmock.theme.StatusColors clientError, optional com.worldline.devview.networkmock.theme.StatusColors serverError, optional com.worldline.devview.networkmock.theme.StatusColors unknown, optional com.worldline.devview.networkmock.theme.StatusColors network);
+    method public operator com.worldline.devview.networkmock.theme.StatusColors get(com.worldline.devview.networkmock.core.model.StatusCodeFamily family);
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.StatusColors getClientError();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.StatusColors getInformational();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.StatusColors getNetwork();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.StatusColors getRedirection();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.StatusColors getServerError();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.StatusColors getSuccessful();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.StatusColors getUnknown();
+    property public com.worldline.devview.networkmock.theme.StatusColors clientError;
+    property public com.worldline.devview.networkmock.theme.StatusColors informational;
+    property public com.worldline.devview.networkmock.theme.StatusColors network;
+    property public com.worldline.devview.networkmock.theme.StatusColors redirection;
+    property public com.worldline.devview.networkmock.theme.StatusColors serverError;
+    property public com.worldline.devview.networkmock.theme.StatusColors successful;
+    property public com.worldline.devview.networkmock.theme.StatusColors unknown;
+    field public static final com.worldline.devview.networkmock.theme.MockColorScheme.Companion Companion;
+  }
+
+  public static final class MockColorScheme.Companion {
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.MockColorScheme getDark();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.theme.MockColorScheme getLight();
+    property public com.worldline.devview.networkmock.theme.MockColorScheme Dark;
+    property public com.worldline.devview.networkmock.theme.MockColorScheme Light;
+  }
+
+  @androidx.compose.runtime.Immutable public final class StatusColors {
+    ctor @KotlinOnly public StatusColors(androidx.compose.ui.graphics.Color container, androidx.compose.ui.graphics.Color content);
+    method @KotlinOnly public operator androidx.compose.ui.graphics.Color component1();
+    method @KotlinOnly public operator androidx.compose.ui.graphics.Color component2();
+    method @KotlinOnly public com.worldline.devview.networkmock.theme.StatusColors copy(optional androidx.compose.ui.graphics.Color container, optional androidx.compose.ui.graphics.Color content);
+    property public androidx.compose.ui.graphics.Color container;
+    property public androidx.compose.ui.graphics.Color content;
+  }
+
+}
+
 package com.worldline.devview.networkmock.viewmodel {
 
   @androidx.compose.runtime.Immutable public sealed exhaustive interface NetworkMockEndpointUiState {
