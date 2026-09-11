@@ -28,6 +28,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **Breaking:** `Operation.method` is now `HttpMethod` instead of `String`.
   (`devview-networkmock-core`)
+- **Breaking:** NetworkMock's operation detail screen is now a bottom sheet over the operation
+  list instead of a second navigation destination — tapping an operation opens the response
+  picker directly, without leaving the list, and picking a response dismisses the sheet.
+  Removed: `NetworkMockDestination.Endpoint`, `NetworkMockEndpointViewModel`,
+  `NetworkMockEndpointUiState`, and `NetworkMockScreen`'s `navigateToEndpointScreen` parameter.
+  Added to `NetworkMockViewModel`: `sheetState: StateFlow<OperationSheetState>`,
+  `openOperation(key)`, `closeSheet()` — response variant discovery (previously
+  `NetworkMockEndpointViewModel`'s job) now happens here, once per sheet open. Marking a
+  response for preview/compare is now an explicit eye-icon toggle on each row instead of a
+  long-press, and the preview/diff view is a second page of the same sheet (reached via a
+  "Preview"/"Compare 2 responses" button) rather than a separate bottom sheet stacked on top of
+  the detail screen. (`devview-networkmock`)
 - NetworkMock UI: the search field and version filter row moved from the top of the screen into
   a `Scaffold` bottom bar (alongside the new method filter), matching FeatureFlip, Analytics, and
   ConsoleLogger's existing layout for one-handed reach. Only the search field and an expand
@@ -39,7 +51,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   version badge is also gone: `Operation.version` is parsed from the very path segment shown
   right next to it, so the badge never showed anything the path wasn't already showing, and it
   crowded the state chip. The path itself no longer truncates — it wraps instead, so a long URL
-  is never cut off. (`devview-networkmock`)
+  is never cut off. The operation sheet's picker-page header shares the same fix, since it shows
+  the same operation identity — except the header drops the state chip entirely: the picker
+  list right below already marks the active response with a checkmark, its full label, and a
+  family icon/colour, so a bare-status-code chip in the header would only repeat that.
+  (`devview-networkmock`)
 
 ## [0.2.0-alpha02] - 2026-09-11
 

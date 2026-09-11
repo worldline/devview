@@ -86,7 +86,7 @@ Response bodies live wherever `externalValue` points them — the sample app use
 
 Discovery reads exactly the `(statusCode, exampleName)` pairs declared in the spec — **there is no probing** of status codes or file-name suffixes. If a variant isn't declared, it doesn't exist.
 
-`discoverResponseFiles`/`loadMockResponse` read and decode response body files — this is real I/O, on top of the one-time spec parse. `MockConfigRepository` doesn't call either eagerly; `devview-networkmock`'s main operation list is built from parsed spec metadata alone (`OperationDescriptor` carries only `key` and `config`, no responses), and a given operation's variants are only discovered when its detail screen actually opens. See [NetworkMock UI](networkmock-ui.md).
+`discoverResponseFiles`/`loadMockResponse` read and decode response body files — this is real I/O, on top of the one-time spec parse. `MockConfigRepository` doesn't call either eagerly; `devview-networkmock`'s main operation list is built from parsed spec metadata alone (`OperationDescriptor` carries only `key` and `config`, no responses), and a given operation's variants are only discovered when its operation sheet actually opens. See [NetworkMock UI](networkmock-ui.md).
 
 ```kotlin
 MockConfigRepository(

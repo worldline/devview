@@ -47,6 +47,10 @@ public class NetworkMockViewModel(
     private val privateConfiguration = MutableStateFlow<MockConfiguration?>(value = null)
     private val privateLoadingState = MutableStateFlow<LoadingState>(value = LoadingState.Loading)
 
+    private val privateOpenOperationKey = MutableStateFlow<OperationKey?>(value = null)
+    private val privateLoadedOperation = MutableStateFlow<LoadedOperation?>(value = null)
+    private val privateSheetError = MutableStateFlow<String?>(value = null)
+
     /**
      * Combined UI state for the Network Mock screen.
      *
@@ -57,9 +61,8 @@ public class NetworkMockViewModel(
      *
      * Each [com.worldline.devview.networkmock.core.model.ApiSpec] in the configuration becomes
      * one [ApiSpecUiModel] tab. Response variants are **not** loaded here — this state is
-     * built from spec metadata only. They're discovered lazily by
-     * [com.worldline.devview.networkmock.viewmodel.NetworkMockEndpointViewModel] when an
-     * operation's detail screen is actually opened.
+     * built from spec metadata only. They're discovered lazily by [openOperation], once per
+     * operation, when its picker/preview sheet is actually opened — see [sheetState].
      *
      * @see NetworkMockUiState
      * @see ApiSpecUiModel
@@ -111,16 +114,107 @@ public class NetworkMockViewModel(
         initialValue = NetworkMockUiState.Loading
     )
 
+    /**
+     * State for the operation picker/preview bottom sheet, driven by [openOperation] and
+     * [closeSheet].
+     *
+     * Combines the currently-opened [OperationKey] (or `null` if the sheet is closed), the
+     * discovered [LoadedOperation] for that key (response variant discovery is per-operation
+     * I/O, so it only happens once an operation is actually opened — see [openOperation]), any
+     * discovery error, and the live [com.worldline.devview.networkmock.core.model.NetworkMockState]
+     * so the sheet's selection always reflects the latest persisted choice.
+     *
+     * [LoadedOperation.key] is compared against the currently-open key rather than trusting
+     * [privateLoadedOperation] alone — closing one operation's sheet and immediately opening
+     * another's should never flash the previous operation's stale content while the new one is
+     * still loading.
+     *
+     * @see openOperation
+     * @see closeSheet
+     */
+    public val sheetState: StateFlow<OperationSheetState> = combine(
+        flow = privateOpenOperationKey,
+        flow2 = privateLoadedOperation,
+        flow3 = privateSheetError,
+        flow4 = stateRepository.observeState()
+    ) { openKey, loaded, error, runtimeState ->
+        when {
+            openKey == null -> OperationSheetState.Hidden
+            error != null -> OperationSheetState.Error(message = error)
+            loaded == null || loaded.key != openKey -> OperationSheetState.Loading
+            else -> OperationSheetState.Content(
+                operationUiModel = OperationUiModel(
+                    descriptor = loaded.descriptor,
+                    currentState = runtimeState.getOperationState(key = openKey)
+                        ?: OperationMockState.Network
+                ),
+                responses = loaded.responses
+            )
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(stopTimeoutMillis = WHILE_SUBSCRIBED_TIMEOUT_MS),
+        initialValue = OperationSheetState.Hidden
+    )
+
     init {
         loadConfiguration()
+    }
+
+    /**
+     * Opens the operation picker/preview sheet for [key], discovering its mock response
+     * variants. This is the only place response bodies are read — see [uiState]'s KDoc — so
+     * it happens lazily, once per sheet open, rather than eagerly for every operation in
+     * every spec.
+     *
+     * @param key The [OperationKey] identifying the spec and operation to open
+     */
+    public fun openOperation(key: OperationKey) {
+        privateOpenOperationKey.value = key
+        privateLoadedOperation.value = null
+        privateSheetError.value = null
+        viewModelScope.launch {
+            runCatching {
+                configRepository.discoverResponseFiles(key = key)
+            }.onSuccess { responses ->
+                val operation = privateConfiguration.value
+                    ?.specs
+                    ?.firstOrNull { it.id == key.specId }
+                    ?.operations
+                    ?.firstOrNull { it.operationId == key.operationId }
+
+                if (operation == null) {
+                    privateSheetError.value = "Operation configuration not found"
+                    return@onSuccess
+                }
+
+                privateLoadedOperation.value = LoadedOperation(
+                    key = key,
+                    descriptor = OperationDescriptor(key = key, config = operation),
+                    responses = responses.toPersistentList()
+                )
+            }.onFailure { error ->
+                privateSheetError.value = error.message ?: "Failed to load operation"
+            }
+        }
+    }
+
+    /**
+     * Closes the operation picker/preview sheet, resetting [sheetState] to
+     * [OperationSheetState.Hidden].
+     */
+    public fun closeSheet() {
+        privateOpenOperationKey.value = null
+        privateLoadedOperation.value = null
+        privateSheetError.value = null
     }
 
     /**
      * Loads the mock configuration from the configured OpenAPI specs.
      *
      * This only parses spec metadata — no response body is read or decoded here. See #98:
-     * that work is deferred to [com.worldline.devview.networkmock.viewmodel.NetworkMockEndpointViewModel],
-     * which discovers response variants for exactly one operation when its detail screen opens.
+     * that work is deferred to [openOperation], which discovers response variants for exactly
+     * one operation when its picker/preview sheet is opened.
      */
     @Suppress("DocumentationOverPrivateFunction")
     private fun loadConfiguration() {
@@ -268,3 +362,51 @@ private sealed interface LoadingState {
 
     data class Error(val message: String) : LoadingState
 }
+
+/**
+ * State for the operation picker/preview bottom sheet.
+ *
+ * Emitted by [NetworkMockViewModel.sheetState]. [Hidden] means no sheet is shown; the other
+ * three variants mirror the discovery lifecycle of a single opened operation.
+ */
+@Immutable
+public sealed interface OperationSheetState {
+    /** No operation is open — the sheet is not shown. */
+    @Immutable
+    public data object Hidden : OperationSheetState
+
+    /** Response variant discovery is in progress for the opened operation. */
+    @Immutable
+    public data object Loading : OperationSheetState
+
+    /**
+     * Discovery failed or the operation configuration could not be found.
+     *
+     * @property message Human-readable description of the failure
+     */
+    @Immutable
+    public data class Error(val message: String) : OperationSheetState
+
+    /**
+     * The opened operation's response variants were discovered successfully.
+     *
+     * @property operationUiModel The UI model combining the static `OperationDescriptor` with
+     * the live [OperationMockState] for the operation, reflecting the latest persisted selection.
+     * @property responses The response variants discovered for this operation.
+     */
+    @Immutable
+    public data class Content(
+        val operationUiModel: OperationUiModel,
+        val responses: PersistentList<MockResponse>
+    ) : OperationSheetState
+}
+
+/**
+ * Internal record of a successfully-discovered operation, keyed so [NetworkMockViewModel.sheetState]
+ * can tell whether it still corresponds to the currently-open operation.
+ */
+private data class LoadedOperation(
+    val key: OperationKey,
+    val descriptor: OperationDescriptor,
+    val responses: PersistentList<MockResponse>
+)

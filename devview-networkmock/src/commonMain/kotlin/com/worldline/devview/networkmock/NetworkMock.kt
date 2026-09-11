@@ -17,8 +17,6 @@ import com.worldline.devview.networkmock.core.NETWORK_MOCK_DATASTORE_NAME
 import com.worldline.devview.networkmock.core.NetworkMockDataStoreDelegate
 import com.worldline.devview.networkmock.core.NetworkMockInitializer
 import com.worldline.devview.networkmock.core.NetworkMockResourceLoader
-import com.worldline.devview.networkmock.core.model.OperationKey
-import com.worldline.devview.networkmock.viewmodel.NetworkMockEndpointViewModel
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
 import com.worldline.devview.utils.DataStoreDelegate
 import com.worldline.devview.utils.RequiresDataStore
@@ -33,17 +31,18 @@ import org.jetbrains.compose.resources.MissingResourceException
 
 /**
  * Navigation destinations for the NetworkMock module.
- * All screens within NetworkMock are defined here.
+ *
+ * There is only one destination — picking a mock response happens in
+ * [NetworkMockOperationSheet], a bottom sheet over this same screen, rather than a second
+ * navigation destination.
  */
 public sealed interface NetworkMockDestination : NavKey {
     /**
-     * Main network mock list screen
+     * The (only) network mock screen: the operation list, plus the operation sheet when one
+     * is open.
      */
     @Serializable
     public data object Main : NetworkMockDestination
-
-    @Serializable
-    public data class Endpoint(val operationKey: OperationKey) : NetworkMockDestination
 }
 
 /**
@@ -132,8 +131,7 @@ public class NetworkMock(
                 action(icon = Icons.Rounded.Restore) {
                     onResetToNetwork.tryEmit(value = Unit)
                 }
-            },
-            NetworkMockDestination.Endpoint::class.withTitle(title = "Endpoint Details")
+            }
         )
 
     override val entryDestination: NavKey = NetworkMockDestination.Main
@@ -143,10 +141,6 @@ public class NetworkMock(
             subclass(
                 subclass = NetworkMockDestination.Main::class,
                 serializer = NetworkMockDestination.Main.serializer()
-            )
-            subclass(
-                subclass = NetworkMockDestination.Endpoint::class,
-                serializer = NetworkMockDestination.Endpoint.serializer()
             )
         }
 
@@ -171,25 +165,7 @@ public class NetworkMock(
                     )
                 },
                 bottomPadding = bottomPadding,
-                resetToNetworkSharedFlow = onResetToNetwork,
-                navigateToEndpointScreen = { operationKey ->
-                    onNavigate(NetworkMockDestination.Endpoint(operationKey = operationKey))
-                }
-            )
-        }
-
-        entry<NetworkMockDestination.Endpoint> {
-            NetworkMockEndpointScreen(
-                modifier = Modifier
-                    .fillMaxSize(),
-                viewModel = viewModel {
-                    NetworkMockEndpointViewModel(
-                        operationKey = it.operationKey,
-                        configRepository = NetworkMockInitializer.requireConfigRepository(),
-                        stateRepository = NetworkMockInitializer.requireStateRepository()
-                    )
-                },
-                bottomPadding = bottomPadding
+                resetToNetworkSharedFlow = onResetToNetwork
             )
         }
     }
