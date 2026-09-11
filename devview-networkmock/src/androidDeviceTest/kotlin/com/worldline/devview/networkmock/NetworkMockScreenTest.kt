@@ -103,6 +103,15 @@ class NetworkMockScreenTest {
 
 
     @Test
+    fun globalToggle_showsMockedCountAcrossAllSpecs() = runComposeUiTest {
+        // 2 specs x 3 operations = 6 total; createUser is Mock in each spec = 2 mocked.
+        // Global, not per-tab: the count must not reset when only the "example" tab is visible.
+        setScreen(uiState = MockScreenTestData.contentState())
+
+        onNodeWithText(text = "2 of 6 mocked").assertIsDisplayed()
+    }
+
+    @Test
     fun globalToggle_stateChangeInvokesCallback() = runComposeUiTest {
         var callbackValue: Boolean? = null
 
@@ -166,6 +175,7 @@ class NetworkMockScreenTest {
     @Test
     fun versionFilterChip_narrowsToThatVersion() = runComposeUiTest {
         setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
 
         onNodeWithTag(testTag = "version_filter_example_v1").performClick()
         waitForIdle()
@@ -177,6 +187,7 @@ class NetworkMockScreenTest {
     @Test
     fun versionFilterAllChip_restoresFullList() = runComposeUiTest {
         setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
 
         onNodeWithTag(testTag = "version_filter_example_v1").performClick()
         waitForIdle()
@@ -190,11 +201,104 @@ class NetworkMockScreenTest {
     @Test
     fun versionFilterRow_isAbsent_forSpecWithNoVersions() = runComposeUiTest {
         setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
 
         onNodeWithTag(testTag = "spec_tab_catalog").performClick()
         waitForIdle()
 
         onAllNodesWithTag(testTag = "version_filter_row_catalog").assertCountEquals(expectedSize = 0)
+    }
+
+    @Test
+    fun methodFilterChip_narrowsToThatMethod() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
+
+        onNodeWithTag(testTag = "method_filter_example_POST").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
+        onAllNodesWithTag(testTag = "endpoint_card_example_getUser").assertCountEquals(expectedSize = 0)
+        onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
+    }
+
+    @Test
+    fun methodFilterChip_deselecting_restoresFullList() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
+
+        onNodeWithTag(testTag = "method_filter_example_POST").performClick()
+        waitForIdle()
+        onNodeWithTag(testTag = "method_filter_example_POST").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
+    }
+
+    @Test
+    fun methodFilterChips_unionMultipleSelections() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
+
+        onNodeWithTag(testTag = "method_filter_example_GET").performClick()
+        waitForIdle()
+        onNodeWithTag(testTag = "method_filter_example_POST").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
+    }
+
+    @Test
+    fun methodAndVersionFilters_intersect() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
+
+        onNodeWithTag(testTag = "version_filter_example_v1").performClick()
+        waitForIdle()
+        onNodeWithTag(testTag = "method_filter_example_GET").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
+        onAllNodesWithTag(testTag = "endpoint_card_example_createUser").assertCountEquals(expectedSize = 0)
+        onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
+    }
+
+    @Test
+    fun filterRows_areCollapsed_byDefault() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+
+        onAllNodesWithTag(testTag = "state_filter_row").assertCountEquals(expectedSize = 0)
+    }
+
+    @Test
+    fun expandFilterButton_revealsFilterRows() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
+
+        onNodeWithTag(testTag = "state_filter_row").assertIsDisplayed()
+    }
+
+    @Test
+    fun stateFilterChip_mocked_narrowsToMockedOperations() = runComposeUiTest {
+        // createUser is the only Mock-state operation in MockScreenTestData; getUser/health are Network.
+        setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
+
+        onNodeWithTag(testTag = "state_filter_chip_MOCKED").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
+        onAllNodesWithTag(testTag = "endpoint_card_example_getUser").assertCountEquals(expectedSize = 0)
+        onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
+    }
+
+    private fun ComposeUiTest.expandFilters() {
+        onNodeWithTag(testTag = "expand_filter_button").performClick()
+        waitForIdle()
     }
 
     private fun ComposeUiTest.setScreen(

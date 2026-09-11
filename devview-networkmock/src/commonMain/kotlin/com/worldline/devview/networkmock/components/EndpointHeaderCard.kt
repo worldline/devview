@@ -36,7 +36,7 @@ internal fun EndpointHeaderCard(endpoint: OperationUiModel, modifier: Modifier =
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -48,7 +48,7 @@ internal fun EndpointHeaderCard(endpoint: OperationUiModel, modifier: Modifier =
                 )
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.Top
                 ) {
                     Box(
                         modifier = Modifier
@@ -58,7 +58,7 @@ internal fun EndpointHeaderCard(endpoint: OperationUiModel, modifier: Modifier =
                             ).padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = endpoint.descriptor.config.method,
+                            text = endpoint.descriptor.config.method.value,
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontFamily = FontFamily.Monospace

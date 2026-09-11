@@ -29,6 +29,7 @@ Single test class:
 | `NetworkMockInitializer` | Process-level singleton holding both repos; `@Composable fun initialize(...)` is called once by `devview-networkmock` |
 | `NetworkMockDataStoreDelegate` | Top-level `val` holding the shared `DataStoreDelegate`; both UI and Ktor plugin reference this same instance |
 | `MockConfiguration` / `ApiSpec` / `Operation` | `@Serializable` model hierarchy, one `ApiSpec` per parsed OpenAPI document |
+| `HttpMethod` | `@JvmInline value class` wrapping the method name, modeled after Ktor's own `HttpMethod` (open set, companion constants, `DefaultMethods`) — exists so `Operation.method` doesn't need a Ktor dependency in this module |
 | `OperationKey` | Value type `(specId, operationId)` with `.compositeKey` property (`"specId-operationId"`) used everywhere as DataStore key and map key |
 | `MockMatch` | Returned by `findMatchingMock()`; carries `OperationKey` + resolved `Operation` — kept unrenamed, see naming note below |
 | `OperationDescriptor` | Static `(key, config)` pair for an operation; used by the UI layer. Does not carry response variants — see below |

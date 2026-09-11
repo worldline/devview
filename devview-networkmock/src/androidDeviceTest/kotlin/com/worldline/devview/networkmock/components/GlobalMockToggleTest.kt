@@ -36,17 +36,10 @@ class GlobalMockToggleTest {
     }
 
     @Test
-    fun displaysEnabledMessage_whenEnabled() = runComposeUiTest {
-        setToggle(enabled = true)
+    fun displaysMockedCount() = runComposeUiTest {
+        setToggle(enabled = true, mockedCount = 3, totalCount = 47)
 
-        onNodeWithText(text = "Mock responses enabled", substring = true).assertIsDisplayed()
-    }
-
-    @Test
-    fun displaysDisabledMessage_whenDisabled() = runComposeUiTest {
-        setToggle(enabled = false)
-
-        onNodeWithText(text = "Mocking disabled", substring = true).assertIsDisplayed()
+        onNodeWithText(text = "3 of 47 mocked", substring = true).assertIsDisplayed()
     }
 
     @Test
@@ -79,12 +72,16 @@ class GlobalMockToggleTest {
 
     private fun ComposeUiTest.setToggle(
         enabled: Boolean,
+        mockedCount: Int = 0,
+        totalCount: Int = 0,
         onToggle: (Boolean) -> Unit = {}
     ) {
         setContent {
             MaterialTheme {
                 GlobalMockToggle(
                     enabled = enabled,
+                    mockedCount = mockedCount,
+                    totalCount = totalCount,
                     onToggle = onToggle
                 )
             }

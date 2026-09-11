@@ -2,13 +2,12 @@ package com.worldline.devview.networkmock.components
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.ComposeUiTest
-import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotDisplayed
-import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
+import com.worldline.devview.networkmock.core.model.HttpMethod
 import com.worldline.devview.networkmock.core.model.Operation
 import com.worldline.devview.networkmock.core.model.OperationDescriptor
 import com.worldline.devview.networkmock.core.model.OperationKey
@@ -71,49 +70,18 @@ class EndpointCardTest {
     }
 
     @Test
-    fun showFileName_isFalse_stateTextIsNotDisplayed() = runComposeUiTest {
+    fun displaysFullPath_whenPathIsLongEnoughToWrap() = runComposeUiTest {
         setEndpointCard(
-            endpoint = mockEndpoint(),
-            showFileName = false
+            endpoint = networkEndpoint(
+                path = "/api/v1/some/really/very/long/path/segments/{userId}/details"
+            )
         )
 
-        onNodeWithTag(
-            testTag = "endpoint_state_getUser",
-            useUnmergedTree = true
-        ).assertIsNotDisplayed()
-    }
-
-    @Test
-    fun showFileName_isTrue_stateTextIsDisplayed() = runComposeUiTest {
-        setEndpointCard(
-            endpoint = mockEndpoint(),
-            showFileName = true
-        )
-
-        onNodeWithTag(
-            testTag = "endpoint_state_getUser",
-            useUnmergedTree = true
-        ).assertIsDisplayed()
-    }
-
-    @Test
-    fun versionChip_isDisplayed_whenOperationHasAVersion() = runComposeUiTest {
-        setEndpointCard(endpoint = networkEndpoint(version = "v1"))
-
-        onNodeWithTag(
-            testTag = "endpoint_version_getUser",
-            useUnmergedTree = true
-        ).assertIsDisplayed()
-    }
-
-    @Test
-    fun versionChip_isNotDisplayed_whenOperationHasNoVersion() = runComposeUiTest {
-        setEndpointCard(endpoint = networkEndpoint(version = null))
-
-        onAllNodesWithTag(
-            testTag = "endpoint_version_getUser",
-            useUnmergedTree = true
-        ).assertCountEquals(expectedSize = 0)
+        onNodeWithTag(testTag = "endpoint_path_getUser", useUnmergedTree = true)
+            .assertIsDisplayed()
+            .assertTextEquals(
+                "/api/v1/some/really/very/long/path/segments/{userId}/details"
+            )
     }
 
     @Test
@@ -136,15 +104,14 @@ class EndpointCardTest {
         ).assertIsDisplayed()
     }
 
-    private fun networkEndpoint(version: String? = null) = OperationUiModel(
+    private fun networkEndpoint(path: String = "/api/users/{userId}") = OperationUiModel(
         descriptor = OperationDescriptor(
             key = OperationKey(specId = "test", operationId = "getUser"),
             config = Operation(
                 operationId = "getUser",
                 name = "Get User",
-                path = "/api/users/{userId}",
-                method = "GET",
-                version = version
+                path = path,
+                method = HttpMethod.Get
             )
         ),
         currentState = OperationMockState.Network
@@ -157,7 +124,7 @@ class EndpointCardTest {
                 operationId = "getUser",
                 name = "Get User",
                 path = "/api/users/{userId}",
-                method = "GET"
+                method = HttpMethod.Get
             )
         ),
         currentState = OperationMockState.Mock(statusCode = 200, exampleName = "default")
@@ -165,15 +132,13 @@ class EndpointCardTest {
 
     private fun ComposeUiTest.setEndpointCard(
         endpoint: OperationUiModel,
-        openEndpointDetails: () -> Unit = {},
-        showFileName: Boolean = false
+        openEndpointDetails: () -> Unit = {}
     ) {
         setContent {
             MaterialTheme {
                 EndpointCard(
                     endpoint = endpoint,
-                    openEndpointDetails = openEndpointDetails,
-                    showFileName = showFileName
+                    openEndpointDetails = openEndpointDetails
                 )
             }
         }

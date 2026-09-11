@@ -1,6 +1,7 @@
 package com.worldline.devview.networkmock.core.fixtures
 
 import com.worldline.devview.networkmock.core.model.ApiSpec
+import com.worldline.devview.networkmock.core.model.HttpMethod
 import com.worldline.devview.networkmock.core.model.MockConfiguration
 import com.worldline.devview.networkmock.core.model.NetworkMockState
 import com.worldline.devview.networkmock.core.model.Operation
@@ -25,7 +26,7 @@ internal object MockTestData {
         operationId: String = "getUser",
         name: String = "Get User",
         path: String = "/api/users",
-        method: String = "GET",
+        method: HttpMethod = HttpMethod.Get,
     ): Operation = Operation(operationId = operationId, name = name, path = path, method = method)
 
     /** An operation whose path contains a single path parameter. */
@@ -33,7 +34,7 @@ internal object MockTestData {
         operationId: String = "getUserById",
         name: String = "Get User By ID",
         path: String = "/api/users/{userId}",
-        method: String = "GET",
+        method: HttpMethod = HttpMethod.Get,
     ): Operation = Operation(operationId = operationId, name = name, path = path, method = method)
 
     /** A POST operation (no path parameters). */
@@ -41,7 +42,7 @@ internal object MockTestData {
         operationId: String = "createUser",
         name: String = "Create User",
         path: String = "/api/users",
-        method: String = "POST",
+        method: HttpMethod = HttpMethod.Post,
     ): Operation = Operation(operationId = operationId, name = name, path = path, method = method)
 
     // -------------------------------------------------------------------------
@@ -66,9 +67,9 @@ internal object MockTestData {
         name = name,
         servers = servers,
         operations = listOf(
-            operation(operationId = "getUser", path = "/api/users/{userId}", method = "GET"),
-            postOperation(operationId = "createUser", path = "/api/users", method = "POST"),
-            operation(operationId = "deleteUser", path = "/api/users/{userId}", method = "DELETE"),
+            operation(operationId = "getUser", path = "/api/users/{userId}", method = HttpMethod.Get),
+            postOperation(operationId = "createUser", path = "/api/users", method = HttpMethod.Post),
+            operation(operationId = "deleteUser", path = "/api/users/{userId}", method = HttpMethod.Delete),
         ),
     )
 

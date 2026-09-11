@@ -1,5 +1,6 @@
 package com.worldline.devview.networkmock.core.openapi
 
+import com.worldline.devview.networkmock.core.model.HttpMethod
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -52,15 +53,15 @@ internal data class PathItemObject(
     val options: OperationObject? = null,
     val head: OperationObject? = null
 ) {
-    /** The declared operations on this path, paired with their uppercase HTTP method name. */
-    fun operationsByMethod(): List<Pair<String, OperationObject>> = listOfNotNull(
-        get?.let { "GET" to it },
-        put?.let { "PUT" to it },
-        post?.let { "POST" to it },
-        delete?.let { "DELETE" to it },
-        patch?.let { "PATCH" to it },
-        options?.let { "OPTIONS" to it },
-        head?.let { "HEAD" to it }
+    /** The declared operations on this path, paired with their [HttpMethod]. */
+    fun operationsByMethod(): List<Pair<HttpMethod, OperationObject>> = listOfNotNull(
+        get?.let { HttpMethod.Get to it },
+        put?.let { HttpMethod.Put to it },
+        post?.let { HttpMethod.Post to it },
+        delete?.let { HttpMethod.Delete to it },
+        patch?.let { HttpMethod.Patch to it },
+        options?.let { HttpMethod.Options to it },
+        head?.let { HttpMethod.Head to it }
     )
 }
 

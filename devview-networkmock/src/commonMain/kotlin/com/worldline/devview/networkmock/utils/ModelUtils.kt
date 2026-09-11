@@ -10,12 +10,14 @@ import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Wifi
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.intl.Locale
+import com.worldline.devview.networkmock.core.model.HttpMethod
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.Operation
 import com.worldline.devview.networkmock.core.model.OperationDescriptor
@@ -46,7 +48,7 @@ internal fun OperationDescriptor.Companion.fake(
         config = Operation(
             operationId = "operation-${index + 1}",
             name = "Operation ${index + 1}",
-            method = "GET",
+            method = HttpMethod.Get,
             path = "/operation${index + 1}"
         )
     )
@@ -112,6 +114,34 @@ internal val OperationMockState.containerColor: Color
 @ReadOnlyComposable
 internal fun containerColorForStatusCode(statusCode: Int?): Color =
     rememberMockColorScheme()[statusCode.toStatusCodeFamily()].container
+
+/**
+ * Background colour for an [HttpMethod] badge, mapped onto [MaterialTheme] colour-scheme
+ * roles (not a fixed palette like [containerColor]) — a method badge is a navigational aid,
+ * not a status signal, so it should track the host app's brand colours.
+ */
+internal val HttpMethod.badgeContainerColor: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = when (this) {
+        HttpMethod.Get -> MaterialTheme.colorScheme.primaryContainer
+        HttpMethod.Post -> MaterialTheme.colorScheme.tertiaryContainer
+        HttpMethod.Put, HttpMethod.Patch -> MaterialTheme.colorScheme.secondaryContainer
+        HttpMethod.Delete -> MaterialTheme.colorScheme.errorContainer
+        else -> MaterialTheme.colorScheme.surfaceVariant
+    }
+
+/** Content colour paired with [badgeContainerColor]. */
+internal val HttpMethod.badgeContentColor: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = when (this) {
+        HttpMethod.Get -> MaterialTheme.colorScheme.onPrimaryContainer
+        HttpMethod.Post -> MaterialTheme.colorScheme.onTertiaryContainer
+        HttpMethod.Put, HttpMethod.Patch -> MaterialTheme.colorScheme.onSecondaryContainer
+        HttpMethod.Delete -> MaterialTheme.colorScheme.onErrorContainer
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
 
 private fun Int?.toStatusCodeFamily(): StatusCodeFamily =
     this?.let { StatusCodeFamily.fromStatusCode(statusCode = it) } ?: StatusCodeFamily.UNKNOWN

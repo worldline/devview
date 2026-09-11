@@ -57,12 +57,59 @@ bodies. `NetworkMockEndpointViewModel` (detail screen) additionally calls
 response body is actually read; its `NetworkMockEndpointUiState.Content.responses` carries the
 result alongside `operationUiModel`.
 
-### Search and version filter live in the composable, not the ViewModel
+### Search and filters live in the composable, not the ViewModel
 
-`NetworkMockScreen`'s search query and per-tab selected version are plain
-`remember { mutableStateOf(...) } ` in `ContentState` — both are pure client-side filters over
-data the ViewModel already loaded, so there's no reason to round-trip them through
-`NetworkMockUiState`.
+`NetworkMockScreen`'s search query, per-spec selected version, per-spec selected methods, and
+the mock-state filter are plain `remember`/`mutableStateMapOf` state in `ContentState` — all are
+pure client-side filters over data the ViewModel already loaded, so there's no reason to
+round-trip them through `NetworkMockUiState`. The version and method selections are keyed by
+`ApiSpec.id` (`mutableStateMapOf<String, ...>`) rather than living inside the pager's per-page
+scope, because the filter chip rows themselves render in the screen's `Scaffold` `bottomBar` —
+outside the `HorizontalPager` — and need to read/write the *current* tab's selection from there.
+The mock-state filter (`MockStateFilter`: `MOCKED`/`NETWORK`) is deliberately **not** keyed by
+spec — mocked-ness is a question about every operation, not just the visible tab's, so unlike
+version/method it stays selected across tab switches.
+
+### Bottom bar: search always visible, filters collapse behind a chevron
+
+Only the search field and a chevron `IconButton` are visible by default (mirrors
+`devview-analytics`'s `AnalyticsScreen` bottom bar). Tapping the chevron toggles `filtersExpanded`,
+revealing — top to bottom — the mock-state filter row, the version filter row (if the current
+spec has versioned operations), then the method filter row (if it has more than one method) inside
+an `AnimatedVisibility`. The chevron rotates via `graphicsLayer(rotationX = ...)` driven by
+`animateFloatAsState`, identical to the Analytics pattern.
+
+### Global mocked-count header
+
+The `GlobalMockToggle` row (above the tab row, not inside the `HorizontalPager`) shows
+`"$mockedCount of $totalCount mocked"` computed by summing `OperationMockState.Mock` occurrences
+across **every** spec via `remember(key1 = uiState.specs) { derivedStateOf { ... } }` — global,
+not per-tab, so it answers "what have I left mocked anywhere" without needing to visit every
+tab. This replaced the two-line "Mock responses enabled/disabled" explainer text.
+
+### Endpoint row anatomy
+
+`EndpointCard` is two lines (name; method badge + path) plus a leading 3.dp colour rail — the
+state chip's container colour for `Mock`, transparent for `Network` — following
+`devview-analytics`'s `AnalyticsLogItem` rail pattern. There used to be a third line duplicating
+the state chip's status code (`OperationMockState.displayName`, see #115); that line is gone and
+`EndpointStateChip`'s default label is the bare status code (`"404"`), not the full
+`"$statusCode - $exampleName"` — a chip carrying both the code and the example name (e.g.
+`"404 - default"`) was wide enough to squeeze the path into truncation. The example name is
+still shown in full where it's actually chosen (`EndpointStateChip(label = ...)` call sites in
+the operation preview sheet). The path itself never truncates — it has no `maxLines`/`overflow`
+and simply wraps, since a cut-off URL segment can hide the difference between two similar
+operations; the method badge row uses `verticalAlignment = Alignment.Top` so the badge stays on
+the path's first line when it wraps. There is no version badge in the row: `Operation.version` is
+parsed out of the very path segment rendered next to it (see
+[Version Tags](../docs/modules/networkmock-core.md#version-tags)), so a separate badge could
+never show anything the path wasn't already showing — it only crowded the trailing state chip.
+The version *filter* in the bottom bar is unaffected; it still needs `Operation.version` to group
+operations, it's just not repeated as a badge on every row. HTTP method badges are coloured via
+`HttpMethod.badgeContainerColor`/`.badgeContentColor` (`ModelUtils.kt`), mapped onto
+`MaterialTheme` colour-scheme roles rather than a fixed palette — a method is a navigational aid,
+not a status signal, so it should track the host app's brand colours the way status colours
+deliberately don't (see "Status code colors and icons" below).
 
 ### "Reset to Network" toolbar action
 
