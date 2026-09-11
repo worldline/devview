@@ -1,5 +1,6 @@
 package com.worldline.devview.networkmock.fixtures
 
+import com.worldline.devview.networkmock.core.model.HttpMethod
 import com.worldline.devview.networkmock.core.model.Operation
 import com.worldline.devview.networkmock.core.model.OperationDescriptor
 import com.worldline.devview.networkmock.core.model.OperationKey
@@ -27,7 +28,7 @@ internal object MockScreenTestData {
                         operationId = "getUser",
                         name = "Get User",
                         path = if (versioned) "/api/v1/users/{userId}" else "/api/users/{userId}",
-                        method = "GET",
+                        method = HttpMethod.Get,
                         version = if (versioned) "v1" else null
                     )
                 ),
@@ -40,7 +41,7 @@ internal object MockScreenTestData {
                         operationId = "createUser",
                         name = "Create User",
                         path = if (versioned) "/api/v2/users" else "/api/users",
-                        method = "POST",
+                        method = HttpMethod.Post,
                         version = if (versioned) "v2" else null
                     )
                 ),
@@ -53,7 +54,7 @@ internal object MockScreenTestData {
                         operationId = "health",
                         name = "Health",
                         path = "/health",
-                        method = "GET"
+                        method = HttpMethod.Get
                     )
                 ),
                 currentState = OperationMockState.Network

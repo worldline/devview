@@ -60,7 +60,7 @@ public data class ApiSpec(
  * @property name Display name, taken from the operation's `summary`, falling back to
  *   [operationId] when absent.
  * @property path API path, may contain `{param}` placeholders (e.g. `"/v1/users/{userId}"`).
- * @property method HTTP method (GET, POST, PUT, DELETE, PATCH, etc.), uppercase.
+ * @property method HTTP method (GET, POST, PUT, DELETE, PATCH, etc.). See [HttpMethod].
  * @property queryParameters Required query-parameter values for this operation to match an
  *   incoming request, or `null` if this operation has none. Sourced from `parameters` entries
  *   with `in: query` that declare a literal `example` value — see
@@ -83,7 +83,7 @@ public data class Operation(
     val operationId: String,
     val name: String,
     val path: String,
-    val method: String,
+    val method: HttpMethod,
     val queryParameters: Map<String, String>? = null,
     val delayMs: Long? = null,
     val version: String? = null

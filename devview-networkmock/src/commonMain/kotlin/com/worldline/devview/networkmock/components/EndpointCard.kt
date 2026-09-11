@@ -83,7 +83,7 @@ internal fun EndpointCard(
                         modifier = Modifier.testTag(
                             tag = "endpoint_method_${endpoint.descriptor.operationId}"
                         ),
-                        text = endpoint.descriptor.config.method,
+                        text = endpoint.descriptor.config.method.value,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         fontFamily = FontFamily.Monospace

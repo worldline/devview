@@ -116,7 +116,7 @@ public class MockConfigRepository(
 
             val matchingOperation = spec.operations.firstOrNull { operation ->
                 RequestMatcher.matchesPath(configPath = operation.path, requestPath = path) &&
-                    operation.method == method &&
+                    operation.method.value == method &&
                     RequestMatcher.matchesQueryParams(
                         configQueryParams = operation.queryParameters,
                         requestQueryParams = queryParameters

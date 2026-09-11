@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.intl.Locale
+import com.worldline.devview.networkmock.core.model.HttpMethod
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.Operation
 import com.worldline.devview.networkmock.core.model.OperationDescriptor
@@ -46,7 +47,7 @@ internal fun OperationDescriptor.Companion.fake(
         config = Operation(
             operationId = "operation-${index + 1}",
             name = "Operation ${index + 1}",
-            method = "GET",
+            method = HttpMethod.Get,
             path = "/operation${index + 1}"
         )
     )

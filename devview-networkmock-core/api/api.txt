@@ -43,6 +43,25 @@ package com.worldline.devview.networkmock.core.model {
     property public java.util.List<java.lang.String> servers;
   }
 
+  @kotlin.jvm.JvmInline @kotlinx.serialization.Serializable public final value class HttpMethod {
+    ctor @KotlinOnly public HttpMethod(String value);
+    method @InaccessibleFromKotlin public String getValue();
+    property public String value;
+    field public static final com.worldline.devview.networkmock.core.model.HttpMethod.Companion Companion;
+  }
+
+  public static final class HttpMethod.Companion {
+    method @InaccessibleFromKotlin public java.util.List<com.worldline.devview.networkmock.core.model.HttpMethod> getDefaultMethods();
+    property public java.util.List<com.worldline.devview.networkmock.core.model.HttpMethod> DefaultMethods;
+    property public com.worldline.devview.networkmock.core.model.HttpMethod Delete;
+    property public com.worldline.devview.networkmock.core.model.HttpMethod Get;
+    property public com.worldline.devview.networkmock.core.model.HttpMethod Head;
+    property public com.worldline.devview.networkmock.core.model.HttpMethod Options;
+    property public com.worldline.devview.networkmock.core.model.HttpMethod Patch;
+    property public com.worldline.devview.networkmock.core.model.HttpMethod Post;
+    property public com.worldline.devview.networkmock.core.model.HttpMethod Put;
+  }
+
   @kotlinx.serialization.Serializable public final class MockConfiguration {
     ctor public MockConfiguration(java.util.List<com.worldline.devview.networkmock.core.model.ApiSpec> specs);
     method public java.util.List<com.worldline.devview.networkmock.core.model.ApiSpec> component1();
@@ -110,24 +129,23 @@ package com.worldline.devview.networkmock.core.model {
   }
 
   @androidx.compose.runtime.Immutable @kotlinx.serialization.Serializable public final class Operation {
-    ctor public Operation(String operationId, String name, String path, String method, optional java.util.Map<java.lang.String,java.lang.String>? queryParameters, optional Long? delayMs, optional String? version);
+    ctor @KotlinOnly public Operation(String operationId, String name, String path, com.worldline.devview.networkmock.core.model.HttpMethod method, optional java.util.Map<java.lang.String,java.lang.String>? queryParameters, optional Long? delayMs, optional String? version);
     method public String component1();
     method public String component2();
     method public String component3();
-    method public String component4();
+    method @KotlinOnly public operator com.worldline.devview.networkmock.core.model.HttpMethod component4();
     method public java.util.Map<java.lang.String,java.lang.String>? component5();
     method public Long? component6();
     method public String? component7();
-    method public com.worldline.devview.networkmock.core.model.Operation copy(optional String operationId, optional String name, optional String path, optional String method, optional java.util.Map<java.lang.String,java.lang.String>? queryParameters, optional Long? delayMs, optional String? version);
+    method @KotlinOnly public com.worldline.devview.networkmock.core.model.Operation copy(optional String operationId, optional String name, optional String path, optional com.worldline.devview.networkmock.core.model.HttpMethod method, optional java.util.Map<java.lang.String,java.lang.String>? queryParameters, optional Long? delayMs, optional String? version);
     method @InaccessibleFromKotlin public Long? getDelayMs();
-    method @InaccessibleFromKotlin public String getMethod();
     method @InaccessibleFromKotlin public String getName();
     method @InaccessibleFromKotlin public String getOperationId();
     method @InaccessibleFromKotlin public String getPath();
     method @InaccessibleFromKotlin public java.util.Map<java.lang.String,java.lang.String>? getQueryParameters();
     method @InaccessibleFromKotlin public String? getVersion();
     property public Long? delayMs;
-    property public String method;
+    property public com.worldline.devview.networkmock.core.model.HttpMethod method;
     property public String name;
     property public String operationId;
     property public String path;

@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
+import com.worldline.devview.networkmock.core.model.HttpMethod
 import com.worldline.devview.networkmock.core.model.Operation
 import com.worldline.devview.networkmock.core.model.OperationDescriptor
 import com.worldline.devview.networkmock.core.model.OperationKey
@@ -143,7 +144,7 @@ class EndpointCardTest {
                 operationId = "getUser",
                 name = "Get User",
                 path = "/api/users/{userId}",
-                method = "GET",
+                method = HttpMethod.Get,
                 version = version
             )
         ),
@@ -157,7 +158,7 @@ class EndpointCardTest {
                 operationId = "getUser",
                 name = "Get User",
                 path = "/api/users/{userId}",
-                method = "GET"
+                method = HttpMethod.Get
             )
         ),
         currentState = OperationMockState.Mock(statusCode = 200, exampleName = "default")

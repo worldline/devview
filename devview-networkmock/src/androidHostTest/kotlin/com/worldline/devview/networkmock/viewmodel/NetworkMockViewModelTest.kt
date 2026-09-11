@@ -2,6 +2,7 @@ package com.worldline.devview.networkmock.viewmodel
 
 import com.worldline.devview.networkmock.core.NetworkMockResourceLoader
 import com.worldline.devview.networkmock.core.model.ApiSpec
+import com.worldline.devview.networkmock.core.model.HttpMethod
 import com.worldline.devview.networkmock.core.model.MockConfiguration
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.NetworkMockState
@@ -334,13 +335,13 @@ class NetworkMockViewModelTest : ViewModelTest() {
                         operationId = "getUser",
                         name = "Get User",
                         path = "/api/users/{userId}",
-                        method = "GET"
+                        method = HttpMethod.Get
                     ),
                     Operation(
                         operationId = "createUser",
                         name = "Create User",
                         path = "/api/users",
-                        method = "POST"
+                        method = HttpMethod.Post
                     )
                 )
             ),
@@ -353,7 +354,7 @@ class NetworkMockViewModelTest : ViewModelTest() {
                         operationId = "getProduct",
                         name = "Get Product",
                         path = "/api/products/{productId}",
-                        method = "GET"
+                        method = HttpMethod.Get
                     )
                 )
             )
