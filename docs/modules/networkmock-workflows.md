@@ -114,6 +114,30 @@ paths:
         delayMs: 500  # overrides the 200ms default for this operation only
 ```
 
+## Simulating a network failure
+
+**Deterministically** — every request to the operation fails the same way until you change it:
+
+1. Open DevView → Network Mock → tap your operation.
+2. Scroll past the response variants to "Simulate Failure" and tap Timeout or Connection Refused.
+3. The operation's state chip reflects the selected failure. Tap "No mock" (or select a response) to stop simulating it.
+
+**Probabilistically** — a percentage of requests fail on their own, the rest behave normally:
+
+```yaml
+paths:
+  /v1/users/{userId}:
+    get:
+      x-devview:
+        failureRate: 0.1  # 10% of requests to this operation fail, independently, each time
+```
+
+This only rolls for requests that would otherwise be mocked — an operation left on `Network`
+passthrough is never affected. If the operation's picker page shows a configured failure rate,
+that's this field — it's read-only in the UI; edit the spec to change it. See
+[Simulating failures](networkmock-core.md#simulating-failures) for the exact exception each
+failure kind throws.
+
 ## Resetting all mocks
 
 - **UI**: Open DevView → Network Mock → tap the restore icon in the top toolbar.

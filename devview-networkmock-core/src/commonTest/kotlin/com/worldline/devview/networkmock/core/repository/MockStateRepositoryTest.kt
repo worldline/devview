@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import app.cash.turbine.test
 import com.worldline.devview.networkmock.core.fixtures.MockTestData
 import com.worldline.devview.networkmock.core.fixtures.ThrowingPreferencesDataStore
+import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.test.FakePreferencesDataStore
@@ -112,6 +113,20 @@ class MockStateRepositoryTest {
 
         val operationState = repository.getState().getOperationState(key = key(operationId = "getUser"))
         operationState shouldBe OperationMockState.Network
+    }
+
+    @Test
+    fun `setOperationMockState persists failure state for an operation`() = runTest {
+        val repository = createRepository()
+
+        repository.setOperationMockState(
+            key = key(operationId = "getUser"),
+            state = OperationMockState.Failure(kind = FailureKind.TIMEOUT)
+        )
+
+        val operationState = repository.getState().getOperationState(key = key(operationId = "getUser"))
+        operationState.shouldBeInstanceOf<OperationMockState.Failure>()
+        operationState.kind shouldBe FailureKind.TIMEOUT
     }
 
     @Test

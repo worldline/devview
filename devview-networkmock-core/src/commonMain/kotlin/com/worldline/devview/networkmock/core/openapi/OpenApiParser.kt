@@ -87,7 +87,8 @@ internal object OpenApiParser {
                     method = method,
                     queryParameters = queryParameters,
                     delayMs = rawOperation.xDevview?.delayMs,
-                    version = versionPattern.find(input = path)?.groupValues?.get(index = 1)
+                    version = versionPattern.find(input = path)?.groupValues?.get(index = 1),
+                    failureRate = rawOperation.xDevview?.failureRate
                 )
 
                 responseIndex[operationId] = context.resolveResponseIndex(

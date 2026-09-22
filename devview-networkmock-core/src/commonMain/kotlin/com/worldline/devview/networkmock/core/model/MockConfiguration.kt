@@ -74,6 +74,11 @@ public data class ApiSpec(
  *   [com.worldline.devview.networkmock.core.repository.RequestMatcher]). The pattern is not
  *   currently configurable; non-standard (header- or query-versioned) APIs simply get
  *   `null` here.
+ * @property failureRate Probability (0.0–1.0) that an otherwise-mocked request to this
+ *   operation independently fails instead, from the operation-level `x-devview.failureRate`
+ *   extension. `null` (the default) means every request behaves normally. Unlike [delayMs],
+ *   this has no spec-wide default on [ApiSpec] — "some percentage of everything fails" is a
+ *   much blunter tool than "this specific flaky endpoint fails sometimes".
  * @see ApiSpec
  * @see com.worldline.devview.networkmock.core.repository.RequestMatcher
  */
@@ -86,7 +91,8 @@ public data class Operation(
     val method: HttpMethod,
     val queryParameters: Map<String, String>? = null,
     val delayMs: Long? = null,
-    val version: String? = null
+    val version: String? = null,
+    val failureRate: Double? = null
 )
 
 /**

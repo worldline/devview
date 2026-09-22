@@ -3,6 +3,7 @@ package com.worldline.devview.networkmock.viewmodel
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.MockConfiguration
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.OperationDescriptor
@@ -295,6 +296,26 @@ public class NetworkMockViewModel(
                 OperationMockState.Network
             }
             stateRepository.setOperationMockState(key = key, state = newState)
+        }
+    }
+
+    /**
+     * Sets an operation to deterministically simulate a network failure of the given [kind].
+     *
+     * Every request to the operation fails the same way, the same way [setOperationMockState]
+     * makes an operation always serve the same response — the two are mutually exclusive
+     * states, so selecting a failure kind here replaces any previously-selected mock response.
+     *
+     * @param key The [OperationKey] identifying the spec and operation
+     * @param kind The kind of network failure to simulate
+     * @see OperationMockState.Failure
+     */
+    public fun setOperationFailureState(key: OperationKey, kind: FailureKind) {
+        viewModelScope.launch {
+            stateRepository.setOperationMockState(
+                key = key,
+                state = OperationMockState.Failure(kind = kind)
+            )
         }
     }
 

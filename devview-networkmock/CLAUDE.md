@@ -141,7 +141,12 @@ composable (not the ViewModel — see `PreviewSheetState` below):
   `onSelectResponse` and dismisses the sheet. Each `MockItem` also has an eye-icon preview
   toggle (`isMarkedForPreview`/`onToggleMarkedForPreview`) that marks it *without* dismissing;
   once ≥1 response is marked, a "Preview .../Compare 2 responses" button appears and switches
-  to the preview page.
+  to the preview page. Below the grouped responses, a "SIMULATE FAILURE" sticky header plus one
+  `FailureItem` per `FailureKind` (built the same way as `NetworkItem`/`MockItem`, reusing the
+  shared `MockItemContent` — see `MockItem.kt`); tapping one calls `onSelectFailure` and
+  dismisses the sheet the same way a response row does. If the operation declares
+  `x-devview.failureRate`, a read-only `Text` row under that header shows the configured rate —
+  there is no in-UI editing for it, the field is spec-authored.
 - **Preview page** (`MockResponsePreviewPage.kt`, replaces the pre-sheet `NetworkMockEndpointPreviewBottomSheet.kt`):
   same diff-rendering body as before, now reached via a back arrow instead of a close button —
   going back returns to the picker page without clearing the marks.

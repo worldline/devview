@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
@@ -43,9 +44,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.worldline.devview.networkmock.components.ErrorState
+import com.worldline.devview.networkmock.components.FailureItem
 import com.worldline.devview.networkmock.components.LoadingState
 import com.worldline.devview.networkmock.components.MockItem
 import com.worldline.devview.networkmock.components.NetworkItem
+import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.networkmock.core.model.StatusCodeFamily
@@ -73,6 +76,7 @@ import kotlinx.coroutines.launch
  * @param sheetState The current [OperationSheetState] from [com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel.sheetState].
  * @param onDismissRequest Called when the sheet should close (row tap, swipe, tap outside, close button).
  * @param onSelectResponse Called with the tapped response (or `null` for "no mock") when a row is selected.
+ * @param onSelectFailure Called with the tapped [FailureKind] when a failure-simulation row is selected.
  * @param modifier [Modifier] to be applied to the [ModalBottomSheet].
  */
 @Composable
@@ -80,6 +84,7 @@ internal fun NetworkMockOperationSheet(
     sheetState: OperationSheetState,
     onDismissRequest: () -> Unit,
     onSelectResponse: (MockResponse?) -> Unit,
+    onSelectFailure: (FailureKind) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val modalSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -146,6 +151,10 @@ internal fun NetworkMockOperationSheet(
                                 onSelectResponse(response)
                                 onClose()
                             },
+                            onSelectFailure = { kind ->
+                                onSelectFailure(kind)
+                                onClose()
+                            },
                             onTogglePreview = { response ->
                                 markedForPreview = markedForPreview.transition(response = response)
                             },
@@ -173,6 +182,7 @@ internal fun OperationPickerPage(
     content: OperationSheetState.Content,
     markedForPreview: PreviewSheetState,
     onSelectResponse: (MockResponse?) -> Unit,
+    onSelectFailure: (FailureKind) -> Unit,
     onTogglePreview: (MockResponse) -> Unit,
     onOpenPreview: () -> Unit,
     onClose: () -> Unit,
@@ -187,8 +197,11 @@ internal fun OperationPickerPage(
             it.statusCode == currentState.statusCode && it.exampleName == currentState.exampleName
         }
 
+        is OperationMockState.Failure -> null
         OperationMockState.Network -> null
     }
+    val selectedFailureKind = (endpoint.currentState as? OperationMockState.Failure)?.kind
+    val failureRate = endpoint.descriptor.config.failureRate
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -242,6 +255,42 @@ internal fun OperationPickerPage(
                         }
                     }
                 }
+            }
+
+            stickyHeader(key = "header_simulate_failure") {
+                Surface {
+                    Column {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            text = "SIMULATE FAILURE",
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                        if (failureRate != null) {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .padding(bottom = 8.dp)
+                                    .testTag(tag = "operation_sheet_failure_rate"),
+                                text = "Also configured to fail ${(failureRate * 100).toInt()}% " +
+                                    "of mocked requests on its own (x-devview.failureRate)",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                }
+            }
+            items(items = FailureKind.entries, key = { "failure_item_${it.name}" }) { kind ->
+                FailureItem(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .testTag(tag = "failure_item_${kind.name}"),
+                    kind = kind,
+                    selected = selectedFailureKind == kind,
+                    onClick = { onSelectFailure(kind) }
+                )
             }
         }
 
@@ -337,6 +386,7 @@ private fun NetworkMockOperationSheetPickerPreview(
                 ),
                 markedForPreview = PreviewSheetState.Hidden,
                 onSelectResponse = {},
+                onSelectFailure = {},
                 onTogglePreview = {},
                 onOpenPreview = {},
                 onClose = {}

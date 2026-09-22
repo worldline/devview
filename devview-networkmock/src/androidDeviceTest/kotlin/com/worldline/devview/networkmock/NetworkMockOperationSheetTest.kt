@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
+import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.HttpMethod
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.Operation
@@ -125,6 +126,7 @@ class NetworkMockOperationSheetTest {
     private fun ComposeUiTest.setPickerPage(
         currentState: OperationMockState,
         onSelectResponse: (MockResponse?) -> Unit = {},
+        onSelectFailure: (FailureKind) -> Unit = {},
         onOpenPreview: () -> Unit = {},
         onClose: () -> Unit = {}
     ) {
@@ -151,6 +153,7 @@ class NetworkMockOperationSheetTest {
                     ),
                     markedForPreview = marked,
                     onSelectResponse = onSelectResponse,
+                    onSelectFailure = onSelectFailure,
                     onTogglePreview = { response -> marked = marked.transition(response = response) },
                     onOpenPreview = onOpenPreview,
                     onClose = onClose

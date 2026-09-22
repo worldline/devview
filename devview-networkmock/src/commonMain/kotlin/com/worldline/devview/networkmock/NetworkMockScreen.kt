@@ -124,16 +124,21 @@ public fun NetworkMockScreen(
     )
 
     if (sheetState != OperationSheetState.Hidden) {
+        val openKey = (sheetState as? OperationSheetState.Content)
+            ?.operationUiModel
+            ?.descriptor
+            ?.key
         NetworkMockOperationSheet(
             sheetState = sheetState,
             onDismissRequest = viewModel::closeSheet,
             onSelectResponse = { response ->
-                val openKey = (sheetState as? OperationSheetState.Content)
-                    ?.operationUiModel
-                    ?.descriptor
-                    ?.key
                 if (openKey != null) {
                     viewModel.setOperationMockState(key = openKey, response = response)
+                }
+            },
+            onSelectFailure = { kind ->
+                if (openKey != null) {
+                    viewModel.setOperationFailureState(key = openKey, kind = kind)
                 }
             }
         )
@@ -194,7 +199,8 @@ private fun ContentState(
     val mockedOperations by remember(key1 = uiState.specs) {
         derivedStateOf {
             uiState.specs.sumOf { spec ->
-                spec.operations.count { it.currentState is OperationMockState.Mock }
+                // "Mocked" means anything that isn't plain pass-through — Mock and Failure both count.
+                spec.operations.count { it.currentState !is OperationMockState.Network }
             }
         }
     }
@@ -521,7 +527,10 @@ private fun OperationUiModel.matches(
     val matchesVersion = version == null || config.version == version
     val matchesMethod = methods.isEmpty() || config.method in methods
     val matchesMockState = mockStates.isEmpty() || when (currentState) {
+        // Failure counts as "Mocked" for this filter — like Mock, it's a deliberately
+        // configured non-default state, distinct only from plain pass-through.
         is OperationMockState.Mock -> MockStateFilter.MOCKED in mockStates
+        is OperationMockState.Failure -> MockStateFilter.MOCKED in mockStates
         OperationMockState.Network -> MockStateFilter.NETWORK in mockStates
     }
     return matchesQuery && matchesVersion && matchesMethod && matchesMockState

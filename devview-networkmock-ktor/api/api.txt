@@ -9,10 +9,13 @@ package com.worldline.devview.networkmock.ktor.plugin {
   public final class NetworkMockConfig {
     ctor public NetworkMockConfig();
     method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.repository.MockConfigRepository? getMockRepository();
+    method @InaccessibleFromKotlin public kotlin.random.Random getRandom();
     method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.repository.MockStateRepository? getStateRepository();
     method @InaccessibleFromKotlin public void setMockRepository(com.worldline.devview.networkmock.core.repository.MockConfigRepository?);
+    method @InaccessibleFromKotlin public void setRandom(kotlin.random.Random);
     method @InaccessibleFromKotlin public void setStateRepository(com.worldline.devview.networkmock.core.repository.MockStateRepository?);
     property public com.worldline.devview.networkmock.core.repository.MockConfigRepository? mockRepository;
+    property public kotlin.random.Random random;
     property public com.worldline.devview.networkmock.core.repository.MockStateRepository? stateRepository;
   }
 

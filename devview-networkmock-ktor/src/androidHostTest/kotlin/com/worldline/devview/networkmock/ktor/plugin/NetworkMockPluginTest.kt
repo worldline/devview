@@ -1,5 +1,6 @@
 package com.worldline.devview.networkmock.ktor.plugin
 
+import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.NetworkMockState
 import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.networkmock.core.repository.MockConfigRepository
@@ -10,6 +11,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
+import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -20,9 +22,12 @@ import io.ktor.http.headersOf
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlin.random.Random
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.IOException
 
 class NetworkMockPluginTest {
 
@@ -212,6 +217,156 @@ class NetworkMockPluginTest {
 
         response.headers["X-RateLimit-Remaining"] shouldBe "42"
         response.headers[HttpHeaders.ContentType] shouldBe "application/vnd.example+json"
+    }
+
+    // endregion
+
+    // region Failure simulation
+
+    @Test
+    fun returnsFailure_whenEndpointStateIsFailureTimeout() = runTest {
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Failure(kind = FailureKind.TIMEOUT)
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        assertFailsWith<HttpRequestTimeoutException> {
+            client.get(urlString = "https://staging.api.example.com/api/users/42")
+        }
+    }
+
+    @Test
+    fun returnsFailure_whenEndpointStateIsFailureConnectionRefused() = runTest {
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Failure(kind = FailureKind.CONNECTION_REFUSED)
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        assertFailsWith<IOException> {
+            client.get(urlString = "https://staging.api.example.com/api/users/42")
+        }
+    }
+
+    @Test
+    fun probabilisticFailure_throwsWhenRandomRollHitsTheConfiguredRate() = runTest {
+        val resources = flakySpecResources(failureRate = 0.5)
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(resources = resources),
+            stateRepository = stateRepositoryMock(state = state),
+            // 0.0 < 0.5 -> always "hits" the configured rate.
+            random = FixedRandom(value = 0.0)
+        )
+
+        assertFailsWith<IOException> {
+            client.get(urlString = "https://staging.api.example.com/api/users/42")
+        }
+    }
+
+    @Test
+    fun probabilisticFailure_servesMockWhenRandomRollMissesTheConfiguredRate() = runTest {
+        val resources = flakySpecResources(failureRate = 0.5)
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(resources = resources),
+            stateRepository = stateRepositoryMock(state = state),
+            // 0.99 >= 0.5 -> always "misses" the configured rate.
+            random = FixedRandom(value = 0.99)
+        )
+
+        val response: HttpResponse = client.get(
+            urlString = "https://staging.api.example.com/api/users/42"
+        )
+
+        response.status shouldBe HttpStatusCode.OK
+        response.body<String>() shouldBe """{"id":1,"name":"Alice"}"""
+    }
+
+    @Test
+    fun probabilisticFailure_doesNotApply_whenEndpointStateIsNetwork() = runTest {
+        // The roll only applies to otherwise-mocked requests - see the plugin's own doc note.
+        val resources = flakySpecResources(failureRate = 1.0)
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf("example-getUser" to OperationMockState.Network)
+        )
+        val client = buildClient(
+            engine = networkEngine(body = """{"source":"network"}"""),
+            configRepository = configRepository(resources = resources),
+            stateRepository = stateRepositoryMock(state = state),
+            random = FixedRandom(value = 0.0)
+        )
+
+        val response: HttpResponse = client.get(
+            urlString = "https://staging.api.example.com/api/users/42"
+        )
+
+        response.body<String>() shouldBe """{"source":"network"}"""
+    }
+
+    /** A spec with `x-devview.failureRate` declared on `getUser`, backed by its response file. */
+    private fun flakySpecResources(failureRate: Double): Map<String, String> {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://staging.api.example.com" } ],
+              "paths": {
+                "/api/users/{userId}": {
+                  "get": {
+                    "operationId": "getUser",
+                    "x-devview": { "failureRate": $failureRate },
+                    "responses": {
+                      "200": {
+                        "content": {
+                          "application/json": {
+                            "examples": {
+                              "default": { "externalValue": "/files/networkmocks/responses/getUser-200.json" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        return mapOf(
+            KtorPluginTestData.SPEC_PATH to spec,
+            "files/networkmocks/responses/getUser-200.json" to """{"id":1,"name":"Alice"}"""
+        )
+    }
+
+    /** A [Random] pinned to always return [value] from [nextDouble], for deterministic rolls. */
+    private class FixedRandom(private val value: Double) : Random() {
+        override fun nextBits(bitCount: Int): Int = 0
+        override fun nextDouble(): Double = value
     }
 
     // endregion
@@ -454,11 +609,15 @@ class NetworkMockPluginTest {
     private fun buildClient(
         engine: MockEngine,
         configRepository: MockConfigRepository,
-        stateRepository: MockStateRepository
+        stateRepository: MockStateRepository,
+        random: Random? = null
     ): HttpClient = HttpClient(engine = engine) {
         install(plugin = NetworkMockPlugin) {
             mockRepository = configRepository
             this.stateRepository = stateRepository
+            if (random != null) {
+                this.random = random
+            }
         }
     }
 

@@ -77,8 +77,9 @@ signal.
 ## Network Mock Status Colors
 
 Like the Console Logger's `LogColorScheme`, the Network Mock module's per-status-family colors
-(2xx green, 4xx/5xx red, etc.) are **not** derived from `MaterialTheme.colorScheme` — a mocked
-2xx response needs to read as "success" regardless of your app's brand colors. `MockColorScheme.Light`
+(2xx green, 4xx/5xx red, etc.), the network pass-through state, and simulated-failure state are
+**not** derived from `MaterialTheme.colorScheme` — a mocked 2xx response needs to read as
+"success" regardless of your app's brand colors. `MockColorScheme.Light`
 and `MockColorScheme.Dark` are two complete, hand-tuned palettes chosen for contrast in each theme.
 
 Provide the palette where you already configure your app's `MaterialTheme`, so it switches

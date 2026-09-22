@@ -53,6 +53,7 @@ internal fun EndpointCard(
 ) {
     val railColor = when (val state = endpoint.currentState) {
         is OperationMockState.Mock -> state.containerColor
+        is OperationMockState.Failure -> state.containerColor
         OperationMockState.Network -> Color.Transparent
     }
     Row(
