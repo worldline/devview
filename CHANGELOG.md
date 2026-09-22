@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- NetworkMock: replaced ~35 unconditional `println` calls in `MockConfigRepository` and
+  `NetworkMockPlugin` with gated [Kermit](https://github.com/touchlab/Kermit) logging
+  (tag `DevViewNetworkMock`), consolidating the plugin's multi-line per-request trace into one
+  line per intercepted request. No response body content is ever logged. A host app can adjust
+  or silence this via `Logger.setMinSeverity(...)`; `devview-consolelogger`, if installed,
+  captures it automatically. Detekt's `ForbiddenMethodCall` rule (`println`/`print`) is now
+  enforced repo-wide. (`devview-networkmock-core`, `devview-networkmock-ktor`, #86)
+
 ## [0.2.0-alpha03] - 2026-09-11
 
 ### Added

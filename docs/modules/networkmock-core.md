@@ -133,6 +133,22 @@ State is persisted via `MockStateRepository`:
 
 **Upgrading from a pre-0.2.0 release**: the operation-state key shape changed (`{groupId}-{environmentId}-{endpointId}` → `{specId}-{operationId}`), and so did the `Mock` payload (a response file name → `(statusCode, exampleName)`). On first launch after upgrading, every `network_mock_endpoint_*` entry from the old shape is wiped once — this is disabled-by-default developer-tooling state, not user data, so previously-selected mocks are reset rather than translated. The global mocking toggle is unaffected. See the [migration guide](../guides/migrating-to-openapi.md) for converting an existing `mocks.json`.
 
+## Logging
+
+`MockConfigRepository` logs spec-load outcomes through [Kermit](https://github.com/touchlab/Kermit), tagged `DevViewNetworkMock` — the same tag used by `devview-networkmock` and `devview-networkmock-ktor`, so a host can filter every NetworkMock-related log line by tag regardless of which module emitted it. Spec load success logs at `debug`, load failures at `warn` with the causing throwable attached. Request-matching outcomes (`findMatchingMock`) log at `verbose`, since they fire on every intercepted request.
+
+No response body content is ever logged. To silence NetworkMock's logs (or raise/lower their verbosity) in a host app, configure Kermit directly — this module adds no separate on/off flag of its own:
+
+```kotlin
+import co.touchlab.kermit.Logger
+import co.touchlab.kermit.Severity
+
+// Silence everything below warnings, repo-wide (affects every Kermit-backed DevView module)
+Logger.setMinSeverity(Severity.Warn)
+```
+
+`devview-consolelogger`, if installed, captures these logs into DevView's own in-app console screen for free — no extra wiring needed.
+
 ## NetworkMockResourceLoader
 
 _Added in v0.1.3._
