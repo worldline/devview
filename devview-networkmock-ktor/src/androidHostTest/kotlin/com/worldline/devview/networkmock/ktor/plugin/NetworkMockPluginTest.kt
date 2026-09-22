@@ -2,6 +2,7 @@ package com.worldline.devview.networkmock.ktor.plugin
 
 import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.NetworkMockState
+import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.networkmock.core.repository.MockConfigRepository
 import com.worldline.devview.networkmock.core.repository.MockStateRepository
@@ -25,6 +26,7 @@ import io.mockk.mockk
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.io.IOException
@@ -217,6 +219,83 @@ class NetworkMockPluginTest {
 
         response.headers["X-RateLimit-Remaining"] shouldBe "42"
         response.headers[HttpHeaders.ContentType] shouldBe "application/vnd.example+json"
+    }
+
+    // endregion
+
+    // region Sequential mocks
+
+    @Test
+    fun sequence_advancesThroughStepsOnSuccessiveRequests_andSticksOnLastOnceExhausted() = runTest {
+        val steps = listOf(
+            OperationMockState.Mock(statusCode = 200, exampleName = "default"),
+            OperationMockState.Mock(statusCode = 404, exampleName = "default")
+        )
+        val stateRepository = mutableStateRepositoryMock(
+            initial = NetworkMockState(
+                globalMockingEnabled = true,
+                operationStates = mapOf(
+                    "example-getUser" to OperationMockState.Sequence(responses = steps)
+                )
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(),
+            stateRepository = stateRepository
+        )
+
+        // Step 1: the first response, then advances to index 1.
+        client.get(urlString = "https://staging.api.example.com/api/users/42")
+            .status shouldBe HttpStatusCode.OK
+        // Step 2: the second (last) response, then sticks at index 1 - no third step exists.
+        client.get(urlString = "https://staging.api.example.com/api/users/42")
+            .status shouldBe HttpStatusCode.NotFound
+        // Step 3 onward: still the last response.
+        client.get(urlString = "https://staging.api.example.com/api/users/42")
+            .status shouldBe HttpStatusCode.NotFound
+    }
+
+    @Test
+    fun probabilisticFailure_appliesToSequenceStatesToo() = runTest {
+        val resources = flakySpecResources(failureRate = 1.0)
+        val stateRepository = mutableStateRepositoryMock(
+            initial = NetworkMockState(
+                globalMockingEnabled = true,
+                operationStates = mapOf(
+                    "example-getUser" to OperationMockState.Sequence(
+                        responses = listOf(OperationMockState.Mock(statusCode = 200, exampleName = "default"))
+                    )
+                )
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(resources = resources),
+            stateRepository = stateRepository,
+            random = FixedRandom(value = 0.0)
+        )
+
+        assertFailsWith<IOException> {
+            client.get(urlString = "https://staging.api.example.com/api/users/42")
+        }
+    }
+
+    /**
+     * Unlike [stateRepositoryMock], writes actually mutate the backing state, so a test can
+     * make more than one request and observe the plugin's own advance-and-persist write.
+     */
+    private fun mutableStateRepositoryMock(initial: NetworkMockState): MockStateRepository {
+        val stateFlow = MutableStateFlow(initial)
+        return mockk<MockStateRepository>(relaxed = true) {
+            coEvery { getState() } answers { stateFlow.value }
+            every { observeState() } returns stateFlow
+            coEvery { setOperationMockState(key = any(), state = any()) } answers {
+                val key = firstArg<OperationKey>()
+                val newState = secondArg<OperationMockState>()
+                stateFlow.value = stateFlow.value.withOperationState(key = key, state = newState)
+            }
+        }
     }
 
     // endregion

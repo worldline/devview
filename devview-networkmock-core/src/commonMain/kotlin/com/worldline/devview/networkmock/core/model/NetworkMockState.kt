@@ -89,6 +89,7 @@ public data class NetworkMockState(
  * | [Network] | All requests pass through to the actual network (default) | `"Network"` |
  * | [Mock] | Requests return the selected response variant | `"$statusCode - $exampleName"` |
  * | [Failure] | Requests fail with the selected [FailureKind] | e.g. `"Timeout"` |
+ * | [Sequence] | Requests advance through an ordered list, sticking on the last | e.g. `"200 - default (2/3)"` |
  *
  * @see NetworkMockState
  */
@@ -156,6 +157,36 @@ public sealed interface OperationMockState {
     @SerialName("failure")
     public data class Failure(val kind: FailureKind) : OperationMockState {
         override val displayName: String get() = kind.displayName
+    }
+
+    /**
+     * The operation advances through [responses] in order on each successive matched request,
+     * sticking on the last response once exhausted rather than looping back to the start or
+     * falling through to the real network — the least surprising default, and the one that
+     * matches how a real async-completion flow behaves (the terminal state is stable).
+     *
+     * [currentIndex] is persisted as part of this same state — no separate counter — so a plain
+     * [NetworkMockState.resetAllToNetwork]/reset-to-`Network` already discards the position
+     * along with everything else about the sequence, with no special-casing needed.
+     *
+     * @property responses The ordered steps, at least one. Two-or-more is the useful case; a
+     *   single-element sequence is just [Mock] with extra ceremony.
+     * @property currentIndex Which step serves next, clamped to `responses.indices` by whatever
+     *   advances it — see `NetworkMockPlugin` in `devview-networkmock-ktor`.
+     */
+    @Immutable
+    @Serializable
+    @SerialName("sequence")
+    public data class Sequence(val responses: List<Mock>, val currentIndex: Int = 0) :
+        OperationMockState {
+        /** The step that serves next, or `null` if [responses] is empty. */
+        public val currentResponse: Mock? get() = responses.getOrNull(index = currentIndex)
+
+        override val displayName: String
+            get() {
+                val current = currentResponse ?: return "Sequence"
+                return "${current.displayName} (${currentIndex + 1}/${responses.size})"
+            }
     }
 }
 

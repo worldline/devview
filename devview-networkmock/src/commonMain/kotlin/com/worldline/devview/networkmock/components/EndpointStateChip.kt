@@ -32,6 +32,7 @@ internal fun EndpointStateChip(
     modifier: Modifier = Modifier,
     label: String = when (endpointMockState) {
         is OperationMockState.Mock -> endpointMockState.statusCode.toString()
+        is OperationMockState.Sequence -> endpointMockState.displayName
         is OperationMockState.Failure -> endpointMockState.displayName
         OperationMockState.Network -> endpointMockState.displayName
     },

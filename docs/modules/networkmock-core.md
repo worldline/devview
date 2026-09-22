@@ -199,7 +199,11 @@ State is persisted via `MockStateRepository`:
 
 `OperationMockState` is serialized as `{"type":"network"}` (pass-through),
 `{"type":"mock","statusCode":200,"exampleName":"default"}`, or
-`{"type":"failure","kind":"timeout"}` / `{"type":"failure","kind":"connection_refused"}`.
+`{"type":"failure","kind":"timeout"}` / `{"type":"failure","kind":"connection_refused"}`, or
+`{"type":"sequence","responses":[...],"currentIndex":0}` — an ordered list of `Mock` steps plus
+the position to serve next. The position is part of this same persisted value, not a separate
+key, so resetting the operation to `Network` (or resetting all mocks) discards it along with
+everything else about the sequence. See [Simulating a staged/polling flow](networkmock-workflows.md#simulating-a-stagedpolling-flow-sequential-mocks).
 
 **Upgrading from a pre-0.2.0 release**: the operation-state key shape changed (`{groupId}-{environmentId}-{endpointId}` → `{specId}-{operationId}`), and so did the `Mock` payload (a response file name → `(statusCode, exampleName)`). On first launch after upgrading, every `network_mock_endpoint_*` entry from the old shape is wiped once — this is disabled-by-default developer-tooling state, not user data, so previously-selected mocks are reset rather than translated. The global mocking toggle is unaffected. See the [migration guide](../guides/migrating-to-openapi.md) for converting an existing `mocks.json`.
 

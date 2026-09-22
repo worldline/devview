@@ -138,6 +138,20 @@ that's this field — it's read-only in the UI; edit the spec to change it. See
 [Simulating failures](networkmock-core.md#simulating-failures) for the exact exception each
 failure kind throws.
 
+## Simulating a staged/polling flow (sequential mocks)
+
+For endpoints where the interesting behavior is the transition across repeated calls (order
+status, upload progress, async job completion):
+
+1. Open DevView → Network Mock → tap your operation.
+2. In the "SEQUENCE" section, tap "Build a Sequence".
+3. Tap responses above, in the order you want them served (e.g. `202 Pending`, then `200 Success`).
+4. Tap "Save Sequence" (needs at least 2 steps). The operation now advances one step per request.
+
+Once the sequence reaches its last step, every further request keeps serving that last step —
+it does not loop back to the start. "Reset Position" (in the same section) restarts at step 1
+without leaving the sequence; selecting "No mock" or a single response exits it entirely.
+
 ## Resetting all mocks
 
 - **UI**: Open DevView → Network Mock → tap the restore icon in the top toolbar.

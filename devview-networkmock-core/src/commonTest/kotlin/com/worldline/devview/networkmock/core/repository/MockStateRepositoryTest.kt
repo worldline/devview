@@ -130,6 +130,43 @@ class MockStateRepositoryTest {
     }
 
     @Test
+    fun `setOperationMockState persists sequence state with its position for an operation`() = runTest {
+        val repository = createRepository()
+        val steps = listOf(
+            OperationMockState.Mock(statusCode = 202, exampleName = "pending"),
+            OperationMockState.Mock(statusCode = 200, exampleName = "default")
+        )
+
+        repository.setOperationMockState(
+            key = key(operationId = "getUser"),
+            state = OperationMockState.Sequence(responses = steps, currentIndex = 1)
+        )
+
+        val operationState = repository.getState().getOperationState(key = key(operationId = "getUser"))
+        operationState.shouldBeInstanceOf<OperationMockState.Sequence>()
+        operationState.responses shouldBe steps
+        operationState.currentIndex shouldBe 1
+    }
+
+    @Test
+    fun `setOperationMockState persists network state and discards a previous sequence position`() = runTest {
+        val repository = createRepository()
+        val steps = listOf(
+            OperationMockState.Mock(statusCode = 202, exampleName = "pending"),
+            OperationMockState.Mock(statusCode = 200, exampleName = "default")
+        )
+        repository.setOperationMockState(
+            key = key(operationId = "getUser"),
+            state = OperationMockState.Sequence(responses = steps, currentIndex = 1)
+        )
+
+        repository.setOperationMockState(key = key(operationId = "getUser"), state = OperationMockState.Network)
+
+        val operationState = repository.getState().getOperationState(key = key(operationId = "getUser"))
+        operationState shouldBe OperationMockState.Network
+    }
+
+    @Test
     fun `setOperationMockState is reflected in observeState`() = runTest {
         val repository = createRepository()
 

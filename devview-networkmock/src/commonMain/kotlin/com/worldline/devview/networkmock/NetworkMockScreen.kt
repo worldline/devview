@@ -140,6 +140,16 @@ public fun NetworkMockScreen(
                 if (openKey != null) {
                     viewModel.setOperationFailureState(key = openKey, kind = kind)
                 }
+            },
+            onCommitSequence = { responses ->
+                if (openKey != null) {
+                    viewModel.setOperationSequenceState(key = openKey, responses = responses)
+                }
+            },
+            onResetSequencePosition = {
+                if (openKey != null) {
+                    viewModel.resetOperationSequencePosition(key = openKey)
+                }
             }
         )
     }
@@ -530,6 +540,7 @@ private fun OperationUiModel.matches(
         // Failure counts as "Mocked" for this filter — like Mock, it's a deliberately
         // configured non-default state, distinct only from plain pass-through.
         is OperationMockState.Mock -> MockStateFilter.MOCKED in mockStates
+        is OperationMockState.Sequence -> MockStateFilter.MOCKED in mockStates
         is OperationMockState.Failure -> MockStateFilter.MOCKED in mockStates
         OperationMockState.Network -> MockStateFilter.NETWORK in mockStates
     }

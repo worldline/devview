@@ -320,6 +320,44 @@ public class NetworkMockViewModel(
     }
 
     /**
+     * Sets an operation to advance through [responses] in order on each successive request,
+     * starting at the first step. Replaces any previously-selected mock/failure state.
+     *
+     * @param key The [OperationKey] identifying the spec and operation
+     * @param responses The ordered steps, at least one (two-or-more is the useful case)
+     * @see OperationMockState.Sequence
+     */
+    public fun setOperationSequenceState(key: OperationKey, responses: List<MockResponse>) {
+        viewModelScope.launch {
+            val steps = responses.map {
+                OperationMockState.Mock(statusCode = it.statusCode, exampleName = it.exampleName)
+            }
+            stateRepository.setOperationMockState(
+                key = key,
+                state = OperationMockState.Sequence(responses = steps)
+            )
+        }
+    }
+
+    /**
+     * Resets an active sequence's position back to its first step, without leaving the
+     * [OperationMockState.Sequence] state. A no-op if the operation isn't currently a sequence.
+     *
+     * @param key The [OperationKey] identifying the spec and operation
+     */
+    public fun resetOperationSequencePosition(key: OperationKey) {
+        viewModelScope.launch {
+            val current = stateRepository.getState().getOperationState(key = key)
+            if (current is OperationMockState.Sequence) {
+                stateRepository.setOperationMockState(
+                    key = key,
+                    state = current.copy(currentIndex = 0)
+                )
+            }
+        }
+    }
+
+    /**
      * Resets all operation mocks to use actual network.
      *
      * Builds a [OperationMockState.Network] state for every operation present in
