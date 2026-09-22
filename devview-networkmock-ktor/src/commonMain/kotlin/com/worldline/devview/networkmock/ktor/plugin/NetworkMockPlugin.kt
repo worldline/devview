@@ -428,8 +428,8 @@ private fun createMockHttpClientCall(
  * a synthetic response. Both [request] and [response] are set immediately in
  * the secondary constructor so the call is fully usable upon creation.
  */
-public class MockHttpClientCall(client: HttpClient) : HttpClientCall(client) {
-    public constructor(
+internal class MockHttpClientCall(client: HttpClient) : HttpClientCall(client) {
+    constructor(
         client: HttpClient,
         mockRequestData: HttpRequestData,
         mockResponseData: HttpResponseData
