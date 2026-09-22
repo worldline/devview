@@ -21,10 +21,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.networkmock.preview.MockResponsePreviewParameterProvider
@@ -60,7 +63,9 @@ internal fun MockItem(
 ) {
     MockItemContent(
         modifier = modifier,
-        statusCode = mockResponse.statusCode,
+        icon = iconForStatusCode(statusCode = mockResponse.statusCode),
+        contentColor = contentColorForStatusCode(statusCode = mockResponse.statusCode),
+        containerColor = containerColorForStatusCode(statusCode = mockResponse.statusCode),
         label = mockResponse.displayName,
         selected = selected,
         onClick = onClick,
@@ -77,12 +82,41 @@ internal fun NetworkItem(
     modifier: Modifier = Modifier,
     selected: Boolean = false
 ) {
+    val state = OperationMockState.Network
     MockItemContent(
         modifier = modifier,
-        statusCode = null,
-        label = OperationMockState.Network.displayName,
+        icon = state.icon,
+        contentColor = state.contentColor,
+        containerColor = state.containerColor,
+        label = state.displayName,
         selected = selected,
-        isNetwork = true,
+        onClick = onClick,
+        isMarkedForPreview = false,
+        onToggleMarkedForPreview = null,
+        previewToggleTestTag = "mock_item_preview_toggle"
+    )
+}
+
+/**
+ * A selectable row simulating a deterministic network failure — see
+ * [com.worldline.devview.networkmock.core.model.OperationMockState.Failure]. Has nothing to
+ * preview, same as [NetworkItem].
+ */
+@Composable
+internal fun FailureItem(
+    kind: FailureKind,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    selected: Boolean = false
+) {
+    val state = OperationMockState.Failure(kind = kind)
+    MockItemContent(
+        modifier = modifier,
+        icon = state.icon,
+        contentColor = state.contentColor,
+        containerColor = state.containerColor,
+        label = state.displayName,
+        selected = selected,
         onClick = onClick,
         isMarkedForPreview = false,
         onToggleMarkedForPreview = null,
@@ -92,38 +126,17 @@ internal fun NetworkItem(
 
 @Composable
 private fun MockItemContent(
-    statusCode: Int?,
+    icon: ImageVector,
+    contentColor: Color,
+    containerColor: Color,
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
     isMarkedForPreview: Boolean,
     onToggleMarkedForPreview: (() -> Unit)?,
     previewToggleTestTag: String,
-    modifier: Modifier = Modifier,
-    isNetwork: Boolean = false
+    modifier: Modifier = Modifier
 ) {
-    val (icon, contentColor, containerColor) = when (isNetwork) {
-        true -> {
-            val state = OperationMockState.Network
-            Triple(
-                first = state.icon,
-                second = state.contentColor,
-                third = state.containerColor
-            )
-        }
-
-        false -> {
-            requireNotNull(value = statusCode) {
-                "Status code must not be null for non-network items"
-            }
-            Triple(
-                first = iconForStatusCode(statusCode = statusCode),
-                second = contentColorForStatusCode(statusCode = statusCode),
-                third = containerColorForStatusCode(statusCode = statusCode)
-            )
-        }
-    }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -210,6 +223,22 @@ private fun NetworkItemPreview(
     MaterialTheme {
         Surface {
             NetworkItem(
+                selected = selected,
+                onClick = {}
+            )
+        }
+    }
+}
+
+@Preview(locale = "en")
+@Composable
+private fun FailureItemPreview(
+    @PreviewParameter(BooleanPreviewParameterProvider::class) selected: Boolean
+) {
+    MaterialTheme {
+        Surface {
+            FailureItem(
+                kind = FailureKind.TIMEOUT,
                 selected = selected,
                 onClick = {}
             )

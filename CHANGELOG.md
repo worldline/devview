@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- NetworkMock: an operation can now simulate a network failure instead of returning a response,
+  two ways — **deterministically**, by selecting Timeout or Connection Refused in the operation
+  sheet's picker page (a new "Simulate Failure" section, alongside the response variants); or
+  **probabilistically**, via a new `x-devview.failureRate` (0.0–1.0) OpenAPI extension field,
+  which independently rolls on every otherwise-mocked request to that operation (an operation
+  left on `Network` passthrough is never affected). Each failure kind mirrors the exception a
+  real Ktor engine throws for the equivalent condition (`HttpRequestTimeoutException` for
+  Timeout, a connection-level `kotlinx.io.IOException` for Connection Refused), so existing app
+  error handling exercises the same code path. `OperationMockState` gains a `Failure(kind:
+  FailureKind)` variant (**breaking**: exhaustive `when` blocks over `OperationMockState` need a
+  new branch); `Operation` gains `failureRate: Double?`; `NetworkMockConfig` gains an injectable
+  `random: Random` for deterministic tests; `MockColorScheme` gains a `failure: StatusColors`
+  slot (**breaking**: new required constructor parameter). (`devview-networkmock-core`,
+  `devview-networkmock-ktor`, `devview-networkmock`, #88, #95)
 - NetworkMock: mocked responses now serve the `Content-Type` derived from the spec's declared
   media type (`responses.<code>.content.<mediaType>`, previously always hardcoded to
   `application/json`) plus any additional headers declared on `responses.<code>.headers` — a

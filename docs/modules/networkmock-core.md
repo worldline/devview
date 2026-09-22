@@ -131,18 +131,50 @@ Refs resolve one level deep — a referenced component's own `$ref` (if any) is 
 
 ### x-devview extension
 
-Vanilla OpenAPI has no field for response delay simulation, so it lives under the standard `x-`-prefixed [Specification Extensions](https://spec.openapis.org/oas/v3.1.0#specification-extensions) mechanism:
+Vanilla OpenAPI has no field for response delay simulation or failure injection, so both live under the standard `x-`-prefixed [Specification Extensions](https://spec.openapis.org/oas/v3.1.0#specification-extensions) mechanism:
 
 ```yaml
 x-devview:
-  delayMs: 200        # document root — spec-wide default
+  delayMs: 200          # document root — spec-wide default
+  failureRate: 0.1      # ignored at the document root, see below
 
 paths:
   /users/{userId}:
     get:
       x-devview:
-        delayMs: 500  # per-operation — overrides the document default
+        delayMs: 500       # per-operation — overrides the document default
+        failureRate: 0.1   # per-operation only — 10% of otherwise-mocked requests fail
 ```
+
+`failureRate`, unlike `delayMs`, has **no spec-wide default** — a document-root `failureRate` is
+parsed but ignored. "Some percentage of everything fails" is a much blunter tool than "this
+specific flaky endpoint fails sometimes", so it's deliberately operation-level only. See
+[Simulating failures](#simulating-failures).
+
+## Simulating failures
+
+An operation can be made to fail instead of returning a response, two ways:
+
+- **Deterministically**, by selecting a failure kind in the operation sheet's picker page (a
+  `Failure` row alongside the response variants) — every request to that operation fails the
+  same way until the selection changes, the same way [`Mock`](#datastore-schema) always serves
+  the same response.
+- **Probabilistically**, via the spec's `x-devview.failureRate` (0.0–1.0) — each request to an
+  otherwise-mocked operation independently rolls against the configured rate. This only applies
+  when the operation would otherwise serve a mock response; an operation left on `Network`
+  passthrough is never affected, keeping real network traffic untouched by default.
+
+Two failure kinds are supported, each mirroring the exception a real Ktor engine (OkHttp on
+Android, Darwin on iOS) throws for the equivalent real condition, so an app's existing error
+handling exercises the same code path:
+
+| Kind | Mirrors |
+|---|---|
+| Timeout | `io.ktor.client.plugins.HttpRequestTimeoutException` |
+| Connection Refused | a connection-level `kotlinx.io.IOException` |
+
+The probabilistic roll uses an injectable `Random` (`NetworkMockConfig.random`, defaulting to
+`Random.Default`) — override it in tests to pin the outcome deterministically.
 
 ## Caching & Reload
 
@@ -165,7 +197,9 @@ State is persisted via `MockStateRepository`:
 | `network_mock_schema_version` | Int | Gates the one-shot pre-0.2.0 migration below |
 | `network_mock_operation_{compositeKey}` | String (JSON) | Per-operation state |
 
-`OperationMockState` is serialized as `{"type":"network"}` (pass-through) or `{"type":"mock","statusCode":200,"exampleName":"default"}`.
+`OperationMockState` is serialized as `{"type":"network"}` (pass-through),
+`{"type":"mock","statusCode":200,"exampleName":"default"}`, or
+`{"type":"failure","kind":"timeout"}` / `{"type":"failure","kind":"connection_refused"}`.
 
 **Upgrading from a pre-0.2.0 release**: the operation-state key shape changed (`{groupId}-{environmentId}-{endpointId}` → `{specId}-{operationId}`), and so did the `Mock` payload (a response file name → `(statusCode, exampleName)`). On first launch after upgrading, every `network_mock_endpoint_*` entry from the old shape is wiped once — this is disabled-by-default developer-tooling state, not user data, so previously-selected mocks are reset rather than translated. The global mocking toggle is unaffected. See the [migration guide](../guides/migrating-to-openapi.md) for converting an existing `mocks.json`.
 

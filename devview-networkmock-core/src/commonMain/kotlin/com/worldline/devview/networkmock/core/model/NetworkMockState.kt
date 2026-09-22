@@ -77,9 +77,10 @@ public data class NetworkMockState(
 /**
  * Represents the mocking state for a single API operation.
  *
- * Each operation is either passing traffic through to the actual network or returning a
- * specific mock response. The two variants are represented as distinct types, eliminating
- * any ambiguous state combinations that existed in a previous boolean-flag approach.
+ * Each operation is either passing traffic through to the actual network, returning a
+ * specific mock response, or simulating a network failure. The variants are represented as
+ * distinct types, eliminating any ambiguous state combinations that existed in a previous
+ * boolean-flag approach.
  *
  * ## Variants
  *
@@ -87,6 +88,7 @@ public data class NetworkMockState(
  * |---------|----------|---------------|
  * | [Network] | All requests pass through to the actual network (default) | `"Network"` |
  * | [Mock] | Requests return the selected response variant | `"$statusCode - $exampleName"` |
+ * | [Failure] | Requests fail with the selected [FailureKind] | e.g. `"Timeout"` |
  *
  * @see NetworkMockState
  */
@@ -100,6 +102,7 @@ public sealed interface OperationMockState {
      *
      * - [Network]: always `"Network"`
      * - [Mock]: `"$statusCode - $exampleName"` (e.g. `"200 - default"`)
+     * - [Failure]: the selected [FailureKind]'s own display name (e.g. `"Timeout"`)
      */
     public val displayName: String
 
@@ -135,4 +138,45 @@ public sealed interface OperationMockState {
     public data class Mock(val statusCode: Int, val exampleName: String) : OperationMockState {
         override val displayName: String get() = "$statusCode - $exampleName"
     }
+
+    /**
+     * The operation will deterministically simulate a network failure instead of returning
+     * any response — every request to it fails the same way, the same way [Mock] always
+     * serves the same response.
+     *
+     * See #95's `x-devview.failureRate` for the complementary *probabilistic* failure —
+     * this variant answers "make this endpoint always fail right now", that one answers
+     * "make this endpoint flaky, the way a real degraded service is."
+     *
+     * @property kind The kind of network failure to simulate
+     * @see FailureKind
+     */
+    @Immutable
+    @Serializable
+    @SerialName("failure")
+    public data class Failure(val kind: FailureKind) : OperationMockState {
+        override val displayName: String get() = kind.displayName
+    }
+}
+
+/**
+ * A network failure mode an operation can be configured to simulate deterministically via
+ * [OperationMockState.Failure].
+ *
+ * Each kind mirrors the exception a real Ktor HTTP engine (OkHttp on Android, Darwin on iOS)
+ * throws for the equivalent real condition, so an app's existing error handling for that
+ * condition exercises the same code path against the simulated failure as it would against
+ * the real one. See `NetworkMockPlugin`'s `simulatedFailure` in `devview-networkmock-ktor`.
+ *
+ * @property displayName Human-readable name for UI display (e.g. `"Timeout"`)
+ */
+@Serializable
+public enum class FailureKind(public val displayName: String) {
+    /** Mirrors `io.ktor.client.plugins.HttpRequestTimeoutException` — the request timed out. */
+    @SerialName("timeout")
+    TIMEOUT(displayName = "Timeout"),
+
+    /** Mirrors a connection-level I/O failure (e.g. connection refused, host unreachable). */
+    @SerialName("connection_refused")
+    CONNECTION_REFUSED(displayName = "Connection Refused")
 }

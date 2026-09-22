@@ -24,7 +24,7 @@ val client = HttpClient(OkHttp) {
 ```
 
 - `NetworkMockPlugin` — the `HttpClientPlugin<NetworkMockConfig, NetworkMockPluginConfig>` singleton (`NetworkMockPlugin.kt`)
-- `NetworkMockConfig` — DSL receiver; exposes `mockRepository` and `stateRepository` as nullable vars (`NetworkMockConfig.kt`)
+- `NetworkMockConfig` — DSL receiver; exposes `mockRepository` and `stateRepository` as nullable vars, plus `random: Random` (defaults to `Random.Default`) used for the `x-devview.failureRate` roll — override in tests to pin the outcome (`NetworkMockConfig.kt`)
 - `MockHttpClientCall` — public subclass of `HttpClientCall` that wraps synthetic request/response data without touching the network (`NetworkMockPlugin.kt`)
 
 ## Interception Flow
@@ -38,9 +38,10 @@ The plugin hooks into Ktor's `HttpSend` phase during `install`:
 5. If no match → real network.
 6. If matched, `currentState.getOperationState(match.key)` is read:
    - `OperationMockState.Network` or `null` → real network.
-   - `OperationMockState.Mock(statusCode, exampleName)` → load that declared response variant via `mockRepository.loadMockResponse(key, statusCode, exampleName)`.
+   - `OperationMockState.Failure(kind)` → throws immediately via `simulatedFailure(kind, request)` — `HttpRequestTimeoutException` for `TIMEOUT`, `kotlinx.io.IOException` for `CONNECTION_REFUSED`. No response is loaded; this is the one path where the plugin deliberately throws.
+   - `OperationMockState.Mock(statusCode, exampleName)` → if `match.config.failureRate != null` and `plugin.config.random.nextDouble() < failureRate`, throws the same way as `Failure(CONNECTION_REFUSED)` before ever attempting to load a response. Otherwise loads the declared response variant via `mockRepository.loadMockResponse(key, statusCode, exampleName)`.
 7. On a successful load, `createMockHttpClientCall(...)` builds a `MockHttpClientCall` with `HttpResponseData` (HTTP/1.1, `MockResponse.contentType` as `Content-Type` merged with any `MockResponse.headers`, `ByteReadChannel` body) and returns it — **no network call is made**.
-8. On any failure (variant not declared in the spec, exception) → falls back to real network and logs; never throws.
+8. On any failure loading a declared mock (variant not declared in the spec, exception) → falls back to real network and logs. Simulated failures (step 6) are the deliberate exception to "never throws" — see step 6.
 
 ## Non-obvious Patterns and Constraints
 

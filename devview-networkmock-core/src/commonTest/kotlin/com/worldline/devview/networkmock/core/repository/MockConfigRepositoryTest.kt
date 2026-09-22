@@ -371,6 +371,37 @@ class MockConfigRepositoryTest {
     }
 
     @Test
+    fun `x-devview failureRate is parsed as an operation-level field with no spec-wide default`() = runTest {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "x-devview": { "failureRate": 0.5 },
+              "paths": {
+                "/api/flaky": {
+                  "get": {
+                    "operationId": "flaky",
+                    "x-devview": { "failureRate": 0.1 },
+                    "responses": {}
+                  }
+                },
+                "/api/steady": {
+                  "get": { "operationId": "steady", "responses": {} }
+                }
+              }
+            }
+        """.trimIndent()
+        val repository = createRepository(resources = mapOf(SPEC_PATH to spec))
+
+        val config = repository.loadConfiguration().getOrThrow()
+        val operations = config.specs[0].operations.associateBy { it.operationId }
+
+        // Unlike delayMs, a document-root failureRate is not a spec-wide default.
+        operations.getValue("flaky").failureRate shouldBe 0.1
+        operations.getValue("steady").failureRate shouldBe null
+    }
+
+    @Test
     fun `operation version is extracted from a v-n path segment`() = runTest {
         val cases = mapOf(
             "/api/v1/profile/{userId}" to "v1",

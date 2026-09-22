@@ -137,8 +137,10 @@ internal data class ComponentsObject(
 )
 
 /**
- * The `x-devview` Specification Extension object (see #94). Read at both the document root
- * (spec-wide default delay) and per-operation (overrides the document default).
+ * The `x-devview` Specification Extension object (see #94). [delayMs] is read at both the
+ * document root (spec-wide default delay) and per-operation (overrides the document default).
+ * [failureRate] is operation-level only (see [com.worldline.devview.networkmock.core.model.Operation.failureRate]) —
+ * it is ignored if declared at the document root.
  */
 @Serializable
-internal data class DevViewExtension(val delayMs: Long? = null)
+internal data class DevViewExtension(val delayMs: Long? = null, val failureRate: Double? = null)

@@ -1,11 +1,13 @@
 package com.worldline.devview.networkmock.ktor.plugin
 
 import co.touchlab.kermit.Logger
+import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.NetworkMockState
 import com.worldline.devview.networkmock.core.model.OperationMockState
 import io.ktor.client.HttpClient
 import io.ktor.client.call.HttpClientCall
 import io.ktor.client.plugins.HttpClientPlugin
+import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.plugin
 import io.ktor.client.request.HttpRequest
@@ -31,6 +33,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.io.IOException
 
 private val logger = Logger.withTag(tag = "DevViewNetworkMock")
 
@@ -59,6 +62,9 @@ public data class NetworkMockPluginConfig(internal val config: NetworkMockConfig
  * - **Path Parameters**: Supports path parameters like `/users/{userId}`
  * - **Multiple Hosts**: Can mock different hosts (staging, production, etc.)
  * - **State Persistence**: Mock configuration persists across app restarts
+ * - **Failure Simulation**: An operation can deterministically simulate a network failure
+ *   (see [com.worldline.devview.networkmock.core.model.OperationMockState.Failure]), or fail a
+ *   configurable percentage of the time via `x-devview.failureRate`
  *
  * ## How It Works
  * 1. Plugin intercepts every HTTP request using Ktor's `HttpSend` mechanism
@@ -117,8 +123,10 @@ public data class NetworkMockPluginConfig(internal val config: NetworkMockConfig
  *
  * ## Error Handling
  * The plugin fails gracefully — if configuration cannot be loaded, a response
- * file is missing, or any exception occurs, it falls back to the actual network
- * and logs the reason.
+ * file is missing, or any exception occurs while loading a declared mock, it falls back to the
+ * actual network and logs the reason. The one deliberate exception: a simulated failure (a
+ * `Failure` state, or a `failureRate` roll) throws intentionally, mirroring what a real network
+ * failure looks like to the app — that's the point, not an error to recover from.
  *
  * ## Thread Safety
  * The plugin is thread-safe. Multiple requests can be intercepted concurrently
@@ -143,6 +151,7 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
         override fun install(plugin: NetworkMockPluginConfig, scope: HttpClient) {
             val mockRepository = plugin.config.resolvedMockRepository()
             val stateRepository = plugin.config.resolvedStateRepository()
+            val random = plugin.config.random
 
             logger.d { "NetworkMock plugin installed" }
 
@@ -195,7 +204,22 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                         logger.d { "$method $path -> NETWORK (operation set to pass-through)" }
                         execute(requestBuilder = requestBuilder)
                     }
+                    is OperationMockState.Failure -> {
+                        logger.d { "$method $path -> FAILURE (${endpointState.kind}, forced)" }
+                        throw simulatedFailure(kind = endpointState.kind, requestData = request)
+                    }
                     is OperationMockState.Mock -> {
+                        val failureRate = mockMatch.config.failureRate
+                        if (failureRate != null && random.nextDouble() < failureRate) {
+                            logger.d {
+                                "$method $path -> FAILURE (probabilistic, rate=$failureRate)"
+                            }
+                            throw simulatedFailure(
+                                kind = FailureKind.CONNECTION_REFUSED,
+                                requestData = request
+                            )
+                        }
+
                         @Suppress("TooGenericExceptionCaught")
                         try {
                             val mockResponse = mockRepository.loadMockResponse(
@@ -237,6 +261,26 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                 }
             }
         }
+    }
+
+/**
+ * Builds the [Throwable] to throw for a simulated [FailureKind], mirroring what a real Ktor
+ * HTTP engine throws for the equivalent real condition so an app's existing error handling
+ * exercises the same code path against the simulated failure as it would the real one.
+ *
+ * `NamedArguments` is suppressed below because on the JVM target, [IOException] is a plain
+ * `java.io.IOException` constructor with no retained parameter name to reference.
+ *
+ * @param kind Which failure to simulate
+ * @param requestData The original request data, used to build a realistic timeout exception
+ * @return The exception to throw — never returns normally, the caller always `throw`s the result
+ */
+@Suppress("DocumentationOverPrivateFunction", "NamedArguments")
+private fun simulatedFailure(kind: FailureKind, requestData: HttpRequestData): Throwable =
+    when (kind) {
+        FailureKind.TIMEOUT -> HttpRequestTimeoutException(request = requestData)
+        FailureKind.CONNECTION_REFUSED ->
+            IOException("Connection refused (simulated by DevView NetworkMock)")
     }
 
 /**
