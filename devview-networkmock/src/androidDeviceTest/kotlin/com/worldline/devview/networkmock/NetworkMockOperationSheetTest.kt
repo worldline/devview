@@ -127,6 +127,8 @@ class NetworkMockOperationSheetTest {
         currentState: OperationMockState,
         onSelectResponse: (MockResponse?) -> Unit = {},
         onSelectFailure: (FailureKind) -> Unit = {},
+        onCommitSequence: (List<MockResponse>) -> Unit = {},
+        onResetSequencePosition: () -> Unit = {},
         onOpenPreview: () -> Unit = {},
         onClose: () -> Unit = {}
     ) {
@@ -154,6 +156,8 @@ class NetworkMockOperationSheetTest {
                     markedForPreview = marked,
                     onSelectResponse = onSelectResponse,
                     onSelectFailure = onSelectFailure,
+                    onCommitSequence = onCommitSequence,
+                    onResetSequencePosition = onResetSequencePosition,
                     onTogglePreview = { response -> marked = marked.transition(response = response) },
                     onOpenPreview = onOpenPreview,
                     onClose = onClose

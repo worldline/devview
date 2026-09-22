@@ -239,6 +239,21 @@ package com.worldline.devview.networkmock.core.model {
     field public static final com.worldline.devview.networkmock.core.model.OperationMockState.Network INSTANCE;
   }
 
+  @androidx.compose.runtime.Immutable @kotlinx.serialization.SerialName("sequence") @kotlinx.serialization.Serializable public static final class OperationMockState.Sequence implements com.worldline.devview.networkmock.core.model.OperationMockState {
+    ctor public OperationMockState.Sequence(java.util.List<com.worldline.devview.networkmock.core.model.OperationMockState.Mock> responses, optional int currentIndex);
+    method public java.util.List<com.worldline.devview.networkmock.core.model.OperationMockState.Mock> component1();
+    method public int component2();
+    method public com.worldline.devview.networkmock.core.model.OperationMockState.Sequence copy(optional java.util.List<com.worldline.devview.networkmock.core.model.OperationMockState.Mock> responses, optional int currentIndex);
+    method @InaccessibleFromKotlin public int getCurrentIndex();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.model.OperationMockState.Mock? getCurrentResponse();
+    method @InaccessibleFromKotlin public String getDisplayName();
+    method @InaccessibleFromKotlin public java.util.List<com.worldline.devview.networkmock.core.model.OperationMockState.Mock> getResponses();
+    property public int currentIndex;
+    property public com.worldline.devview.networkmock.core.model.OperationMockState.Mock? currentResponse;
+    property public String displayName;
+    property public java.util.List<com.worldline.devview.networkmock.core.model.OperationMockState.Mock> responses;
+  }
+
   public enum StatusCodeFamily {
     method @InaccessibleFromKotlin public String getDisplayName();
     property public String displayName;

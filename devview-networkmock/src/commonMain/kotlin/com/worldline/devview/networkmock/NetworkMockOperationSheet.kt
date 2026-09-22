@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -58,6 +59,7 @@ import com.worldline.devview.networkmock.utils.badgeContainerColor
 import com.worldline.devview.networkmock.utils.badgeContentColor
 import com.worldline.devview.networkmock.utils.fake
 import com.worldline.devview.networkmock.viewmodel.OperationSheetState
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 
@@ -77,6 +79,8 @@ import kotlinx.coroutines.launch
  * @param onDismissRequest Called when the sheet should close (row tap, swipe, tap outside, close button).
  * @param onSelectResponse Called with the tapped response (or `null` for "no mock") when a row is selected.
  * @param onSelectFailure Called with the tapped [FailureKind] when a failure-simulation row is selected.
+ * @param onCommitSequence Called with the built ordered list when "Save Sequence" is tapped.
+ * @param onResetSequencePosition Called when "Reset Position" is tapped for an active sequence.
  * @param modifier [Modifier] to be applied to the [ModalBottomSheet].
  */
 @Composable
@@ -85,6 +89,8 @@ internal fun NetworkMockOperationSheet(
     onDismissRequest: () -> Unit,
     onSelectResponse: (MockResponse?) -> Unit,
     onSelectFailure: (FailureKind) -> Unit,
+    onCommitSequence: (List<MockResponse>) -> Unit,
+    onResetSequencePosition: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val modalSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -155,6 +161,11 @@ internal fun NetworkMockOperationSheet(
                                 onSelectFailure(kind)
                                 onClose()
                             },
+                            onCommitSequence = { responses ->
+                                onCommitSequence(responses)
+                                onClose()
+                            },
+                            onResetSequencePosition = onResetSequencePosition,
                             onTogglePreview = { response ->
                                 markedForPreview = markedForPreview.transition(response = response)
                             },
@@ -183,6 +194,8 @@ internal fun OperationPickerPage(
     markedForPreview: PreviewSheetState,
     onSelectResponse: (MockResponse?) -> Unit,
     onSelectFailure: (FailureKind) -> Unit,
+    onCommitSequence: (List<MockResponse>) -> Unit,
+    onResetSequencePosition: () -> Unit,
     onTogglePreview: (MockResponse) -> Unit,
     onOpenPreview: () -> Unit,
     onClose: () -> Unit,
@@ -192,11 +205,17 @@ internal fun OperationPickerPage(
     val groupedResponses = content.responses.groupBy {
         StatusCodeFamily.fromStatusCode(statusCode = it.statusCode)
     }
+    // Building a sequence is a page-level mode rather than a per-row toggle: while active,
+    // tapping a response below appends it to the sequence being built instead of selecting it
+    // immediately - see the "SEQUENCE" section below for the Save/Cancel affordance.
+    var buildingSequence by remember { mutableStateOf(value = false) }
+    var sequenceInProgress by remember { mutableStateOf(value = persistentListOf<MockResponse>()) }
     val selectedResponse = when (val currentState = endpoint.currentState) {
         is OperationMockState.Mock -> content.responses.find {
             it.statusCode == currentState.statusCode && it.exampleName == currentState.exampleName
         }
 
+        is OperationMockState.Sequence -> null
         is OperationMockState.Failure -> null
         OperationMockState.Network -> null
     }
@@ -217,8 +236,8 @@ internal fun OperationPickerPage(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .testTag(tag = "operation_sheet_network_item"),
-                    selected = selectedResponse == null,
-                    onClick = { onSelectResponse(null) }
+                    selected = !buildingSequence && selectedResponse == null,
+                    onClick = { if (!buildingSequence) onSelectResponse(null) }
                 )
             }
 
@@ -242,8 +261,16 @@ internal fun OperationPickerPage(
                                 .padding(horizontal = 16.dp)
                                 .testTag(tag = itemKey),
                             mockResponse = mockResponse,
-                            selected = selectedResponse == mockResponse,
-                            onClick = { onSelectResponse(mockResponse) },
+                            selected = !buildingSequence && selectedResponse == mockResponse,
+                            onClick = {
+                                if (buildingSequence) {
+                                    sequenceInProgress = sequenceInProgress.adding(
+                                        element = mockResponse
+                                    )
+                                } else {
+                                    onSelectResponse(mockResponse)
+                                }
+                            },
                             isMarkedForPreview = markedForPreview.isInPreviewMode(
                                 response = mockResponse
                             ),
@@ -252,6 +279,64 @@ internal fun OperationPickerPage(
                         )
                         if (index != mockResponses.lastIndex) {
                             HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+                        }
+                    }
+                }
+            }
+
+            stickyHeader(key = "header_sequence") {
+                Surface {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(text = "SEQUENCE", style = MaterialTheme.typography.labelLarge)
+                        val activeSequence = endpoint.currentState as? OperationMockState.Sequence
+                        when {
+                            buildingSequence -> Text(
+                                modifier = Modifier.testTag(tag = "sequence_build_hint"),
+                                text = "Tap responses above in order (${sequenceInProgress.size} added)",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+
+                            activeSequence != null -> Text(
+                                modifier = Modifier.testTag(tag = "sequence_position"),
+                                text = "Step ${activeSequence.currentIndex + 1} of " +
+                                    "${activeSequence.responses.size}: ${activeSequence.displayName}",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+                            if (buildingSequence) {
+                                TextButton(
+                                    modifier = Modifier.testTag(tag = "sequence_cancel_button"),
+                                    onClick = {
+                                        buildingSequence = false
+                                        sequenceInProgress = persistentListOf()
+                                    }
+                                ) { Text(text = "Cancel") }
+                                TextButton(
+                                    modifier = Modifier.testTag(tag = "sequence_save_button"),
+                                    enabled = sequenceInProgress.size >= 2,
+                                    onClick = {
+                                        onCommitSequence(sequenceInProgress)
+                                        buildingSequence = false
+                                        sequenceInProgress = persistentListOf()
+                                    }
+                                ) { Text(text = "Save Sequence (${sequenceInProgress.size})") }
+                            } else {
+                                TextButton(
+                                    modifier = Modifier.testTag(tag = "sequence_build_button"),
+                                    onClick = { buildingSequence = true }
+                                ) { Text(text = "Build a Sequence") }
+                                if (activeSequence != null) {
+                                    TextButton(
+                                        modifier = Modifier.testTag(tag = "sequence_reset_button"),
+                                        onClick = onResetSequencePosition
+                                    ) { Text(text = "Reset Position") }
+                                }
+                            }
                         }
                     }
                 }
@@ -387,6 +472,8 @@ private fun NetworkMockOperationSheetPickerPreview(
                 markedForPreview = PreviewSheetState.Hidden,
                 onSelectResponse = {},
                 onSelectFailure = {},
+                onCommitSequence = {},
+                onResetSequencePosition = {},
                 onTogglePreview = {},
                 onOpenPreview = {},
                 onClose = {}

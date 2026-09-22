@@ -3,7 +3,9 @@ package com.worldline.devview.networkmock.ktor.plugin
 import co.touchlab.kermit.Logger
 import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.NetworkMockState
+import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.model.OperationMockState
+import com.worldline.devview.networkmock.core.repository.MockConfigRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.HttpClientCall
 import io.ktor.client.plugins.HttpClientPlugin
@@ -147,7 +149,7 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
             return NetworkMockPluginConfig(config = config)
         }
 
-        @Suppress("LongMethod")
+        @Suppress("LongMethod", "ThrowsCount")
         override fun install(plugin: NetworkMockPluginConfig, scope: HttpClient) {
             val mockRepository = plugin.config.resolvedMockRepository()
             val stateRepository = plugin.config.resolvedStateRepository()
@@ -222,13 +224,17 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
 
                         @Suppress("TooGenericExceptionCaught")
                         try {
-                            val mockResponse = mockRepository.loadMockResponse(
+                            val call = buildMockCall(
+                                mockRepository = mockRepository,
+                                client = scope,
+                                request = request,
                                 key = mockMatch.key,
                                 statusCode = endpointState.statusCode,
-                                exampleName = endpointState.exampleName
+                                exampleName = endpointState.exampleName,
+                                delayMs = mockMatch.delayMs
                             )
 
-                            if (mockResponse == null) {
+                            if (call == null) {
                                 logger.w {
                                     "$method $path -> NETWORK (declared mock " +
                                         "${endpointState.statusCode}/${endpointState.exampleName} not found)"
@@ -236,25 +242,75 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                                 return@intercept execute(requestBuilder = requestBuilder)
                             }
 
-                            mockMatch.delayMs?.let { ms -> delay(timeMillis = ms) }
-
                             logger.d {
-                                "$method $path -> MOCK ${mockResponse.statusCode}/${mockResponse.exampleName}"
+                                "$method $path -> MOCK ${endpointState.statusCode}/${endpointState.exampleName}"
                             }
-                            createMockHttpClientCall(
-                                client = scope,
-                                requestData = request,
-                                statusCode = HttpStatusCode.fromValue(
-                                    value = mockResponse.statusCode
-                                ),
-                                content = mockResponse.content,
-                                contentType = mockResponse.contentType,
-                                headers = mockResponse.headers
-                            )
+                            call
                         } catch (e: Exception) {
                             logger.w(
                                 throwable = e
                             ) { "$method $path -> NETWORK (error loading mock response)" }
+                            execute(requestBuilder = requestBuilder)
+                        }
+                    }
+                    is OperationMockState.Sequence -> {
+                        val step = endpointState.currentResponse
+                        if (step == null) {
+                            logger.w { "$method $path -> NETWORK (sequence has no declared steps)" }
+                            return@intercept execute(requestBuilder = requestBuilder)
+                        }
+
+                        val failureRate = mockMatch.config.failureRate
+                        if (failureRate != null && random.nextDouble() < failureRate) {
+                            logger.d {
+                                "$method $path -> FAILURE (probabilistic, rate=$failureRate)"
+                            }
+                            throw simulatedFailure(
+                                kind = FailureKind.CONNECTION_REFUSED,
+                                requestData = request
+                            )
+                        }
+
+                        @Suppress("TooGenericExceptionCaught")
+                        try {
+                            val call = buildMockCall(
+                                mockRepository = mockRepository,
+                                client = scope,
+                                request = request,
+                                key = mockMatch.key,
+                                statusCode = step.statusCode,
+                                exampleName = step.exampleName,
+                                delayMs = mockMatch.delayMs
+                            )
+
+                            if (call == null) {
+                                logger.w {
+                                    "$method $path -> NETWORK (declared sequence step " +
+                                        "${step.statusCode}/${step.exampleName} not found)"
+                                }
+                                return@intercept execute(requestBuilder = requestBuilder)
+                            }
+
+                            // Advance and persist before returning - sticks on the last index
+                            // once exhausted rather than looping back to the start.
+                            val nextIndex = (endpointState.currentIndex + 1)
+                                .coerceAtMost(maximumValue = endpointState.responses.lastIndex)
+                            if (nextIndex != endpointState.currentIndex) {
+                                stateRepository.setOperationMockState(
+                                    key = mockMatch.key,
+                                    state = endpointState.copy(currentIndex = nextIndex)
+                                )
+                            }
+
+                            logger.d {
+                                "$method $path -> MOCK ${step.statusCode}/${step.exampleName} " +
+                                    "(sequence ${endpointState.currentIndex + 1}/${endpointState.responses.size})"
+                            }
+                            call
+                        } catch (e: Exception) {
+                            logger.w(
+                                throwable = e
+                            ) { "$method $path -> NETWORK (error loading sequence step)" }
                             execute(requestBuilder = requestBuilder)
                         }
                     }
@@ -282,6 +338,40 @@ private fun simulatedFailure(kind: FailureKind, requestData: HttpRequestData): T
         FailureKind.CONNECTION_REFUSED ->
             IOException("Connection refused (simulated by DevView NetworkMock)")
     }
+
+/**
+ * Loads the declared `(statusCode, exampleName)` variant and builds a mock [HttpClientCall] for
+ * it, applying [delayMs] first — shared by the [OperationMockState.Mock] and
+ * [OperationMockState.Sequence] branches, which differ only in where the pair comes from.
+ *
+ * @return The call to return, or `null` if the variant isn't declared in the spec (caller falls
+ *   back to the real network).
+ */
+@Suppress("DocumentationOverPrivateFunction")
+private suspend fun buildMockCall(
+    mockRepository: MockConfigRepository,
+    client: HttpClient,
+    request: HttpRequestData,
+    key: OperationKey,
+    statusCode: Int,
+    exampleName: String,
+    delayMs: Long?
+): HttpClientCall? {
+    val mockResponse = mockRepository.loadMockResponse(
+        key = key,
+        statusCode = statusCode,
+        exampleName = exampleName
+    ) ?: return null
+    delayMs?.let { ms -> delay(timeMillis = ms) }
+    return createMockHttpClientCall(
+        client = client,
+        requestData = request,
+        statusCode = HttpStatusCode.fromValue(value = mockResponse.statusCode),
+        content = mockResponse.content,
+        contentType = mockResponse.contentType,
+        headers = mockResponse.headers
+    )
+}
 
 /**
  * Creates a mock [HttpClientCall] without making an actual network request.

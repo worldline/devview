@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- NetworkMock: an operation can now be configured as a **sequence** — an ordered list of
+  responses it advances through one step per matched request, sticking on the last step once
+  exhausted rather than looping back to the start. Useful for polling flows (order status,
+  upload progress, async job completion) where the interesting behavior is the transition
+  across repeated calls. Build one from the operation sheet's new "SEQUENCE" section: tap
+  "Build a Sequence", tap responses in the desired order, then "Save Sequence"; "Reset
+  Position" restarts at step 1 without leaving the sequence. `OperationMockState` gains a
+  `Sequence(responses: List<Mock>, currentIndex: Int)` variant (**breaking**: another new
+  sealed subtype); the position is persisted as part of this same state, so resetting an
+  operation to `Network` discards it with no special-casing needed.
+  `NetworkMockViewModel` gains `setOperationSequenceState`/`resetOperationSequencePosition`.
+  (`devview-networkmock-core`, `devview-networkmock-ktor`, `devview-networkmock`, #96)
 - NetworkMock: an operation can now simulate a network failure instead of returning a response,
   two ways — **deterministically**, by selecting Timeout or Connection Refused in the operation
   sheet's picker page (a new "Simulate Failure" section, alongside the response variants); or
