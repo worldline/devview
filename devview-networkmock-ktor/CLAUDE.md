@@ -25,7 +25,6 @@ val client = HttpClient(OkHttp) {
 
 - `NetworkMockPlugin` — the `HttpClientPlugin<NetworkMockConfig, NetworkMockPluginConfig>` singleton (`NetworkMockPlugin.kt`)
 - `NetworkMockConfig` — DSL receiver; exposes `mockRepository` and `stateRepository` as nullable vars, plus `random: Random` (defaults to `Random.Default`) used for the `x-devview.failureRate` roll — override in tests to pin the outcome (`NetworkMockConfig.kt`)
-- `MockHttpClientCall` — public subclass of `HttpClientCall` that wraps synthetic request/response data without touching the network (`NetworkMockPlugin.kt`)
 
 ## Interception Flow
 

@@ -49,6 +49,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   per-operation mock selections are untouched. (`devview-networkmock-core`,
   `devview-networkmock`, #90)
 
+### Changed
+- **Breaking:** `MockHttpClientCall` is now `internal` instead of `public` — it was only public
+  because Ktor's `HttpClientCall(client)` base constructor required it to be instantiable from
+  the plugin's install code, not because integrators have a legitimate reason to construct it
+  themselves. Its `rawContent` override already depends on the `@InternalAPI`-annotated Ktor
+  API, so staying public compounded that instability onto this library's own tracked surface.
+  (`devview-networkmock-ktor`, #89)
+
 ### Fixed
 - NetworkMock: replaced ~35 unconditional `println` calls in `MockConfigRepository` and
   `NetworkMockPlugin` with gated [Kermit](https://github.com/touchlab/Kermit) logging
