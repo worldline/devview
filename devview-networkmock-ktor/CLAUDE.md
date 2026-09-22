@@ -39,7 +39,7 @@ The plugin hooks into Ktor's `HttpSend` phase during `install`:
 6. If matched, `currentState.getOperationState(match.key)` is read:
    - `OperationMockState.Network` or `null` → real network.
    - `OperationMockState.Mock(statusCode, exampleName)` → load that declared response variant via `mockRepository.loadMockResponse(key, statusCode, exampleName)`.
-7. On a successful load, `createMockHttpClientCall(...)` builds a `MockHttpClientCall` with `HttpResponseData` (HTTP/1.1, empty headers, `ByteReadChannel` body) and returns it — **no network call is made**.
+7. On a successful load, `createMockHttpClientCall(...)` builds a `MockHttpClientCall` with `HttpResponseData` (HTTP/1.1, `MockResponse.contentType` as `Content-Type` merged with any `MockResponse.headers`, `ByteReadChannel` body) and returns it — **no network call is made**.
 8. On any failure (variant not declared in the spec, exception) → falls back to real network and logs; never throws.
 
 ## Non-obvious Patterns and Constraints

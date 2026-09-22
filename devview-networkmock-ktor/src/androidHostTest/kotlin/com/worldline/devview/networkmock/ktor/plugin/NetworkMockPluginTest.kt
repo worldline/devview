@@ -14,6 +14,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.mockk.coEvery
@@ -132,6 +133,85 @@ class NetworkMockPluginTest {
 
         response.status shouldBe HttpStatusCode.OK
         response.body<String>() shouldBe """{"id":10,"name":"Widget"}"""
+    }
+
+    // endregion
+
+    // region Response headers and content type
+
+    @Test
+    fun returnsMockResponse_withDefaultContentTypeHeader() = runTest {
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        val response: HttpResponse = client.get(
+            urlString = "https://staging.api.example.com/api/users/42"
+        )
+
+        // getUser's 200 response declares no explicit headers - Content-Type still defaults.
+        response.headers[HttpHeaders.ContentType] shouldBe "application/json"
+    }
+
+    @Test
+    fun returnsMockResponse_withDeclaredHeadersAndContentType() = runTest {
+        val specWithHeaders = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://staging.api.example.com" } ],
+              "paths": {
+                "/api/users/{userId}": {
+                  "get": {
+                    "operationId": "getUser",
+                    "responses": {
+                      "200": {
+                        "headers": {
+                          "X-RateLimit-Remaining": { "example": "42" }
+                        },
+                        "content": {
+                          "application/vnd.example+json": {
+                            "examples": {
+                              "default": { "externalValue": "/files/networkmocks/responses/getUser-200.json" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val resources = mapOf(
+            KtorPluginTestData.SPEC_PATH to specWithHeaders,
+            "files/networkmocks/responses/getUser-200.json" to """{"id":1,"name":"Alice"}"""
+        )
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(resources = resources),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        val response: HttpResponse = client.get(
+            urlString = "https://staging.api.example.com/api/users/42"
+        )
+
+        response.headers["X-RateLimit-Remaining"] shouldBe "42"
+        response.headers[HttpHeaders.ContentType] shouldBe "application/vnd.example+json"
     }
 
     // endregion

@@ -6,6 +6,19 @@ import com.worldline.devview.networkmock.core.model.Operation
 import kotlinx.serialization.json.Json
 
 /**
+ * A resolved response variant: the file path to load via [NetworkMockResourceLoader.load],
+ * its declared media type, and any headers declared on the enclosing `responses.<code>` —
+ * everything [com.worldline.devview.networkmock.core.repository.MockConfigRepository] needs
+ * to build a [com.worldline.devview.networkmock.core.model.MockResponse] without touching an
+ * OpenAPI-shaped type itself (see #73's pure-seam requirement).
+ */
+internal data class ResolvedResponse(
+    val path: String,
+    val contentType: String,
+    val headers: Map<String, String>
+)
+
+/**
  * Parses an OpenAPI 3.x document (JSON or YAML) into DevView's internal model.
  *
  * This is the only format-aware code in the library — see #73's pure-seam requirement.
@@ -29,12 +42,11 @@ import kotlinx.serialization.json.Json
 internal object OpenApiParser {
     /**
      * @property apiSpec The public model built from the document.
-     * @property responseIndex `operationId -> statusCode -> exampleName -> resolved
-     *   externalValue path`, ready to pass straight to [NetworkMockResourceLoader.load].
+     * @property responseIndex `operationId -> statusCode -> exampleName -> `[ResolvedResponse].
      */
     data class ParsedSpec(
         val apiSpec: ApiSpec,
-        val responseIndex: Map<String, Map<Int, Map<String, String>>>
+        val responseIndex: Map<String, Map<Int, Map<String, ResolvedResponse>>>
     )
 
     /**
@@ -52,7 +64,7 @@ internal object OpenApiParser {
         val document = decodeDocument(path = specPath, bytes = resourceLoader.load(path = specPath))
 
         val operations = mutableListOf<Operation>()
-        val responseIndex = mutableMapOf<String, Map<Int, Map<String, String>>>()
+        val responseIndex = mutableMapOf<String, Map<Int, Map<String, ResolvedResponse>>>()
 
         for ((path, pathItem) in document.paths) {
             for ((method, rawOperation) in pathItem.operationsByMethod()) {
@@ -147,8 +159,8 @@ internal object OpenApiParser {
         suspend fun resolveResponseIndex(
             responses: Map<String, ResponseObject>,
             document: OpenApiDocument
-        ): Map<Int, Map<String, String>> {
-            val result = mutableMapOf<Int, Map<String, String>>()
+        ): Map<Int, Map<String, ResolvedResponse>> {
+            val result = mutableMapOf<Int, Map<String, ResolvedResponse>>()
             for ((codeText, rawResponse) in responses) {
                 val statusCode = codeText.toIntOrNull() ?: continue
                 val response = if (rawResponse.ref != null) {
@@ -160,9 +172,11 @@ internal object OpenApiParser {
                     rawResponse
                 }
 
-                val examplesForCode = mutableMapOf<String, String>()
-                for (mediaType in response.content.values) {
-                    for ((exampleName, rawExample) in mediaType.examples) {
+                val headers = resolveHeaders(raw = response.headers, document = document)
+
+                val examplesForCode = mutableMapOf<String, ResolvedResponse>()
+                for ((mediaType, media) in response.content) {
+                    for ((exampleName, rawExample) in media.examples) {
                         val example = if (rawExample.ref != null) {
                             resolveRef(
                                 ref = rawExample.ref,
@@ -172,9 +186,10 @@ internal object OpenApiParser {
                             rawExample
                         }
                         val externalValue = example.externalValue ?: continue
-                        examplesForCode[exampleName] = resolvePath(
-                            baseDir = baseDir,
-                            ref = externalValue
+                        examplesForCode[exampleName] = ResolvedResponse(
+                            path = resolvePath(baseDir = baseDir, ref = externalValue),
+                            contentType = mediaType,
+                            headers = headers
                         )
                     }
                 }
@@ -184,6 +199,21 @@ internal object OpenApiParser {
             }
             return result
         }
+
+        /** Resolves each declared header's `$ref` (if any) down to its literal `example` value. */
+        @Suppress("DocumentationOverPrivateFunction")
+        private suspend fun resolveHeaders(
+            raw: Map<String, HeaderObject>,
+            document: OpenApiDocument
+        ): Map<String, String> = raw
+            .mapNotNull { (name, rawHeader) ->
+                val header = if (rawHeader.ref != null) {
+                    resolveRef(ref = rawHeader.ref, document = document) { it.components.headers }
+                } else {
+                    rawHeader
+                }
+                header.example?.let { name to it }
+            }.toMap()
 
         /**
          * Resolves a `$ref` string to its target, either locally (within [document]) or in

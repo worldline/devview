@@ -548,6 +548,104 @@ class MockConfigRepositoryTest {
         response?.statusCode shouldBe 200
         response?.displayName shouldBe "Success (200)"
         response?.content shouldBe """{"id":1}"""
+        response?.contentType shouldBe "application/json"
+        response?.headers shouldBe emptyMap()
+    }
+
+    @Test
+    fun `loadMockResponse resolves declared content type and headers`() = runTest {
+        val resources = mapOf(
+            SPEC_PATH to """
+                {
+                  "info": { "title": "Example" },
+                  "servers": [ { "url": "https://api.example.com" } ],
+                  "paths": {
+                    "/api/users/{userId}": {
+                      "get": {
+                        "operationId": "getUser",
+                        "responses": {
+                          "200": {
+                            "headers": {
+                              "X-RateLimit-Remaining": { "example": "42" },
+                              "Cache-Control": { "example": "no-store" }
+                            },
+                            "content": {
+                              "application/vnd.example+json": {
+                                "examples": {
+                                  "default": { "externalValue": "/responses/getUser-200.json" }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+            """.trimIndent(),
+            "responses/getUser-200.json" to """{"id":1}"""
+        )
+        val repository = createRepository(resources = resources)
+
+        val response = repository.loadMockResponse(
+            key = OperationKey(specId = "example", operationId = "getUser"),
+            statusCode = 200,
+            exampleName = "default"
+        )
+
+        response?.contentType shouldBe "application/vnd.example+json"
+        response?.headers shouldBe mapOf(
+            "X-RateLimit-Remaining" to "42",
+            "Cache-Control" to "no-store"
+        )
+    }
+
+    @Test
+    fun `loadMockResponse resolves a dollar-ref'd header via components`() = runTest {
+        val resources = mapOf(
+            SPEC_PATH to """
+                {
+                  "info": { "title": "Example" },
+                  "servers": [ { "url": "https://api.example.com" } ],
+                  "paths": {
+                    "/api/users/{userId}": {
+                      "get": {
+                        "operationId": "getUser",
+                        "responses": {
+                          "200": {
+                            "headers": {
+                              "X-RateLimit-Remaining": { "${'$'}ref": "#/components/headers/RateLimit" }
+                            },
+                            "content": {
+                              "application/json": {
+                                "examples": {
+                                  "default": { "externalValue": "/responses/getUser-200.json" }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "components": {
+                    "headers": {
+                      "RateLimit": { "example": "10" }
+                    }
+                  }
+                }
+            """.trimIndent(),
+            "responses/getUser-200.json" to """{"id":1}"""
+        )
+        val repository = createRepository(resources = resources)
+
+        val response = repository.loadMockResponse(
+            key = OperationKey(specId = "example", operationId = "getUser"),
+            statusCode = 200,
+            exampleName = "default"
+        )
+
+        response?.headers shouldBe mapOf("X-RateLimit-Remaining" to "10")
     }
 
     @Test

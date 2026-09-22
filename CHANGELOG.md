@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- NetworkMock: mocked responses now serve the `Content-Type` derived from the spec's declared
+  media type (`responses.<code>.content.<mediaType>`, previously always hardcoded to
+  `application/json`) plus any additional headers declared on `responses.<code>.headers` — a
+  header's literal `example` value is served as-is, mirroring how query-parameter matching
+  already reads a parameter's `example`. `$ref`'d headers resolve against `components.headers`.
+  `MockResponse` gains `contentType` (default `"application/json"`) and `headers` (default
+  empty) properties. (`devview-networkmock-core`, `devview-networkmock-ktor`, #87)
 - NetworkMock: a "Reload Config" toolbar action, and `MockConfigRepository.invalidate()` /
   `NetworkMockViewModel.reloadConfiguration()`, to re-read and re-parse the configured OpenAPI
   specs without restarting the app — previously the parsed config was cached forever after the

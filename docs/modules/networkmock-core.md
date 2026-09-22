@@ -95,9 +95,35 @@ MockConfigRepository(
 )
 ```
 
+### Response headers and content type
+
+`responses.<code>.headers` declares extra headers to serve alongside a mocked response, and the
+media type key under `responses.<code>.content` (e.g. `application/json`) becomes the response's
+`Content-Type` — both are threaded through to the app via the Ktor plugin's synthetic response.
+
+```json
+"200": {
+  "headers": {
+    "X-RateLimit-Remaining": { "example": "42" }
+  },
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "externalValue": "responses/getUser-200.json" }
+      }
+    }
+  }
+}
+```
+
+Like [query parameters](#request-matching), a header's literal `example` value is the only field
+read — no `schema` resolution. `Content-Type` defaults to `application/json` when a response
+declares no content at all; a spec can still override it explicitly by declaring its own
+`Content-Type` entry under `headers`, which wins over the media-type-derived default.
+
 ### `$ref` resolution
 
-Parameters, responses, and examples may be declared via `$ref` instead of inline:
+Parameters, responses, examples, and headers may be declared via `$ref` instead of inline:
 - **Local**: `"$ref": "#/components/parameters/UserId"` resolves against the same document's `components`.
 - **External**: `"$ref": "./common.json#/components/responses/Error"` loads another file (relative to the spec's own location) via the same `NetworkMockResourceLoader`.
 
