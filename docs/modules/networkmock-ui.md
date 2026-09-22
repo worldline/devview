@@ -16,6 +16,7 @@ The main screen shows a global mock toggle at the top, followed by a scrollable 
 - **Method filter**: a per-tab row of chips, one per distinct `Operation.method` present among that tab's operations, ordered `GET`/`POST`/`PUT`/`PATCH`/`DELETE`/`HEAD`/`OPTIONS`. Multi-select — no chip selected shows every method; selecting one or more narrows the list to operations using any of the selected methods.
 - **Endpoint rows**: a leading colour rail (the state chip's colour, transparent when not mocked) followed by the endpoint name, a colour-coded HTTP method badge, the path (wraps instead of truncating — never cut off), and the current state chip (Network / bare status code, e.g. "404"). There is no separate version badge — `Operation.version` is parsed from the path shown right next to it, so it would only repeat what's already visible. Tap a row to open its operation sheet.
 - **Reset to Network**: toolbar action that resets every endpoint to `Network` state in one tap.
+- **Reload Config**: toolbar action that re-reads and re-parses every configured OpenAPI spec from disk, picking up edits to a spec file without restarting the app. Operations added, removed, or renamed in the spec appear immediately; per-operation mock selections are untouched. See [Caching & Reload](networkmock-core.md#caching--reload).
 
 ### Operation sheet
 

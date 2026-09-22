@@ -210,6 +210,21 @@ public class NetworkMockViewModel(
     }
 
     /**
+     * Re-reads and re-parses every configured OpenAPI spec, picking up edits made to a spec
+     * file since the app started without requiring a restart.
+     *
+     * Invalidates [configRepository]'s cache, then re-runs [loadConfiguration] — operations
+     * added, removed, or renamed in the spec are reflected in [uiState] once this completes.
+     * The operation picker/preview sheet ([sheetState]) is unaffected by this call; if it's
+     * open for an operation that no longer exists, it keeps showing its last-loaded content
+     * until closed.
+     */
+    public fun reloadConfiguration() {
+        configRepository.invalidate()
+        loadConfiguration()
+    }
+
+    /**
      * Loads the mock configuration from the configured OpenAPI specs.
      *
      * This only parses spec metadata — no response body is read or decoded here. See #98:

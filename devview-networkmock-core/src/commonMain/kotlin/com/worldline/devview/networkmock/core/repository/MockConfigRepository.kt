@@ -49,6 +49,20 @@ public class MockConfigRepository(
     private var responseIndex: Map<String, Map<String, Map<Int, Map<String, String>>>> = emptyMap()
 
     /**
+     * Clears the cached configuration, forcing the next [loadConfiguration] call to re-read
+     * and re-parse every configured spec from scratch.
+     *
+     * Use this to pick up edits to a spec file without restarting the app/process — call this,
+     * then [loadConfiguration] (or anything that calls it internally, e.g. [findMatchingMock])
+     * to actually reload.
+     */
+    public fun invalidate() {
+        cachedConfig = null
+        responseIndex = emptyMap()
+        logger.d { "Configuration cache invalidated" }
+    }
+
+    /**
      * Loads and parses every configured OpenAPI spec.
      *
      * The result is cached after the first successful load — subsequent calls return the
