@@ -94,7 +94,21 @@ internal data class ParameterObject(
 @Serializable
 internal data class ResponseObject(
     @SerialName("\$ref") val ref: String? = null,
-    val content: Map<String, MediaTypeObject> = emptyMap()
+    val content: Map<String, MediaTypeObject> = emptyMap(),
+    val headers: Map<String, HeaderObject> = emptyMap()
+)
+
+/**
+ * A response header declaration, or a `$ref` to one under `components.headers`.
+ *
+ * [example] is the only field this parser reads — the literal value served as the header's
+ * value — mirroring how [ParameterObject.example] is read for query parameters rather than a
+ * `schema`-nested value.
+ */
+@Serializable
+internal data class HeaderObject(
+    @SerialName("\$ref") val ref: String? = null,
+    val example: String? = null
 )
 
 @Serializable
@@ -118,7 +132,8 @@ internal data class ExampleObject(
 internal data class ComponentsObject(
     val parameters: Map<String, ParameterObject> = emptyMap(),
     val responses: Map<String, ResponseObject> = emptyMap(),
-    val examples: Map<String, ExampleObject> = emptyMap()
+    val examples: Map<String, ExampleObject> = emptyMap(),
+    val headers: Map<String, HeaderObject> = emptyMap()
 )
 
 /**

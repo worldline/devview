@@ -12,15 +12,14 @@ import io.ktor.client.request.HttpRequest
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
 import io.ktor.client.statement.HttpResponse
-import io.ktor.http.ContentType
 import io.ktor.http.Headers
+import io.ktor.http.HeadersBuilder
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpProtocolVersion
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Url
 import io.ktor.http.content.OutgoingContent
-import io.ktor.http.headersOf
 import io.ktor.util.AttributeKey
 import io.ktor.util.Attributes
 import io.ktor.util.date.GMTDate
@@ -224,7 +223,9 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                                 statusCode = HttpStatusCode.fromValue(
                                     value = mockResponse.statusCode
                                 ),
-                                content = mockResponse.content
+                                content = mockResponse.content,
+                                contentType = mockResponse.contentType,
+                                headers = mockResponse.headers
                             )
                         } catch (e: Exception) {
                             logger.w(
@@ -248,6 +249,12 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
  * @param requestData The original request data
  * @param statusCode The HTTP status code for the mock response
  * @param content The response body content as a string
+ * @param contentType The response's declared media type
+ *   (see [com.worldline.devview.networkmock.core.model.MockResponse.contentType])
+ * @param headers Additional headers declared on the response (see
+ *   [com.worldline.devview.networkmock.core.model.MockResponse.headers]) — merged over the
+ *   [contentType]-derived `Content-Type`, not replacing it, unless the spec explicitly
+ *   declares its own `Content-Type` header, which then wins.
  * @return A mock [HttpClientCall] that appears as a real HTTP call to the application
  */
 @Suppress("DocumentationOverPrivateFunction")
@@ -255,15 +262,18 @@ private fun createMockHttpClientCall(
     client: HttpClient,
     requestData: HttpRequestData,
     statusCode: HttpStatusCode,
-    content: String
+    content: String,
+    contentType: String,
+    headers: Map<String, String>
 ): HttpClientCall {
     val responseData = HttpResponseData(
         statusCode = statusCode,
         requestTime = GMTDate(),
-        headers = headersOf(
-            name = HttpHeaders.ContentType,
-            value = ContentType.Application.Json.toString()
-        ),
+        headers = HeadersBuilder()
+            .apply {
+                set(name = HttpHeaders.ContentType, value = contentType)
+                headers.forEach { (name, value) -> set(name = name, value = value) }
+            }.build(),
         version = HttpProtocolVersion.HTTP_1_1,
         body = ByteReadChannel(content = content.encodeToByteArray()),
         callContext = requestData.executionContext

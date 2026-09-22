@@ -7,6 +7,7 @@ import com.worldline.devview.networkmock.core.model.MockMatch
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.openapi.OpenApiParser
+import com.worldline.devview.networkmock.core.openapi.ResolvedResponse
 import kotlinx.serialization.SerializationException
 
 private val logger = Logger.withTag(tag = "DevViewNetworkMock")
@@ -22,7 +23,7 @@ private val logger = Logger.withTag(tag = "DevViewNetworkMock")
  *
  * Format parsing is delegated entirely to [OpenApiParser] — this repository never sees
  * OpenAPI-shaped types itself, only the resulting [MockConfiguration] and a plain response
- * index (`specId -> operationId -> statusCode -> exampleName -> file path`) used by
+ * index (`specId -> operationId -> statusCode -> exampleName -> `[ResolvedResponse]) used by
  * [discoverResponseFiles] and [loadMockResponse].
  *
  * This repository is intentionally agnostic of any specific HTTP client implementation — it
@@ -44,9 +45,10 @@ public class MockConfigRepository(
     // Cache the loaded configuration to avoid re-parsing every spec on every call.
     private var cachedConfig: MockConfiguration? = null
 
-    /** `specId -> operationId -> statusCode -> exampleName -> resolved response file path`. */
+    /** `specId -> operationId -> statusCode -> exampleName -> ResolvedResponse`. */
     @Suppress("DocumentationOverPrivateProperty")
-    private var responseIndex: Map<String, Map<String, Map<Int, Map<String, String>>>> = emptyMap()
+    private var responseIndex: Map<String, Map<String, Map<Int, Map<String, ResolvedResponse>>>> =
+        emptyMap()
 
     /**
      * Clears the cached configuration, forcing the next [loadConfiguration] call to re-read
@@ -171,9 +173,9 @@ public class MockConfigRepository(
         ) ?: return emptyList()
         return variantsByStatusCode
             .flatMap { (statusCode, examplesByName) ->
-                examplesByName.mapNotNull { (exampleName, path) ->
+                examplesByName.mapNotNull { (exampleName, resolved) ->
                     loadResponseFromPath(
-                        path = path,
+                        resolved = resolved,
                         statusCode = statusCode,
                         exampleName = exampleName
                     )
@@ -196,22 +198,32 @@ public class MockConfigRepository(
         exampleName: String
     ): MockResponse? {
         loadConfiguration()
-        val path = responseIndex[key.specId]
+        val resolved = responseIndex[key.specId]
             ?.get(key = key.operationId)
             ?.get(key = statusCode)
             ?.get(key = exampleName)
             ?: return null
-        return loadResponseFromPath(path = path, statusCode = statusCode, exampleName = exampleName)
+        return loadResponseFromPath(
+            resolved = resolved,
+            statusCode = statusCode,
+            exampleName = exampleName
+        )
     }
 
     @Suppress("DocumentationOverPrivateFunction")
     private suspend fun loadResponseFromPath(
-        path: String,
+        resolved: ResolvedResponse,
         statusCode: Int,
         exampleName: String
     ): MockResponse? = try {
-        val content = resourceLoader.load(path = path).decodeToString()
-        MockResponse.create(statusCode = statusCode, exampleName = exampleName, content = content)
+        val content = resourceLoader.load(path = resolved.path).decodeToString()
+        MockResponse.create(
+            statusCode = statusCode,
+            exampleName = exampleName,
+            content = content,
+            contentType = resolved.contentType,
+            headers = resolved.headers
+        )
     } catch (@Suppress("SwallowedException") e: IllegalStateException) {
         null
     }

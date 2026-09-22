@@ -49,7 +49,7 @@ For every outgoing request, the plugin:
    - `Mock(statusCode, exampleName)` → loads that declared response variant and returns a synthetic response.
 6. On any error (undeclared variant, missing file, exception) → falls back to the real network and logs the reason. **The plugin never throws.**
 
-Mock responses are returned with HTTP/1.1 status, an empty header set, and the response body as the content.
+Mock responses are returned with HTTP/1.1 status, `Content-Type` set from the response's declared media type (defaulting to `application/json`), any additional headers declared on `responses.<code>.headers`, and the response body as the content. See [Response headers and content type](networkmock-core.md#response-headers-and-content-type).
 
 Each intercepted request logs exactly one line through [Kermit](https://github.com/touchlab/Kermit) (tag `DevViewNetworkMock`, `debug` level, `warn` for a failed mock load) — e.g. `GET /v1/users/42 -> MOCK 200/default` or `-> NETWORK (no operation match)`. No response body content is ever logged. See [Logging](networkmock-core.md#logging) for how to adjust verbosity or route these into `devview-consolelogger`.
 

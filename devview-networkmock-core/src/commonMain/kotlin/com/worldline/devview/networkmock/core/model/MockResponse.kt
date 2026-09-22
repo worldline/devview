@@ -18,6 +18,12 @@ import kotlinx.serialization.Serializable
  * @property displayName Human-readable name for UI display (e.g. `"Success (200)"`,
  *   `"Not Found - Detailed (404)"`)
  * @property content The raw response body, read from the example's `externalValue` file
+ * @property contentType The response's declared media type (the key under `responses.<code>.content`
+ *   in the spec, e.g. `"application/json"`). Defaults to `"application/json"` for response
+ *   variants built without one (e.g. hand-built test fixtures).
+ * @property headers Response headers declared on `responses.<code>.headers` in the spec
+ *   (name to literal `example` value). Does not include `Content-Type`, which is carried
+ *   separately by [contentType]. Empty if the spec declares none.
  * @see com.worldline.devview.networkmock.core.repository.MockConfigRepository
  */
 @Immutable
@@ -26,7 +32,9 @@ public data class MockResponse(
     val statusCode: Int,
     val exampleName: String,
     val displayName: String,
-    val content: String
+    val content: String,
+    val contentType: String = "application/json",
+    val headers: Map<String, String> = emptyMap()
 ) {
     public companion object {
         /**
@@ -42,6 +50,8 @@ public data class MockResponse(
          * @param statusCode The HTTP status code
          * @param exampleName The OpenAPI example name
          * @param content The raw response body
+         * @param contentType The response's declared media type. Defaults to `"application/json"`.
+         * @param headers Response headers declared on `responses.<code>.headers`. Defaults to none.
          * @param statusTextProvider Optional lambda that maps a status code to its display
          *   text. Defaults to the built-in [getStatusText] mapping.
          * @return A [MockResponse] with a generated [MockResponse.displayName]
@@ -50,6 +60,8 @@ public data class MockResponse(
             statusCode: Int,
             exampleName: String,
             content: String,
+            contentType: String = "application/json",
+            headers: Map<String, String> = emptyMap(),
             statusTextProvider: (Int) -> String = ::getStatusText
         ): MockResponse = MockResponse(
             statusCode = statusCode,
@@ -59,7 +71,9 @@ public data class MockResponse(
                 exampleName = exampleName,
                 statusTextProvider = statusTextProvider
             ),
-            content = content
+            content = content,
+            contentType = contentType,
+            headers = headers
         )
 
         @Suppress("DocumentationOverPrivateFunction")
