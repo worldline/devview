@@ -1,7 +1,6 @@
-@file:Suppress("StringLiteralDuplication")
-
 package com.worldline.devview.networkmock.ktor.plugin
 
+import co.touchlab.kermit.Logger
 import com.worldline.devview.networkmock.core.model.NetworkMockState
 import com.worldline.devview.networkmock.core.model.OperationMockState
 import io.ktor.client.HttpClient
@@ -34,7 +33,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
-private const val LOG_PREFIX = "[NetworkMock][Plugin]"
+private val logger = Logger.withTag(tag = "DevViewNetworkMock")
 
 /**
  * Plugin configuration wrapper.
@@ -146,7 +145,7 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
             val mockRepository = plugin.config.resolvedMockRepository()
             val stateRepository = plugin.config.resolvedStateRepository()
 
-            println(message = "$LOG_PREFIX NetworkMock plugin installed successfully")
+            logger.d { "NetworkMock plugin installed" }
 
             val cachedState = MutableStateFlow<NetworkMockState?>(value = null)
             scope.launch {
@@ -164,20 +163,12 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                     .entries()
                     .associate { (key, values) -> key to values }
 
-                println(message = "$LOG_PREFIX ========================================")
-                println(message = "$LOG_PREFIX Intercepted request: $method $host$path")
-
                 val currentState = cachedState.value ?: stateRepository.getState()
 
                 if (!currentState.globalMockingEnabled) {
-                    println(
-                        message = "$LOG_PREFIX Global mocking is DISABLED - using actual network"
-                    )
-                    println(message = "$LOG_PREFIX ========================================")
+                    logger.d { "$method $path -> NETWORK (global mocking disabled)" }
                     return@intercept execute(requestBuilder = requestBuilder)
                 }
-
-                println(message = "$LOG_PREFIX Global mocking is ENABLED - checking for mock")
 
                 val mockMatch = mockRepository.findMatchingMock(
                     host = host,
@@ -186,122 +177,63 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                     queryParameters = queryParameters
                 )
 
-                mockMatch?.let { match ->
-                    println(
-                        message = "$LOG_PREFIX Found matching operation: " +
-                            "${match.specId}/${match.operationId}"
-                    )
-
-                    val endpointState = currentState.getOperationState(key = match.key)
-
-                    if (endpointState == null) {
-                        println(
-                            message = "$LOG_PREFIX No state found for operation key: ${match.key.compositeKey}"
-                        )
-                        println(
-                            message = "$LOG_PREFIX Available operation states: ${currentState.operationStates.keys}"
-                        )
-                        println(message = "$LOG_PREFIX Using actual network")
-                        println(message = "$LOG_PREFIX ========================================")
-                        return@intercept execute(requestBuilder = requestBuilder)
-                    }
-
-                    println(
-                        message =
-                            "$LOG_PREFIX Operation state: ${
-                                when (endpointState) {
-                                    is OperationMockState.Network -> "network"
-                                    is OperationMockState.Mock ->
-                                        "mock, status=${endpointState.statusCode}, " +
-                                            "example=${endpointState.exampleName}"
-                                }
-                            }"
-                    )
-
-                    when (endpointState) {
-                        is OperationMockState.Network -> {
-                            println(
-                                message = "$LOG_PREFIX Endpoint mock not enabled"
-                            )
-                            println(message = "$LOG_PREFIX Using actual network")
-                            println(
-                                message = "$LOG_PREFIX ========================================"
-                            )
-                        }
-                        is OperationMockState.Mock -> {
-                            println(
-                                message = "$LOG_PREFIX Mock is enabled with example: " +
-                                    endpointState.exampleName
-                            )
-
-                            @Suppress("TooGenericExceptionCaught")
-                            try {
-                                val mockResponse = mockRepository.loadMockResponse(
-                                    key = match.key,
-                                    statusCode = endpointState.statusCode,
-                                    exampleName = endpointState.exampleName
-                                )
-
-                                mockResponse?.let { response ->
-                                    println(
-                                        message = "$LOG_PREFIX Successfully loaded mock response " +
-                                            "(status ${response.statusCode})"
-                                    )
-                                    println(
-                                        message = "$LOG_PREFIX Returning MOCK response - " +
-                                            "NO network call will be made"
-                                    )
-                                    println(
-                                        message = "$LOG_PREFIX ========================================"
-                                    )
-
-                                    match.delayMs?.let { ms ->
-                                        println(message = "$LOG_PREFIX Simulating delay of ${ms}ms")
-                                        delay(timeMillis = ms)
-                                    }
-
-                                    return@intercept createMockHttpClientCall(
-                                        client = scope,
-                                        requestData = request,
-                                        statusCode = HttpStatusCode.fromValue(
-                                            value = response.statusCode
-                                        ),
-                                        content = response.content
-                                    )
-                                }
-
-                                if (mockResponse == null) {
-                                    println(
-                                        message = "$LOG_PREFIX ERROR: Mock response loaded as null"
-                                    )
-                                    println(message = "$LOG_PREFIX Falling back to actual network")
-                                    println(
-                                        message = "$LOG_PREFIX ========================================"
-                                    )
-                                }
-                            } catch (e: Exception) {
-                                println(
-                                    message = "$LOG_PREFIX ERROR: Exception loading mock response - ${e.message}"
-                                )
-                                println(message = "$LOG_PREFIX Falling back to actual network")
-                                println(
-                                    message = "$LOG_PREFIX ========================================"
-                                )
-                            }
-                        }
-                    }
-                }
-
                 if (mockMatch == null) {
-                    println(message = "$LOG_PREFIX No matching endpoint config found")
-                    println(message = "$LOG_PREFIX Using actual network")
+                    logger.d { "$method $path -> NETWORK (no operation match)" }
+                    return@intercept execute(requestBuilder = requestBuilder)
                 }
 
-                println(
-                    message = "$LOG_PREFIX No mock enabled for $method $path, using actual network"
-                )
-                println(message = "$LOG_PREFIX ========================================")
-                execute(requestBuilder = requestBuilder)
+                val endpointState = currentState.getOperationState(key = mockMatch.key)
+
+                if (endpointState == null) {
+                    logger.d {
+                        "$method $path -> NETWORK (${mockMatch.key.compositeKey} has no configured state)"
+                    }
+                    return@intercept execute(requestBuilder = requestBuilder)
+                }
+
+                when (endpointState) {
+                    is OperationMockState.Network -> {
+                        logger.d { "$method $path -> NETWORK (operation set to pass-through)" }
+                        execute(requestBuilder = requestBuilder)
+                    }
+                    is OperationMockState.Mock -> {
+                        @Suppress("TooGenericExceptionCaught")
+                        try {
+                            val mockResponse = mockRepository.loadMockResponse(
+                                key = mockMatch.key,
+                                statusCode = endpointState.statusCode,
+                                exampleName = endpointState.exampleName
+                            )
+
+                            if (mockResponse == null) {
+                                logger.w {
+                                    "$method $path -> NETWORK (declared mock " +
+                                        "${endpointState.statusCode}/${endpointState.exampleName} not found)"
+                                }
+                                return@intercept execute(requestBuilder = requestBuilder)
+                            }
+
+                            mockMatch.delayMs?.let { ms -> delay(timeMillis = ms) }
+
+                            logger.d {
+                                "$method $path -> MOCK ${mockResponse.statusCode}/${mockResponse.exampleName}"
+                            }
+                            createMockHttpClientCall(
+                                client = scope,
+                                requestData = request,
+                                statusCode = HttpStatusCode.fromValue(
+                                    value = mockResponse.statusCode
+                                ),
+                                content = mockResponse.content
+                            )
+                        } catch (e: Exception) {
+                            logger.w(
+                                throwable = e
+                            ) { "$method $path -> NETWORK (error loading mock response)" }
+                            execute(requestBuilder = requestBuilder)
+                        }
+                    }
+                }
             }
         }
     }

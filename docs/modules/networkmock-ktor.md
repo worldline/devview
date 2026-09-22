@@ -51,6 +51,8 @@ For every outgoing request, the plugin:
 
 Mock responses are returned with HTTP/1.1 status, an empty header set, and the response body as the content.
 
+Each intercepted request logs exactly one line through [Kermit](https://github.com/touchlab/Kermit) (tag `DevViewNetworkMock`, `debug` level, `warn` for a failed mock load) — e.g. `GET /v1/users/42 -> MOCK 200/default` or `-> NETWORK (no operation match)`. No response body content is ever logged. See [Logging](networkmock-core.md#logging) for how to adjust verbosity or route these into `devview-consolelogger`.
+
 ## Platform Actuals
 
 - **Android**: Use `HttpClient(OkHttp)` as the engine.

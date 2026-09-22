@@ -1,5 +1,6 @@
 package com.worldline.devview.networkmock.core.repository
 
+import co.touchlab.kermit.Logger
 import com.worldline.devview.networkmock.core.NetworkMockResourceLoader
 import com.worldline.devview.networkmock.core.model.MockConfiguration
 import com.worldline.devview.networkmock.core.model.MockMatch
@@ -7,6 +8,8 @@ import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.openapi.OpenApiParser
 import kotlinx.serialization.SerializationException
+
+private val logger = Logger.withTag(tag = "DevViewNetworkMock")
 
 /**
  * Repository for loading OpenAPI-based mock configuration and response files from resources.
@@ -68,20 +71,16 @@ public class MockConfigRepository(
             cachedConfig = config
             responseIndex = parsed.associate { it.apiSpec.id to it.responseIndex }
 
-            println(
-                message = "[NetworkMock][Config] Loaded ${config.specs.size} spec(s): " +
+            logger.d {
+                "Loaded ${config.specs.size} spec(s): " +
                     config.specs.joinToString { "${it.id} (${it.operations.size} operations)" }
-            )
+            }
             Result.success(value = config)
         } catch (e: IllegalStateException) {
-            println(
-                message = "[NetworkMock][Config] ERROR: Failed to load configuration - ${e.message}"
-            )
+            logger.w(throwable = e) { "Failed to load configuration" }
             Result.failure(exception = e)
         } catch (e: SerializationException) {
-            println(
-                message = "[NetworkMock][Config] ERROR: Failed to load configuration - ${e.message}"
-            )
+            logger.w(throwable = e) { "Failed to load configuration" }
             Result.failure(exception = e)
         }
     }
@@ -127,15 +126,12 @@ public class MockConfigRepository(
         }
 
         if (match == null) {
-            println(message = "[NetworkMock][Matching] No match for $method $host$path")
+            logger.v { "No match for $method $host$path" }
             return null
         }
 
         val (spec, matchingOperation) = match
-        println(
-            message = "[NetworkMock][Matching] Matched $method $path -> " +
-                "${spec.id}/${matchingOperation.operationId}"
-        )
+        logger.v { "Matched $method $path -> ${spec.id}/${matchingOperation.operationId}" }
         return MockMatch(
             key = OperationKey(specId = spec.id, operationId = matchingOperation.operationId),
             config = matchingOperation,
