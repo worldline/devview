@@ -27,7 +27,7 @@ package com.worldline.devview.networkmock {
   }
 
   public final class NetworkMockScreenKt {
-    method @KotlinOnly @androidx.compose.runtime.Composable public static void NetworkMockScreen(kotlinx.coroutines.flow.SharedFlow<kotlin.Unit> resetToNetworkSharedFlow, com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel viewModel, optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding);
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void NetworkMockScreen(kotlinx.coroutines.flow.SharedFlow<kotlin.Unit> resetToNetworkSharedFlow, kotlinx.coroutines.flow.SharedFlow<kotlin.Unit> reloadConfigSharedFlow, com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel viewModel, optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding);
   }
 
 }
@@ -160,6 +160,7 @@ package com.worldline.devview.networkmock.viewmodel {
     method @InaccessibleFromKotlin public kotlinx.coroutines.flow.StateFlow<com.worldline.devview.networkmock.viewmodel.OperationSheetState> getSheetState();
     method @InaccessibleFromKotlin public kotlinx.coroutines.flow.StateFlow<com.worldline.devview.networkmock.viewmodel.NetworkMockUiState> getUiState();
     method public void openOperation(com.worldline.devview.networkmock.core.model.OperationKey key);
+    method public void reloadConfiguration();
     method public void resetAllToNetwork();
     method public void setGlobalMockingEnabled(boolean enabled);
     method public void setOperationMockState(com.worldline.devview.networkmock.core.model.OperationKey key, com.worldline.devview.networkmock.core.model.MockResponse? response);

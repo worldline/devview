@@ -119,6 +119,16 @@ paths:
 - **UI**: Open DevView → Network Mock → tap the restore icon in the top toolbar.
 - **All mocks are reset to `Network` state**, including operations the user has never explicitly touched.
 
+## Reloading a spec after editing it
+
+Editing a spec file on disk (adding an operation, changing a response example) isn't picked up
+automatically — `MockConfigRepository` caches the parsed spec after the first load.
+
+- **UI**: Open DevView → Network Mock → tap the refresh icon in the top toolbar.
+- The spec is re-read and re-parsed from scratch; operations added, removed, or renamed appear
+  immediately. Per-operation mock selections already stored in DataStore are untouched.
+- No app restart required.
+
 ## Related Modules
 
 - [NetworkMock](networkmock.md): Overview and installation.

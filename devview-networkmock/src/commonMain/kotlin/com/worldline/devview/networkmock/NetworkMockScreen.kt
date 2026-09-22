@@ -78,9 +78,13 @@ import kotlinx.coroutines.flow.SharedFlow
  * - Enable/disable individual endpoint mocks
  * - Select which mock response to return for each endpoint, via [NetworkMockOperationSheet]
  * - Reset all mocks to use actual network
+ * - Reload the configured OpenAPI specs from disk, picking up edits without an app restart
  *
  * @param resetToNetworkSharedFlow Shared flow emitted by [NetworkMock] when the user triggers
  *   the "Reset to Network" toolbar action. Collected here to call [NetworkMockViewModel.resetAllToNetwork].
+ * @param reloadConfigSharedFlow Shared flow emitted by [NetworkMock] when the user triggers the
+ *   "Reload Config" toolbar action. Collected here to call [NetworkMockViewModel.reloadConfiguration],
+ *   picking up edits to a spec file without restarting the app.
  * @param viewModel The [NetworkMockViewModel] instance. Constructed and provided by
  *   [NetworkMock.registerContent] via the `viewModel { }` factory so that it is scoped to the
  *   navigation entry. Also owns the operation sheet's state — see [NetworkMockViewModel.sheetState].
@@ -91,6 +95,7 @@ import kotlinx.coroutines.flow.SharedFlow
 @Composable
 public fun NetworkMockScreen(
     resetToNetworkSharedFlow: SharedFlow<Unit>,
+    reloadConfigSharedFlow: SharedFlow<Unit>,
     viewModel: NetworkMockViewModel,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp
@@ -101,6 +106,12 @@ public fun NetworkMockScreen(
     LaunchedEffect(key1 = Unit) {
         resetToNetworkSharedFlow.collect {
             viewModel.resetAllToNetwork()
+        }
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        reloadConfigSharedFlow.collect {
+            viewModel.reloadConfiguration()
         }
     }
 

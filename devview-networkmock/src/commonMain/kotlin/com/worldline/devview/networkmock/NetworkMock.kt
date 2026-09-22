@@ -2,6 +2,7 @@ package com.worldline.devview.networkmock
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -128,6 +129,9 @@ public class NetworkMock(
     override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> =
         persistentMapOf(
             NetworkMockDestination.Main.withTitle(title = "Network Mock") {
+                action(icon = Icons.Rounded.Refresh) {
+                    onReloadConfig.tryEmit(value = Unit)
+                }
                 action(icon = Icons.Rounded.Restore) {
                     onResetToNetwork.tryEmit(value = Unit)
                 }
@@ -149,6 +153,11 @@ public class NetworkMock(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
+    private val onReloadConfig = MutableSharedFlow<Unit>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
         onNavigate: (NavKey) -> Unit,
@@ -165,7 +174,8 @@ public class NetworkMock(
                     )
                 },
                 bottomPadding = bottomPadding,
-                resetToNetworkSharedFlow = onResetToNetwork
+                resetToNetworkSharedFlow = onResetToNetwork,
+                reloadConfigSharedFlow = onReloadConfig
             )
         }
     }

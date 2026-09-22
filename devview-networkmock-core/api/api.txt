@@ -237,6 +237,7 @@ package com.worldline.devview.networkmock.core.repository {
     ctor public MockConfigRepository(java.util.List<java.lang.String> specPaths, com.worldline.devview.networkmock.core.NetworkMockResourceLoader resourceLoader);
     method public suspend Object? discoverResponseFiles(com.worldline.devview.networkmock.core.model.OperationKey key, kotlin.coroutines.Continuation<? super java.util.List<com.worldline.devview.networkmock.core.model.MockResponse>>);
     method public suspend Object? findMatchingMock(String host, String path, String method, optional java.util.Map<java.lang.String,? extends java.util.List<java.lang.String>> queryParameters, kotlin.coroutines.Continuation<? super com.worldline.devview.networkmock.core.model.MockMatch?>);
+    method public void invalidate();
     method @KotlinOnly public suspend Object? loadConfiguration(kotlin.coroutines.Continuation<? super kotlin.Result<com.worldline.devview.networkmock.core.model.MockConfiguration>>);
     method public suspend Object? loadMockResponse(com.worldline.devview.networkmock.core.model.OperationKey key, int statusCode, String exampleName, kotlin.coroutines.Continuation<? super com.worldline.devview.networkmock.core.model.MockResponse?>);
   }

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- NetworkMock: a "Reload Config" toolbar action, and `MockConfigRepository.invalidate()` /
+  `NetworkMockViewModel.reloadConfiguration()`, to re-read and re-parse the configured OpenAPI
+  specs without restarting the app — previously the parsed config was cached forever after the
+  first load, with no way to pick up an edited spec file short of a process restart. Operations
+  added, removed, or renamed in the spec appear immediately after reloading; persisted
+  per-operation mock selections are untouched. (`devview-networkmock-core`,
+  `devview-networkmock`, #90)
+
 ### Fixed
 - NetworkMock: replaced ~35 unconditional `println` calls in `MockConfigRepository` and
   `NetworkMockPlugin` with gated [Kermit](https://github.com/touchlab/Kermit) logging

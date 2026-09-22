@@ -118,6 +118,16 @@ paths:
         delayMs: 500  # per-operation — overrides the document default
 ```
 
+## Caching & Reload
+
+`MockConfigRepository` parses every configured spec once and caches the result — subsequent
+`loadConfiguration()` calls return the cached value without re-reading any file. Call
+`invalidate()` to clear that cache, then `loadConfiguration()` (or anything that calls it
+internally, like `findMatchingMock`) to force a fresh read — this is how a developer picks up
+an edited spec file without restarting the app. In `devview-networkmock`, the "Reload Config"
+toolbar action does exactly this via `NetworkMockViewModel.reloadConfiguration()`; see
+[NetworkMock UI](networkmock-ui.md).
+
 ## DataStore Schema
 
 State is persisted via `MockStateRepository`:

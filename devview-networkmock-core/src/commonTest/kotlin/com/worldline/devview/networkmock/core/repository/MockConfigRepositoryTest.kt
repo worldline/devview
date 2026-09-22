@@ -41,6 +41,35 @@ class MockConfigRepositoryTest {
     }
 
     @Test
+    fun `invalidate forces loadConfiguration to re-read the spec file`() = runTest {
+        val loader = RecordingResourceLoader(resources = baseResources())
+        val repository = MockConfigRepository(specPaths = listOf(SPEC_PATH), resourceLoader = loader)
+
+        repository.loadConfiguration().getOrThrow()
+        repository.invalidate()
+        repository.loadConfiguration().getOrThrow()
+
+        loader.callCount(path = SPEC_PATH) shouldBe 2
+    }
+
+    @Test
+    fun `invalidate then loadConfiguration reflects a changed spec file`() = runTest {
+        val loader = MutableResourceLoader(resources = baseResources())
+        val repository = MockConfigRepository(specPaths = listOf(SPEC_PATH), resourceLoader = loader)
+
+        val before = repository.loadConfiguration().getOrThrow()
+        before.specs[0].operations.map { it.operationId } shouldContainExactly
+            listOf("getUser", "createUser")
+
+        loader.replace(path = SPEC_PATH, content = specJsonWithDeleteUserAdded())
+        repository.invalidate()
+        val after = repository.loadConfiguration().getOrThrow()
+
+        after.specs[0].operations.map { it.operationId } shouldContainExactly
+            listOf("getUser", "deleteUser", "createUser")
+    }
+
+    @Test
     fun `loadConfiguration returns failure when spec file is missing`() = runTest {
         val repository = createRepository(resources = emptyMap())
 
@@ -551,6 +580,20 @@ class MockConfigRepositoryTest {
         fun callCount(path: String): Int = calls[path] ?: 0
     }
 
+    /** Like [RecordingResourceLoader], but [replace] lets a test simulate an edited spec file. */
+    private class MutableResourceLoader(
+        resources: Map<String, String>
+    ) : NetworkMockResourceLoader {
+        private val resources = resources.toMutableMap()
+
+        override suspend fun load(path: String): ByteArray =
+            resources[path]?.encodeToByteArray() ?: error("Resource not found: $path")
+
+        fun replace(path: String, content: String) {
+            resources[path] = content
+        }
+    }
+
     private fun baseResources(): Map<String, String> = mapOf(
         SPEC_PATH to baseSpecJson(),
         "responses/getUser-200.json" to """{"id":1}""",
@@ -590,6 +633,67 @@ class MockConfigRepositoryTest {
                     }
                   }
                 }
+              }
+            },
+            "/api/users": {
+              "post": {
+                "operationId": "createUser",
+                "summary": "Create User",
+                "responses": {
+                  "201": {
+                    "content": {
+                      "application/json": {
+                        "examples": {
+                          "default": { "externalValue": "/responses/createUser-201.json" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+    """.trimIndent()
+
+    /** [baseSpecJson] with a `deleteUser` operation added — simulates an edited spec file. */
+    private fun specJsonWithDeleteUserAdded(): String = """
+        {
+          "info": { "title": "Example" },
+          "servers": [
+            { "url": "https://staging.api.example.com:8443/v1" },
+            { "url": "https://api.example.com" }
+          ],
+          "paths": {
+            "/api/users/{userId}": {
+              "get": {
+                "operationId": "getUser",
+                "summary": "Get User",
+                "responses": {
+                  "200": {
+                    "content": {
+                      "application/json": {
+                        "examples": {
+                          "default": { "externalValue": "/responses/getUser-200.json" }
+                        }
+                      }
+                    }
+                  },
+                  "404": {
+                    "content": {
+                      "application/json": {
+                        "examples": {
+                          "default": { "externalValue": "/responses/getUser-404.json" }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "delete": {
+                "operationId": "deleteUser",
+                "summary": "Delete User",
+                "responses": {}
               }
             },
             "/api/users": {
