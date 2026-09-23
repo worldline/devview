@@ -51,6 +51,16 @@ class NetworkMockOperationSheetTest {
     }
 
     @Test
+    fun groupsResponsesByStatusFamily_showingAStickyHeaderPerFamily() = runComposeUiTest {
+        // response200 (2xx) and response404 (4xx) fall into distinct StatusCodeFamily groups -
+        // each must get its own sticky header, not be lumped under one.
+        setPickerPage(currentState = OperationMockState.Network)
+
+        onNodeWithText(text = "SUCCESSFUL MOCKS").assertIsDisplayed()
+        onNodeWithText(text = "CLIENT ERROR MOCKS").assertIsDisplayed()
+    }
+
+    @Test
     fun tappingNetworkItem_selectsNetwork() = runComposeUiTest {
         var selected: MockResponse? = response200
         setPickerPage(

@@ -741,6 +741,75 @@ class NetworkMockPluginTest {
 
     // endregion
 
+    // region Query parameter matching
+
+    @Test
+    fun queryParameterMatching_matchesWhenDeclaredQueryParamValueIsPresent() = runTest {
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-listUsers" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(body = """{"source":"network"}"""),
+            configRepository = configRepository(),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        val response: HttpResponse = client.get(
+            urlString = "https://staging.api.example.com/api/users?type=user"
+        )
+
+        response.status shouldBe HttpStatusCode.OK
+        response.body<String>() shouldBe """[{"id":1,"name":"Alice"}]"""
+    }
+
+    @Test
+    fun queryParameterMatching_fallsThroughToNetwork_whenDeclaredQueryParamValueDiffers() = runTest {
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-listUsers" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(body = """{"source":"network"}"""),
+            configRepository = configRepository(),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        // listUsers only declares a match for ?type=user - a different value doesn't match.
+        val response: HttpResponse = client.get(
+            urlString = "https://staging.api.example.com/api/users?type=admin"
+        )
+
+        response.body<String>() shouldBe """{"source":"network"}"""
+    }
+
+    @Test
+    fun queryParameterMatching_fallsThroughToNetwork_whenDeclaredQueryParamIsMissing() = runTest {
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-listUsers" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(body = """{"source":"network"}"""),
+            configRepository = configRepository(),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        val response: HttpResponse = client.get(
+            urlString = "https://staging.api.example.com/api/users"
+        )
+
+        response.body<String>() shouldBe """{"source":"network"}"""
+    }
+
+    // endregion
+
     // region Error / fallback behaviour
 
     @Test
