@@ -485,7 +485,7 @@ class RequestMatcherTest {
     }
 
     @Test
-    fun `matchesRequestBody ignores the required field's actual value, only checks presence`() {
+    fun `matchesRequestBody ignores the required field's actual value and only checks presence`() {
         RequestMatcher.matchesRequestBody(
             configMatch = RequestBodyMatch(requiredFields = listOf("name")),
             requestBody = """{"name":null}"""
