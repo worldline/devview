@@ -1011,6 +1011,98 @@ class MockConfigRepositoryTest {
     }
 
     @Test
+    fun `parses a real-world YAML spec with dollar-ref schemas declared after paths`() = runTest {
+        // Mirrors a shape seen in real API docs: a YAML spec whose components.schemas section
+        // sits after paths, a requestBody with its own $ref'd schema and a requestBody.required
+        // boolean (a different concept from schema.required, and not modeled at all - must be
+        // silently ignored), three status codes all $ref-ing the *same* response schema, a
+        // folded (unquoted, line-wrapped) summary string, a double-quoted description with a
+        // backslash line continuation, and a tags block sequence (unmodeled until #116/PR 10).
+        val yamlSpec = """
+            info:
+              title: Example
+            servers:
+            - url: https://api.example.com
+            paths:
+              /api/v1/authentication/mobile-auth/login:
+                post:
+                  operationId: mobileLogin
+                  requestBody:
+                    content:
+                      application/json:
+                        schema:
+                          ${'$'}ref: "#/components/schemas/MobileLoginRequest"
+                    required: true
+                  responses:
+                    "200":
+                      content:
+                        application/json:
+                          schema:
+                            ${'$'}ref: "#/components/schemas/MobileLoginResponse"
+                      description: "Successful call, returns a challenge that needs to be signed\
+                        \ to complete the activation"
+                    "401":
+                      content:
+                        application/json:
+                          schema:
+                            ${'$'}ref: "#/components/schemas/MobileLoginResponse"
+                      description: User not authenticated
+                    "422":
+                      content:
+                        application/json:
+                          schema:
+                            ${'$'}ref: "#/components/schemas/MobileLoginResponse"
+                      description: Invalid parameters
+                  summary: Init mobile authentication activation workflow. It will reset any previously
+                    activated mobile authentication for this user and device.
+                  tags:
+                  - Authentication V1
+                  - Authentication
+            components:
+              schemas:
+                MobileLoginRequest:
+                  type: object
+                  required:
+                  - deviceId
+                  properties:
+                    deviceId:
+                      type: string
+                MobileLoginResponse:
+                  type: object
+                  properties:
+                    challenge:
+                      type: string
+                    expiresInSeconds:
+                      type: integer
+        """.trimIndent()
+        val yamlSpecPath = "specs/mobile-auth.yaml"
+        val repository = MockConfigRepository(
+            specPaths = listOf(yamlSpecPath),
+            resourceLoader = RecordingResourceLoader(resources = mapOf(yamlSpecPath to yamlSpec))
+        )
+
+        val config = repository.loadConfiguration().getOrThrow()
+        val operation = config.specs[0].operations.single()
+
+        operation.operationId shouldBe "mobileLogin"
+        operation.path shouldBe "/api/v1/authentication/mobile-auth/login"
+        operation.method shouldBe HttpMethod.Post
+        // Folded YAML scalar: the line break becomes a single space.
+        operation.name shouldBe "Init mobile authentication activation workflow. It will reset " +
+            "any previously activated mobile authentication for this user and device."
+        operation.requestBodyMatch?.requiredFields shouldContainExactly listOf("deviceId")
+
+        val responses = repository.discoverResponseFiles(
+            key = OperationKey(specId = "example", operationId = "mobileLogin")
+        )
+
+        responses shouldHaveSize 3
+        responses.map { it.statusCode }.sorted() shouldContainExactly listOf(200, 401, 422)
+        responses.all { it.isSynthesized } shouldBe true
+        responses.all { it.content == """{"challenge":"string","expiresInSeconds":0}""" } shouldBe true
+    }
+
+    @Test
     fun `discoverResponseFiles returns responses sorted by status code`() = runTest {
         val repository = createRepository(resources = baseResources())
 
