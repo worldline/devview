@@ -2,6 +2,7 @@ package com.worldline.devview.networkmock
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.runtime.Composable
@@ -132,6 +133,11 @@ public class NetworkMock(
                 action(icon = Icons.Rounded.Refresh) {
                     onReloadConfig.tryEmit(value = Unit)
                 }
+                menu(icon = Icons.AutoMirrored.Rounded.Sort) {
+                    OperationSort.entries.forEach { sort ->
+                        item(label = sort.label) { onSortSelected.tryEmit(value = sort.label) }
+                    }
+                }
                 action(icon = Icons.Rounded.Restore) {
                     onResetToNetwork.tryEmit(value = Unit)
                 }
@@ -158,6 +164,29 @@ public class NetworkMock(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
+    // Emits the OperationSort.label of the entry tapped in the toolbar's "Sort" dropdown menu.
+    // Collected by NetworkMockScreen to set the sort order for the currently visible spec tab
+    // directly — unlike onResetToNetwork and onReloadConfig, this is a
+    // DestinationMetadataBuilder.menu action (not a single-tap action), since the shared toolbar
+    // now supports an anchored dropdown of discrete choices.
+    //
+    // A label String — rather than OperationSort itself — crosses this boundary because
+    // NetworkMockScreen is public API while OperationSort is deliberately internal (sort is a
+    // pure client-side composable concern, per devview-networkmock/CLAUDE.md's "Search and
+    // filters live in the composable, not the ViewModel"); a public composable can't expose an
+    // internal type in its signature. Both ends of this flow live in this module and share the
+    // same OperationSort.label values, so the label is a safe, internal-only protocol despite the
+    // public parameter type.
+    //
+    // The menu's entries are fixed at module construction time (one per OperationSort value, in
+    // declaration order) and cannot vary per spec tab; picking "Tag" when the current tab has no
+    // tagged operations is a harmless no-op — sortedByOption sorts by each operation's absent
+    // first tag (empty string for all), so the list order doesn't change.
+    private val onSortSelected = MutableSharedFlow<String>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
         onNavigate: (NavKey) -> Unit,
@@ -175,7 +204,8 @@ public class NetworkMock(
                 },
                 bottomPadding = bottomPadding,
                 resetToNetworkSharedFlow = onResetToNetwork,
-                reloadConfigSharedFlow = onReloadConfig
+                reloadConfigSharedFlow = onReloadConfig,
+                sortSharedFlow = onSortSelected
             )
         }
     }

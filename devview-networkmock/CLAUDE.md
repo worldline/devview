@@ -81,9 +81,11 @@ version/method it stays selected across tab switches.
 Only the search field and a chevron `IconButton` are visible by default (mirrors
 `devview-analytics`'s `AnalyticsScreen` bottom bar). Tapping the chevron toggles `filtersExpanded`,
 revealing — top to bottom — the mock-state filter row, the version filter row (if the current
-spec has versioned operations), then the method filter row (if it has more than one method) inside
-an `AnimatedVisibility`. The chevron rotates via `graphicsLayer(rotationX = ...)` driven by
-`animateFloatAsState`, identical to the Analytics pattern.
+spec has versioned operations), the method filter row (if it has more than one method), then the
+tag filter row (if the current spec has any tagged operations — see
+[Tags](../docs/modules/networkmock-core.md#tags)) inside an `AnimatedVisibility`. The chevron
+rotates via `graphicsLayer(rotationX = ...)` driven by `animateFloatAsState`, identical to the
+Analytics pattern.
 
 ### Global mocked-count header
 
@@ -120,6 +122,29 @@ deliberately don't (see "Status code colors and icons" below).
 ### "Reset to Network" toolbar action
 
 Wired via a `MutableSharedFlow<Unit>` (capacity 1, `DROP_OLDEST`) created in `NetworkMock` and passed into `NetworkMockScreen`. `resetAllToNetwork()` resets every operation in the parsed config (not just those stored in DataStore) to avoid gaps for operations the user has never touched.
+
+### "Sort" toolbar dropdown
+
+Registered via `DestinationMetadataBuilder.menu` (the shared toolbar's dropdown-menu action —
+see `devview/DevView.kt` and `ModuleDestinationAction.menuItems`), not the plain single-tap
+`action` used by "Refresh"/"Reset to Network" — a sort key is a discrete choice among several, so
+it gets an anchored dropdown instead of a cycling single-tap icon. One menu entry per
+`OperationSort` value (`Default`, `Path (A-Z)`, `Method`, `Tag`), built once at module-construction
+time from `OperationSort.entries`; because the shared `menu` DSL takes a fixed list of items with
+no access to the currently-visible spec, "Tag" is always offered even when the current spec has no
+tagged operations — picking it in that case is a harmless no-op (`sortedByOption` sorts by every
+operation's absent first tag, i.e. an equal empty string for all, so the list order doesn't
+change).
+
+The flow crossing `NetworkMock` → `NetworkMockScreen` carries an `OperationSort.label: String`,
+not `OperationSort` itself: `NetworkMockScreen` is public API but `OperationSort` is deliberately
+`internal` (see "Search and filters live in the composable, not the ViewModel" above), and a
+public composable can't expose an internal type in its signature. `ContentState` maps the label
+back to the enum entry via `OperationSort.entries.firstOrNull { it.label == label }`; both ends of
+this flow live in this module and share the same `OperationSort.label` values, so the label is a
+safe, internal-only protocol despite the public parameter type. Sort selection itself is stored
+the same way as the version/method/tag filters — plain `mutableStateMapOf<String, OperationSort>`
+in `ContentState`, keyed by spec ID, never round-tripped through `NetworkMockViewModel`.
 
 ### Operation sheet: one sheet, two pages
 

@@ -29,6 +29,7 @@ package com.worldline.devview.core {
 
   public final class DestinationMetadataBuilder {
     method public void action(androidx.compose.ui.graphics.vector.ImageVector icon, optional com.worldline.devview.core.ModuleDestinationActionPopup? popup, kotlin.jvm.functions.Function0<kotlin.Unit> action);
+    method public void menu(androidx.compose.ui.graphics.vector.ImageVector icon, kotlin.jvm.functions.Function1<? super com.worldline.devview.core.ModuleDestinationActionMenuBuilder,kotlin.Unit> block);
   }
 
   public final class DestinationMetadataExtensionsKt {
@@ -64,17 +65,35 @@ package com.worldline.devview.core {
   }
 
   public final class ModuleDestinationAction {
-    ctor public ModuleDestinationAction(androidx.compose.ui.graphics.vector.ImageVector icon, kotlin.jvm.functions.Function0<kotlin.Unit> action, optional com.worldline.devview.core.ModuleDestinationActionPopup? popup);
+    ctor public ModuleDestinationAction(androidx.compose.ui.graphics.vector.ImageVector icon, optional kotlin.jvm.functions.Function0<kotlin.Unit> action, optional com.worldline.devview.core.ModuleDestinationActionPopup? popup, optional kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationActionMenuItem>? menuItems);
     method public androidx.compose.ui.graphics.vector.ImageVector component1();
     method public kotlin.jvm.functions.Function0<kotlin.Unit> component2();
     method public com.worldline.devview.core.ModuleDestinationActionPopup? component3();
-    method public com.worldline.devview.core.ModuleDestinationAction copy(optional androidx.compose.ui.graphics.vector.ImageVector icon, optional kotlin.jvm.functions.Function0<kotlin.Unit> action, optional com.worldline.devview.core.ModuleDestinationActionPopup? popup);
+    method public kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationActionMenuItem>? component4();
+    method public com.worldline.devview.core.ModuleDestinationAction copy(optional androidx.compose.ui.graphics.vector.ImageVector icon, optional kotlin.jvm.functions.Function0<kotlin.Unit> action, optional com.worldline.devview.core.ModuleDestinationActionPopup? popup, optional kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationActionMenuItem>? menuItems);
     method @InaccessibleFromKotlin public kotlin.jvm.functions.Function0<kotlin.Unit> getAction();
     method @InaccessibleFromKotlin public androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    method @InaccessibleFromKotlin public kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationActionMenuItem>? getMenuItems();
     method @InaccessibleFromKotlin public com.worldline.devview.core.ModuleDestinationActionPopup? getPopup();
     property public kotlin.jvm.functions.Function0<kotlin.Unit> action;
     property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    property public kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationActionMenuItem>? menuItems;
     property public com.worldline.devview.core.ModuleDestinationActionPopup? popup;
+  }
+
+  public final class ModuleDestinationActionMenuBuilder {
+    method public void item(String label, kotlin.jvm.functions.Function0<kotlin.Unit> onClick);
+  }
+
+  public final class ModuleDestinationActionMenuItem {
+    ctor public ModuleDestinationActionMenuItem(String label, kotlin.jvm.functions.Function0<kotlin.Unit> onClick);
+    method public String component1();
+    method public kotlin.jvm.functions.Function0<kotlin.Unit> component2();
+    method public com.worldline.devview.core.ModuleDestinationActionMenuItem copy(optional String label, optional kotlin.jvm.functions.Function0<kotlin.Unit> onClick);
+    method @InaccessibleFromKotlin public String getLabel();
+    method @InaccessibleFromKotlin public kotlin.jvm.functions.Function0<kotlin.Unit> getOnClick();
+    property public String label;
+    property public kotlin.jvm.functions.Function0<kotlin.Unit> onClick;
   }
 
   public final class ModuleDestinationActionPopup {

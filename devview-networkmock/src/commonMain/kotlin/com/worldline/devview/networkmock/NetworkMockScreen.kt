@@ -3,7 +3,6 @@ package com.worldline.devview.networkmock
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,10 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
-import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -72,6 +68,7 @@ import com.worldline.devview.networkmock.preview.NetworkMockUiStatePreviewParame
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
 import com.worldline.devview.networkmock.viewmodel.OperationSheetState
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 
 /**
@@ -89,6 +86,12 @@ import kotlinx.coroutines.flow.SharedFlow
  * @param reloadConfigSharedFlow Shared flow emitted by [NetworkMock] when the user triggers the
  *   "Reload Config" toolbar action. Collected here to call [NetworkMockViewModel.reloadConfiguration],
  *   picking up edits to a spec file without restarting the app.
+ * @param sortSharedFlow Shared flow emitted by [NetworkMock] when the user picks an entry from
+ *   the "Sort" toolbar dropdown — each emission is an [OperationSort.label] string, not the
+ *   (internal) [OperationSort] itself, since this is a public composable's parameter; see
+ *   [NetworkMock]'s `onSortSelected` for why. Collected in [ContentState] (not here — sort is
+ *   per-tab, client-side state, never round-tripped through [NetworkMockViewModel]) to set the
+ *   [OperationSort] for the currently visible spec tab directly.
  * @param viewModel The [NetworkMockViewModel] instance. Constructed and provided by
  *   [NetworkMock.registerContent] via the `viewModel { }` factory so that it is scoped to the
  *   navigation entry. Also owns the operation sheet's state — see [NetworkMockViewModel.sheetState].
@@ -100,6 +103,7 @@ import kotlinx.coroutines.flow.SharedFlow
 public fun NetworkMockScreen(
     resetToNetworkSharedFlow: SharedFlow<Unit>,
     reloadConfigSharedFlow: SharedFlow<Unit>,
+    sortSharedFlow: SharedFlow<String>,
     viewModel: NetworkMockViewModel,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp
@@ -123,6 +127,7 @@ public fun NetworkMockScreen(
         uiState = uiState,
         onGlobalToggle = viewModel::setGlobalMockingEnabled,
         onSelectOperation = viewModel::openOperation,
+        sortSharedFlow = sortSharedFlow,
         modifier = modifier,
         bottomPadding = bottomPadding
     )
@@ -165,7 +170,8 @@ internal fun NetworkMockScreenContent(
     onGlobalToggle: (Boolean) -> Unit,
     onSelectOperation: (OperationKey) -> Unit,
     modifier: Modifier = Modifier,
-    bottomPadding: Dp = 0.dp
+    bottomPadding: Dp = 0.dp,
+    sortSharedFlow: SharedFlow<String> = MutableSharedFlow()
 ) {
     when (uiState) {
         is NetworkMockUiState.Loading -> LoadingState(modifier = modifier)
@@ -176,6 +182,7 @@ internal fun NetworkMockScreenContent(
                 uiState = uiState,
                 onGlobalToggle = onGlobalToggle,
                 onSelectOperation = onSelectOperation,
+                sortSharedFlow = sortSharedFlow,
                 modifier = modifier,
                 bottomPadding = bottomPadding
             )
@@ -188,6 +195,7 @@ private fun ContentState(
     uiState: NetworkMockUiState.Content,
     onGlobalToggle: (Boolean) -> Unit,
     onSelectOperation: (OperationKey) -> Unit,
+    sortSharedFlow: SharedFlow<String>,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp
 ) {
@@ -201,9 +209,9 @@ private fun ContentState(
     val selectedTags = remember { mutableStateMapOf<String, Set<String>>() }
 
     // Sort is also a per-spec, client-side-only concern (see `OperationSort`) — deliberately
-    // not in NetworkMockViewModel, same reasoning as the filters above.
+    // not in NetworkMockViewModel, same reasoning as the filters above. Set directly by
+    // sortSharedFlow (the toolbar's "Sort" dropdown), never by direct user input here.
     val selectedSort = remember { mutableStateMapOf<String, OperationSort>() }
-    var sortMenuExpanded by remember { mutableStateOf(value = false) }
 
     // Not keyed by spec — mocked-ness is a question about everything, not the current tab,
     // so unlike version/method the selection persists across tab switches.
@@ -258,9 +266,21 @@ private fun ContentState(
             .sorted()
             .toList()
     }
-    // "Tag" only makes sense as a sort key when the current spec actually declares tags.
-    val sortOptions = remember(key1 = availableTags) {
-        OperationSort.entries.filter { it != OperationSort.TAG || availableTags.isNotEmpty() }
+    // Triggered by the "Sort" toolbar dropdown in the shared DevView.kt TopAppBar (see
+    // NetworkMock.onSortSelected) — sets the OperationSort for the currently visible spec tab
+    // directly. Each emission is an OperationSort.label string, not OperationSort itself (see
+    // NetworkMock.onSortSelected's KDoc for why); firstOrNull defensively falls back to no-op if
+    // a label is ever unrecognized, rather than crashing. The dropdown's entries are fixed at
+    // module-construction time (one per OperationSort, see NetworkMock.kt), so "Tag" is offered
+    // even when the current spec has no tagged operations; picking it in that case is a harmless
+    // no-op since sortedByOption sorts by each operation's absent first tag (empty string for
+    // all).
+    LaunchedEffect(key1 = currentSpecId) {
+        sortSharedFlow.collect { label ->
+            val specId = currentSpecId ?: return@collect
+            val sort = OperationSort.entries.firstOrNull { it.label == label } ?: return@collect
+            selectedSort[specId] = sort
+        }
     }
 
     Scaffold(
@@ -470,69 +490,14 @@ private fun ContentState(
             modifier = Modifier.fillMaxSize()
         ) {
             Surface {
-                Column {
-                    // Sort control: a plain trailing-aligned row local to this screen's own
-                    // content, not the shared DevView.kt TopAppBar (its per-destination
-                    // `action(icon) { onClick }` only supports a single-tap icon, with no slot
-                    // for an anchored multi-item DropdownMenu) and not a second nested
-                    // Scaffold `topBar` (would duplicate Material app-bar chrome under the
-                    // global one and need its own inset bookkeeping). Keeps sort state local to
-                    // `ContentState`, exactly like every other filter here.
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        val currentSort = selectedSort[currentSpecId] ?: OperationSort.SPEC_ORDER
-                        Box {
-                            IconButton(
-                                modifier = Modifier.testTag(tag = "sort_menu_button"),
-                                onClick = { sortMenuExpanded = true }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.MoreVert,
-                                    contentDescription = "Sort operations"
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = sortMenuExpanded,
-                                onDismissRequest = { sortMenuExpanded = false }
-                            ) {
-                                sortOptions.forEach { option ->
-                                    DropdownMenuItem(
-                                        modifier = Modifier.testTag(
-                                            tag = "sort_menu_item_${option.name}"
-                                        ),
-                                        text = { Text(text = option.label) },
-                                        trailingIcon = {
-                                            if (option == currentSort) {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.Done,
-                                                    contentDescription = null
-                                                )
-                                            }
-                                        },
-                                        onClick = {
-                                            currentSpecId?.let { specId ->
-                                                selectedSort[specId] = option
-                                            }
-                                            sortMenuExpanded = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    GlobalMockToggle(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        enabled = uiState.globalMockingEnabled,
-                        mockedCount = mockedOperations,
-                        totalCount = totalOperations,
-                        onToggle = onGlobalToggle
-                    )
-                }
+                GlobalMockToggle(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    enabled = uiState.globalMockingEnabled,
+                    mockedCount = mockedOperations,
+                    totalCount = totalOperations,
+                    onToggle = onGlobalToggle
+                )
             }
             HorizontalDivider()
 

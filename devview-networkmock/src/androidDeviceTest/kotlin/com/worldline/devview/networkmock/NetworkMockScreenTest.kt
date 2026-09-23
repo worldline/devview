@@ -18,6 +18,9 @@ import com.worldline.devview.networkmock.fixtures.MockScreenTestData
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 
 class NetworkMockScreenTest {
 
@@ -352,40 +355,28 @@ class NetworkMockScreenTest {
     }
 
     @Test
-    fun sortMenuButton_opensDropdownWithSortOptions() = runComposeUiTest {
-        setScreen(uiState = MockScreenTestData.contentState())
+    fun sortSharedFlow_emittingMethodLabel_reordersTheOperationList() = runComposeUiTest {
+        // "example" is tagged, so the dropdown offers [SPEC_ORDER, PATH, METHOD, TAG]. Emitting
+        // "Method" directly selects that sort key. Spec order is [getUser(GET), createUser(POST),
+        // health(GET)] — sorting by method is a stable sort, so the GET group keeps its
+        // relative order (getUser, health) ahead of the POST group (createUser), moving
+        // "Health" above "Create User" relative to the untouched spec-order default.
+        val sortSharedFlow = MutableSharedFlow<String>(
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST
+        )
+        setScreen(uiState = MockScreenTestData.contentState(), sortSharedFlow = sortSharedFlow)
 
-        onNodeWithTag(testTag = "sort_menu_button").performClick()
+        val initialCreateUserY = onNodeWithText(text = "Create User").fetchSemanticsNode().positionInRoot.y
+        val initialHealthY = onNodeWithText(text = "Health").fetchSemanticsNode().positionInRoot.y
+        (initialCreateUserY < initialHealthY) shouldBe true
+
+        sortSharedFlow.tryEmit(value = "Method")
         waitForIdle()
 
-        onNodeWithTag(testTag = "sort_menu_item_SPEC_ORDER").assertIsDisplayed()
-        onNodeWithTag(testTag = "sort_menu_item_PATH").assertIsDisplayed()
-        onNodeWithTag(testTag = "sort_menu_item_METHOD").assertIsDisplayed()
-        onNodeWithTag(testTag = "sort_menu_item_TAG").assertIsDisplayed()
-    }
-
-    @Test
-    fun sortMenuTagOption_hiddenWhenCurrentSpecHasNoTags() = runComposeUiTest {
-        setScreen(uiState = MockScreenTestData.contentState())
-
-        onNodeWithTag(testTag = "spec_tab_catalog").performClick()
-        waitForIdle()
-        onNodeWithTag(testTag = "sort_menu_button").performClick()
-        waitForIdle()
-
-        onAllNodesWithTag(testTag = "sort_menu_item_TAG").assertCountEquals(expectedSize = 0)
-    }
-
-    @Test
-    fun sortMenuItem_selection_closesTheMenu() = runComposeUiTest {
-        setScreen(uiState = MockScreenTestData.contentState())
-
-        onNodeWithTag(testTag = "sort_menu_button").performClick()
-        waitForIdle()
-        onNodeWithTag(testTag = "sort_menu_item_PATH").performClick()
-        waitForIdle()
-
-        onAllNodesWithTag(testTag = "sort_menu_item_PATH").assertCountEquals(expectedSize = 0)
+        val sortedCreateUserY = onNodeWithText(text = "Create User").fetchSemanticsNode().positionInRoot.y
+        val sortedHealthY = onNodeWithText(text = "Health").fetchSemanticsNode().positionInRoot.y
+        (sortedHealthY < sortedCreateUserY) shouldBe true
     }
 
     private fun ComposeUiTest.expandFilters() {
@@ -397,6 +388,7 @@ class NetworkMockScreenTest {
         uiState: NetworkMockUiState,
         onGlobalToggle: (Boolean) -> Unit = {},
         onSelectOperation: (OperationKey) -> Unit = { },
+        sortSharedFlow: SharedFlow<String> = MutableSharedFlow(),
     ) {
         setContent {
             MaterialTheme {
@@ -404,6 +396,7 @@ class NetworkMockScreenTest {
                     uiState = uiState,
                     onGlobalToggle = onGlobalToggle,
                     onSelectOperation = onSelectOperation,
+                    sortSharedFlow = sortSharedFlow,
                 )
             }
         }
