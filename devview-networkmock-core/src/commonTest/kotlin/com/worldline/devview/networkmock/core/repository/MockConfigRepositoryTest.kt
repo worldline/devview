@@ -256,6 +256,214 @@ class MockConfigRepositoryTest {
     }
 
     @Test
+    fun `parses required fields from a requestBody schema into requestBodyMatch`() = runTest {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/users": {
+                  "post": {
+                    "operationId": "createUser",
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "type": "object",
+                            "required": ["name", "email"]
+                          }
+                        }
+                      }
+                    },
+                    "responses": {}
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val repository = createRepository(resources = mapOf(SPEC_PATH to spec))
+
+        val config = repository.loadConfiguration().getOrThrow()
+
+        val operation = config.specs[0].operations.single()
+        operation.requestBodyMatch?.requiredFields shouldContainExactly listOf("name", "email")
+        operation.requestBodyMatch?.discriminatorField.shouldBeNull()
+    }
+
+    @Test
+    fun `parses discriminator field and its single-value enum from a requestBody schema`() = runTest {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/payments": {
+                  "post": {
+                    "operationId": "createCardPayment",
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "type": "object",
+                            "discriminator": { "propertyName": "type" },
+                            "properties": {
+                              "type": { "type": "string", "enum": ["card"] }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "responses": {}
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val repository = createRepository(resources = mapOf(SPEC_PATH to spec))
+
+        val config = repository.loadConfiguration().getOrThrow()
+
+        val requestBodyMatch = config.specs[0].operations.single().requestBodyMatch
+        requestBodyMatch?.discriminatorField shouldBe "type"
+        requestBodyMatch?.discriminatorValue shouldBe "card"
+    }
+
+    @Test
+    fun `requestBodyMatch is null when an operation declares no requestBody`() = runTest {
+        val repository = createRepository(resources = baseResources())
+
+        val config = repository.loadConfiguration().getOrThrow()
+
+        config.specs[0].operations.first { it.operationId == "getUser" }
+            .requestBodyMatch.shouldBeNull()
+    }
+
+    @Test
+    fun `requestBodyMatch is null when the requestBody schema has neither required fields nor a discriminator`() =
+        runTest {
+            val spec = """
+                {
+                  "info": { "title": "Example" },
+                  "servers": [ { "url": "https://api.example.com" } ],
+                  "paths": {
+                    "/api/users": {
+                      "post": {
+                        "operationId": "createUser",
+                        "requestBody": {
+                          "content": {
+                            "application/json": {
+                              "schema": { "type": "object" }
+                            }
+                          }
+                        },
+                        "responses": {}
+                      }
+                    }
+                  }
+                }
+            """.trimIndent()
+            val repository = createRepository(resources = mapOf(SPEC_PATH to spec))
+
+            val config = repository.loadConfiguration().getOrThrow()
+
+            config.specs[0].operations.single().requestBodyMatch.shouldBeNull()
+        }
+
+    @Test
+    fun `findMatchingMock disambiguates two operations colliding on path and method by request body shape`() =
+        runTest {
+            val spec = """
+                {
+                  "info": { "title": "Example" },
+                  "servers": [ { "url": "https://api.example.com" } ],
+                  "paths": {
+                    "/api/payments/card": {
+                      "post": {
+                        "operationId": "payByCard",
+                        "requestBody": {
+                          "content": {
+                            "application/json": {
+                              "schema": {
+                                "type": "object",
+                                "discriminator": { "propertyName": "type" },
+                                "properties": { "type": { "type": "string", "enum": ["card"] } }
+                              }
+                            }
+                          }
+                        },
+                        "responses": {}
+                      }
+                    }
+                  }
+                }
+            """.trimIndent()
+            val repository = createRepository(resources = mapOf(SPEC_PATH to spec))
+
+            val matchesCard = repository.findMatchingMock(
+                host = "api.example.com",
+                path = "/api/payments/card",
+                method = "POST",
+                requestBody = """{"type":"card","number":"4242"}"""
+            )
+            val doesNotMatchOtherType = repository.findMatchingMock(
+                host = "api.example.com",
+                path = "/api/payments/card",
+                method = "POST",
+                requestBody = """{"type":"bank_transfer"}"""
+            )
+
+            matchesCard?.operationId shouldBe "payByCard"
+            doesNotMatchOtherType.shouldBeNull()
+        }
+
+    @Test
+    fun `findMatchingMock resolves a dollar-ref'd requestBody schema via components schemas`() = runTest {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/users": {
+                  "post": {
+                    "operationId": "createUser",
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": { "${'$'}ref": "#/components/schemas/NewUser" }
+                        }
+                      }
+                    },
+                    "responses": {}
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "NewUser": { "type": "object", "required": ["email"] }
+                }
+              }
+            }
+        """.trimIndent()
+        val repository = createRepository(resources = mapOf(SPEC_PATH to spec))
+
+        val matches = repository.findMatchingMock(
+            host = "api.example.com",
+            path = "/api/users",
+            method = "POST",
+            requestBody = """{"email":"bob@example.com"}"""
+        )
+        val noMatch = repository.findMatchingMock(
+            host = "api.example.com",
+            path = "/api/users",
+            method = "POST",
+            requestBody = """{"name":"Bob"}"""
+        )
+
+        matches?.operationId shouldBe "createUser"
+        noMatch.shouldBeNull()
+    }
+
+    @Test
     fun `findMatchingMock picks the first spec that has a matching operation when hosts collide`() =
         runTest {
             val firstSpec = """
