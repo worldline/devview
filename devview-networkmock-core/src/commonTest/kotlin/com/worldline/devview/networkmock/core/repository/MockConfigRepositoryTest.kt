@@ -594,6 +594,21 @@ class MockConfigRepositoryTest {
     }
 
     @Test
+    fun `findMatchingMock delayMs is null when neither operation nor spec declares one`() = runTest {
+        // baseSpecJson declares no x-devview at any level - completes the precedence chain
+        // (operation override, spec default) the test above covers with the "no delay at all" case.
+        val repository = createRepository(resources = baseResources())
+
+        val match = repository.findMatchingMock(
+            host = "api.example.com",
+            path = "/api/users/42",
+            method = "GET"
+        )
+
+        match?.delayMs.shouldBeNull()
+    }
+
+    @Test
     fun `x-devview failureRate is parsed as an operation-level field with no spec-wide default`() =
         runTest {
             val spec = """

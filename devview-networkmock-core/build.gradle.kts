@@ -38,4 +38,12 @@ kotlin {
 
 tasks.withType<Test> {
     failOnNoDiscoveredTests.set(false)
+    // Points RealSampleSpecTest (androidHostTest) at the sample app's real, shipped OpenAPI
+    // specs/response files without a compile-time dependency on the sample module - this is a
+    // pure file-system read at test-run-time, guarding against the shipped sample silently
+    // drifting out of sync with what this parser actually accepts.
+    systemProperty(
+        "devview.sampleNetworkResourcesDir",
+        rootProject.file("sample/network/src/commonMain/composeResources").absolutePath
+    )
 }
