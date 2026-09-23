@@ -127,7 +127,11 @@ Parameters, responses, examples, and headers may be declared via `$ref` instead 
 - **Local**: `"$ref": "#/components/parameters/UserId"` resolves against the same document's `components`.
 - **External**: `"$ref": "./common.json#/components/responses/Error"` loads another file (relative to the spec's own location) via the same `NetworkMockResourceLoader`.
 
-Refs resolve one level deep — a referenced component's own `$ref` (if any) is not followed further.
+Refs are followed as a chain — a referenced component's own `$ref` (if any) is resolved again,
+until a non-ref entry is reached — with a cycle guard that fails clearly instead of hanging on a
+circular reference. Each ref's fragment must name the section its context expects (e.g. a response
+`$ref` must point into `components/responses`), so a same-named entry in a different section is
+never resolved by mistake.
 
 ### x-devview extension
 
