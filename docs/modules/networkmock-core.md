@@ -133,6 +133,54 @@ circular reference. Each ref's fragment must name the section its context expect
 `$ref` must point into `components/responses`), so a same-named entry in a different section is
 never resolved by mistake.
 
+### Schema-based response synthesis
+
+A status code with **no** `examples` at all, but a declared `content.<mediaType>.schema`,
+synthesizes one placeholder body per such media type instead of being unmockable:
+
+```json
+"200": {
+  "content": {
+    "application/json": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE"] }
+        }
+      }
+    }
+  }
+}
+```
+
+synthesizes `{"id":0,"status":"ACTIVE"}` under the example name `"default"`. A status code that
+declares **any** `examples` for a media type never falls back to synthesis for that media type,
+even if it also declares a `schema` — an author-provided example always wins. `MockResponse.isSynthesized`
+is `true` for a synthesized body, `false` otherwise; the operation picker page shows a small
+"Generated" badge on a synthesized response's row.
+
+This is deliberately narrow, not full JSON Schema conformance — no `required`,
+`additionalProperties`, string patterns, `minimum`/`maximum`, etc. (anything that would matter for
+*validating* a body rather than *synthesizing one plausible value*):
+
+| Shape | Synthesized value |
+|---|---|
+| `string` | `"string"`, or the first `enum` value if declared |
+| `integer` / `number` | `0` |
+| `boolean` | `false` |
+| `object` (or any schema with `properties`) | each property synthesized recursively |
+| `array` (or any schema with `items`) | a single-element array of the synthesized item |
+| `allOf` | member schemas' properties merged into one object; conflicting property definitions across members throw a clear error |
+| `oneOf` | the first declared variant — `discriminator` is parsed but doesn't currently steer variant selection, since there's no concrete request/response data at spec-parse time to disambiguate against |
+
+`nullable` is read but ignored — a real value is always synthesized, never a JSON `null`, since
+this library mocks responses rather than exercising null-handling. A schema shape outside this
+list (or a schema declaring none of `type`/`properties`/`items`/`enum`/`allOf`/`oneOf`) throws a
+clear error rather than guessing. `$ref`s inside a schema (including nested ones under
+`properties`/`items`/`allOf`/`oneOf`) resolve against `components/schemas` the same way as
+elsewhere in this document.
+
 ### x-devview extension
 
 Vanilla OpenAPI has no field for response delay simulation or failure injection, so both live under the standard `x-`-prefixed [Specification Extensions](https://spec.openapis.org/oas/v3.1.0#specification-extensions) mechanism:

@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- NetworkMock: a status code with a declared `content.<mediaType>.schema` but no `examples`
+  now synthesizes a placeholder response body instead of being unmockable — primitives, `enum`
+  (first value), `object`/`array` (recursively, by declared `type` or by the mere presence of
+  `properties`/`items`), `allOf` (properties merged; conflicting definitions across members
+  throw a clear error), and `oneOf` (first declared variant; `discriminator` is parsed but
+  doesn't yet steer variant selection). Deliberately narrow, not full JSON Schema conformance —
+  see `docs/modules/networkmock-core.md`'s new "Schema-based response synthesis" section.
+  `MockResponse` gains `isSynthesized: Boolean` (default `false`); the operation picker page
+  shows a small "Generated" badge on a synthesized response's row.
+  (`devview-networkmock-core`, `devview-networkmock`, #82, #84)
 - NetworkMock: an operation can now be configured as a **sequence** — an ordered list of
   responses it advances through one step per matched request, sticking on the last step once
   exhausted rather than looping back to the start. Useful for polling flows (order status,
