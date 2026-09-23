@@ -296,6 +296,98 @@ class NetworkMockScreenTest {
         onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
     }
 
+    @Test
+    fun tagFilterRow_isAbsent_forSpecWithNoTags() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
+
+        onNodeWithTag(testTag = "spec_tab_catalog").performClick()
+        waitForIdle()
+
+        onAllNodesWithTag(testTag = "tag_filter_row_catalog").assertCountEquals(expectedSize = 0)
+    }
+
+    @Test
+    fun tagFilterChip_narrowsToThatTag() = runComposeUiTest {
+        // Only createUser carries the "Admin" tag in MockScreenTestData.
+        setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
+
+        onNodeWithTag(testTag = "tag_filter_example_Admin").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
+        onAllNodesWithTag(testTag = "endpoint_card_example_getUser").assertCountEquals(expectedSize = 0)
+        onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
+    }
+
+    @Test
+    fun tagFilterChips_unionMultipleSelections() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
+
+        onNodeWithTag(testTag = "tag_filter_example_Users").performClick()
+        waitForIdle()
+        onNodeWithTag(testTag = "tag_filter_example_Admin").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
+        onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
+    }
+
+    @Test
+    fun tagFilterChip_deselecting_restoresFullList() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
+
+        onNodeWithTag(testTag = "tag_filter_example_Admin").performClick()
+        waitForIdle()
+        onNodeWithTag(testTag = "tag_filter_example_Admin").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
+    }
+
+    @Test
+    fun sortMenuButton_opensDropdownWithSortOptions() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+
+        onNodeWithTag(testTag = "sort_menu_button").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "sort_menu_item_SPEC_ORDER").assertIsDisplayed()
+        onNodeWithTag(testTag = "sort_menu_item_PATH").assertIsDisplayed()
+        onNodeWithTag(testTag = "sort_menu_item_METHOD").assertIsDisplayed()
+        onNodeWithTag(testTag = "sort_menu_item_TAG").assertIsDisplayed()
+    }
+
+    @Test
+    fun sortMenuTagOption_hiddenWhenCurrentSpecHasNoTags() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+
+        onNodeWithTag(testTag = "spec_tab_catalog").performClick()
+        waitForIdle()
+        onNodeWithTag(testTag = "sort_menu_button").performClick()
+        waitForIdle()
+
+        onAllNodesWithTag(testTag = "sort_menu_item_TAG").assertCountEquals(expectedSize = 0)
+    }
+
+    @Test
+    fun sortMenuItem_selection_closesTheMenu() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+
+        onNodeWithTag(testTag = "sort_menu_button").performClick()
+        waitForIdle()
+        onNodeWithTag(testTag = "sort_menu_item_PATH").performClick()
+        waitForIdle()
+
+        onAllNodesWithTag(testTag = "sort_menu_item_PATH").assertCountEquals(expectedSize = 0)
+    }
+
     private fun ComposeUiTest.expandFilters() {
         onNodeWithTag(testTag = "expand_filter_button").performClick()
         waitForIdle()

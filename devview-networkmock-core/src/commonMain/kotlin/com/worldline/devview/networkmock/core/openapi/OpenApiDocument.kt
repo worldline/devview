@@ -21,11 +21,14 @@ import kotlinx.serialization.Serializable
  * that kaml does not provide for `kotlinx.serialization.json.JsonElement`-shaped values.
  *
  * Only fields consumed by [OpenApiParser] are modeled. Everything else in a real spec
- * (`deprecated`, `tags`, `security`, …) is silently ignored via lenient/non-strict decoding —
- * this parser mocks, it does not validate. [SchemaObject] is the one exception, read in two
+ * (`deprecated`, `security`, …) is silently ignored via lenient/non-strict decoding — this
+ * parser mocks, it does not validate. [SchemaObject] is the one exception, read in two
  * narrow ways: to *synthesize* a response body when a spec declares no `examples` for a status
  * code (see [SchemaSynthesizer]), and to build a [RequestBodyObject]'s match constraints (see
  * [OpenApiParser]'s request-body matching scope decision) — neither is full validation.
+ * `tags` (see [OperationObject.tags]) is also read, purely as a display/filter label for
+ * `devview-networkmock`'s UI — like [ParameterObject.example], it has no effect on request
+ * matching.
  */
 @Serializable
 internal data class OpenApiDocument(
@@ -72,6 +75,7 @@ internal data class PathItemObject(
 internal data class OperationObject(
     val operationId: String? = null,
     val summary: String? = null,
+    val tags: List<String> = emptyList(),
     val parameters: List<ParameterObject> = emptyList(),
     val requestBody: RequestBodyObject? = null,
     val responses: Map<String, ResponseObject> = emptyMap(),
