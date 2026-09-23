@@ -49,6 +49,7 @@ Key concepts:
 - **No manifest, no per-environment overrides.** A group spanning multiple API versions (`/v1/...`, `/v2/...`) is simply multiple `paths` entries — and therefore multiple distinct `operationId`s — in the same document.
 - **`responses.<code>.content.<mediaType>.examples.<name>`** → one entry per response variant this operation can mock; `externalValue` points at the response body file on disk. By convention the primary/original response for a status code is named `"default"`.
 - **`parameters` with `in: query`** → a literal `example` value on a query parameter becomes a required match for that operation (e.g. `listUsers` only matches requests carrying `?type=user`).
+- **`requestBody.content.<mediaType>.schema`** → optionally disambiguates operations that collide on path/method/query — see [Request body matching](#request-body-matching) below.
 - **`x-devview.delayMs`** → simulated response delay, at the document root (spec-wide default) and/or per operation (overrides the default). See [x-devview extension](#x-devview-extension) below.
 - **`{param}` placeholders**: Path segments like `{userId}` match any value during request matching.
 
@@ -65,11 +66,12 @@ configurable.
 
 ## Request Matching
 
-`MockConfigRepository.findMatchingMock(host, path, method, queryParameters)` resolves a mock in three steps:
+`MockConfigRepository.findMatchingMock(host, path, method, queryParameters, requestBody)` resolves a mock in four steps:
 
 1. **Hostname match** — compares the request host (case-insensitive) against every hostname declared in the spec's `servers[]`. If two specs both declare a matching hostname, the first spec (in configuration order) that also has a matching operation wins.
 2. **Path match** — splits path by `/`, compares segment by segment; `{param}` segments match any value; non-param segments are case-sensitive.
 3. **Method match** — case-sensitive exact match. Use uppercase (`"GET"`, `"POST"`).
+4. **Request body match** (only for operations that declare one — see below) — narrow, non-validating checks against the operation's declared `requestBody` schema.
 
 `Operation.method` is typed as `HttpMethod`, a small value class modeled after Ktor's own
 `io.ktor.http.HttpMethod` (open set, `HttpMethod.Get`/`.Post`/etc. constants, plus
@@ -79,6 +81,52 @@ pulling one in. `findMatchingMock`'s own `method` parameter stays a plain `Strin
 receives the raw wire value from `devview-networkmock-ktor`.
 
 There is no stored active-server selection. The matching server is determined purely from the request hostname at interception time.
+
+### Request body matching
+
+An operation's `requestBody.content.<mediaType>.schema` (`application/json` if declared,
+otherwise whichever media type comes first) is read into a narrow `RequestBodyMatch` — this
+exists purely to **disambiguate** operations that would otherwise collide on path, method, and
+query alone (e.g. two specs sharing a host, each declaring `POST /api/payments`, differing only
+by body shape); it is not a substitute for path/method/query matching, and an operation without
+`requestBodyMatch` still matches any body.
+
+```json
+"requestBody": {
+  "content": {
+    "application/json": {
+      "schema": {
+        "type": "object",
+        "required": ["amount"],
+        "discriminator": { "propertyName": "type" },
+        "properties": {
+          "type": { "type": "string", "enum": ["card"] }
+        }
+      }
+    }
+  }
+}
+```
+
+Two things are read from the schema, both deliberately narrow (not full JSON Schema validation):
+
+| Schema field | Becomes | Matching rule |
+|---|---|---|
+| `required` | `RequestBodyMatch.requiredFields` | every listed property must be a top-level key in the request body |
+| `discriminator.propertyName` | `RequestBodyMatch.discriminatorField` | that property must be a top-level key |
+| that property's own single-value `enum` | `RequestBodyMatch.discriminatorValue` | if present, the key's value must equal it exactly |
+
+If the schema yields neither a required field nor a usable discriminator (no `discriminator`, or
+one whose property doesn't declare a single-value `enum`), `requestBodyMatch` is `null` — same
+as an operation declaring no `requestBody` at all. `$ref`s (both the `requestBody` itself, under
+`components.requestBodies`, and its schema, under `components.schemas`) resolve the same way as
+elsewhere in this document.
+
+`devview-networkmock-ktor`'s plugin only reads the request body when it's already a fully
+in-memory `OutgoingContent.ByteArrayContent` (the shape Ktor's content negotiation produces for
+a JSON-serialized body) — a streaming or multipart body is never touched, and `requestBodyMatch`
+simply doesn't apply to it (treated as no body). Reading it is a pure, repeatable operation that
+never consumes or mutates anything the real network call still needs to send.
 
 ## Response Variant Discovery
 

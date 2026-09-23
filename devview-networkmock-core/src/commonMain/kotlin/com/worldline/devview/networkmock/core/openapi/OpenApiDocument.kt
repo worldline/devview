@@ -21,11 +21,11 @@ import kotlinx.serialization.Serializable
  * that kaml does not provide for `kotlinx.serialization.json.JsonElement`-shaped values.
  *
  * Only fields consumed by [OpenApiParser] are modeled. Everything else in a real spec
- * (`deprecated`, `tags`, `security`, request bodies, …) is silently ignored via lenient/
- * non-strict decoding — this parser mocks, it does not validate. [SchemaObject] is the one
- * exception: a `content.<mediaType>.schema` is read to *synthesize* a response body when a
- * spec declares no `examples` for a status code (see [SchemaSynthesizer]) — still not
- * validation, just a fallback so a schema-only response isn't unmockable.
+ * (`deprecated`, `tags`, `security`, …) is silently ignored via lenient/non-strict decoding —
+ * this parser mocks, it does not validate. [SchemaObject] is the one exception, read in two
+ * narrow ways: to *synthesize* a response body when a spec declares no `examples` for a status
+ * code (see [SchemaSynthesizer]), and to build a [RequestBodyObject]'s match constraints (see
+ * [OpenApiParser]'s request-body matching scope decision) — neither is full validation.
  */
 @Serializable
 internal data class OpenApiDocument(
@@ -73,6 +73,7 @@ internal data class OperationObject(
     val operationId: String? = null,
     val summary: String? = null,
     val parameters: List<ParameterObject> = emptyList(),
+    val requestBody: RequestBodyObject? = null,
     val responses: Map<String, ResponseObject> = emptyMap(),
     @SerialName("x-devview") val xDevview: DevViewExtension? = null
 )
@@ -135,13 +136,31 @@ internal data class ExampleObject(
 )
 
 /**
- * A JSON Schema (OpenAPI's constrained subset of it) declaration, or a `$ref` to one under
- * `components.schemas`. Read only to synthesize a placeholder response body when a
- * `content.<mediaType>` declares a [schema] but no `examples` — see [SchemaSynthesizer].
+ * A `requestBody` declaration for an operation, or a `$ref` to one under
+ * `components.requestBodies`.
  *
- * Deliberately not a full JSON Schema model: no `required`, `additionalProperties`,
- * `minimum`/`maximum`, string patterns, etc. — anything that would matter for *validation*
- * rather than *synthesizing one plausible value*.
+ * Only [content] is modeled — read for its `<mediaType>.schema`, and only to build the
+ * declaring operation's [com.worldline.devview.networkmock.core.model.RequestBodyMatch] (see
+ * [OpenApiParser]'s request-body matching scope decision). No other `requestBody` field
+ * (`description`, `required`) is read.
+ */
+@Serializable
+internal data class RequestBodyObject(
+    @SerialName("\$ref") val ref: String? = null,
+    val content: Map<String, MediaTypeObject> = emptyMap()
+)
+
+/**
+ * A JSON Schema (OpenAPI's constrained subset of it) declaration, or a `$ref` to one under
+ * `components.schemas`. Read in two narrow, non-validating ways: to synthesize a placeholder
+ * response body when a `content.<mediaType>` declares a [schema] but no `examples` (see
+ * [SchemaSynthesizer]), and to build a [RequestBodyObject]'s
+ * [com.worldline.devview.networkmock.core.model.RequestBodyMatch] (see [OpenApiParser]'s
+ * request-body matching scope decision).
+ *
+ * Deliberately not a full JSON Schema model: no `additionalProperties`, `minimum`/`maximum`,
+ * string patterns, etc. — anything that would matter for *validation* rather than *synthesizing
+ * one plausible value* or checking narrow request-body match constraints.
  *
  * @property type The schema's declared type (`"string"`, `"integer"`, `"number"`, `"boolean"`,
  *   `"object"`, or `"array"`). May be absent when [properties] or [items] alone implies it.
@@ -160,7 +179,13 @@ internal data class ExampleObject(
  * @property oneOf Alternative schemas; [SchemaSynthesizer] synthesizes the first declared
  *   variant regardless of [discriminator] (see [DiscriminatorObject]'s KDoc for why).
  * @property discriminator Parsed but not currently used to select a `oneOf` variant — there is
- *   no concrete request/response data at spec-parse time to disambiguate against.
+ *   no concrete request/response data at spec-parse time to disambiguate against. Read for
+ *   request-body matching, though (see [required]): its [DiscriminatorObject.propertyName]
+ *   becomes a [com.worldline.devview.networkmock.core.model.RequestBodyMatch.discriminatorField].
+ * @property required Property names a request-body schema declares as required, read only to
+ *   build [com.worldline.devview.networkmock.core.model.RequestBodyMatch.requiredFields] —
+ *   [SchemaSynthesizer] ignores this entirely, a synthesized response always includes every
+ *   [properties] entry regardless of whether it's "required".
  */
 @Serializable
 internal data class SchemaObject(
@@ -173,7 +198,8 @@ internal data class SchemaObject(
     val format: String? = null,
     val allOf: List<SchemaObject>? = null,
     val oneOf: List<SchemaObject>? = null,
-    val discriminator: DiscriminatorObject? = null
+    val discriminator: DiscriminatorObject? = null,
+    val required: List<String>? = null
 )
 
 /**
@@ -192,7 +218,8 @@ internal data class ComponentsObject(
     val responses: Map<String, ResponseObject> = emptyMap(),
     val examples: Map<String, ExampleObject> = emptyMap(),
     val headers: Map<String, HeaderObject> = emptyMap(),
-    val schemas: Map<String, SchemaObject> = emptyMap()
+    val schemas: Map<String, SchemaObject> = emptyMap(),
+    val requestBodies: Map<String, RequestBodyObject> = emptyMap()
 )
 
 /**

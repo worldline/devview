@@ -63,6 +63,10 @@ public data class NetworkMockPluginConfig(internal val config: NetworkMockConfig
  * - **Global Toggle**: Master switch to enable/disable all mocking
  * - **Path Parameters**: Supports path parameters like `/users/{userId}`
  * - **Multiple Hosts**: Can mock different hosts (staging, production, etc.)
+ * - **Request Body Disambiguation**: When two operations would otherwise collide on path,
+ *   method, and query, a request body's shape (required fields, and/or a discriminator field's
+ *   value — see [com.worldline.devview.networkmock.core.model.RequestBodyMatch]) picks the
+ *   right one. Narrow matching, not full schema validation.
  * - **State Persistence**: Mock configuration persists across app restarts
  * - **Failure Simulation**: An operation can deterministically simulate a network failure
  *   (see [com.worldline.devview.networkmock.core.model.OperationMockState.Failure]), or fail a
@@ -71,7 +75,8 @@ public data class NetworkMockPluginConfig(internal val config: NetworkMockConfig
  * ## How It Works
  * 1. Plugin intercepts every HTTP request using Ktor's `HttpSend` mechanism
  * 2. Checks if global mocking is enabled via DataStore state
- * 3. Attempts to match the request (host, path, method) to a configured endpoint
+ * 3. Attempts to match the request (host, path, method, query, and — for operations that
+ *    declare their own constraints — request body) to a configured endpoint
  * 4. If matched and mock is enabled for that endpoint, loads and returns the mock response
  * 5. Otherwise, proceeds with the actual network call
  *
@@ -172,6 +177,7 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                 val queryParameters = request.url.parameters
                     .entries()
                     .associate { (key, values) -> key to values }
+                val requestBodyText = extractRequestBodyText(content = request.body)
 
                 val currentState = cachedState.value ?: stateRepository.getState()
 
@@ -184,7 +190,8 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                     host = host,
                     path = path,
                     method = method,
-                    queryParameters = queryParameters
+                    queryParameters = queryParameters,
+                    requestBody = requestBodyText
                 )
 
                 if (mockMatch == null) {
@@ -318,6 +325,28 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
             }
         }
     }
+
+/**
+ * Extracts a request's body as text for
+ * [com.worldline.devview.networkmock.core.model.RequestBodyMatch] matching, without consuming
+ * or mutating anything `execute(requestBuilder)` still needs to send.
+ *
+ * Only [OutgoingContent.ByteArrayContent] is read — this covers Ktor's own `TextContent`, the
+ * shape content negotiation produces for a JSON-serialized request body — because its
+ * [OutgoingContent.ByteArrayContent.bytes] is a pure, repeatable read of bytes already fully
+ * materialized in memory, not a stream: calling it here doesn't consume anything the later
+ * `execute(requestBuilder)` call needs, and [content] itself is never touched or replaced. Any
+ * other content shape (a streaming [OutgoingContent.ReadChannelContent]/
+ * [OutgoingContent.WriteChannelContent], multipart, no content) returns `null` rather than risk
+ * consuming a body that still needs to reach the network intact — see #83's scope decision:
+ * body matching only applies when reading it is free.
+ *
+ * @param content The request's already-built body, from [io.ktor.client.request.HttpRequestData.body]
+ * @return The decoded body text, or `null` if [content] isn't an [OutgoingContent.ByteArrayContent]
+ */
+@Suppress("DocumentationOverPrivateFunction")
+private fun extractRequestBodyText(content: OutgoingContent): String? =
+    (content as? OutgoingContent.ByteArrayContent)?.bytes()?.decodeToString()
 
 /**
  * Builds the [Throwable] to throw for a simulated [FailureKind], mirroring what a real Ktor
