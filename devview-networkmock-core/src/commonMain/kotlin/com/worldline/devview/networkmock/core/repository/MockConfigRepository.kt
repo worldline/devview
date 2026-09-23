@@ -106,21 +106,27 @@ public class MockConfigRepository(
      * Finds a matching operation for an incoming HTTP request.
      *
      * Specs are checked in configuration order. Within a spec whose [servers][com.worldline.devview.networkmock.core.model.ApiSpec.servers]
-     * include a hostname matching [host], the first operation whose path, method, and query
-     * parameters all match wins. If no operation in that spec matches, the next spec is
-     * tried — two specs may legitimately share a hostname, and the first spec that actually
-     * has a matching operation wins.
+     * include a hostname matching [host], the first operation whose path, method, query
+     * parameters, and (if it declares constraints) request body all match wins. If no operation
+     * in that spec matches, the next spec is tried — two specs may legitimately share a
+     * hostname, and the first spec that actually has a matching operation wins. Request-body
+     * matching only disambiguates operations that already collide on path/method/query — see
+     * [com.worldline.devview.networkmock.core.model.RequestBodyMatch].
      *
      * @param host The request hostname (e.g., `"staging.api.example.com"`)
      * @param path The request path (e.g., `"/v1/users/123"`)
      * @param method The HTTP method (e.g., `"GET"`, `"POST"`)
+     * @param requestBody The request body as text, or `null` if none was read. Only checked
+     *   against operations that declare their own [com.worldline.devview.networkmock.core.model.RequestBodyMatch]
+     *   — operations without one match regardless of this value.
      * @return A [MockMatch] if a matching operation is found, or `null` otherwise
      */
     public suspend fun findMatchingMock(
         host: String,
         path: String,
         method: String,
-        queryParameters: Map<String, List<String>> = emptyMap()
+        queryParameters: Map<String, List<String>> = emptyMap(),
+        requestBody: String? = null
     ): MockMatch? {
         val config = loadConfiguration().getOrNull() ?: return null
 
@@ -136,6 +142,10 @@ public class MockConfigRepository(
                     RequestMatcher.matchesQueryParams(
                         configQueryParams = operation.queryParameters,
                         requestQueryParams = queryParameters
+                    ) &&
+                    RequestMatcher.matchesRequestBody(
+                        configMatch = operation.requestBodyMatch,
+                        requestBody = requestBody
                     )
             } ?: return@firstNotNullOfOrNull null
 

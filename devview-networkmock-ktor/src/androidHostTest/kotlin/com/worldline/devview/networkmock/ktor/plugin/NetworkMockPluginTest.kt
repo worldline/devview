@@ -19,6 +19,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.OutgoingContent
 import io.ktor.http.headersOf
 import io.mockk.coEvery
 import io.mockk.every
@@ -297,6 +298,173 @@ class NetworkMockPluginTest {
             }
         }
     }
+
+    // endregion
+
+    // region Request body matching
+
+    @Test
+    fun requestBodyDisambiguation_selectsCorrectOperationByDiscriminatorValue() = runTest {
+        val resources = requestBodyDisambiguationResources()
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "card-payByCard" to OperationMockState.Mock(statusCode = 200, exampleName = "default"),
+                "bank-payByBankTransfer" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(body = """{"source":"network"}"""),
+            configRepository = requestBodyDisambiguationRepository(resources = resources),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        val cardResponse = client.post(urlString = "https://staging.api.example.com/api/payments") {
+            setBody("""{"type":"card","number":"4242"}""")
+        }
+        val bankResponse = client.post(urlString = "https://staging.api.example.com/api/payments") {
+            setBody("""{"type":"bank_transfer","iban":"DE00"}""")
+        }
+
+        cardResponse.body<String>() shouldBe """{"method":"card"}"""
+        bankResponse.body<String>() shouldBe """{"method":"bank_transfer"}"""
+    }
+
+    @Test
+    fun requestBodyDisambiguation_fallsBackToNetworkWithOriginalBodyIntact_whenNoShapeMatches() = runTest {
+        val resources = requestBodyDisambiguationResources()
+        var capturedBody: String? = null
+        val engine = MockEngine { request ->
+            capturedBody = (request.body as? OutgoingContent.ByteArrayContent)
+                ?.bytes()
+                ?.decodeToString()
+            respond(
+                content = """{"source":"network"}""",
+                status = HttpStatusCode.OK,
+                headers = headersOf("Content-Type", "application/json")
+            )
+        }
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "card-payByCard" to OperationMockState.Mock(statusCode = 200, exampleName = "default"),
+                "bank-payByBankTransfer" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = engine,
+            configRepository = requestBodyDisambiguationRepository(resources = resources),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+        val originalBody = """{"type":"crypto","wallet":"abc123"}"""
+
+        val response: HttpResponse = client.post(
+            urlString = "https://staging.api.example.com/api/payments"
+        ) {
+            setBody(originalBody)
+        }
+
+        // No declared operation's requestBody shape matches "crypto" - falls through to network,
+        // and the original body must still reach it byte-for-byte, unconsumed.
+        response.body<String>() shouldBe """{"source":"network"}"""
+        capturedBody shouldBe originalBody
+    }
+
+    /**
+     * Two specs, sharing a host and declaring the identical `POST /api/payments` path/method,
+     * disambiguated only by a `type` discriminator in their respective `requestBody` schemas -
+     * the scenario [MockConfigRepository.findMatchingMock]'s own KDoc describes for why
+     * request-body matching exists.
+     */
+    private fun requestBodyDisambiguationResources(): Map<String, String> {
+        val cardSpec = """
+            {
+              "info": { "title": "Card" },
+              "servers": [ { "url": "https://staging.api.example.com" } ],
+              "paths": {
+                "/api/payments": {
+                  "post": {
+                    "operationId": "payByCard",
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "type": "object",
+                            "discriminator": { "propertyName": "type" },
+                            "properties": { "type": { "type": "string", "enum": ["card"] } }
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "content": {
+                          "application/json": {
+                            "examples": {
+                              "default": { "externalValue": "/files/networkmocks/responses/payByCard-200.json" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val bankSpec = """
+            {
+              "info": { "title": "Bank" },
+              "servers": [ { "url": "https://staging.api.example.com" } ],
+              "paths": {
+                "/api/payments": {
+                  "post": {
+                    "operationId": "payByBankTransfer",
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "type": "object",
+                            "discriminator": { "propertyName": "type" },
+                            "properties": { "type": { "type": "string", "enum": ["bank_transfer"] } }
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "content": {
+                          "application/json": {
+                            "examples": {
+                              "default": {
+                                "externalValue": "/files/networkmocks/responses/payByBankTransfer-200.json"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        return mapOf(
+            "files/networkmocks/specs/card.json" to cardSpec,
+            "files/networkmocks/specs/bank.json" to bankSpec,
+            "files/networkmocks/responses/payByCard-200.json" to """{"method":"card"}""",
+            "files/networkmocks/responses/payByBankTransfer-200.json" to """{"method":"bank_transfer"}"""
+        )
+    }
+
+    private fun requestBodyDisambiguationRepository(resources: Map<String, String>): MockConfigRepository =
+        MockConfigRepository(
+            specPaths = listOf(
+                "files/networkmocks/specs/card.json",
+                "files/networkmocks/specs/bank.json"
+            ),
+            resourceLoader = KtorPluginTestData.resourceLoader(resources = resources)
+        )
 
     // endregion
 

@@ -52,6 +52,36 @@ public data class ApiSpec(
 )
 
 /**
+ * Narrow request-body match constraints for an [Operation], built from its OpenAPI
+ * `requestBody.content.<mediaType>.schema` (see
+ * [com.worldline.devview.networkmock.core.openapi.OpenApiParser]).
+ *
+ * This is **not** JSON Schema validation — only required-field presence and, optionally, a
+ * single discriminator field's value are checked (see
+ * [com.worldline.devview.networkmock.core.repository.RequestMatcher.matchesRequestBody]),
+ * consistent with how lenient this library's existing path/query matching already is.
+ *
+ * @property requiredFields Top-level property names the request body's JSON object must
+ *   contain, from the schema's `required` array. Empty if the schema declares none.
+ * @property discriminatorField The schema's `discriminator.propertyName`, or `null` if the
+ *   schema declares no discriminator. When non-null, the request body must contain this
+ *   property (with any value, unless [discriminatorValue] narrows it further) to match.
+ * @property discriminatorValue The literal value [discriminatorField] must equal, sourced from
+ *   that property's own single-value `enum` at parse time — `null` if the discriminator
+ *   property doesn't declare one, in which case only [discriminatorField]'s *presence* is
+ *   checked, not its value.
+ * @see Operation.requestBodyMatch
+ * @see com.worldline.devview.networkmock.core.repository.RequestMatcher.matchesRequestBody
+ */
+@Immutable
+@Serializable
+public data class RequestBodyMatch(
+    val requiredFields: List<String> = emptyList(),
+    val discriminatorField: String? = null,
+    val discriminatorValue: String? = null
+)
+
+/**
  * A single mockable API operation, parsed from one `paths.<path>.<method>` entry.
  *
  * @property operationId The OpenAPI `operationId` — required by the parser (a spec with a
@@ -79,6 +109,12 @@ public data class ApiSpec(
  *   extension. `null` (the default) means every request behaves normally. Unlike [delayMs],
  *   this has no spec-wide default on [ApiSpec] — "some percentage of everything fails" is a
  *   much blunter tool than "this specific flaky endpoint fails sometimes".
+ * @property requestBodyMatch Narrow request-body match constraints (required fields and/or a
+ *   discriminator value), or `null` if this operation declares no `requestBody`, its schema
+ *   yields nothing to check, or the schema simply isn't declared — an operation with `null`
+ *   here matches any request body, mirroring how `null` [queryParameters] matches any query
+ *   string. Exists to disambiguate operations that would otherwise collide on path, method,
+ *   and query alone (see [RequestBodyMatch]).
  * @see ApiSpec
  * @see com.worldline.devview.networkmock.core.repository.RequestMatcher
  */
@@ -92,7 +128,8 @@ public data class Operation(
     val queryParameters: Map<String, String>? = null,
     val delayMs: Long? = null,
     val version: String? = null,
-    val failureRate: Double? = null
+    val failureRate: Double? = null,
+    val requestBodyMatch: RequestBodyMatch? = null
 )
 
 /**
