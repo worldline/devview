@@ -418,7 +418,7 @@ class MockConfigRepositoryTest {
 
     @Test
     fun `findMatchingMock resolves a dollar-ref'd requestBody schema via components schemas`() = runTest {
-        val spec = """
+        val spec = $$"""
             {
               "info": { "title": "Example" },
               "servers": [ { "url": "https://api.example.com" } ],
@@ -429,7 +429,7 @@ class MockConfigRepositoryTest {
                     "requestBody": {
                       "content": {
                         "application/json": {
-                          "schema": { "${'$'}ref": "#/components/schemas/NewUser" }
+                          "schema": { "$ref": "#/components/schemas/NewUser" }
                         }
                       }
                     },
@@ -662,7 +662,7 @@ class MockConfigRepositoryTest {
 
     @Test
     fun `local dollar-ref to a components response resolves correctly`() = runTest {
-        val spec = """
+        val spec = $$"""
             {
               "info": { "title": "Example" },
               "servers": [ { "url": "https://api.example.com" } ],
@@ -671,7 +671,7 @@ class MockConfigRepositoryTest {
                   "get": {
                     "operationId": "getUser",
                     "responses": {
-                      "200": { "${'$'}ref": "#/components/responses/UserOk" }
+                      "200": { "$ref": "#/components/responses/UserOk" }
                     }
                   }
                 }
@@ -709,7 +709,7 @@ class MockConfigRepositoryTest {
 
     @Test
     fun `external dollar-ref to another file's components resolves correctly`() = runTest {
-        val spec = """
+        val spec = $$"""
             {
               "info": { "title": "Example" },
               "servers": [ { "url": "https://api.example.com" } ],
@@ -718,7 +718,7 @@ class MockConfigRepositoryTest {
                   "get": {
                     "operationId": "getUser",
                     "responses": {
-                      "200": { "${'$'}ref": "./common.json#/components/responses/UserOk" }
+                      "200": { "$ref": "./common.json#/components/responses/UserOk" }
                     }
                   }
                 }
@@ -764,7 +764,7 @@ class MockConfigRepositoryTest {
     @Test
     fun `dollar-ref naming the wrong components section is rejected even if a same-named entry exists there`() =
         runTest {
-            val spec = """
+            val spec = $$"""
             {
               "info": { "title": "Example" },
               "servers": [ { "url": "https://api.example.com" } ],
@@ -773,7 +773,7 @@ class MockConfigRepositoryTest {
                   "get": {
                     "operationId": "getUser",
                     "responses": {
-                      "200": { "${'$'}ref": "#/components/parameters/UserOk" }
+                      "200": { "$ref": "#/components/parameters/UserOk" }
                     }
                   }
                 }
@@ -808,7 +808,7 @@ class MockConfigRepositoryTest {
 
     @Test
     fun `local dollar-ref chain of two hops resolves to the final non-ref entry`() = runTest {
-        val spec = """
+        val spec = $$"""
             {
               "info": { "title": "Example" },
               "servers": [ { "url": "https://api.example.com" } ],
@@ -817,14 +817,14 @@ class MockConfigRepositoryTest {
                   "get": {
                     "operationId": "getUser",
                     "responses": {
-                      "200": { "${'$'}ref": "#/components/responses/A" }
+                      "200": { "$ref": "#/components/responses/A" }
                     }
                   }
                 }
               },
               "components": {
                 "responses": {
-                  "A": { "${'$'}ref": "#/components/responses/B" },
+                  "A": { "$ref": "#/components/responses/B" },
                   "B": {
                     "content": {
                       "application/json": {
@@ -855,7 +855,7 @@ class MockConfigRepositoryTest {
 
     @Test
     fun `cyclic dollar-ref chain fails clearly instead of hanging`() = runTest {
-        val spec = """
+        val spec = $$"""
             {
               "info": { "title": "Example" },
               "servers": [ { "url": "https://api.example.com" } ],
@@ -864,15 +864,15 @@ class MockConfigRepositoryTest {
                   "get": {
                     "operationId": "getUser",
                     "responses": {
-                      "200": { "${'$'}ref": "#/components/responses/A" }
+                      "200": { "$ref": "#/components/responses/A" }
                     }
                   }
                 }
               },
               "components": {
                 "responses": {
-                  "A": { "${'$'}ref": "#/components/responses/B" },
-                  "B": { "${'$'}ref": "#/components/responses/A" }
+                  "A": { "$ref": "#/components/responses/B" },
+                  "B": { "$ref": "#/components/responses/A" }
                 }
               }
             }
@@ -970,7 +970,7 @@ class MockConfigRepositoryTest {
 
     @Test
     fun `discoverResponseFiles resolves a dollar-ref'd schema via components schemas before synthesizing`() = runTest {
-        val spec = """
+        val spec = $$"""
             {
               "info": { "title": "Example" },
               "servers": [ { "url": "https://api.example.com" } ],
@@ -982,7 +982,7 @@ class MockConfigRepositoryTest {
                       "200": {
                         "content": {
                           "application/json": {
-                            "schema": { "${'$'}ref": "#/components/schemas/User" }
+                            "schema": { "$ref": "#/components/schemas/User" }
                           }
                         }
                       }
@@ -1018,7 +1018,7 @@ class MockConfigRepositoryTest {
         // silently ignored), three status codes all $ref-ing the *same* response schema, a
         // folded (unquoted, line-wrapped) summary string, a double-quoted description with a
         // backslash line continuation, and a tags block sequence (unmodeled until #116/PR 10).
-        val yamlSpec = """
+        val yamlSpec = $$"""
             info:
               title: Example
             servers:
@@ -1031,27 +1031,27 @@ class MockConfigRepositoryTest {
                     content:
                       application/json:
                         schema:
-                          ${'$'}ref: "#/components/schemas/MobileLoginRequest"
+                          $ref: "#/components/schemas/MobileLoginRequest"
                     required: true
                   responses:
                     "200":
                       content:
                         application/json:
                           schema:
-                            ${'$'}ref: "#/components/schemas/MobileLoginResponse"
+                            $ref: "#/components/schemas/MobileLoginResponse"
                       description: "Successful call, returns a challenge that needs to be signed\
                         \ to complete the activation"
                     "401":
                       content:
                         application/json:
                           schema:
-                            ${'$'}ref: "#/components/schemas/MobileLoginResponse"
+                            $ref: "#/components/schemas/MobileLoginResponse"
                       description: User not authenticated
                     "422":
                       content:
                         application/json:
                           schema:
-                            ${'$'}ref: "#/components/schemas/MobileLoginResponse"
+                            $ref: "#/components/schemas/MobileLoginResponse"
                       description: Invalid parameters
                   summary: Init mobile authentication activation workflow. It will reset any previously
                     activated mobile authentication for this user and device.
@@ -1226,7 +1226,7 @@ class MockConfigRepositoryTest {
     @Test
     fun `loadMockResponse resolves a dollar-ref'd header via components`() = runTest {
         val resources = mapOf(
-            SPEC_PATH to """
+            SPEC_PATH to $$"""
                 {
                   "info": { "title": "Example" },
                   "servers": [ { "url": "https://api.example.com" } ],
@@ -1237,7 +1237,7 @@ class MockConfigRepositoryTest {
                         "responses": {
                           "200": {
                             "headers": {
-                              "X-RateLimit-Remaining": { "${'$'}ref": "#/components/headers/RateLimit" }
+                              "X-RateLimit-Remaining": { "$ref": "#/components/headers/RateLimit" }
                             },
                             "content": {
                               "application/json": {
