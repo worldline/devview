@@ -678,6 +678,131 @@ class MockConfigRepositoryTest {
     }
 
     @Test
+    fun `discoverResponseFiles synthesizes a body from schema when a status code declares no examples`() = runTest {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/users/{userId}": {
+                  "get": {
+                    "operationId": "getUser",
+                    "responses": {
+                      "200": {
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "id": { "type": "integer" },
+                                "name": { "type": "string" }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val repository = createRepository(resources = mapOf(SPEC_PATH to spec))
+
+        val responses = repository.discoverResponseFiles(
+            key = OperationKey(specId = "example", operationId = "getUser")
+        )
+
+        responses shouldHaveSize 1
+        val synthesized = responses.single()
+        synthesized.isSynthesized shouldBe true
+        synthesized.content shouldBe """{"id":0,"name":"string"}"""
+    }
+
+    @Test
+    fun `discoverResponseFiles prefers declared examples over schema synthesis`() = runTest {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/users/{userId}": {
+                  "get": {
+                    "operationId": "getUser",
+                    "responses": {
+                      "200": {
+                        "content": {
+                          "application/json": {
+                            "schema": { "type": "object" },
+                            "examples": {
+                              "default": { "externalValue": "/responses/getUser-200.json" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val repository = createRepository(
+            resources = mapOf(SPEC_PATH to spec, "responses/getUser-200.json" to """{"id":1}""")
+        )
+
+        val responses = repository.discoverResponseFiles(
+            key = OperationKey(specId = "example", operationId = "getUser")
+        )
+
+        responses shouldHaveSize 1
+        val response = responses.single()
+        response.isSynthesized shouldBe false
+        response.content shouldBe """{"id":1}"""
+    }
+
+    @Test
+    fun `discoverResponseFiles resolves a dollar-ref'd schema via components schemas before synthesizing`() = runTest {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/users/{userId}": {
+                  "get": {
+                    "operationId": "getUser",
+                    "responses": {
+                      "200": {
+                        "content": {
+                          "application/json": {
+                            "schema": { "${'$'}ref": "#/components/schemas/User" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "User": {
+                    "type": "object",
+                    "properties": { "id": { "type": "integer" } }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val repository = createRepository(resources = mapOf(SPEC_PATH to spec))
+
+        val responses = repository.discoverResponseFiles(
+            key = OperationKey(specId = "example", operationId = "getUser")
+        )
+
+        responses shouldHaveSize 1
+        responses.single().content shouldBe """{"id":0}"""
+    }
+
+    @Test
     fun `discoverResponseFiles returns responses sorted by status code`() = runTest {
         val repository = createRepository(resources = baseResources())
 

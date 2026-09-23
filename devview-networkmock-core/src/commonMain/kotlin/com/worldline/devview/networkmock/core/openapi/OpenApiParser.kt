@@ -6,14 +6,27 @@ import com.worldline.devview.networkmock.core.model.Operation
 import kotlinx.serialization.json.Json
 
 /**
- * A resolved response variant: the file path to load via [NetworkMockResourceLoader.load],
- * its declared media type, and any headers declared on the enclosing `responses.<code>` —
+ * A resolved response variant's actual content source: either a file on disk (an OpenAPI
+ * example's `externalValue`) or an in-memory body synthesized once from a declared `schema`
+ * when the status code has no `examples` (see [SchemaSynthesizer]).
+ */
+internal sealed interface ResponseContent {
+    /** Loaded via [NetworkMockResourceLoader.load] at [path]. */
+    data class FromFile(val path: String) : ResponseContent
+
+    /** Already-serialized JSON text, produced once by [SchemaSynthesizer] and cached here. */
+    data class Synthesized(val json: String) : ResponseContent
+}
+
+/**
+ * A resolved response variant: its actual [content] (a file to load, or an already-synthesized
+ * body), its declared media type, and any headers declared on the enclosing `responses.<code>` —
  * everything [com.worldline.devview.networkmock.core.repository.MockConfigRepository] needs
  * to build a [com.worldline.devview.networkmock.core.model.MockResponse] without touching an
  * OpenAPI-shaped type itself (see #73's pure-seam requirement).
  */
 internal data class ResolvedResponse(
-    val path: String,
+    val content: ResponseContent,
     val contentType: String,
     val headers: Map<String, String>
 )
@@ -30,17 +43,21 @@ internal data class ResolvedResponse(
  * ## Scope decisions (deliberate, not oversights)
  * - Query-parameter matching values come from a parameter's top-level `example` field only
  *   (not `schema.example`/`schema.default`) — see [ParameterObject].
- * - Response bodies are sourced only from `examples.<name>.externalValue`; an example
- *   declared with an inline `value` is skipped, since this library keeps response bodies as
- *   external files (see the epic's format decisions).
+ * - Response bodies are sourced from `examples.<name>.externalValue` first; a status code with
+ *   declared `examples` never falls back to schema synthesis, even for a media type within that
+ *   same status code that has a `schema` but no `examples` of its own. An example declared with
+ *   an inline `value` is skipped, since this library keeps response bodies as external files
+ *   (see the epic's format decisions).
+ * - A status code with **no** `examples` at all but a declared `content.<mediaType>.schema`
+ *   synthesizes one placeholder body per such media type instead of being unmockable — see
+ *   [SchemaSynthesizer]. Deliberately narrow (not full JSON Schema conformance); see its KDoc.
  * - `$ref` and `externalValue` both resolve relative to the file that declares them, into
  *   `#/components/<section>/<name>` — a `$ref` chain (a component that itself points at
  *   another `$ref`) is followed until a non-ref entry is reached, guarded against cycles.
  *   Each hop's fragment must declare the section the caller expects (e.g. a response `$ref`
  *   must point into `components/responses`), so a same-named entry in a different section
  *   is never silently conflated with the one actually referenced.
- * - No schema resolution of any kind — this parser mocks, it does not validate or synthesize
- *   bodies (see #82/#83/#84, explicitly out of scope for 0.2.0).
+ * - Request bodies are not read at all (see #83, explicitly out of scope for 0.2.0).
  */
 internal object OpenApiParser {
     /**
@@ -121,6 +138,14 @@ internal object OpenApiParser {
     private val json = Json { ignoreUnknownKeys = true }
 
     /**
+     * The example name a synthesized response body (see [SchemaSynthesizer]) is stored under —
+     * `"default"`, matching this codebase's own convention for the primary/original response
+     * for a status code (see [com.worldline.devview.networkmock.core.model.MockResponse.exampleName]).
+     */
+    @Suppress("DocumentationOverPrivateProperty")
+    private const val SYNTHESIZED_EXAMPLE_NAME = "default"
+
+    /**
      * Extracts a display-only `v{n}` version tag from a `/v{n}/` path segment (see
      * [Operation.version]). Not currently configurable — see the KDoc there.
      */
@@ -186,34 +211,82 @@ internal object OpenApiParser {
                 }
 
                 val headers = resolveHeaders(raw = response.headers, document = document)
-
                 val examplesForCode = mutableMapOf<String, ResolvedResponse>()
                 for ((mediaType, media) in response.content) {
-                    for ((exampleName, rawExample) in media.examples) {
-                        val example = if (rawExample.ref != null) {
-                            resolveRef(
-                                ref = rawExample.ref,
-                                document = document,
-                                section = "examples",
-                                componentsOf = { it.components.examples },
-                                refOf = { it.ref }
-                            )
-                        } else {
-                            rawExample
-                        }
-                        val externalValue = example.externalValue ?: continue
-                        examplesForCode[exampleName] = ResolvedResponse(
-                            path = resolvePath(baseDir = baseDir, ref = externalValue),
-                            contentType = mediaType,
-                            headers = headers
-                        )
-                    }
+                    examplesForCode += resolveMediaTypeResponses(
+                        mediaType = mediaType,
+                        media = media,
+                        document = document,
+                        headers = headers
+                    )
                 }
                 if (examplesForCode.isNotEmpty()) {
                     result[statusCode] = examplesForCode
                 }
             }
             return result
+        }
+
+        /**
+         * Resolves every declared `examples.<name>` for [mediaType], falling back to one
+         * schema-synthesized body (see [SchemaSynthesizer], stored under [SYNTHESIZED_EXAMPLE_NAME])
+         * when [media] declares no examples of its own but does declare a `schema`.
+         */
+        @Suppress("DocumentationOverPrivateFunction")
+        private suspend fun resolveMediaTypeResponses(
+            mediaType: String,
+            media: MediaTypeObject,
+            document: OpenApiDocument,
+            headers: Map<String, String>
+        ): Map<String, ResolvedResponse> {
+            val resolved = mutableMapOf<String, ResolvedResponse>()
+            for ((exampleName, rawExample) in media.examples) {
+                val example = if (rawExample.ref != null) {
+                    resolveRef(
+                        ref = rawExample.ref,
+                        document = document,
+                        section = "examples",
+                        componentsOf = { it.components.examples },
+                        refOf = { it.ref }
+                    )
+                } else {
+                    rawExample
+                }
+                val externalValue = example.externalValue ?: continue
+                resolved[exampleName] = ResolvedResponse(
+                    content = ResponseContent.FromFile(
+                        path = resolvePath(baseDir = baseDir, ref = externalValue)
+                    ),
+                    contentType = mediaType,
+                    headers = headers
+                )
+            }
+
+            val schema = media.schema
+            if (resolved.isEmpty() && schema != null) {
+                val synthesized = SchemaSynthesizer.synthesize(
+                    schema = schema,
+                    resolveSchema = { resolveSchema(raw = it, document = document) }
+                )
+                resolved[SYNTHESIZED_EXAMPLE_NAME] = ResolvedResponse(
+                    content = ResponseContent.Synthesized(json = synthesized.toString()),
+                    contentType = mediaType,
+                    headers = headers
+                )
+            }
+            return resolved
+        }
+
+        /** Resolves a schema's own `$ref` (if any) via [resolveRef] against `components.schemas`. */
+        suspend fun resolveSchema(raw: SchemaObject, document: OpenApiDocument): SchemaObject {
+            val ref = raw.ref ?: return raw
+            return resolveRef(
+                ref = ref,
+                document = document,
+                section = "schemas",
+                componentsOf = { it.components.schemas },
+                refOf = { it.ref }
+            )
         }
 
         /** Resolves each declared header's `$ref` (if any) down to its literal `example` value. */

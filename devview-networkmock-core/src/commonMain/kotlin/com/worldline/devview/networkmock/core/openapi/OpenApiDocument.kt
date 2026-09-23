@@ -21,8 +21,11 @@ import kotlinx.serialization.Serializable
  * that kaml does not provide for `kotlinx.serialization.json.JsonElement`-shaped values.
  *
  * Only fields consumed by [OpenApiParser] are modeled. Everything else in a real spec
- * (`deprecated`, `tags`, `security`, request bodies, schemas, …) is silently ignored via
- * lenient/non-strict decoding — this parser mocks, it does not validate.
+ * (`deprecated`, `tags`, `security`, request bodies, …) is silently ignored via lenient/
+ * non-strict decoding — this parser mocks, it does not validate. [SchemaObject] is the one
+ * exception: a `content.<mediaType>.schema` is read to *synthesize* a response body when a
+ * spec declares no `examples` for a status code (see [SchemaSynthesizer]) — still not
+ * validation, just a fallback so a schema-only response isn't unmockable.
  */
 @Serializable
 internal data class OpenApiDocument(
@@ -112,7 +115,10 @@ internal data class HeaderObject(
 )
 
 @Serializable
-internal data class MediaTypeObject(val examples: Map<String, ExampleObject> = emptyMap())
+internal data class MediaTypeObject(
+    val examples: Map<String, ExampleObject> = emptyMap(),
+    val schema: SchemaObject? = null
+)
 
 /**
  * A named response example, or a `$ref` to one under `components.examples`.
@@ -128,12 +134,65 @@ internal data class ExampleObject(
     val externalValue: String? = null
 )
 
+/**
+ * A JSON Schema (OpenAPI's constrained subset of it) declaration, or a `$ref` to one under
+ * `components.schemas`. Read only to synthesize a placeholder response body when a
+ * `content.<mediaType>` declares a [schema] but no `examples` — see [SchemaSynthesizer].
+ *
+ * Deliberately not a full JSON Schema model: no `required`, `additionalProperties`,
+ * `minimum`/`maximum`, string patterns, etc. — anything that would matter for *validation*
+ * rather than *synthesizing one plausible value*.
+ *
+ * @property type The schema's declared type (`"string"`, `"integer"`, `"number"`, `"boolean"`,
+ *   `"object"`, or `"array"`). May be absent when [properties] or [items] alone implies it.
+ * @property enum If non-empty, [SchemaSynthesizer] uses the first declared value verbatim
+ *   instead of a generic placeholder for [type] `"string"`.
+ * @property properties For `type: object` (or when present at all, regardless of [type]):
+ *   each property's own schema, synthesized recursively.
+ * @property items For `type: array` (or when present at all, regardless of [type]): the
+ *   schema of a single array element — [SchemaSynthesizer] produces a one-element array.
+ * @property nullable Read but not acted on: [SchemaSynthesizer] always synthesizes a real
+ *   value, even for a nullable schema — this library mocks, it does not test null-handling.
+ * @property format Read but not currently used by [SchemaSynthesizer] — reserved for a future
+ *   format-aware placeholder (e.g. `"date-time"`, `"uuid"`).
+ * @property allOf Member schemas merged into one effective object schema — see
+ *   [SchemaSynthesizer] for the conflicting-property-definition error case.
+ * @property oneOf Alternative schemas; [SchemaSynthesizer] synthesizes the first declared
+ *   variant regardless of [discriminator] (see [DiscriminatorObject]'s KDoc for why).
+ * @property discriminator Parsed but not currently used to select a `oneOf` variant — there is
+ *   no concrete request/response data at spec-parse time to disambiguate against.
+ */
+@Serializable
+internal data class SchemaObject(
+    @SerialName("\$ref") val ref: String? = null,
+    val type: String? = null,
+    val enum: List<String>? = null,
+    val properties: Map<String, SchemaObject>? = null,
+    val items: SchemaObject? = null,
+    val nullable: Boolean? = null,
+    val format: String? = null,
+    val allOf: List<SchemaObject>? = null,
+    val oneOf: List<SchemaObject>? = null,
+    val discriminator: DiscriminatorObject? = null
+)
+
+/**
+ * A `oneOf` discriminator declaration — identifies which property carries the type tag, and
+ * optionally maps its values to explicit `components.schemas` names. See [SchemaObject.discriminator].
+ */
+@Serializable
+internal data class DiscriminatorObject(
+    val propertyName: String = "",
+    val mapping: Map<String, String>? = null
+)
+
 @Serializable
 internal data class ComponentsObject(
     val parameters: Map<String, ParameterObject> = emptyMap(),
     val responses: Map<String, ResponseObject> = emptyMap(),
     val examples: Map<String, ExampleObject> = emptyMap(),
-    val headers: Map<String, HeaderObject> = emptyMap()
+    val headers: Map<String, HeaderObject> = emptyMap(),
+    val schemas: Map<String, SchemaObject> = emptyMap()
 )
 
 /**

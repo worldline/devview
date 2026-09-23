@@ -24,6 +24,11 @@ import kotlinx.serialization.Serializable
  * @property headers Response headers declared on `responses.<code>.headers` in the spec
  *   (name to literal `example` value). Does not include `Content-Type`, which is carried
  *   separately by [contentType]. Empty if the spec declares none.
+ * @property isSynthesized Whether [content] was generated from a declared `schema` (see
+ *   `com.worldline.devview.networkmock.core.openapi.SchemaSynthesizer`) rather than authored by
+ *   the spec as an `examples.<name>.externalValue` file. `false` for every response variant
+ *   sourced the normal way — this only ever flips to `true` for a status code that declared a
+ *   `schema` but no `examples` of its own.
  * @see com.worldline.devview.networkmock.core.repository.MockConfigRepository
  */
 @Immutable
@@ -34,7 +39,8 @@ public data class MockResponse(
     val displayName: String,
     val content: String,
     val contentType: String = "application/json",
-    val headers: Map<String, String> = emptyMap()
+    val headers: Map<String, String> = emptyMap(),
+    val isSynthesized: Boolean = false
 ) {
     public companion object {
         /**
@@ -52,6 +58,8 @@ public data class MockResponse(
          * @param content The raw response body
          * @param contentType The response's declared media type. Defaults to `"application/json"`.
          * @param headers Response headers declared on `responses.<code>.headers`. Defaults to none.
+         * @param isSynthesized Whether [content] was schema-synthesized rather than author-provided.
+         *   Defaults to `false`.
          * @param statusTextProvider Optional lambda that maps a status code to its display
          *   text. Defaults to the built-in [getStatusText] mapping.
          * @return A [MockResponse] with a generated [MockResponse.displayName]
@@ -62,6 +70,7 @@ public data class MockResponse(
             content: String,
             contentType: String = "application/json",
             headers: Map<String, String> = emptyMap(),
+            isSynthesized: Boolean = false,
             statusTextProvider: (Int) -> String = ::getStatusText
         ): MockResponse = MockResponse(
             statusCode = statusCode,
@@ -73,7 +82,8 @@ public data class MockResponse(
             ),
             content = content,
             contentType = contentType,
-            headers = headers
+            headers = headers,
+            isSynthesized = isSynthesized
         )
 
         @Suppress("DocumentationOverPrivateFunction")

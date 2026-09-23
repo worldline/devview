@@ -8,6 +8,7 @@ import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.openapi.OpenApiParser
 import com.worldline.devview.networkmock.core.openapi.ResolvedResponse
+import com.worldline.devview.networkmock.core.openapi.ResponseContent
 import kotlinx.serialization.SerializationException
 
 private val logger = Logger.withTag(tag = "DevViewNetworkMock")
@@ -216,13 +217,17 @@ public class MockConfigRepository(
         statusCode: Int,
         exampleName: String
     ): MockResponse? = try {
-        val content = resourceLoader.load(path = resolved.path).decodeToString()
+        val content = when (val source = resolved.content) {
+            is ResponseContent.FromFile -> resourceLoader.load(path = source.path).decodeToString()
+            is ResponseContent.Synthesized -> source.json
+        }
         MockResponse.create(
             statusCode = statusCode,
             exampleName = exampleName,
             content = content,
             contentType = resolved.contentType,
-            headers = resolved.headers
+            headers = resolved.headers,
+            isSynthesized = resolved.content is ResponseContent.Synthesized
         )
     } catch (@Suppress("SwallowedException") e: IllegalStateException) {
         null
