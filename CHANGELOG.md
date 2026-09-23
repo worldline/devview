@@ -58,6 +58,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`devview-networkmock-ktor`, #89)
 
 ### Fixed
+- NetworkMock: `OpenApiParser`'s `$ref` resolution now disambiguates by the full
+  `components.<section>` a fragment names, not just its trailing name — a `$ref` whose fragment
+  points at an unexpected section (e.g. `components/parameters/Foo` where a `components/responses`
+  entry was expected) is rejected with a clear error instead of being silently resolved against
+  whatever section the call site happened to expect, so a same-named entry in a different section
+  can never be conflated with the one actually referenced. `$ref` chains — an entry that itself
+  declares another `$ref` — are now followed until a non-ref entry is reached (previously only one
+  level deep), guarded against cycles: a circular `$ref` chain now fails with a clear error instead
+  of hanging. (`devview-networkmock-core`)
 - NetworkMock: replaced ~35 unconditional `println` calls in `MockConfigRepository` and
   `NetworkMockPlugin` with gated [Kermit](https://github.com/touchlab/Kermit) logging
   (tag `DevViewNetworkMock`), consolidating the plugin's multi-line per-request trace into one
