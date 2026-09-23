@@ -3,6 +3,7 @@ package com.worldline.devview.networkmock
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,7 +25,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -194,6 +198,12 @@ private fun ContentState(
     // Keyed by ApiSpec.id so each tab keeps its own selection independently of the others.
     val selectedVersions = remember { mutableStateMapOf<String, String>() }
     val selectedMethods = remember { mutableStateMapOf<String, Set<HttpMethod>>() }
+    val selectedTags = remember { mutableStateMapOf<String, Set<String>>() }
+
+    // Sort is also a per-spec, client-side-only concern (see `OperationSort`) — deliberately
+    // not in NetworkMockViewModel, same reasoning as the filters above.
+    val selectedSort = remember { mutableStateMapOf<String, OperationSort>() }
+    var sortMenuExpanded by remember { mutableStateOf(value = false) }
 
     // Not keyed by spec — mocked-ness is a question about everything, not the current tab,
     // so unlike version/method the selection persists across tab switches.
@@ -238,6 +248,19 @@ private fun ContentState(
         distinctMethods.sortedBy { method ->
             HttpMethod.DefaultMethods.indexOf(element = method).takeIf { it >= 0 } ?: Int.MAX_VALUE
         }
+    }
+    val availableTags = remember(key1 = currentSpecOperations) {
+        currentSpecOperations
+            .orEmpty()
+            .asSequence()
+            .flatMap { it.descriptor.config.tags }
+            .distinct()
+            .sorted()
+            .toList()
+    }
+    // "Tag" only makes sense as a sort key when the current spec actually declares tags.
+    val sortOptions = remember(key1 = availableTags) {
+        OperationSort.entries.filter { it != OperationSort.TAG || availableTags.isNotEmpty() }
     }
 
     Scaffold(
@@ -355,6 +378,38 @@ private fun ContentState(
                                     }
                                 }
                             }
+                            if (currentSpecId != null && availableTags.isNotEmpty()) {
+                                val activeTags = selectedTags[currentSpecId].orEmpty()
+                                HorizontalDivider()
+                                LazyRow(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .testTag(tag = "tag_filter_row_$currentSpecId"),
+                                    horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
+                                    contentPadding = PaddingValues(
+                                        horizontal = 16.dp,
+                                        vertical = 8.dp
+                                    )
+                                ) {
+                                    items(items = availableTags) { tag ->
+                                        val selected = tag in activeTags
+                                        FilterChip(
+                                            modifier = Modifier.testTag(
+                                                tag = "tag_filter_${currentSpecId}_$tag"
+                                            ),
+                                            selected = selected,
+                                            onClick = {
+                                                selectedTags[currentSpecId] = if (selected) {
+                                                    activeTags - tag
+                                                } else {
+                                                    activeTags + tag
+                                                }
+                                            },
+                                            label = { Text(text = tag) }
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                     HorizontalDivider()
@@ -415,14 +470,69 @@ private fun ContentState(
             modifier = Modifier.fillMaxSize()
         ) {
             Surface {
-                GlobalMockToggle(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    enabled = uiState.globalMockingEnabled,
-                    mockedCount = mockedOperations,
-                    totalCount = totalOperations,
-                    onToggle = onGlobalToggle
-                )
+                Column {
+                    // Sort control: a plain trailing-aligned row local to this screen's own
+                    // content, not the shared DevView.kt TopAppBar (its per-destination
+                    // `action(icon) { onClick }` only supports a single-tap icon, with no slot
+                    // for an anchored multi-item DropdownMenu) and not a second nested
+                    // Scaffold `topBar` (would duplicate Material app-bar chrome under the
+                    // global one and need its own inset bookkeeping). Keeps sort state local to
+                    // `ContentState`, exactly like every other filter here.
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        val currentSort = selectedSort[currentSpecId] ?: OperationSort.SPEC_ORDER
+                        Box {
+                            IconButton(
+                                modifier = Modifier.testTag(tag = "sort_menu_button"),
+                                onClick = { sortMenuExpanded = true }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.MoreVert,
+                                    contentDescription = "Sort operations"
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = sortMenuExpanded,
+                                onDismissRequest = { sortMenuExpanded = false }
+                            ) {
+                                sortOptions.forEach { option ->
+                                    DropdownMenuItem(
+                                        modifier = Modifier.testTag(
+                                            tag = "sort_menu_item_${option.name}"
+                                        ),
+                                        text = { Text(text = option.label) },
+                                        trailingIcon = {
+                                            if (option == currentSort) {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.Done,
+                                                    contentDescription = null
+                                                )
+                                            }
+                                        },
+                                        onClick = {
+                                            currentSpecId?.let { specId ->
+                                                selectedSort[specId] = option
+                                            }
+                                            sortMenuExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    GlobalMockToggle(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        enabled = uiState.globalMockingEnabled,
+                        mockedCount = mockedOperations,
+                        totalCount = totalOperations,
+                        onToggle = onGlobalToggle
+                    )
+                }
             }
             HorizontalDivider()
 
@@ -452,21 +562,27 @@ private fun ContentState(
 
                 val selectedVersion = selectedVersions[spec.specId]
                 val methodFilter = selectedMethods[spec.specId].orEmpty()
+                val tagFilter = selectedTags[spec.specId].orEmpty()
+                val sortOption = selectedSort[spec.specId] ?: OperationSort.SPEC_ORDER
                 val filteredOperations = remember(
                     spec.operations,
                     searchQuery,
                     selectedVersion,
                     methodFilter,
-                    selectedMockStates
+                    tagFilter,
+                    selectedMockStates,
+                    sortOption
                 ) {
-                    spec.operations.filter {
-                        it.matches(
-                            query = searchQuery,
-                            version = selectedVersion,
-                            methods = methodFilter,
-                            mockStates = selectedMockStates
-                        )
-                    }
+                    spec.operations
+                        .filter {
+                            it.matches(
+                                query = searchQuery,
+                                version = selectedVersion,
+                                methods = methodFilter,
+                                tags = tagFilter,
+                                mockStates = selectedMockStates
+                            )
+                        }.sortedByOption(sort = sortOption)
                 }
 
                 LazyColumn(
@@ -520,13 +636,14 @@ private fun ContentState(
 
 /**
  * Whether this operation's name, path, or operationId contains [query], and matches
- * [version], [methods], and [mockStates].
+ * [version], [methods], [tags], and [mockStates].
  */
 @Suppress("DocumentationOverPrivateFunction")
 private fun OperationUiModel.matches(
     query: String,
     version: String?,
     methods: Set<HttpMethod>,
+    tags: Set<String>,
     mockStates: Set<MockStateFilter>
 ): Boolean {
     val config = descriptor.config
@@ -536,6 +653,7 @@ private fun OperationUiModel.matches(
         config.operationId.contains(other = query, ignoreCase = true)
     val matchesVersion = version == null || config.version == version
     val matchesMethod = methods.isEmpty() || config.method in methods
+    val matchesTags = tags.isEmpty() || config.tags.any { it in tags }
     val matchesMockState = mockStates.isEmpty() || when (currentState) {
         // Failure counts as "Mocked" for this filter — like Mock, it's a deliberately
         // configured non-default state, distinct only from plain pass-through.
@@ -544,7 +662,7 @@ private fun OperationUiModel.matches(
         is OperationMockState.Failure -> MockStateFilter.MOCKED in mockStates
         OperationMockState.Network -> MockStateFilter.NETWORK in mockStates
     }
-    return matchesQuery && matchesVersion && matchesMethod && matchesMockState
+    return matchesQuery && matchesVersion && matchesMethod && matchesTags && matchesMockState
 }
 
 /** Filter dimension over whether an operation is currently mocked or passing through to the network. */
@@ -552,6 +670,47 @@ private enum class MockStateFilter(val label: String) {
     MOCKED(label = "Mocked"),
     NETWORK(label = "Network")
 }
+
+/**
+ * Client-side sort order for the operation list — a pure display concern, exactly like search
+ * and the filter chips above: state lives in [ContentState]'s own `remember`/`mutableStateMapOf`,
+ * never in [NetworkMockViewModel]. `internal` rather than `private`, specifically so
+ * [sortedByOption] can be unit-tested directly (see `NetworkMockScreenSortTest.kt`) without a
+ * full Compose UI test to verify list ordering.
+ */
+internal enum class OperationSort(val label: String) {
+    /**
+     * Whatever order [com.worldline.devview.networkmock.core.openapi.OpenApiParser] produced —
+     * the default, a no-op.
+     */
+    SPEC_ORDER(label = "Default"),
+
+    /** Alphabetical by [com.worldline.devview.networkmock.core.model.Operation.path]. */
+    PATH(label = "Path (A-Z)"),
+
+    /** Uses [HttpMethod.DefaultMethods]' canonical order — same as the method filter chips. */
+    METHOD(label = "Method"),
+
+    /** Sorts by an operation's first declared tag; untagged operations sort first. */
+    TAG(label = "Tag")
+}
+
+/** Applies [sort] to [this] — see [OperationSort] for what each key does. */
+internal fun List<OperationUiModel>.sortedByOption(sort: OperationSort): List<OperationUiModel> =
+    when (sort) {
+        OperationSort.SPEC_ORDER -> this
+        OperationSort.PATH -> sortedBy { it.descriptor.config.path }
+        OperationSort.METHOD -> sortedBy { operation ->
+            HttpMethod.DefaultMethods
+                .indexOf(element = operation.descriptor.config.method)
+                .takeIf { it >= 0 } ?: Int.MAX_VALUE
+        }
+        OperationSort.TAG -> sortedBy {
+            it.descriptor.config.tags
+                .firstOrNull()
+                .orEmpty()
+        }
+    }
 
 @Preview(locale = "en")
 @Composable

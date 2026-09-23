@@ -52,6 +52,7 @@ Key concepts:
 - **`requestBody.content.<mediaType>.schema`** → optionally disambiguates operations that collide on path/method/query — see [Request body matching](#request-body-matching) below.
 - **`x-devview.delayMs`** → simulated response delay, at the document root (spec-wide default) and/or per operation (overrides the default). See [x-devview extension](#x-devview-extension) below.
 - **`{param}` placeholders**: Path segments like `{userId}` match any value during request matching.
+- **`tags`** → display-only labels, read into `Operation.tags` — see [Tags](#tags) below.
 
 ## Version Tags
 
@@ -63,6 +64,25 @@ This is purely a UI label: request matching is unaffected, so `/api/v1/x` and `/
 remain two distinct operations matched only by path, method, and query params (see
 [Request Matching](#request-matching) below). The extraction pattern is not currently
 configurable.
+
+## Tags
+
+`Operation.tags` is read verbatim from the operation's OpenAPI `tags` array (`emptyList()` if
+absent) — purely a display/filter label, like [`version`](#version-tags): it has no effect on
+request matching. It drives the NetworkMock UI's tag filter chips and its "Tag" sort option —
+see [NetworkMock UI](networkmock-ui.md).
+
+```json
+"paths": {
+  "/api/users": {
+    "get": {
+      "operationId": "listUsers",
+      "tags": ["Users", "Admin"],
+      "responses": { "...": "..." }
+    }
+  }
+}
+```
 
 ## Request Matching
 

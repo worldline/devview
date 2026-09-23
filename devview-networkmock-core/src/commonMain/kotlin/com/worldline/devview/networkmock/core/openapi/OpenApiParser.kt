@@ -66,6 +66,9 @@ internal data class ResolvedResponse(
  *   null` (matches any body), same as an operation declaring no `requestBody` at all. Only one
  *   media type is read per `requestBody` (`application/json` if declared, otherwise whichever
  *   is declared first).
+ * - `tags` (see #116) is read verbatim into [Operation.tags], purely a display/filter label for
+ *   `devview-networkmock`'s UI (tag filter chips, "Tag" sort option) — it has no effect on
+ *   request matching, same as [Operation.version].
  */
 internal object OpenApiParser {
     /**
@@ -120,7 +123,8 @@ internal object OpenApiParser {
                     requestBodyMatch = context.buildRequestBodyMatch(
                         raw = rawOperation.requestBody,
                         document = document
-                    )
+                    ),
+                    tags = rawOperation.tags
                 )
 
                 responseIndex[operationId] = context.resolveResponseIndex(

@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- NetworkMock: operations can now declare OpenAPI `tags`, read verbatim into a new
+  `Operation.tags: List<String>` (empty by default, display-only — no effect on request
+  matching, same as `Operation.version`). The operation list gains a fourth per-tab filter chip
+  row (`tag_filter_row`, multi-select, hidden when the current spec has no tagged operations)
+  and a sort control — an overflow menu above the global mock toggle with spec order (default),
+  path (A-Z), method (`HttpMethod.DefaultMethods` order), and tag (an operation's first declared
+  tag; "Tag" itself is hidden from the menu when the current spec has no tags). Sort selection
+  is per-tab, plain client-side state in `NetworkMockScreen`'s `ContentState`, not the
+  ViewModel — same convention as the existing filters. See `docs/modules/networkmock-core.md`'s
+  new "Tags" section and `docs/modules/networkmock-ui.md`.
+  (`devview-networkmock-core`, `devview-networkmock`, #116, #117)
+
 - NetworkMock: an operation can now declare narrow request-body match constraints — required
   top-level fields and/or a discriminator field's value, read from its
   `requestBody.content.<mediaType>.schema` — to disambiguate operations that would otherwise

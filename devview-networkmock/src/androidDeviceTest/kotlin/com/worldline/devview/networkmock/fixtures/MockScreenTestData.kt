@@ -16,8 +16,17 @@ internal object MockScreenTestData {
      * @param versioned Whether this spec's `getUser`/`createUser` operations carry a `/v{n}/`
      * path segment. `example` is versioned, `catalog` is not — covering both the
      * chip/filter-row-present and filter-row-absent cases.
+     * @param tagged Whether this spec's operations carry tags — `getUser`="Users",
+     * `createUser`="Admin", `health`="Public" (one distinct tag each, so a single tag chip
+     * narrows to exactly one operation). `example` is tagged, `catalog` is not — same
+     * present/absent coverage as [versioned].
      */
-    private fun spec(specId: String, name: String, versioned: Boolean): ApiSpecUiModel = ApiSpecUiModel(
+    private fun spec(
+        specId: String,
+        name: String,
+        versioned: Boolean,
+        tagged: Boolean
+    ): ApiSpecUiModel = ApiSpecUiModel(
         specId = specId,
         name = name,
         operations = persistentListOf(
@@ -29,7 +38,8 @@ internal object MockScreenTestData {
                         name = "Get User",
                         path = if (versioned) "/api/v1/users/{userId}" else "/api/users/{userId}",
                         method = HttpMethod.Get,
-                        version = if (versioned) "v1" else null
+                        version = if (versioned) "v1" else null,
+                        tags = if (tagged) listOf("Users") else emptyList()
                     )
                 ),
                 currentState = OperationMockState.Network
@@ -42,7 +52,8 @@ internal object MockScreenTestData {
                         name = "Create User",
                         path = if (versioned) "/api/v2/users" else "/api/users",
                         method = HttpMethod.Post,
-                        version = if (versioned) "v2" else null
+                        version = if (versioned) "v2" else null,
+                        tags = if (tagged) listOf("Admin") else emptyList()
                     )
                 ),
                 currentState = OperationMockState.Mock(statusCode = 201, exampleName = "default")
@@ -54,7 +65,8 @@ internal object MockScreenTestData {
                         operationId = "health",
                         name = "Health",
                         path = "/health",
-                        method = HttpMethod.Get
+                        method = HttpMethod.Get,
+                        tags = if (tagged) listOf("Public") else emptyList()
                     )
                 ),
                 currentState = OperationMockState.Network
@@ -66,8 +78,8 @@ internal object MockScreenTestData {
         NetworkMockUiState.Content(
             globalMockingEnabled = globalMockingEnabled,
             specs = persistentListOf(
-                spec(specId = "example", name = "Example", versioned = true),
-                spec(specId = "catalog", name = "Catalog", versioned = false)
+                spec(specId = "example", name = "Example", versioned = true, tagged = true),
+                spec(specId = "catalog", name = "Catalog", versioned = false, tagged = false)
             )
         )
 }

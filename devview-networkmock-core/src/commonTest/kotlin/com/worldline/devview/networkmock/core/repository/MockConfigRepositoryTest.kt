@@ -661,6 +661,38 @@ class MockConfigRepositoryTest {
     }
 
     @Test
+    fun `operation tags are parsed from the OpenAPI tags array`() = runTest {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/users": {
+                  "get": {
+                    "operationId": "listUsers",
+                    "tags": ["Users", "Admin"],
+                    "responses": {}
+                  },
+                  "post": {
+                    "operationId": "createUser",
+                    "responses": {}
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val repository = createRepository(resources = mapOf(SPEC_PATH to spec))
+
+        val config = repository.loadConfiguration().getOrThrow()
+        val operations = config.specs[0].operations.associateBy { it.operationId }
+
+        operations.getValue("listUsers").tags shouldContainExactly listOf("Users", "Admin")
+        // No tags declared at all - defaults to an empty list, not null, same as queryParameters
+        // defaulting to null rather than every operation carrying a placeholder.
+        operations.getValue("createUser").tags shouldBe emptyList()
+    }
+
+    @Test
     fun `local dollar-ref to a components response resolves correctly`() = runTest {
         val spec = $$"""
             {
@@ -1017,7 +1049,7 @@ class MockConfigRepositoryTest {
         // boolean (a different concept from schema.required, and not modeled at all - must be
         // silently ignored), three status codes all $ref-ing the *same* response schema, a
         // folded (unquoted, line-wrapped) summary string, a double-quoted description with a
-        // backslash line continuation, and a tags block sequence (unmodeled until #116/PR 10).
+        // backslash line continuation, and a tags block sequence.
         val yamlSpec = $$"""
             info:
               title: Example
@@ -1091,6 +1123,7 @@ class MockConfigRepositoryTest {
         operation.name shouldBe "Init mobile authentication activation workflow. It will reset " +
             "any previously activated mobile authentication for this user and device."
         operation.requestBodyMatch?.requiredFields shouldContainExactly listOf("deviceId")
+        operation.tags shouldContainExactly listOf("Authentication V1", "Authentication")
 
         val responses = repository.discoverResponseFiles(
             key = OperationKey(specId = "example", operationId = "mobileLogin")
