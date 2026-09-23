@@ -288,9 +288,7 @@ private fun ContentState(
             .fillMaxSize()
             .imePadding(),
         bottomBar = {
-            Surface(
-                modifier = Modifier.padding(bottom = bottomPadding)
-            ) {
+            Surface {
                 Column {
                     AnimatedVisibility(visible = filtersExpanded) {
                         Column {
@@ -445,6 +443,7 @@ private fun ContentState(
                             modifier = Modifier
                                 .weight(weight = 1f)
                                 .padding(vertical = 8.dp)
+                                .padding(bottom = bottomPadding)
                                 .testTag(tag = "networkmock_search_field"),
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
@@ -472,7 +471,9 @@ private fun ContentState(
                         )
                         VerticalDivider(modifier = Modifier.fillMaxHeight())
                         IconButton(
-                            modifier = Modifier.testTag(tag = "expand_filter_button"),
+                            modifier = Modifier
+                                .padding(bottom = bottomPadding)
+                                .testTag(tag = "expand_filter_button"),
                             onClick = { filtersExpanded = !filtersExpanded }
                         ) {
                             Icon(

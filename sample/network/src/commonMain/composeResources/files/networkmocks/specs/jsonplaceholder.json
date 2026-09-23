@@ -8,6 +8,7 @@
       "get": {
         "operationId": "getUser",
         "summary": "Get User by ID",
+        "tags": ["Users"],
         "x-devview": { "delayMs": 500 },
         "responses": {
           "200": {
@@ -39,12 +40,49 @@
             }
           }
         }
+      },
+      "put": {
+        "operationId": "updateUser",
+        "summary": "Update User",
+        "tags": ["Users"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "name": { "type": "string" },
+                    "username": { "type": "string" },
+                    "email": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteUser",
+        "summary": "Delete User",
+        "tags": ["Users"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" }
+              }
+            }
+          }
+        }
       }
     },
     "/users": {
       "get": {
         "operationId": "listUsers",
         "summary": "List All Users",
+        "tags": ["Users"],
         "parameters": [
           { "name": "type", "in": "query", "example": "user" }
         ],
@@ -60,12 +98,60 @@
             }
           }
         }
+      },
+      "post": {
+        "operationId": "createUser",
+        "summary": "Create User",
+        "tags": ["Users"],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "name": { "type": "string" },
+                    "username": { "type": "string" },
+                    "email": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/posts": {
+      "get": {
+        "operationId": "listPosts",
+        "summary": "List All Posts",
+        "tags": ["Posts"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "userId": { "type": "integer" },
+                      "title": { "type": "string" },
+                      "body": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "operationId": "createPost",
         "summary": "Create Post",
+        "tags": ["Posts"],
         "responses": {
           "201": {
             "content": {
@@ -101,6 +187,7 @@
       "get": {
         "operationId": "getPost",
         "summary": "Get Post by ID",
+        "tags": ["Posts"],
         "responses": {
           "200": {
             "content": {
@@ -116,6 +203,392 @@
               "application/json": {
                 "examples": {
                   "default": { "externalValue": "/files/networkmocks/responses/jsonplaceholder/getPost/getPost-404.json" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updatePost",
+        "summary": "Update Post",
+        "tags": ["Posts"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "userId": { "type": "integer" },
+                    "title": { "type": "string" },
+                    "body": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deletePost",
+        "summary": "Delete Post",
+        "tags": ["Posts"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/{postId}/comments": {
+      "get": {
+        "operationId": "getPostComments",
+        "summary": "Get Comments for Post",
+        "tags": ["Comments", "Posts"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "postId": { "type": "integer" },
+                      "name": { "type": "string" },
+                      "email": { "type": "string" },
+                      "body": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/comments": {
+      "get": {
+        "operationId": "listComments",
+        "summary": "List All Comments",
+        "tags": ["Comments"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "postId": { "type": "integer" },
+                      "name": { "type": "string" },
+                      "email": { "type": "string" },
+                      "body": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createComment",
+        "summary": "Create Comment",
+        "tags": ["Comments"],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "postId": { "type": "integer" },
+                    "name": { "type": "string" },
+                    "email": { "type": "string" },
+                    "body": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/comments/{commentId}": {
+      "get": {
+        "operationId": "getComment",
+        "summary": "Get Comment by ID",
+        "tags": ["Comments"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "postId": { "type": "integer" },
+                    "name": { "type": "string" },
+                    "email": { "type": "string" },
+                    "body": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/albums": {
+      "get": {
+        "operationId": "listAlbums",
+        "summary": "List All Albums",
+        "tags": ["Albums"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "userId": { "type": "integer" },
+                      "title": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createAlbum",
+        "summary": "Create Album",
+        "tags": ["Albums"],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "userId": { "type": "integer" },
+                    "title": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/albums/{albumId}": {
+      "get": {
+        "operationId": "getAlbum",
+        "summary": "Get Album by ID",
+        "tags": ["Albums"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "userId": { "type": "integer" },
+                    "title": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/albums/{albumId}/photos": {
+      "get": {
+        "operationId": "getAlbumPhotos",
+        "summary": "Get Photos for Album",
+        "tags": ["Photos", "Albums"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "albumId": { "type": "integer" },
+                      "title": { "type": "string" },
+                      "url": { "type": "string" },
+                      "thumbnailUrl": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/photos": {
+      "get": {
+        "operationId": "listPhotos",
+        "summary": "List All Photos",
+        "tags": ["Photos"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "albumId": { "type": "integer" },
+                      "title": { "type": "string" },
+                      "url": { "type": "string" },
+                      "thumbnailUrl": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/photos/{photoId}": {
+      "get": {
+        "operationId": "getPhoto",
+        "summary": "Get Photo by ID",
+        "tags": ["Photos"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "albumId": { "type": "integer" },
+                    "title": { "type": "string" },
+                    "url": { "type": "string" },
+                    "thumbnailUrl": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/todos": {
+      "get": {
+        "operationId": "listTodos",
+        "summary": "List All Todos",
+        "tags": ["Todos"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "userId": { "type": "integer" },
+                      "title": { "type": "string" },
+                      "completed": { "type": "boolean" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createTodo",
+        "summary": "Create Todo",
+        "tags": ["Todos"],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "userId": { "type": "integer" },
+                    "title": { "type": "string" },
+                    "completed": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/todos/{todoId}": {
+      "get": {
+        "operationId": "getTodo",
+        "summary": "Get Todo by ID",
+        "tags": ["Todos"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "userId": { "type": "integer" },
+                    "title": { "type": "string" },
+                    "completed": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateTodo",
+        "summary": "Update Todo",
+        "tags": ["Todos"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "userId": { "type": "integer" },
+                    "title": { "type": "string" },
+                    "completed": { "type": "boolean" }
+                  }
                 }
               }
             }

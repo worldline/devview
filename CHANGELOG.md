@@ -118,6 +118,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or silence this via `Logger.setMinSeverity(...)`; `devview-consolelogger`, if installed,
   captures it automatically. Detekt's `ForbiddenMethodCall` rule (`println`/`print`) is now
   enforced repo-wide. (`devview-networkmock-core`, `devview-networkmock-ktor`, #86)
+- NetworkMock: the bottom bar's search field and expand-filter button were padded as a whole
+  `Surface`, pushing every filter chip row above them down by the system navigation bar inset
+  as well — the inset now only pads the search field and button themselves, matching
+  `AnalyticsScreen`'s existing (correct) layout. (`devview-networkmock`)
 
 ## [0.2.0-alpha03] - 2026-09-11
 
