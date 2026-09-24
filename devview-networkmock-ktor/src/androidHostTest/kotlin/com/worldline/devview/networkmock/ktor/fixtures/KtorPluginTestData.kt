@@ -41,6 +41,23 @@ internal object KtorPluginTestData {
               }
             },
             "/api/users": {
+              "get": {
+                "operationId": "listUsers",
+                "parameters": [
+                  { "name": "type", "in": "query", "example": "user" }
+                ],
+                "responses": {
+                  "200": {
+                    "content": {
+                      "application/json": {
+                        "examples": {
+                          "default": { "externalValue": "/files/networkmocks/responses/listUsers-200.json" }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
               "post": {
                 "operationId": "createUser",
                 "responses": {
@@ -82,7 +99,8 @@ internal object KtorPluginTestData {
         "files/networkmocks/responses/getUser-200.json" to """{"id":1,"name":"Alice"}""",
         "files/networkmocks/responses/getUser-404.json" to """{"error":"not found"}""",
         "files/networkmocks/responses/createUser-201.json" to """{"id":2}""",
-        "files/networkmocks/responses/getProduct-200.json" to """{"id":10,"name":"Widget"}"""
+        "files/networkmocks/responses/getProduct-200.json" to """{"id":10,"name":"Widget"}""",
+        "files/networkmocks/responses/listUsers-200.json" to """[{"id":1,"name":"Alice"}]"""
     )
 
     /** Resource loader backed by the in-memory map above. */
