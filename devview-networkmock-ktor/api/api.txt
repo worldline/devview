@@ -1,11 +1,6 @@
 // Signature format: 4.0
 package com.worldline.devview.networkmock.ktor.plugin {
 
-  public final class MockHttpClientCall extends io.ktor.client.call.HttpClientCall {
-    ctor public MockHttpClientCall(io.ktor.client.HttpClient client);
-    ctor public MockHttpClientCall(io.ktor.client.HttpClient client, io.ktor.client.request.HttpRequestData mockRequestData, io.ktor.client.request.HttpResponseData mockResponseData);
-  }
-
   public final class NetworkMockConfig {
     ctor public NetworkMockConfig();
     method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.repository.MockConfigRepository? getMockRepository();
