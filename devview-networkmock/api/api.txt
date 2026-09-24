@@ -27,7 +27,7 @@ package com.worldline.devview.networkmock {
   }
 
   public final class NetworkMockScreenKt {
-    method @KotlinOnly @androidx.compose.runtime.Composable public static void NetworkMockScreen(kotlinx.coroutines.flow.SharedFlow<kotlin.Unit> resetToNetworkSharedFlow, kotlinx.coroutines.flow.SharedFlow<kotlin.Unit> reloadConfigSharedFlow, com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel viewModel, optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding);
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void NetworkMockScreen(kotlinx.coroutines.flow.SharedFlow<kotlin.Unit> resetToNetworkSharedFlow, kotlinx.coroutines.flow.SharedFlow<kotlin.Unit> reloadConfigSharedFlow, kotlinx.coroutines.flow.SharedFlow<java.lang.String> sortSharedFlow, com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel viewModel, optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding);
   }
 
 }

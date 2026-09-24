@@ -133,6 +133,42 @@ public class DestinationMetadataBuilder internal constructor() {
     }
 
     /**
+     * Adds a dropdown menu action to this destination's top app bar.
+     *
+     * Rendered as an [IconButton][androidx.compose.material3.IconButton] that, when tapped,
+     * expands a [DropdownMenu][androidx.compose.material3.DropdownMenu] listing the entries
+     * registered via [ModuleDestinationActionMenuBuilder.item] inside [block]. Tapping an entry
+     * invokes its callback and collapses the menu.
+     *
+     * Use this instead of [action] when a single icon needs to offer more than one discrete
+     * choice (e.g. "Sort by: Path / Method / Tag") rather than a single tap behaviour or a
+     * confirm/cancel dialog.
+     *
+     * ## Example
+     * ```kotlin
+     * menu(icon = Icons.AutoMirrored.Rounded.Sort) {
+     *     item(label = "Path") { onSortChanged.tryEmit(Sort.PATH) }
+     *     item(label = "Method") { onSortChanged.tryEmit(Sort.METHOD) }
+     * }
+     * ```
+     *
+     * @param icon The icon to display for this action button.
+     * @param block A [ModuleDestinationActionMenuBuilder] DSL block in which you register menu
+     *   entries via [ModuleDestinationActionMenuBuilder.item].
+     *
+     * @see ModuleDestinationActionMenuItem
+     * @see action
+     */
+    public fun menu(icon: ImageVector, block: ModuleDestinationActionMenuBuilder.() -> Unit) {
+        actions.add(
+            element = ModuleDestinationAction(
+                icon = icon,
+                menuItems = ModuleDestinationActionMenuBuilder().apply(block = block).build()
+            )
+        )
+    }
+
+    /**
      * Builds and returns the immutable list of registered [ModuleDestinationAction] items.
      *
      * Called internally by the [NavKey][androidx.navigation3.runtime.NavKey] extension functions

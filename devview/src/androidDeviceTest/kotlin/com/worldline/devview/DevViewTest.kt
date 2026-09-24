@@ -2,6 +2,8 @@ package com.worldline.devview
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -15,9 +17,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.printToLog
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Dp
 import androidx.navigation3.runtime.EntryProviderScope
@@ -31,15 +31,16 @@ import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
 import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
+import com.worldline.devview.core.withActions
 import com.worldline.devview.core.withTitle
 import kotlin.reflect.KClass
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import org.junit.Test
 
 class DevViewTest {
@@ -135,6 +136,35 @@ class DevViewTest {
             assertEquals(expected = 1, actual = hostBackCount)
         }
     }
+
+    @Test
+    fun devView_menu_action_opens_dropdown_and_invokes_selected_item() = runComposeUiTest {
+        var selectedLabel: String? = null
+
+        setContent {
+            DevView(
+                devViewIsOpen = true,
+                closeDevView = {},
+                modules = persistentListOf(MenuModule(onItemSelected = { selectedLabel = it }))
+            )
+        }
+
+        onNodeWithTag(testTag = "module_item_${MenuModule.MODULE_NAME}").performClick()
+
+        // The menu items are not part of the tree until the toolbar icon is tapped
+        onAllNodesWithText(text = "Path").assertCountEquals(0)
+
+        onNodeWithTag(testTag = "top_bar_action_0").performClick()
+
+        onNodeWithText(text = "Path").assertIsDisplayed()
+        onNodeWithText(text = "Method").assertIsDisplayed()
+
+        onNodeWithText(text = "Method").performClick()
+
+        // Selecting an item collapses the menu and invokes its callback exactly once
+        onAllNodesWithText(text = "Path").assertCountEquals(0)
+        runOnIdle { assertEquals(expected = "Method", actual = selectedLabel) }
+    }
 }
 
 @Serializable
@@ -159,3 +189,38 @@ private data object DevViewModule : Module {
         }
     }
 }
+
+@Serializable
+private data object MenuDestination : NavKey
+
+private class MenuModule(private val onItemSelected: (String) -> Unit) : Module {
+    override val moduleName: String = MODULE_NAME
+    override val section: Section = Section.NETWORK
+    override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> =
+        persistentMapOf(
+            MenuDestination.withActions {
+                menu(icon = Icons.AutoMirrored.Default.Sort) {
+                    item(label = "Path") { onItemSelected("Path") }
+                    item(label = "Method") { onItemSelected("Method") }
+                }
+            }
+        )
+    override val entryDestination: NavKey
+        get() = MenuDestination
+    override val registerSerializers: PolymorphicModuleBuilder<NavKey>.() -> Unit = {}
+
+    override fun EntryProviderScope<NavKey>.registerContent(
+        onNavigateBack: () -> Unit,
+        onNavigate: (NavKey) -> Unit,
+        bottomPadding: Dp
+    ) {
+        entry<MenuDestination> {
+            Box(modifier = Modifier.fillMaxSize())
+        }
+    }
+
+    companion object {
+        const val MODULE_NAME: String = "Menu Module"
+    }
+}
+

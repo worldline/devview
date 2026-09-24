@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- NetworkMock: operations can now declare OpenAPI `tags`, read verbatim into a new
+  `Operation.tags: List<String>` (empty by default, display-only — no effect on request
+  matching, same as `Operation.version`). The operation list gains a fourth per-tab filter chip
+  row (`tag_filter_row`, multi-select, hidden when the current spec has no tagged operations)
+  and a sort control — a new "Sort" toolbar dropdown, wired via the shared toolbar's new
+  `DestinationMetadataBuilder.menu` action (`NetworkMock` exposes a `sortSharedFlow`,
+  `NetworkMockScreen` collects it). Tapping it opens a menu with one entry per sort key: spec
+  order (default), path (A-Z), method (`HttpMethod.DefaultMethods` order), and tag (an
+  operation's first declared tag); picking an entry sets that sort directly. Sort
+  selection is per-tab, plain client-side state in `NetworkMockScreen`'s `ContentState`, not
+  the ViewModel — same convention as the existing filters. See
+  `docs/modules/networkmock-core.md`'s new "Tags" section and `docs/modules/networkmock-ui.md`.
+  (`devview`, `devview-networkmock-core`, `devview-networkmock`, #116, #117)
+- DevView: the shared top app bar's contextual actions can now be a dropdown menu of discrete
+  choices, not just a single-tap icon or a confirm/cancel popup. `ModuleDestinationAction` gains
+  a `menuItems: PersistentList<ModuleDestinationActionMenuItem>?` property (new public class);
+  `DestinationMetadataBuilder` gains a `menu(icon) { item(label) { ... } }` DSL alongside the
+  existing `action`. Precedence when both `action` and `menu` could apply: `menuItems` wins,
+  then `popup`, then the plain `action` lambda. (`devview`, #117)
+
 - NetworkMock: an operation can now declare narrow request-body match constraints — required
   top-level fields and/or a discriminator field's value, read from its
   `requestBody.content.<mediaType>.schema` — to disambiguate operations that would otherwise
@@ -98,6 +118,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or silence this via `Logger.setMinSeverity(...)`; `devview-consolelogger`, if installed,
   captures it automatically. Detekt's `ForbiddenMethodCall` rule (`println`/`print`) is now
   enforced repo-wide. (`devview-networkmock-core`, `devview-networkmock-ktor`, #86)
+- NetworkMock: the bottom bar's search field and expand-filter button were padded as a whole
+  `Surface`, pushing every filter chip row above them down by the system navigation bar inset
+  as well — the inset now only pads the search field and button themselves, matching
+  `AnalyticsScreen`'s existing (correct) layout. (`devview-networkmock`)
 
 ## [0.2.0-alpha03] - 2026-09-11
 
