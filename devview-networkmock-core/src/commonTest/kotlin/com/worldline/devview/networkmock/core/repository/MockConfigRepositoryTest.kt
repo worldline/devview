@@ -599,6 +599,89 @@ class MockConfigRepositoryTest {
         }
 
     @Test
+    fun `dollar-ref fragment not rooted at components is rejected even if a same-named entry exists`() =
+        runTest {
+            val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/users/{userId}": {
+                  "get": {
+                    "operationId": "getUser",
+                    "responses": {
+                      "200": { "${'$'}ref": "#/not-components/responses/UserOk" }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "responses": {
+                  "UserOk": {
+                    "content": {
+                      "application/json": {
+                        "examples": {
+                          "default": { "externalValue": "/responses/getUser-200.json" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """.trimIndent()
+            val repository = createRepository(
+                resources = mapOf(SPEC_PATH to spec, "responses/getUser-200.json" to """{"id":1}""")
+            )
+
+            val result = repository.loadConfiguration()
+
+            result.isFailure shouldBe true
+            result.exceptionOrNull()?.message.orEmpty() shouldContain "components"
+        }
+
+    @Test
+    fun `dollar-ref fragment missing the components prefix entirely is rejected`() = runTest {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/users/{userId}": {
+                  "get": {
+                    "operationId": "getUser",
+                    "responses": {
+                      "200": { "${'$'}ref": "#/responses/UserOk" }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "responses": {
+                  "UserOk": {
+                    "content": {
+                      "application/json": {
+                        "examples": {
+                          "default": { "externalValue": "/responses/getUser-200.json" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val repository = createRepository(
+            resources = mapOf(SPEC_PATH to spec, "responses/getUser-200.json" to """{"id":1}""")
+        )
+
+        val result = repository.loadConfiguration()
+
+        result.isFailure shouldBe true
+        result.exceptionOrNull()?.message.orEmpty() shouldContain "components"
+    }
+
+    @Test
     fun `local dollar-ref chain of two hops resolves to the final non-ref entry`() = runTest {
         val spec = """
             {

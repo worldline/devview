@@ -242,15 +242,16 @@ internal object OpenApiParser {
          * another file, following a chain of `$ref`s — an entry that itself declares a `$ref`
          * is resolved again — until a non-ref entry is reached.
          *
-         * [section] is the `components.<section>` key every hop's fragment must declare (e.g.
-         * `"responses"`); a fragment naming a different section (`#/components/schemas/Foo`
-         * when a `"responses"` entry was expected) is rejected, so a same-named entry in a
-         * different section is never silently conflated with the one actually referenced.
+         * Every fragment must be exactly `components/<section>/<name>`, where [section] is the
+         * `components.<section>` key (e.g. `"responses"`); a fragment with a different structure
+         * or naming an unexpected section is rejected, so a same-named entry in a different
+         * section is never silently conflated with the one actually referenced.
          * [componentsOf] selects the matching `components.<section>` map from a document, and
          * [refOf] extracts a resolved entry's own `$ref` (if any) so the chain can continue.
          *
-         * @throws IllegalStateException if a `$ref` cannot be resolved, names an unexpected
-         *   section, or the chain revisits a `(document, fragment)` pair already seen (a cycle).
+         * @throws IllegalStateException if a `$ref` cannot be resolved, has an invalid fragment
+         *   structure, names an unexpected section, or the chain revisits a `(document, fragment)`
+         *   pair already seen (a cycle).
          */
         @Suppress("DocumentationOverPrivateFunction")
         private suspend fun <T> resolveRef(
@@ -278,14 +279,15 @@ internal object OpenApiParser {
                 }
 
                 val segments = fragment.split("/")
-                val name = segments.lastOrNull()
-                    ?: error(
-                        message = "Unresolvable \$ref '$currentRef': fragment has no component name."
+                if (segments.size != 3 || segments[0] != "components") {
+                    error(
+                        message =
+                            "Unresolvable \$ref '$currentRef': expected a fragment of the form " +
+                                "'components/$section/<name>' but got '$fragment'."
                     )
-                val actualSection = segments.getOrNull(index = segments.size - 2)
-                    ?: error(
-                        message = "Unresolvable \$ref '$currentRef': fragment has no component section."
-                    )
+                }
+                val actualSection = segments[1]
+                val name = segments[2]
                 if (actualSection != section) {
                     error(
                         message = "Unresolvable \$ref '$currentRef': expected a '$section' entry " +
