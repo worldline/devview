@@ -3,9 +3,11 @@ package com.worldline.devview.networkmock.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Visibility
@@ -43,7 +45,9 @@ import com.worldline.devview.utils.preview.BooleanPreviewParameterProvider
 /**
  * A single selectable response variant row in the operation picker sheet.
  *
- * @param mockResponse The response variant this row represents
+ * @param mockResponse The response variant this row represents. A "Generated" badge is shown
+ *   when [MockResponse.isSynthesized] is `true` — see
+ *   `com.worldline.devview.networkmock.core.openapi.SchemaSynthesizer`.
  * @param onClick Called when the row itself is tapped — activates this response and closes the sheet
  * @param isMarkedForPreview Whether this response is currently marked for the preview/compare page
  * @param onToggleMarkedForPreview Called when the trailing preview toggle is tapped
@@ -67,6 +71,7 @@ internal fun MockItem(
         contentColor = contentColorForStatusCode(statusCode = mockResponse.statusCode),
         containerColor = containerColorForStatusCode(statusCode = mockResponse.statusCode),
         label = mockResponse.displayName,
+        isSynthesized = mockResponse.isSynthesized,
         selected = selected,
         onClick = onClick,
         isMarkedForPreview = isMarkedForPreview,
@@ -135,7 +140,8 @@ private fun MockItemContent(
     isMarkedForPreview: Boolean,
     onToggleMarkedForPreview: (() -> Unit)?,
     previewToggleTestTag: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isSynthesized: Boolean = false
 ) {
     Row(
         modifier = Modifier
@@ -170,6 +176,21 @@ private fun MockItemContent(
             text = label,
             style = MaterialTheme.typography.bodyLargeEmphasized
         )
+        if (isSynthesized) {
+            Box(
+                modifier = Modifier
+                    .background(
+                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                        shape = RoundedCornerShape(size = 4.dp)
+                    ).padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = "Generated",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            }
+        }
         if (selected) {
             Icon(
                 imageVector = Icons.Rounded.Check,
@@ -276,6 +297,21 @@ private fun MockItemMarkedForPreviewPreview(
                 selected = false,
                 onClick = {},
                 isMarkedForPreview = isMarkedForPreview,
+                onToggleMarkedForPreview = {}
+            )
+        }
+    }
+}
+
+@Preview(locale = "en")
+@Composable
+private fun MockItemSynthesizedPreview() {
+    MaterialTheme {
+        Surface {
+            MockItem(
+                mockResponse = MockResponse.fake().first().copy(isSynthesized = true),
+                onClick = {},
+                isMarkedForPreview = false,
                 onToggleMarkedForPreview = {}
             )
         }
