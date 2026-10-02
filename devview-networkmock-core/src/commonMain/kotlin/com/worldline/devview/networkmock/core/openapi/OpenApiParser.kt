@@ -283,11 +283,7 @@ internal object OpenApiParser {
             if (resolved.isEmpty() && schema != null) {
                 val synthesized = SchemaSynthesizer.synthesize(
                     schema = schema,
-                    // ponytail: every nested schema $ref resolves against [source] (the media
-                    // type's document), not the document its parent schema was found in, since
-                    // SchemaSynthesizer's callback doesn't carry a source. Thread one through
-                    // if schemas split across directories need nested relative refs.
-                    resolveSchema = { resolveSchema(raw = it, source = source) }
+                    resolver = schemaResolver(source = source)
                 )
                 resolved[SYNTHESIZED_EXAMPLE_NAME] = ResolvedResponse(
                     content = ResponseContent.Synthesized(json = synthesized.toString()),
@@ -298,17 +294,28 @@ internal object OpenApiParser {
             return resolved
         }
 
-        /** Resolves a schema's own `$ref` (if any) via [resolveRef] against `components.schemas`. */
-        suspend fun resolveSchema(raw: SchemaObject, source: SourceDocument): SchemaObject {
-            val ref = raw.ref ?: return raw
-            return resolveRef(
-                ref = ref,
-                source = source,
-                section = "schemas",
-                componentsOf = { it.components.schemas },
-                refOf = { it.ref }
-            ).value
-        }
+        /**
+         * A [SchemaResolver] scoped to [source]: follows a schema's `$ref` via [resolveRef]
+         * against `components.schemas`, then re-scopes to the document the target was found in so
+         * `$ref`s nested inside it resolve against that document.
+         */
+        @Suppress("DocumentationOverPrivateFunction")
+        private fun schemaResolver(source: SourceDocument): SchemaResolver =
+            object : SchemaResolver {
+                override suspend fun resolve(
+                    schema: SchemaObject
+                ): Pair<SchemaObject, SchemaResolver> {
+                    val ref = schema.ref ?: return schema to this
+                    val resolved = resolveRef(
+                        ref = ref,
+                        source = source,
+                        section = "schemas",
+                        componentsOf = { it.components.schemas },
+                        refOf = { it.ref }
+                    )
+                    return resolved.value to schemaResolver(source = resolved.source)
+                }
+            }
 
         /** Resolves each declared header's `$ref` (if any) down to its literal `example` value. */
         @Suppress("DocumentationOverPrivateFunction")

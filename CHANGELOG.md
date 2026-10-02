@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   throw a clear error), and `oneOf` (first declared variant; `discriminator` is parsed but
   doesn't yet steer variant selection). Deliberately narrow, not full JSON Schema conformance —
   see `docs/modules/networkmock-core.md`'s new "Schema-based response synthesis" section.
+  Schema `$ref`s resolve relative to the file containing them, like every other `$ref`.
   `MockResponse` gains `isSynthesized: Boolean` (default `false`); the operation picker page
   shows a small "Generated" badge on a synthesized response's row.
   (`devview-networkmock-core`, `devview-networkmock`, #82, #84)

@@ -880,6 +880,54 @@ class MockConfigRepositoryTest {
     }
 
     @Test
+    fun `nested dollar-ref inside an external schema resolves against that external document`() =
+        runTest {
+            val repository = createRepository(
+                resources = mapOf(
+                    SPEC_PATH to specWithSchema(
+                        schema = """{ "${'$'}ref": "./shared/user.json#/components/schemas/User" }""",
+                        // Decoy: what root-relative resolution would have picked for `Address`.
+                        extraComponents = """, "components": { "schemas": { "Address": { "type": "integer" } } }"""
+                    ),
+                    "specs/shared/user.json" to schemasJson(
+                        """"User": { "type": "object", "properties": { "address": { "${'$'}ref": "#/components/schemas/Address" } } }""",
+                        """"Address": { "type": "string" }"""
+                    )
+                )
+            )
+
+            val responses = repository.discoverResponseFiles(key = getUserKey)
+
+            responses.single().content shouldBe """{"address":"string"}"""
+        }
+
+    @Test
+    fun `allOf members from different documents each resolve nested refs against their own document`() =
+        runTest {
+            val repository = createRepository(
+                resources = mapOf(
+                    SPEC_PATH to specWithSchema(
+                        schema = """
+                            { "allOf": [
+                              { "${'$'}ref": "./shared/base.json#/components/schemas/Base" },
+                              { "properties": { "name": { "type": "string" } } }
+                            ] }
+                        """.trimIndent(),
+                        extraComponents = """, "components": { "schemas": { "Address": { "type": "integer" } } }"""
+                    ),
+                    "specs/shared/base.json" to schemasJson(
+                        """"Base": { "type": "object", "properties": { "address": { "${'$'}ref": "#/components/schemas/Address" } } }""",
+                        """"Address": { "type": "string" }"""
+                    )
+                )
+            )
+
+            val responses = repository.discoverResponseFiles(key = getUserKey)
+
+            responses.single().content shouldBe """{"address":"string","name":"string"}"""
+        }
+
+    @Test
     fun `discoverResponseFiles synthesizes a body from schema when a status code declares no examples`() = runTest {
         val spec = """
             {
@@ -1211,6 +1259,26 @@ class MockConfigRepositoryTest {
     /** A `"Name": {...}` response entry with one `default` example pointing at [path]. */
     private fun responseComponent(body: String, path: String): String =
         """"$body": { "content": { "application/json": { "examples": { "default": { "externalValue": "$path" } } } } }"""
+
+    /** A root spec whose `getUser` 200 response has one `application/json` [schema] and no examples. */
+    private fun specWithSchema(schema: String, extraComponents: String = ""): String = """
+        {
+          "info": { "title": "Example" },
+          "servers": [ { "url": "https://api.example.com" } ],
+          "paths": {
+            "/api/users/{userId}": {
+              "get": {
+                "operationId": "getUser",
+                "responses": { "200": { "content": { "application/json": { "schema": $schema } } } }
+              }
+            }
+          }$extraComponents
+        }
+    """.trimIndent()
+
+    /** A document whose `components.schemas` holds the given `"Name": {...}` [entries]. */
+    private fun schemasJson(vararg entries: String): String =
+        """{ "components": { "schemas": { ${entries.joinToString(separator = ", ")} } } }"""
 
     private fun createRepository(resources: Map<String, String>): MockConfigRepository =
         MockConfigRepository(

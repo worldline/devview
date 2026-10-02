@@ -181,7 +181,8 @@ this library mocks responses rather than exercising null-handling. A schema shap
 list (or a schema declaring none of `type`/`properties`/`items`/`enum`/`allOf`/`oneOf`) throws a
 clear error rather than guessing. `$ref`s inside a schema (including nested ones under
 `properties`/`items`/`allOf`/`oneOf`) resolve against `components/schemas` the same way as
-elsewhere in this document.
+elsewhere in this document — including relative to the file containing the `$ref`, so a schema
+in an external file can reference its own `#/components/schemas/...` siblings.
 
 ### x-devview extension
 

@@ -11,7 +11,9 @@ import kotlinx.serialization.json.buildJsonObject
 class SchemaSynthesizerTest {
 
     /** No `$ref`s in these fixtures — every schema is passed through unchanged. */
-    private val noRefs: suspend (SchemaObject) -> SchemaObject = { it }
+    private val noRefs = object : SchemaResolver {
+        override suspend fun resolve(schema: SchemaObject) = schema to this
+    }
 
     // region primitives
 
@@ -19,7 +21,7 @@ class SchemaSynthesizerTest {
     fun `synthesizes a placeholder string for a string schema`() = runTest {
         val result = SchemaSynthesizer.synthesize(
             schema = SchemaObject(type = "string"),
-            resolveSchema = noRefs
+            resolver = noRefs
         )
 
         result shouldBe JsonPrimitive("string")
@@ -29,7 +31,7 @@ class SchemaSynthesizerTest {
     fun `synthesizes zero for an integer schema`() = runTest {
         val result = SchemaSynthesizer.synthesize(
             schema = SchemaObject(type = "integer"),
-            resolveSchema = noRefs
+            resolver = noRefs
         )
 
         result shouldBe JsonPrimitive(0)
@@ -39,7 +41,7 @@ class SchemaSynthesizerTest {
     fun `synthesizes zero for a number schema`() = runTest {
         val result = SchemaSynthesizer.synthesize(
             schema = SchemaObject(type = "number"),
-            resolveSchema = noRefs
+            resolver = noRefs
         )
 
         result shouldBe JsonPrimitive(0)
@@ -49,7 +51,7 @@ class SchemaSynthesizerTest {
     fun `synthesizes false for a boolean schema`() = runTest {
         val result = SchemaSynthesizer.synthesize(
             schema = SchemaObject(type = "boolean"),
-            resolveSchema = noRefs
+            resolver = noRefs
         )
 
         result shouldBe JsonPrimitive(false)
@@ -63,7 +65,7 @@ class SchemaSynthesizerTest {
     fun `synthesizes the first enum value instead of a generic placeholder`() = runTest {
         val schema = SchemaObject(type = "string", enum = listOf("ACTIVE", "INACTIVE"))
 
-        val result = SchemaSynthesizer.synthesize(schema = schema, resolveSchema = noRefs)
+        val result = SchemaSynthesizer.synthesize(schema = schema, resolver = noRefs)
 
         result shouldBe JsonPrimitive("ACTIVE")
     }
@@ -82,7 +84,7 @@ class SchemaSynthesizerTest {
             )
         )
 
-        val result = SchemaSynthesizer.synthesize(schema = schema, resolveSchema = noRefs)
+        val result = SchemaSynthesizer.synthesize(schema = schema, resolver = noRefs)
 
         result shouldBe buildJsonObject {
             put("id", JsonPrimitive(0))
@@ -94,7 +96,7 @@ class SchemaSynthesizerTest {
     fun `treats a schema with properties but no declared type as an object`() = runTest {
         val schema = SchemaObject(properties = mapOf("id" to SchemaObject(type = "integer")))
 
-        val result = SchemaSynthesizer.synthesize(schema = schema, resolveSchema = noRefs)
+        val result = SchemaSynthesizer.synthesize(schema = schema, resolver = noRefs)
 
         result shouldBe buildJsonObject { put("id", JsonPrimitive(0)) }
     }
@@ -107,7 +109,7 @@ class SchemaSynthesizerTest {
     fun `synthesizes a single-element array from items`() = runTest {
         val schema = SchemaObject(type = "array", items = SchemaObject(type = "string"))
 
-        val result = SchemaSynthesizer.synthesize(schema = schema, resolveSchema = noRefs)
+        val result = SchemaSynthesizer.synthesize(schema = schema, resolver = noRefs)
 
         result shouldBe buildJsonArray { add(JsonPrimitive("string")) }
     }
@@ -115,7 +117,7 @@ class SchemaSynthesizerTest {
     @Test
     fun `throws when an array schema declares no items`() = runTest {
         shouldThrow<IllegalStateException> {
-            SchemaSynthesizer.synthesize(schema = SchemaObject(type = "array"), resolveSchema = noRefs)
+            SchemaSynthesizer.synthesize(schema = SchemaObject(type = "array"), resolver = noRefs)
         }
     }
 
@@ -132,7 +134,7 @@ class SchemaSynthesizerTest {
             )
         )
 
-        val result = SchemaSynthesizer.synthesize(schema = schema, resolveSchema = noRefs)
+        val result = SchemaSynthesizer.synthesize(schema = schema, resolver = noRefs)
 
         result shouldBe buildJsonObject {
             put("id", JsonPrimitive(0))
@@ -150,7 +152,7 @@ class SchemaSynthesizerTest {
         )
 
         shouldThrow<IllegalStateException> {
-            SchemaSynthesizer.synthesize(schema = schema, resolveSchema = noRefs)
+            SchemaSynthesizer.synthesize(schema = schema, resolver = noRefs)
         }
     }
 
@@ -163,7 +165,7 @@ class SchemaSynthesizerTest {
             )
         )
 
-        val result = SchemaSynthesizer.synthesize(schema = schema, resolveSchema = noRefs)
+        val result = SchemaSynthesizer.synthesize(schema = schema, resolver = noRefs)
 
         result shouldBe buildJsonObject { put("id", JsonPrimitive(0)) }
     }
@@ -176,7 +178,7 @@ class SchemaSynthesizerTest {
     fun `oneOf without a discriminator synthesizes the first declared variant`() = runTest {
         val schema = SchemaObject(oneOf = listOf(SchemaObject(type = "string"), SchemaObject(type = "integer")))
 
-        val result = SchemaSynthesizer.synthesize(schema = schema, resolveSchema = noRefs)
+        val result = SchemaSynthesizer.synthesize(schema = schema, resolver = noRefs)
 
         result shouldBe JsonPrimitive("string")
     }
@@ -188,7 +190,7 @@ class SchemaSynthesizerTest {
             discriminator = DiscriminatorObject(propertyName = "type")
         )
 
-        val result = SchemaSynthesizer.synthesize(schema = schema, resolveSchema = noRefs)
+        val result = SchemaSynthesizer.synthesize(schema = schema, resolver = noRefs)
 
         result shouldBe JsonPrimitive("string")
     }
@@ -196,7 +198,7 @@ class SchemaSynthesizerTest {
     @Test
     fun `throws when oneOf declares no variants`() = runTest {
         shouldThrow<IllegalStateException> {
-            SchemaSynthesizer.synthesize(schema = SchemaObject(oneOf = emptyList()), resolveSchema = noRefs)
+            SchemaSynthesizer.synthesize(schema = SchemaObject(oneOf = emptyList()), resolver = noRefs)
         }
     }
 
@@ -211,7 +213,10 @@ class SchemaSynthesizerTest {
 
         val result = SchemaSynthesizer.synthesize(
             schema = schema,
-            resolveSchema = { if (it.ref == "#/components/schemas/Foo") target else it }
+            resolver = object : SchemaResolver {
+                override suspend fun resolve(schema: SchemaObject) =
+                    (if (schema.ref == "#/components/schemas/Foo") target else schema) to this
+            }
         )
 
         result shouldBe JsonPrimitive("string")
@@ -220,7 +225,7 @@ class SchemaSynthesizerTest {
     @Test
     fun `throws when a schema declares no recognizable shape`() = runTest {
         shouldThrow<IllegalStateException> {
-            SchemaSynthesizer.synthesize(schema = SchemaObject(), resolveSchema = noRefs)
+            SchemaSynthesizer.synthesize(schema = SchemaObject(), resolver = noRefs)
         }
     }
 

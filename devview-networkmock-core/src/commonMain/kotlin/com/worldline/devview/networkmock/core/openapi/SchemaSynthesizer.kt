@@ -6,6 +6,20 @@ import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 
 /**
+ * Follows a schema's own `$ref` while remembering which document it was found in, so a `$ref`
+ * nested inside the resolved schema is resolved against *that* document rather than the one the
+ * caller started from. Implemented by [OpenApiParser]'s `ParseContext`.
+ */
+internal interface SchemaResolver {
+    /**
+     * Returns [schema] with its own `$ref` (if any) followed to its target, paired with the
+     * resolver to use for every schema nested inside that target. A schema without a `$ref` is
+     * returned unchanged, paired with this same resolver.
+     */
+    suspend fun resolve(schema: SchemaObject): Pair<SchemaObject, SchemaResolver>
+}
+
+/**
  * Synthesizes a placeholder response body from a [SchemaObject] — used by [OpenApiParser] when
  * an operation's `responses.<code>.content.<mediaType>` declares a `schema` but no `examples`,
  * so that operation isn't left with zero mockable variants (see #82/#84).
@@ -17,9 +31,9 @@ import kotlinx.serialization.json.buildJsonObject
  */
 internal object SchemaSynthesizer {
     /**
-     * Synthesizes one plausible [JsonElement] for [schema], resolving `$ref`s via [resolveSchema]
+     * Synthesizes one plausible [JsonElement] for [schema], resolving `$ref`s via [resolver]
      * (typically [OpenApiParser]'s own ref-resolution, reused rather than duplicated — see
-     * `ParseContext.resolveSchema`) wherever a nested schema is encountered.
+     * `ParseContext.schemaResolver`) wherever a nested schema is encountered.
      *
      * Resolution order once `$ref` is resolved: `allOf` (merge), then `oneOf` (first variant),
      * then `enum` (first value), then `object`/`array` shape (by declared `type` or by the mere
@@ -28,40 +42,26 @@ internal object SchemaSynthesizer {
      * responses, it doesn't exercise null-handling.
      *
      * @param schema The schema to synthesize a value for.
-     * @param resolveSchema Resolves a schema's own `$ref` (if any) to its target; returns the
-     *   schema unchanged when it has none.
+     * @param resolver Resolves a schema's own `$ref` (if any) to its target, and scopes the
+     *   resolution of everything nested inside that target to the document it was found in.
      * @throws IllegalStateException if [schema] declares an `allOf` with conflicting property
      *   definitions across members, an `array` with no `items`, a `oneOf` with no variants, or
      *   a shape this function doesn't recognize (no `type`/`properties`/`items`/`enum`/`allOf`/
      *   `oneOf`, or an unsupported `type` string).
-     *
-     * `NamedArguments` is suppressed below because [resolveSchema] is a function-type parameter —
-     * invoking it (`resolveSchema(schema)`) calls `Function1.invoke`, whose single parameter has
-     * no name to reference, the same class of exception as `NetworkMockPlugin`'s `IOException` one.
      */
-    @Suppress("NamedArguments")
-    suspend fun synthesize(
-        schema: SchemaObject,
-        resolveSchema: suspend (SchemaObject) -> SchemaObject
-    ): JsonElement {
-        val resolved = resolveSchema(schema)
+    suspend fun synthesize(schema: SchemaObject, resolver: SchemaResolver): JsonElement {
+        val (resolved, scoped) = resolver.resolve(schema = schema)
         return when {
-            resolved.allOf != null -> synthesizeAllOf(
-                members = resolved.allOf,
-                resolveSchema = resolveSchema
-            )
-            resolved.oneOf != null -> synthesizeOneOf(
-                members = resolved.oneOf,
-                resolveSchema = resolveSchema
-            )
-            !resolved.enum.isNullOrEmpty() -> JsonPrimitive(resolved.enum.first())
+            resolved.allOf != null -> synthesizeAllOf(members = resolved.allOf, resolver = scoped)
+            resolved.oneOf != null -> synthesizeOneOf(members = resolved.oneOf, resolver = scoped)
+            !resolved.enum.isNullOrEmpty() -> JsonPrimitive(value = resolved.enum.first())
             resolved.type == "object" || resolved.properties != null ->
-                synthesizeObject(schema = resolved, resolveSchema = resolveSchema)
+                synthesizeObject(schema = resolved, resolver = scoped)
             resolved.type == "array" || resolved.items != null ->
-                synthesizeArray(schema = resolved, resolveSchema = resolveSchema)
-            resolved.type == "string" -> JsonPrimitive("string")
-            resolved.type == "integer" || resolved.type == "number" -> JsonPrimitive(0)
-            resolved.type == "boolean" -> JsonPrimitive(false)
+                synthesizeArray(schema = resolved, resolver = scoped)
+            resolved.type == "string" -> JsonPrimitive(value = "string")
+            resolved.type == "integer" || resolved.type == "number" -> JsonPrimitive(value = 0)
+            resolved.type == "boolean" -> JsonPrimitive(value = false)
             else -> error(
                 message =
                     "Cannot synthesize a response body for schema (type='${resolved.type}'): " +
@@ -72,59 +72,63 @@ internal object SchemaSynthesizer {
 
     private suspend fun synthesizeObject(
         schema: SchemaObject,
-        resolveSchema: suspend (SchemaObject) -> SchemaObject
+        resolver: SchemaResolver
     ): JsonElement = buildJsonObject {
         schema.properties?.forEach { (name, propertySchema) ->
             put(
                 key = name,
-                element = synthesize(schema = propertySchema, resolveSchema = resolveSchema)
+                element = synthesize(schema = propertySchema, resolver = resolver)
             )
         }
     }
 
     private suspend fun synthesizeArray(
         schema: SchemaObject,
-        resolveSchema: suspend (SchemaObject) -> SchemaObject
+        resolver: SchemaResolver
     ): JsonElement {
         val items = schema.items
             ?: error(
                 message = "Cannot synthesize an array response body: schema declares no 'items'."
             )
         return buildJsonArray {
-            add(element = synthesize(schema = items, resolveSchema = resolveSchema))
+            add(element = synthesize(schema = items, resolver = resolver))
         }
     }
 
     /**
      * Merges every member's [SchemaObject.properties] into one effective object schema. Two
      * members declaring the *same* property with *different* schemas is a spec authoring error
-     * this function refuses to guess through — see the thrown message.
+     * this function refuses to guess through — see the thrown message. Each merged property
+     * keeps the resolver of the member it came from, since members may live in different
+     * documents.
      */
-    @Suppress("DocumentationOverPrivateFunction", "NamedArguments")
+    @Suppress("DocumentationOverPrivateFunction")
     private suspend fun synthesizeAllOf(
         members: List<SchemaObject>,
-        resolveSchema: suspend (SchemaObject) -> SchemaObject
+        resolver: SchemaResolver
     ): JsonElement {
-        val merged = mutableMapOf<String, SchemaObject>()
+        val merged = mutableMapOf<String, Pair<SchemaObject, SchemaResolver>>()
         for (member in members) {
-            val resolvedMember = resolveSchema(member)
+            val (resolvedMember, memberResolver) = resolver.resolve(schema = member)
             for ((name, propertySchema) in resolvedMember.properties.orEmpty()) {
                 val existing = merged[name]
-                if (existing != null && existing != propertySchema) {
+                if (existing == null) {
+                    merged[name] = propertySchema to memberResolver
+                } else if (existing.first != propertySchema) {
                     error(
                         message =
                             "Cannot merge allOf: conflicting definitions for property '$name' " +
                                 "across members."
                     )
                 }
-                merged[name] = propertySchema
             }
         }
         return buildJsonObject {
-            for ((name, propertySchema) in merged) {
+            for ((name, entry) in merged) {
+                val (propertySchema, propertyResolver) = entry
                 put(
                     key = name,
-                    element = synthesize(schema = propertySchema, resolveSchema = resolveSchema)
+                    element = synthesize(schema = propertySchema, resolver = propertyResolver)
                 )
             }
         }
@@ -138,10 +142,10 @@ internal object SchemaSynthesizer {
     @Suppress("DocumentationOverPrivateFunction")
     private suspend fun synthesizeOneOf(
         members: List<SchemaObject>,
-        resolveSchema: suspend (SchemaObject) -> SchemaObject
+        resolver: SchemaResolver
     ): JsonElement {
         val first = members.firstOrNull()
             ?: error(message = "Cannot synthesize a oneOf response body: no variants declared.")
-        return synthesize(schema = first, resolveSchema = resolveSchema)
+        return synthesize(schema = first, resolver = resolver)
     }
 }
