@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- NetworkMock: an operation can now declare narrow request-body match constraints — required
+  top-level fields and/or a discriminator field's value, read from its
+  `requestBody.content.<mediaType>.schema` — to disambiguate operations that would otherwise
+  collide on path, method, and query alone (e.g. two specs sharing a host, each declaring
+  `POST /api/payments`, differing only by body shape). Not full JSON Schema validation; an
+  operation declaring no `requestBody`, or one with neither a required field nor a usable
+  discriminator, matches any body, same as before. `Operation` gains `requestBodyMatch:
+  RequestBodyMatch?` (new public class); `RequestMatcher` gains `matchesRequestBody`;
+  `MockConfigRepository.findMatchingMock` gains an optional `requestBody: String?` parameter.
+  `devview-networkmock-ktor`'s plugin reads the request body only when it's already a fully
+  in-memory `OutgoingContent.ByteArrayContent` — a pure, repeatable read that never consumes or
+  mutates anything the real network call still needs to send. See
+  `docs/modules/networkmock-core.md`'s new "Request body matching" section.
+  (`devview-networkmock-core`, `devview-networkmock-ktor`, #83)
 - NetworkMock: a status code with a declared `content.<mediaType>.schema` but no `examples`
   now synthesizes a placeholder response body instead of being unmockable — primitives, `enum`
   (first value), `object`/`array` (recursively, by declared `type` or by the mere presence of

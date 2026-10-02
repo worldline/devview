@@ -3,6 +3,7 @@ package com.worldline.devview.networkmock.core.openapi
 import com.worldline.devview.networkmock.core.NetworkMockResourceLoader
 import com.worldline.devview.networkmock.core.model.ApiSpec
 import com.worldline.devview.networkmock.core.model.Operation
+import com.worldline.devview.networkmock.core.model.RequestBodyMatch
 import kotlinx.serialization.json.Json
 
 /**
@@ -57,7 +58,14 @@ internal data class ResolvedResponse(
  *   Each hop's fragment must declare the section the caller expects (e.g. a response `$ref`
  *   must point into `components/responses`), so a same-named entry in a different section
  *   is never silently conflated with the one actually referenced.
- * - Request bodies are not read at all (see #83, explicitly out of scope for 0.2.0).
+ * - `requestBody` matching is deliberately narrow (see #83): only a
+ *   `requestBody.content.<mediaType>.schema`'s `required` field list and, optionally, a single
+ *   discriminator property's literal value (from that property's own single-value `enum`) are
+ *   read into [RequestBodyMatch] — not full JSON Schema validation. An operation whose schema
+ *   yields neither a required field nor a usable discriminator value has `requestBodyMatch ==
+ *   null` (matches any body), same as an operation declaring no `requestBody` at all. Only one
+ *   media type is read per `requestBody` (`application/json` if declared, otherwise whichever
+ *   is declared first).
  */
 internal object OpenApiParser {
     /**
@@ -111,7 +119,11 @@ internal object OpenApiParser {
                     queryParameters = queryParameters,
                     delayMs = rawOperation.xDevview?.delayMs,
                     version = versionPattern.find(input = path)?.groupValues?.get(index = 1),
-                    failureRate = rawOperation.xDevview?.failureRate
+                    failureRate = rawOperation.xDevview?.failureRate,
+                    requestBodyMatch = context.buildRequestBodyMatch(
+                        raw = rawOperation.requestBody,
+                        source = root
+                    )
                 )
 
                 responseIndex[operationId] = context.resolveResponseIndex(
@@ -147,6 +159,15 @@ internal object OpenApiParser {
      */
     @Suppress("DocumentationOverPrivateProperty")
     private const val SYNTHESIZED_EXAMPLE_NAME = "default"
+
+    /**
+     * The media type [ParseContext.buildRequestBodyMatch] prefers when a `requestBody` declares
+     * more than one — this library assumes one dominant request content type per operation,
+     * mirroring how [ParameterObject.example] models a single literal value rather than a
+     * per-media-type one.
+     */
+    @Suppress("DocumentationOverPrivateProperty")
+    private const val APPLICATION_JSON = "application/json"
 
     /**
      * Extracts a display-only `v{n}` version tag from a `/v{n}/` path segment (see
@@ -316,6 +337,65 @@ internal object OpenApiParser {
                     return resolved.value to schemaResolver(source = resolved.source)
                 }
             }
+
+        /** Resolves a `requestBody`'s own `$ref` (if any) via [resolveRef] against `components.requestBodies`. */
+        @Suppress("DocumentationOverPrivateFunction")
+        private suspend fun resolveRequestBody(
+            raw: RequestBodyObject,
+            source: SourceDocument
+        ): Resolved<RequestBodyObject> {
+            val ref = raw.ref ?: return Resolved(value = raw, source = source)
+            return resolveRef(
+                ref = ref,
+                source = source,
+                section = "requestBodies",
+                componentsOf = { it.components.requestBodies },
+                refOf = { it.ref }
+            )
+        }
+
+        /**
+         * Builds the [RequestBodyMatch] for an operation's [RequestBodyObject], or `null` if
+         * the operation declares no `requestBody`, its chosen media type (see [APPLICATION_JSON])
+         * has no `schema`, or the resolved schema yields nothing to check — no `required` fields
+         * and no usable discriminator (see [RequestBodyMatch]'s KDoc for what "usable" means).
+         */
+        @Suppress("DocumentationOverPrivateFunction")
+        suspend fun buildRequestBodyMatch(
+            raw: RequestBodyObject?,
+            source: SourceDocument
+        ): RequestBodyMatch? {
+            val resolvedBody = raw?.let { resolveRequestBody(raw = it, source = source) }
+                ?: return null
+            val requestBody = resolvedBody.value
+            val rawSchema =
+                (requestBody.content[APPLICATION_JSON] ?: requestBody.content.values.firstOrNull())
+                    ?.schema
+                    ?: return null
+            // The schema's own $ref resolves against the document the requestBody was found in.
+            val (schema, _) = schemaResolver(source = resolvedBody.source)
+                .resolve(schema = rawSchema)
+
+            val requiredFields = schema.required.orEmpty()
+            val discriminatorField = schema.discriminator?.propertyName?.takeIf { it.isNotBlank() }
+            val discriminatorValue = discriminatorField
+                ?.let { field ->
+                    schema.properties
+                        ?.get(key = field)
+                        ?.enum
+                        ?.firstOrNull()
+                }
+
+            return if (requiredFields.isEmpty() && discriminatorField == null) {
+                null
+            } else {
+                RequestBodyMatch(
+                    requiredFields = requiredFields,
+                    discriminatorField = discriminatorField,
+                    discriminatorValue = discriminatorValue
+                )
+            }
+        }
 
         /** Resolves each declared header's `$ref` (if any) down to its literal `example` value. */
         @Suppress("DocumentationOverPrivateFunction")
