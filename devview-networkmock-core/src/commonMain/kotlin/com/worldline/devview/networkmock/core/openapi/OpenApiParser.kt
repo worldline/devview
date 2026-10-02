@@ -33,9 +33,12 @@ internal data class ResolvedResponse(
  * - Response bodies are sourced only from `examples.<name>.externalValue`; an example
  *   declared with an inline `value` is skipped, since this library keeps response bodies as
  *   external files (see the epic's format decisions).
- * - `$ref` and `externalValue` both resolve relative to the file that declares them, exactly
- *   one level deep, into `#/components/<kind>/<name>` — a `$ref` chain (a component that
- *   itself points at another `$ref`) is not followed.
+ * - `$ref` and `externalValue` both resolve relative to the file that declares them, into
+ *   `#/components/<section>/<name>` — a `$ref` chain (a component that itself points at
+ *   another `$ref`) is followed until a non-ref entry is reached, guarded against cycles.
+ *   Each hop's fragment must declare the section the caller expects (e.g. a response `$ref`
+ *   must point into `components/responses`), so a same-named entry in a different section
+ *   is never silently conflated with the one actually referenced.
  * - No schema resolution of any kind — this parser mocks, it does not validate or synthesize
  *   bodies (see #82/#83/#84, explicitly out of scope for 0.2.0).
  */
@@ -59,9 +62,12 @@ internal object OpenApiParser {
      *   cannot be resolved.
      */
     suspend fun parse(specPath: String, resourceLoader: NetworkMockResourceLoader): ParsedSpec {
-        val baseDir = specPath.substringBeforeLast(delimiter = "/", missingDelimiterValue = "")
-        val context = ParseContext(baseDir = baseDir, resourceLoader = resourceLoader)
-        val document = decodeDocument(path = specPath, bytes = resourceLoader.load(path = specPath))
+        val context = ParseContext(resourceLoader = resourceLoader)
+        val root = SourceDocument(
+            path = specPath,
+            document = decodeDocument(path = specPath, bytes = resourceLoader.load(path = specPath))
+        )
+        val document = root.document
 
         val operations = mutableListOf<Operation>()
         val responseIndex = mutableMapOf<String, Map<Int, Map<String, ResolvedResponse>>>()
@@ -75,7 +81,7 @@ internal object OpenApiParser {
                     )
 
                 val queryParameters = rawOperation.parameters
-                    .map { context.resolveParameter(raw = it, document = document) }
+                    .map { context.resolveParameter(raw = it, source = root) }
                     .filter { it.`in` == "query" && it.example != null }
                     .associate { it.name to requireNotNull(value = it.example) }
                     .ifEmpty { null }
@@ -93,7 +99,7 @@ internal object OpenApiParser {
 
                 responseIndex[operationId] = context.resolveResponseIndex(
                     responses = rawOperation.responses,
-                    document = document
+                    source = root
                 )
             }
         }
@@ -142,53 +148,79 @@ internal object OpenApiParser {
         else -> bytes.decodeToString().trimStart().firstOrNull() != '{'
     }
 
-    /** Per-[parse]-call state: base directory, resource loading, and the external-document cache. */
-    private class ParseContext(
-        private val baseDir: String,
-        private val resourceLoader: NetworkMockResourceLoader
-    ) {
-        private val externalDocuments = mutableMapOf<String, OpenApiDocument>()
+    /**
+     * A decoded document together with the [path] it was loaded from. Every `$ref` and
+     * `externalValue` inside it is relative to that path's directory ([baseDir]), not to the
+     * root spec's.
+     */
+    private data class SourceDocument(val path: String, val document: OpenApiDocument) {
+        val baseDir: String = path.substringBeforeLast(delimiter = "/", missingDelimiterValue = "")
+    }
+
+    /** A resolved `$ref` target plus the [source] document it was found in (for nested relative refs). */
+    private data class Resolved<T>(val value: T, val source: SourceDocument)
+
+    /** Per-[parse]-call state: resource loading and the external-document cache. */
+    private class ParseContext(private val resourceLoader: NetworkMockResourceLoader) {
+        private val externalDocuments = mutableMapOf<String, SourceDocument>()
 
         suspend fun resolveParameter(
             raw: ParameterObject,
-            document: OpenApiDocument
+            source: SourceDocument
         ): ParameterObject {
             val ref = raw.ref ?: return raw
-            return resolveRef(ref = ref, document = document) { it.components.parameters }
+            return resolveRef(
+                ref = ref,
+                source = source,
+                section = "parameters",
+                componentsOf = { it.components.parameters },
+                refOf = { it.ref }
+            ).value
         }
 
         suspend fun resolveResponseIndex(
             responses: Map<String, ResponseObject>,
-            document: OpenApiDocument
+            source: SourceDocument
         ): Map<Int, Map<String, ResolvedResponse>> {
             val result = mutableMapOf<Int, Map<String, ResolvedResponse>>()
             for ((codeText, rawResponse) in responses) {
                 val statusCode = codeText.toIntOrNull() ?: continue
-                val response = if (rawResponse.ref != null) {
+                val resolvedResponse = if (rawResponse.ref != null) {
                     resolveRef(
                         ref = rawResponse.ref,
-                        document = document
-                    ) { it.components.responses }
+                        source = source,
+                        section = "responses",
+                        componentsOf = { it.components.responses },
+                        refOf = { it.ref }
+                    )
                 } else {
-                    rawResponse
+                    Resolved(value = rawResponse, source = source)
                 }
+                val response = resolvedResponse.value
+                val responseSource = resolvedResponse.source
 
-                val headers = resolveHeaders(raw = response.headers, document = document)
+                val headers = resolveHeaders(raw = response.headers, source = responseSource)
 
                 val examplesForCode = mutableMapOf<String, ResolvedResponse>()
                 for ((mediaType, media) in response.content) {
                     for ((exampleName, rawExample) in media.examples) {
-                        val example = if (rawExample.ref != null) {
+                        val resolvedExample = if (rawExample.ref != null) {
                             resolveRef(
                                 ref = rawExample.ref,
-                                document = document
-                            ) { it.components.examples }
+                                source = responseSource,
+                                section = "examples",
+                                componentsOf = { it.components.examples },
+                                refOf = { it.ref }
+                            )
                         } else {
-                            rawExample
+                            Resolved(value = rawExample, source = responseSource)
                         }
-                        val externalValue = example.externalValue ?: continue
+                        val externalValue = resolvedExample.value.externalValue ?: continue
                         examplesForCode[exampleName] = ResolvedResponse(
-                            path = resolvePath(baseDir = baseDir, ref = externalValue),
+                            path = resolvePath(
+                                baseDir = resolvedExample.source.baseDir,
+                                ref = externalValue
+                            ),
                             contentType = mediaType,
                             headers = headers
                         )
@@ -205,11 +237,17 @@ internal object OpenApiParser {
         @Suppress("DocumentationOverPrivateFunction")
         private suspend fun resolveHeaders(
             raw: Map<String, HeaderObject>,
-            document: OpenApiDocument
+            source: SourceDocument
         ): Map<String, String> = raw
             .mapNotNull { (name, rawHeader) ->
                 val header = if (rawHeader.ref != null) {
-                    resolveRef(ref = rawHeader.ref, document = document) { it.components.headers }
+                    resolveRef(
+                        ref = rawHeader.ref,
+                        source = source,
+                        section = "headers",
+                        componentsOf = { it.components.headers },
+                        refOf = { it.ref }
+                    ).value
                 } else {
                     rawHeader
                 }
@@ -217,42 +255,102 @@ internal object OpenApiParser {
             }.toMap()
 
         /**
-         * Resolves a `$ref` string to its target, either locally (within [document]) or in
-         * another file, exactly one level deep — the resolved object's own `$ref` (if any)
-         * is not followed further.
+         * Resolves a `$ref` string to its target, either locally (within [source]) or in
+         * another file, following a chain of `$ref`s — an entry that itself declares a `$ref`
+         * is resolved again — until a non-ref entry is reached. Each hop's file path is resolved
+         * relative to the document holding that `$ref`, and the returned [Resolved.source] is the
+         * document the final entry lives in.
+         *
+         * Every fragment must be exactly `components/<section>/<name>`, where [section] is the
+         * `components.<section>` key (e.g. `"responses"`); a fragment with a different structure
+         * or naming an unexpected section is rejected, so a same-named entry in a different
+         * section is never silently conflated with the one actually referenced.
+         * [componentsOf] selects the matching `components.<section>` map from a document, and
+         * [refOf] extracts a resolved entry's own `$ref` (if any) so the chain can continue.
+         *
+         * @throws IllegalStateException if a `$ref` cannot be resolved, has an invalid fragment
+         *   structure, names an unexpected section, or the chain revisits a `(path, fragment)`
+         *   pair already seen (a cycle).
          */
         @Suppress("DocumentationOverPrivateFunction")
         private suspend fun <T> resolveRef(
             ref: String,
-            document: OpenApiDocument,
-            componentsOf: (OpenApiDocument) -> Map<String, T>
-        ): T {
-            val (targetDocument, fragment) = if (ref.startsWith(prefix = "#/")) {
-                document to ref.removePrefix(prefix = "#/")
-            } else {
-                val filePath = ref.substringBefore(delimiter = "#")
-                val fragment = ref
-                    .substringAfter(
-                        delimiter = "#",
-                        missingDelimiterValue = ""
-                    ).removePrefix(prefix = "/")
-                loadExternalDocument(filePath = filePath) to fragment
+            source: SourceDocument,
+            section: String,
+            componentsOf: (OpenApiDocument) -> Map<String, T>,
+            refOf: (T) -> String?
+        ): Resolved<T> {
+            val visited = mutableSetOf<Pair<String, String>>()
+            var currentSource = source
+            var currentRef = ref
+
+            while (true) {
+                val (target, fragment) = locate(ref = currentRef, source = currentSource)
+
+                if (!visited.add(element = target.path to fragment)) {
+                    error(
+                        message = "Unresolvable \$ref '$ref': cyclic reference detected — " +
+                            "'$currentRef' revisits an already-resolved fragment."
+                    )
+                }
+
+                val segments = fragment.split("/")
+                if (segments.size != 3 || segments[0] != "components") {
+                    error(
+                        message =
+                            "Unresolvable \$ref '$currentRef': expected a fragment of the form " +
+                                "'components/$section/<name>' but got '$fragment'."
+                    )
+                }
+                val actualSection = segments[1]
+                val name = segments[2]
+                if (actualSection != section) {
+                    error(
+                        message = "Unresolvable \$ref '$currentRef': expected a '$section' entry " +
+                            "but the fragment points into '$actualSection'."
+                    )
+                }
+
+                val entry = componentsOf(target.document)[name]
+                    ?: error(
+                        message = "Unresolvable \$ref '$currentRef': no such entry in components.$section."
+                    )
+
+                val nestedRef = refOf(entry) ?: return Resolved(value = entry, source = target)
+                currentSource = target
+                currentRef = nestedRef
             }
-
-            val segments = fragment.split("/")
-            val name = segments.lastOrNull()
-                ?: error(message = "Unresolvable \$ref '$ref': fragment has no component name.")
-
-            return componentsOf(targetDocument)[name]
-                ?: error(message = "Unresolvable \$ref '$ref': no such entry in components.")
         }
 
-        private suspend fun loadExternalDocument(filePath: String): OpenApiDocument {
-            val resolvedPath = resolvePath(baseDir = baseDir, ref = filePath)
+        /** Splits [ref] into the document it targets and its fragment, loading an external file if needed. */
+        @Suppress("DocumentationOverPrivateFunction")
+        private suspend fun locate(
+            ref: String,
+            source: SourceDocument
+        ): Pair<SourceDocument, String> = if (ref.startsWith(prefix = "#/")) {
+            source to ref.removePrefix(prefix = "#/")
+        } else {
+            val filePath = ref.substringBefore(delimiter = "#")
+            val fragment = ref
+                .substringAfter(delimiter = "#", missingDelimiterValue = "")
+                .removePrefix(prefix = "/")
+            loadExternalDocument(from = source, filePath = filePath) to fragment
+        }
+
+        /** Loads [filePath] relative to the directory of [from], the document that references it. */
+        @Suppress("DocumentationOverPrivateFunction")
+        private suspend fun loadExternalDocument(
+            from: SourceDocument,
+            filePath: String
+        ): SourceDocument {
+            val resolvedPath = resolvePath(baseDir = from.baseDir, ref = filePath)
             return externalDocuments.getOrPut(key = resolvedPath) {
-                decodeDocument(
+                SourceDocument(
                     path = resolvedPath,
-                    bytes = resourceLoader.load(path = resolvedPath)
+                    document = decodeDocument(
+                        path = resolvedPath,
+                        bytes = resourceLoader.load(path = resolvedPath)
+                    )
                 )
             }
         }
