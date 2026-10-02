@@ -145,8 +145,9 @@ package com.worldline.devview.networkmock.core.model {
   }
 
   @androidx.compose.runtime.Immutable @kotlinx.serialization.Serializable public final class Operation {
-    ctor @KotlinOnly public Operation(String operationId, String name, String path, com.worldline.devview.networkmock.core.model.HttpMethod method, optional java.util.Map<java.lang.String,java.lang.String>? queryParameters, optional Long? delayMs, optional String? version, optional Double? failureRate, optional com.worldline.devview.networkmock.core.model.RequestBodyMatch? requestBodyMatch);
+    ctor @KotlinOnly public Operation(String operationId, String name, String path, com.worldline.devview.networkmock.core.model.HttpMethod method, optional java.util.Map<java.lang.String,java.lang.String>? queryParameters, optional Long? delayMs, optional String? version, optional Double? failureRate, optional com.worldline.devview.networkmock.core.model.RequestBodyMatch? requestBodyMatch, optional java.util.List<java.lang.String> tags);
     method public String component1();
+    method public java.util.List<java.lang.String> component10();
     method public String component2();
     method public String component3();
     method @KotlinOnly public operator com.worldline.devview.networkmock.core.model.HttpMethod component4();
@@ -155,7 +156,7 @@ package com.worldline.devview.networkmock.core.model {
     method public String? component7();
     method public Double? component8();
     method public com.worldline.devview.networkmock.core.model.RequestBodyMatch? component9();
-    method @KotlinOnly public com.worldline.devview.networkmock.core.model.Operation copy(optional String operationId, optional String name, optional String path, optional com.worldline.devview.networkmock.core.model.HttpMethod method, optional java.util.Map<java.lang.String,java.lang.String>? queryParameters, optional Long? delayMs, optional String? version, optional Double? failureRate, optional com.worldline.devview.networkmock.core.model.RequestBodyMatch? requestBodyMatch);
+    method @KotlinOnly public com.worldline.devview.networkmock.core.model.Operation copy(optional String operationId, optional String name, optional String path, optional com.worldline.devview.networkmock.core.model.HttpMethod method, optional java.util.Map<java.lang.String,java.lang.String>? queryParameters, optional Long? delayMs, optional String? version, optional Double? failureRate, optional com.worldline.devview.networkmock.core.model.RequestBodyMatch? requestBodyMatch, optional java.util.List<java.lang.String> tags);
     method @InaccessibleFromKotlin public Long? getDelayMs();
     method @InaccessibleFromKotlin public Double? getFailureRate();
     method @InaccessibleFromKotlin public String getName();
@@ -163,6 +164,7 @@ package com.worldline.devview.networkmock.core.model {
     method @InaccessibleFromKotlin public String getPath();
     method @InaccessibleFromKotlin public java.util.Map<java.lang.String,java.lang.String>? getQueryParameters();
     method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.model.RequestBodyMatch? getRequestBodyMatch();
+    method @InaccessibleFromKotlin public java.util.List<java.lang.String> getTags();
     method @InaccessibleFromKotlin public String? getVersion();
     property public Long? delayMs;
     property public Double? failureRate;
@@ -172,6 +174,7 @@ package com.worldline.devview.networkmock.core.model {
     property public String path;
     property public java.util.Map<java.lang.String,java.lang.String>? queryParameters;
     property public com.worldline.devview.networkmock.core.model.RequestBodyMatch? requestBodyMatch;
+    property public java.util.List<java.lang.String> tags;
     property public String? version;
   }
 

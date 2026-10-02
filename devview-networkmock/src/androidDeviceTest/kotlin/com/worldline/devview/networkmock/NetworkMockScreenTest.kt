@@ -18,6 +18,9 @@ import com.worldline.devview.networkmock.fixtures.MockScreenTestData
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 
 class NetworkMockScreenTest {
 
@@ -296,6 +299,86 @@ class NetworkMockScreenTest {
         onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
     }
 
+    @Test
+    fun tagFilterRow_isAbsent_forSpecWithNoTags() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
+
+        onNodeWithTag(testTag = "spec_tab_catalog").performClick()
+        waitForIdle()
+
+        onAllNodesWithTag(testTag = "tag_filter_row_catalog").assertCountEquals(expectedSize = 0)
+    }
+
+    @Test
+    fun tagFilterChip_narrowsToThatTag() = runComposeUiTest {
+        // Only createUser carries the "Admin" tag in MockScreenTestData.
+        setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
+
+        onNodeWithTag(testTag = "tag_filter_example_Admin").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
+        onAllNodesWithTag(testTag = "endpoint_card_example_getUser").assertCountEquals(expectedSize = 0)
+        onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
+    }
+
+    @Test
+    fun tagFilterChips_unionMultipleSelections() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
+
+        onNodeWithTag(testTag = "tag_filter_example_Users").performClick()
+        waitForIdle()
+        onNodeWithTag(testTag = "tag_filter_example_Admin").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
+        onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
+    }
+
+    @Test
+    fun tagFilterChip_deselecting_restoresFullList() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+        expandFilters()
+
+        onNodeWithTag(testTag = "tag_filter_example_Admin").performClick()
+        waitForIdle()
+        onNodeWithTag(testTag = "tag_filter_example_Admin").performClick()
+        waitForIdle()
+
+        onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
+    }
+
+    @Test
+    fun sortSharedFlow_emittingMethodLabel_reordersTheOperationList() = runComposeUiTest {
+        // "example" is tagged, so the dropdown offers [SPEC_ORDER, PATH, METHOD, TAG]. Emitting
+        // "Method" directly selects that sort key. Spec order is [getUser(GET), createUser(POST),
+        // health(GET)] — sorting by method is a stable sort, so the GET group keeps its
+        // relative order (getUser, health) ahead of the POST group (createUser), moving
+        // "Health" above "Create User" relative to the untouched spec-order default.
+        val sortSharedFlow = MutableSharedFlow<String>(
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST
+        )
+        setScreen(uiState = MockScreenTestData.contentState(), sortSharedFlow = sortSharedFlow)
+
+        val initialCreateUserY = onNodeWithText(text = "Create User").fetchSemanticsNode().positionInRoot.y
+        val initialHealthY = onNodeWithText(text = "Health").fetchSemanticsNode().positionInRoot.y
+        (initialCreateUserY < initialHealthY) shouldBe true
+
+        sortSharedFlow.tryEmit(value = "Method")
+        waitForIdle()
+
+        val sortedCreateUserY = onNodeWithText(text = "Create User").fetchSemanticsNode().positionInRoot.y
+        val sortedHealthY = onNodeWithText(text = "Health").fetchSemanticsNode().positionInRoot.y
+        (sortedHealthY < sortedCreateUserY) shouldBe true
+    }
+
     private fun ComposeUiTest.expandFilters() {
         onNodeWithTag(testTag = "expand_filter_button").performClick()
         waitForIdle()
@@ -305,6 +388,7 @@ class NetworkMockScreenTest {
         uiState: NetworkMockUiState,
         onGlobalToggle: (Boolean) -> Unit = {},
         onSelectOperation: (OperationKey) -> Unit = { },
+        sortSharedFlow: SharedFlow<String> = MutableSharedFlow(),
     ) {
         setContent {
             MaterialTheme {
@@ -312,6 +396,7 @@ class NetworkMockScreenTest {
                     uiState = uiState,
                     onGlobalToggle = onGlobalToggle,
                     onSelectOperation = onSelectOperation,
+                    sortSharedFlow = sortSharedFlow,
                 )
             }
         }

@@ -115,6 +115,10 @@ public data class RequestBodyMatch(
  *   here matches any request body, mirroring how `null` [queryParameters] matches any query
  *   string. Exists to disambiguate operations that would otherwise collide on path, method,
  *   and query alone (see [RequestBodyMatch]).
+ * @property tags Display-only labels from the operation's OpenAPI `tags` array, or an empty
+ *   list if none are declared. Like [version], this has no effect on request matching — it
+ *   drives the NetworkMock UI's tag filter chips and the "Tag" sort option only (see
+ *   `devview-networkmock`'s `NetworkMockScreen`).
  * @see ApiSpec
  * @see com.worldline.devview.networkmock.core.repository.RequestMatcher
  */
@@ -129,7 +133,8 @@ public data class Operation(
     val delayMs: Long? = null,
     val version: String? = null,
     val failureRate: Double? = null,
-    val requestBodyMatch: RequestBodyMatch? = null
+    val requestBodyMatch: RequestBodyMatch? = null,
+    val tags: List<String> = emptyList()
 )
 
 /**

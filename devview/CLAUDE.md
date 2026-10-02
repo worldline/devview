@@ -18,8 +18,9 @@ The `devview` module is the core framework: it defines the `Module` interface th
 | `Section` enum | `core/Section.kt` | `SETTINGS`, `FEATURES`, `NETWORK`, `LOGGING`, `CUSTOM` — controls home screen grouping and default icons |
 | `DestinationMetadata` | `core/DestinationMetadata.kt` | Per-destination top bar title + action list |
 | `DestinationMetadataBuilder` | `core/DestinationMetadata.kt` | DSL receiver inside `withTitle { }` / `withActions { }` blocks |
-| `ModuleDestinationAction` | `core/ModuleDestinationAction.kt` | Icon button descriptor (icon, callback, optional popup) |
+| `ModuleDestinationAction` | `core/ModuleDestinationAction.kt` | Icon button descriptor (icon, callback, optional popup, optional dropdown menu) |
 | `ModuleDestinationActionPopup` | `core/ModuleDestinationActionPopup.kt` | Confirmation `AlertDialog` data (title, subtitle, button labels) |
+| `ModuleDestinationActionMenuItem` | `core/ModuleDestinationActionMenuItem.kt` | Single labeled entry in a `ModuleDestinationAction`'s dropdown menu |
 | `NavKey` extension fns | `core/DestinationMetadataExtensions.kt` | `asDestination()`, `withTitle()`, `withActions()` — available on both `NavKey` instances and `KClass<out NavKey>` |
 | `Home` | `HomeScreen.kt` | Serializable `data object` / NavKey for the home screen |
 | `@Poko` | `core/Poko.kt` | Annotation for the Poko compiler plugin (generates `equals`/`hashCode`/`toString`/`copy` on non-data-classes) |
@@ -35,7 +36,7 @@ DevView (composable)
 │   ├── Title: resolved in order: HasTitle (framework screens) →
 │   │         DestinationMetadata.title → Module.moduleName
 │   └── Actions: DestinationMetadata.actions rendered as IconButtons;
-│               if action.popup != null, shows AlertDialog before invoking action
+│               precedence per action is menuItems (DropdownMenu) → popup (AlertDialog) → action
 └── NavDisplay (Navigation3)
     ├── entry<Home> → HomeScreen (groups modules by Section, sticky headers)
     │       └── ModuleItem (card per module, shape adapts by ModulePosition)
@@ -65,6 +66,9 @@ Use the instance extension (`MyDest.Main.withTitle(...)`) for `data object` dest
 
 **Top app bar actions and ViewModels:**
 `ModuleDestinationAction.action` is a plain lambda captured at construction time. To trigger a ViewModel from an action, expose a `MutableSharedFlow` on the module and observe it where the ViewModel is in scope (e.g. with `LaunchedEffect` in the host composable).
+
+**Top app bar dropdown menu actions:**
+Use `DestinationMetadataBuilder.menu(icon) { item(label) { ... } }` instead of `action(icon) { ... }` when a single icon needs to offer more than one discrete choice (e.g. "Sort by: Path / Method"). Built via `ModuleDestinationActionMenuBuilder`, stored on `ModuleDestinationAction.menuItems`. Precedence when an icon is tapped: `menuItems` (opens a `DropdownMenu`) → `popup` (opens a confirmation `AlertDialog`) → `action` (runs immediately). A `menu(...)` action's own `action` lambda defaults to a no-op and is never invoked directly — only the individual `item(...)` callbacks fire.
 
 **`rememberModules` initialization order:**
 For any module implementing `RequiresDataStore` (from `devview-utils`), `initDataStore()` is called before `initModule()`. Each module is initialized at most once per composition (tracked via an internal `mutableSetOf`).
