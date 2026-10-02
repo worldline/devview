@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- NetworkMock: closed the remaining test-coverage gaps tracked in #91 — real sample specs
+  (`sample/network`'s `sample-api.json` and `jsonplaceholder.json`) now parse through the actual
+  `MockConfigRepository` in a new `RealSampleSpecTest` (`devview-networkmock-core`,
+  `androidHostTest`), guarding against the shipped sample silently drifting out of sync with what
+  the parser accepts; query-parameter matching is now exercised end-to-end through the real Ktor
+  plugin interception path (`NetworkMockPluginTest`); the operation sheet's sticky-header
+  status-family grouping now has explicit coverage (`NetworkMockOperationSheetTest`); and the
+  delay-precedence chain (`Operation.delayMs ?: ApiSpec.delayMs ?: null`) now covers its
+  previously-untested third case. Ambiguous host-match precedence, the preview/diff bottom sheet,
+  and response Content-Type/header assertions were already covered by prior work — verified, not
+  duplicated.
 - NetworkMock: operations can now declare OpenAPI `tags`, read verbatim into a new
   `Operation.tags: List<String>` (empty by default, display-only — no effect on request
   matching, same as `Operation.version`). The operation list gains a fourth per-tab filter chip
