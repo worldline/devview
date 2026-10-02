@@ -125,7 +125,9 @@ declares no content at all; a spec can still override it explicitly by declaring
 
 Parameters, responses, examples, and headers may be declared via `$ref` instead of inline:
 - **Local**: `"$ref": "#/components/parameters/UserId"` resolves against the same document's `components`.
-- **External**: `"$ref": "./common.json#/components/responses/Error"` loads another file (relative to the spec's own location) via the same `NetworkMockResourceLoader`.
+- **External**: `"$ref": "./common.json#/components/responses/Error"` loads another file via the same `NetworkMockResourceLoader`.
+
+A file path in a `$ref` (or an `externalValue`) is relative to the file that contains it, not to the root spec — so after `specs/api.json` references `./shared/a.json`, a `./b.json` inside `a.json` means `specs/shared/b.json`. A leading `/` is relative to the resources root. Local `#/...` refs inside an external file resolve against that file's own `components`.
 
 Refs are followed as a chain — a referenced component's own `$ref` (if any) is resolved again,
 until a non-ref entry is reached — with a cycle guard that fails clearly instead of hanging on a

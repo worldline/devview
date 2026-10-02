@@ -66,7 +66,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   can never be conflated with the one actually referenced. `$ref` chains — an entry that itself
   declares another `$ref` — are now followed until a non-ref entry is reached (previously only one
   level deep), guarded against cycles: a circular `$ref` chain now fails with a clear error instead
-  of hanging. (`devview-networkmock-core`)
+  of hanging. Each hop of an external `$ref` chain is now resolved relative to the document that
+  contains it (previously always the root spec's directory, so `shared/a.json` → `./b.json`
+  loaded `b.json` next to the root spec instead of `shared/b.json`); local `#/...` refs and
+  relative `externalValue` paths inside an external document likewise resolve against that
+  document, not the root. (`devview-networkmock-core`)
 - NetworkMock: replaced ~35 unconditional `println` calls in `MockConfigRepository` and
   `NetworkMockPlugin` with gated [Kermit](https://github.com/touchlab/Kermit) logging
   (tag `DevViewNetworkMock`), consolidating the plugin's multi-line per-request trace into one

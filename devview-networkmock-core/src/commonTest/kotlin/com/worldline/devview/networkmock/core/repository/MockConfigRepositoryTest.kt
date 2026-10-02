@@ -761,6 +761,125 @@ class MockConfigRepositoryTest {
     }
 
     @Test
+    fun `external dollar-ref chain resolves each hop relative to the referencing document`() =
+        runTest {
+            val repository = createRepository(
+                resources = mapOf(
+                    SPEC_PATH to specWithResponseRef(
+                        ref = "./shared/a.json#/components/responses/A"
+                    ),
+                    "specs/shared/a.json" to componentsJson(
+                        """"A": { "${'$'}ref": "./b.json#/components/responses/B" }"""
+                    ),
+                    "specs/shared/b.json" to componentsJson(responseComponent(body = "B", path = "/responses/shared.json")),
+                    // Decoy: what the old root-relative resolution would have loaded.
+                    "specs/b.json" to componentsJson(responseComponent(body = "B", path = "/responses/decoy.json")),
+                    "responses/shared.json" to """{"from":"shared"}""",
+                    "responses/decoy.json" to """{"from":"decoy"}"""
+                )
+            )
+
+            val responses = repository.discoverResponseFiles(key = getUserKey)
+
+            responses.single().content shouldBe """{"from":"shared"}"""
+        }
+
+    @Test
+    fun `external dollar-ref chain can hop to a parent directory`() = runTest {
+        val repository = createRepository(
+            resources = mapOf(
+                SPEC_PATH to specWithResponseRef(ref = "./shared/a.json#/components/responses/A"),
+                "specs/shared/a.json" to componentsJson(
+                    """"A": { "${'$'}ref": "../c.json#/components/responses/C" }"""
+                ),
+                "specs/c.json" to componentsJson(responseComponent(body = "C", path = "/responses/c.json")),
+                "responses/c.json" to """{"from":"c"}"""
+            )
+        )
+
+        val responses = repository.discoverResponseFiles(key = getUserKey)
+
+        responses.single().content shouldBe """{"from":"c"}"""
+    }
+
+    @Test
+    fun `local dollar-ref inside an external response resolves against that external document`() =
+        runTest {
+            val repository = createRepository(
+                resources = mapOf(
+                    SPEC_PATH to specWithResponseRef(
+                        ref = "./shared/a.json#/components/responses/A",
+                        extraComponents = """, "components": { "headers": { "RateLimit": { "example": "root" } } }"""
+                    ),
+                    "specs/shared/a.json" to """
+                        {
+                          "components": {
+                            "headers": { "RateLimit": { "example": "shared" } },
+                            "responses": {
+                              "A": {
+                                "headers": { "X-RateLimit": { "${'$'}ref": "#/components/headers/RateLimit" } },
+                                "content": { "application/json": { "examples": {
+                                  "default": { "externalValue": "/responses/getUser-200.json" }
+                                } } }
+                              }
+                            }
+                          }
+                        }
+                    """.trimIndent(),
+                    "responses/getUser-200.json" to """{"id":1}"""
+                )
+            )
+
+            val response = repository.loadMockResponse(
+                key = getUserKey,
+                statusCode = 200,
+                exampleName = "default"
+            )
+
+            response?.headers shouldBe mapOf("X-RateLimit" to "shared")
+        }
+
+    @Test
+    fun `relative externalValue in an external document resolves against that document`() =
+        runTest {
+            val repository = createRepository(
+                resources = mapOf(
+                    SPEC_PATH to specWithResponseRef(
+                        ref = "./shared/a.json#/components/responses/A"
+                    ),
+                    "specs/shared/a.json" to componentsJson(responseComponent(body = "A", path = "bodies/user.json")),
+                    "specs/shared/bodies/user.json" to """{"from":"shared"}""",
+                    // Decoy: what root-relative resolution would have picked.
+                    "specs/bodies/user.json" to """{"from":"decoy"}"""
+                )
+            )
+
+            val responses = repository.discoverResponseFiles(key = getUserKey)
+
+            responses.single().content shouldBe """{"from":"shared"}"""
+        }
+
+    @Test
+    fun `cyclic dollar-ref chain across documents fails clearly instead of hanging`() = runTest {
+        val repository = createRepository(
+            resources = mapOf(
+                SPEC_PATH to specWithResponseRef(ref = "./shared/a.json#/components/responses/A"),
+                "specs/shared/a.json" to componentsJson(
+                    """"A": { "${'$'}ref": "./b.json#/components/responses/B" }"""
+                ),
+                "specs/shared/b.json" to componentsJson(
+                    """"B": { "${'$'}ref": "./a.json#/components/responses/A" }"""
+                )
+            )
+        )
+
+        val result = repository.loadConfiguration()
+
+        result.isFailure shouldBe true
+        result.exceptionOrNull()?.message.orEmpty() shouldContain "cyclic reference detected"
+    }
+
+    @Test
     fun `discoverResponseFiles returns responses sorted by status code`() = runTest {
         val repository = createRepository(resources = baseResources())
 
@@ -941,6 +1060,32 @@ class MockConfigRepositoryTest {
 
         response.shouldBeNull()
     }
+
+    private val getUserKey = OperationKey(specId = "example", operationId = "getUser")
+
+    /** A root spec whose `getUser` 200 response is the single `$ref` [ref]. */
+    private fun specWithResponseRef(ref: String, extraComponents: String = ""): String = """
+        {
+          "info": { "title": "Example" },
+          "servers": [ { "url": "https://api.example.com" } ],
+          "paths": {
+            "/api/users/{userId}": {
+              "get": {
+                "operationId": "getUser",
+                "responses": { "200": { "${'$'}ref": "$ref" } }
+              }
+            }
+          }$extraComponents
+        }
+    """.trimIndent()
+
+    /** A document whose `components.responses` holds the given `"Name": {...}` [entries]. */
+    private fun componentsJson(entries: String): String =
+        """{ "components": { "responses": { $entries } } }"""
+
+    /** A `"Name": {...}` response entry with one `default` example pointing at [path]. */
+    private fun responseComponent(body: String, path: String): String =
+        """"$body": { "content": { "application/json": { "examples": { "default": { "externalValue": "$path" } } } } }"""
 
     private fun createRepository(resources: Map<String, String>): MockConfigRepository =
         MockConfigRepository(
