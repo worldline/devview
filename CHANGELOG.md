@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0-alpha04] - 2026-10-09
+
 ### Added
 - NetworkMock: closed the remaining test-coverage gaps tracked in #91 — real sample specs
   (`sample/network`'s `sample-api.json` and `jsonplaceholder.json`) now parse through the actual
@@ -364,7 +366,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added and expanded unit test coverage for all primary `devview-*` modules.
 - Added Konsist architecture enforcement tests and Kover coverage reporting across the module set.
 
-[Unreleased]: https://github.com/worldline/DevView/compare/0.2.0-alpha03...HEAD
+[Unreleased]: https://github.com/worldline/DevView/compare/0.2.0-alpha04...HEAD
+[0.2.0-alpha04]: https://github.com/worldline/DevView/compare/0.2.0-alpha03...0.2.0-alpha04
 [0.2.0-alpha03]: https://github.com/worldline/DevView/compare/0.2.0-alpha02...0.2.0-alpha03
 [0.2.0-alpha02]: https://github.com/worldline/DevView/compare/0.2.0-alpha01...0.2.0-alpha02
 [0.2.0-alpha01]: https://github.com/worldline/DevView/compare/0.1.5...0.2.0-alpha01

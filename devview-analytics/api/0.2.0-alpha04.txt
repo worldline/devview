@@ -1,0 +1,572 @@
+// Signature format: 4.0
+package com.worldline.devview.analytics {
+
+  public final class Analytics implements com.worldline.devview.core.Module {
+    ctor public Analytics();
+    ctor public Analytics(optional com.worldline.devview.analytics.model.AnalyticsLogType? highlightedLogType1, optional com.worldline.devview.analytics.model.AnalyticsLogType? highlightedLogType2, optional com.worldline.devview.analytics.model.AnalyticsLogType? highlightedLogType3);
+    method @InaccessibleFromKotlin public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> getDestinations();
+    method @InaccessibleFromKotlin public androidx.navigation3.runtime.NavKey getEntryDestination();
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogType? getHighlightedLogType1();
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogType? getHighlightedLogType2();
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogType? getHighlightedLogType3();
+    method @InaccessibleFromKotlin public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<? super androidx.navigation3.runtime.NavKey>,kotlin.Unit> getRegisterSerializers();
+    method @InaccessibleFromKotlin public com.worldline.devview.core.Section getSection();
+    method @KotlinOnly public void registerContent(androidx.navigation3.runtime.EntryProviderScope<androidx.navigation3.runtime.NavKey>, kotlin.jvm.functions.Function0<kotlin.Unit> onNavigateBack, kotlin.jvm.functions.Function1<androidx.navigation3.runtime.NavKey,kotlin.Unit> onNavigate, androidx.compose.ui.unit.Dp bottomPadding);
+    property public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> destinations;
+    property public androidx.navigation3.runtime.NavKey entryDestination;
+    property public com.worldline.devview.analytics.model.AnalyticsLogType? highlightedLogType1;
+    property public com.worldline.devview.analytics.model.AnalyticsLogType? highlightedLogType2;
+    property public com.worldline.devview.analytics.model.AnalyticsLogType? highlightedLogType3;
+    property public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<androidx.navigation3.runtime.NavKey>,kotlin.Unit> registerSerializers;
+    property public com.worldline.devview.core.Section section;
+  }
+
+  public sealed exhaustive interface AnalyticsDestination extends androidx.navigation3.runtime.NavKey {
+  }
+
+  @kotlinx.serialization.Serializable public static final class AnalyticsDestination.Main implements com.worldline.devview.analytics.AnalyticsDestination {
+    field public static final com.worldline.devview.analytics.AnalyticsDestination.Main INSTANCE;
+  }
+
+  public final class AnalyticsLogger {
+    method @InaccessibleFromKotlin public boolean getHasLogs();
+    method @InaccessibleFromKotlin public androidx.compose.runtime.snapshots.SnapshotStateList<com.worldline.devview.analytics.model.AnalyticsLog> getLogs();
+    method public void log(com.worldline.devview.analytics.model.AnalyticsLog log);
+    property public boolean hasLogs;
+    property public androidx.compose.runtime.snapshots.SnapshotStateList<com.worldline.devview.analytics.model.AnalyticsLog> logs;
+    field public static final com.worldline.devview.analytics.AnalyticsLogger INSTANCE;
+  }
+
+  public final class AnalyticsLoggerKt {
+    method @InaccessibleFromKotlin public static androidx.compose.runtime.ProvidableCompositionLocal<java.util.List<com.worldline.devview.analytics.model.AnalyticsLog>> getLocalAnalytics();
+    property public static androidx.compose.runtime.ProvidableCompositionLocal<java.util.List<com.worldline.devview.analytics.model.AnalyticsLog>> LocalAnalytics;
+  }
+
+  public final class AnalyticsScreenKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void AnalyticsScreen(kotlinx.collections.immutable.PersistentList<com.worldline.devview.analytics.model.AnalyticsLogType> highlightedAnalyticsLogTypes, optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding);
+  }
+
+}
+
+package com.worldline.devview.analytics.model {
+
+  @androidx.compose.runtime.Immutable public final class AnalyticsLog {
+    ctor public AnalyticsLog(String tag, String screenClass, long timestamp, com.worldline.devview.analytics.model.AnalyticsLogType type);
+    method public String component1();
+    method public String component2();
+    method public long component3();
+    method public com.worldline.devview.analytics.model.AnalyticsLogType component4();
+    method public com.worldline.devview.analytics.model.AnalyticsLog copy(optional String tag, optional String screenClass, optional long timestamp, optional com.worldline.devview.analytics.model.AnalyticsLogType type);
+    method @InaccessibleFromKotlin public String getScreenClass();
+    method @InaccessibleFromKotlin public String getTag();
+    method @InaccessibleFromKotlin public long getTimestamp();
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogType getType();
+    property public String screenClass;
+    property public String tag;
+    property public long timestamp;
+    property public com.worldline.devview.analytics.model.AnalyticsLogType type;
+  }
+
+  @androidx.compose.runtime.Immutable public sealed exhaustive interface AnalyticsLogCategory {
+    method @InaccessibleFromKotlin public String getDisplayName();
+    method @InaccessibleFromKotlin public androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    property public abstract androidx.compose.ui.graphics.Color containerColor;
+    property public abstract androidx.compose.ui.graphics.Color contentColor;
+    property public abstract String displayName;
+    property public abstract androidx.compose.ui.graphics.vector.ImageVector icon;
+  }
+
+  public static sealed exhaustive interface AnalyticsLogCategory.Action extends com.worldline.devview.analytics.model.AnalyticsLogCategory {
+    method @InaccessibleFromKotlin public default String getDisplayName();
+    method @InaccessibleFromKotlin public default androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    property public default androidx.compose.ui.graphics.Color containerColor;
+    property public default androidx.compose.ui.graphics.Color contentColor;
+    property public default String displayName;
+    property public default androidx.compose.ui.graphics.vector.ImageVector icon;
+  }
+
+  public static final class AnalyticsLogCategory.Action.Click implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Action com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Action.Click INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Action.FormInput implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Action com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Action.FormInput INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Action.Gesture implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Action com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Action.Gesture INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Action.Scroll implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Action com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Action.Scroll INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Action.Swipe implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Action com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Action.Swipe INSTANCE;
+  }
+
+  public static sealed exhaustive interface AnalyticsLogCategory.Custom extends com.worldline.devview.analytics.model.AnalyticsLogCategory {
+    method @InaccessibleFromKotlin public default String getDisplayName();
+    method @InaccessibleFromKotlin public default androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    property public default androidx.compose.ui.graphics.Color containerColor;
+    property public default androidx.compose.ui.graphics.Color contentColor;
+    property public default String displayName;
+    property public default androidx.compose.ui.graphics.vector.ImageVector icon;
+  }
+
+  public static final class AnalyticsLogCategory.Custom.Event implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Custom com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Custom.Event INSTANCE;
+  }
+
+  public static sealed exhaustive interface AnalyticsLogCategory.Diagnostic extends com.worldline.devview.analytics.model.AnalyticsLogCategory {
+    method @InaccessibleFromKotlin public default String getDisplayName();
+    method @InaccessibleFromKotlin public default androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    property public default androidx.compose.ui.graphics.Color containerColor;
+    property public default androidx.compose.ui.graphics.Color contentColor;
+    property public default String displayName;
+    property public default androidx.compose.ui.graphics.vector.ImageVector icon;
+  }
+
+  public static final class AnalyticsLogCategory.Diagnostic.Debug implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Diagnostic com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Diagnostic.Debug INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Diagnostic.Log implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Diagnostic com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Diagnostic.Log INSTANCE;
+  }
+
+  public static sealed exhaustive interface AnalyticsLogCategory.Ecommerce extends com.worldline.devview.analytics.model.AnalyticsLogCategory {
+    method @InaccessibleFromKotlin public default String getDisplayName();
+    method @InaccessibleFromKotlin public default androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    property public default androidx.compose.ui.graphics.Color containerColor;
+    property public default androidx.compose.ui.graphics.Color contentColor;
+    property public default String displayName;
+    property public default androidx.compose.ui.graphics.vector.ImageVector icon;
+  }
+
+  public static final class AnalyticsLogCategory.Ecommerce.AddToCart implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Ecommerce com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Ecommerce.AddToCart INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Ecommerce.Checkout implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Ecommerce com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Ecommerce.Checkout INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Ecommerce.Purchase implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Ecommerce com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Ecommerce.Purchase INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Ecommerce.RemoveFromCart implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Ecommerce com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Ecommerce.RemoveFromCart INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Ecommerce.Subscription implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Ecommerce com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Ecommerce.Subscription INSTANCE;
+  }
+
+  public static sealed exhaustive interface AnalyticsLogCategory.Feature extends com.worldline.devview.analytics.model.AnalyticsLogCategory {
+    method @InaccessibleFromKotlin public default String getDisplayName();
+    method @InaccessibleFromKotlin public default androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    property public default androidx.compose.ui.graphics.Color containerColor;
+    property public default androidx.compose.ui.graphics.Color contentColor;
+    property public default String displayName;
+    property public default androidx.compose.ui.graphics.vector.ImageVector icon;
+  }
+
+  public static final class AnalyticsLogCategory.Feature.Disabled implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Feature com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Feature.Disabled INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Feature.Enabled implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Feature com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Feature.Enabled INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Feature.Usage implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Feature com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Feature.Usage INSTANCE;
+  }
+
+  public static sealed exhaustive interface AnalyticsLogCategory.Media extends com.worldline.devview.analytics.model.AnalyticsLogCategory {
+    method @InaccessibleFromKotlin public default String getDisplayName();
+    method @InaccessibleFromKotlin public default androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    property public default androidx.compose.ui.graphics.Color containerColor;
+    property public default androidx.compose.ui.graphics.Color contentColor;
+    property public default String displayName;
+    property public default androidx.compose.ui.graphics.vector.ImageVector icon;
+  }
+
+  public static final class AnalyticsLogCategory.Media.AudioPlay implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Media com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Media.AudioPlay INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Media.Download implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Media com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Media.Download INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Media.VideoEnd implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Media com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Media.VideoEnd INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Media.VideoStart implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Media com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Media.VideoStart INSTANCE;
+  }
+
+  public static sealed exhaustive interface AnalyticsLogCategory.Performance extends com.worldline.devview.analytics.model.AnalyticsLogCategory {
+    method @InaccessibleFromKotlin public default String getDisplayName();
+    method @InaccessibleFromKotlin public default androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    property public default androidx.compose.ui.graphics.Color containerColor;
+    property public default androidx.compose.ui.graphics.Color contentColor;
+    property public default String displayName;
+    property public default androidx.compose.ui.graphics.vector.ImageVector icon;
+  }
+
+  public static final class AnalyticsLogCategory.Performance.Crash implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Performance com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Performance.Crash INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Performance.Error implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Performance com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Performance.Error INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Performance.Metrics implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Performance com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Performance.Metrics INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Performance.Network implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Performance com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Performance.Network INSTANCE;
+  }
+
+  public static sealed exhaustive interface AnalyticsLogCategory.Screen extends com.worldline.devview.analytics.model.AnalyticsLogCategory {
+    method @InaccessibleFromKotlin public default String getDisplayName();
+    method @InaccessibleFromKotlin public default androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    property public default androidx.compose.ui.graphics.Color containerColor;
+    property public default androidx.compose.ui.graphics.Color contentColor;
+    property public default String displayName;
+    property public default androidx.compose.ui.graphics.vector.ImageVector icon;
+  }
+
+  public static final class AnalyticsLogCategory.Screen.View implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Screen com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Screen.View INSTANCE;
+  }
+
+  public static sealed exhaustive interface AnalyticsLogCategory.Search extends com.worldline.devview.analytics.model.AnalyticsLogCategory {
+    method @InaccessibleFromKotlin public default String getDisplayName();
+    method @InaccessibleFromKotlin public default androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    property public default androidx.compose.ui.graphics.Color containerColor;
+    property public default androidx.compose.ui.graphics.Color contentColor;
+    property public default String displayName;
+    property public default androidx.compose.ui.graphics.vector.ImageVector icon;
+  }
+
+  public static final class AnalyticsLogCategory.Search.Query implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Search com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Search.Query INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Search.ResultClick implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Search com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Search.ResultClick INSTANCE;
+  }
+
+  public static sealed exhaustive interface AnalyticsLogCategory.Session extends com.worldline.devview.analytics.model.AnalyticsLogCategory {
+    method @InaccessibleFromKotlin public default String getDisplayName();
+    method @InaccessibleFromKotlin public default androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    property public default androidx.compose.ui.graphics.Color containerColor;
+    property public default androidx.compose.ui.graphics.Color contentColor;
+    property public default String displayName;
+    property public default androidx.compose.ui.graphics.vector.ImageVector icon;
+  }
+
+  public static final class AnalyticsLogCategory.Session.End implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Session com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Session.End INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Session.Login implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Session com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Session.Login INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Session.Logout implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Session com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Session.Logout INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Session.Start implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Session com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Session.Start INSTANCE;
+  }
+
+  public static sealed exhaustive interface AnalyticsLogCategory.Social extends com.worldline.devview.analytics.model.AnalyticsLogCategory {
+    method @InaccessibleFromKotlin public default String getDisplayName();
+    method @InaccessibleFromKotlin public default androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    property public default androidx.compose.ui.graphics.Color containerColor;
+    property public default androidx.compose.ui.graphics.Color contentColor;
+    property public default String displayName;
+    property public default androidx.compose.ui.graphics.vector.ImageVector icon;
+  }
+
+  public static final class AnalyticsLogCategory.Social.Comment implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Social com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Social.Comment INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Social.Like implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Social com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Social.Like INSTANCE;
+  }
+
+  public static final class AnalyticsLogCategory.Social.Share implements com.worldline.devview.analytics.model.AnalyticsLogCategory.Social com.worldline.devview.analytics.model.AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    property public com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public String description;
+    property public String displayName;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogCategory.Social.Share INSTANCE;
+  }
+
+  public sealed exhaustive interface AnalyticsLogType {
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogCategory getCategory();
+    method @InaccessibleFromKotlin public String getDescription();
+    method @InaccessibleFromKotlin public String getDisplayName();
+    method @InaccessibleFromKotlin public androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    property public abstract com.worldline.devview.analytics.model.AnalyticsLogCategory category;
+    property public abstract String description;
+    property public abstract String displayName;
+    property public abstract androidx.compose.ui.graphics.vector.ImageVector icon;
+    field public static final com.worldline.devview.analytics.model.AnalyticsLogType.Companion Companion;
+  }
+
+  public static final class AnalyticsLogType.Companion {
+    method public java.util.List<com.worldline.devview.analytics.model.AnalyticsLogType> allTypes();
+    method public java.util.Map<com.worldline.devview.analytics.model.AnalyticsLogCategory,java.util.List<com.worldline.devview.analytics.model.AnalyticsLogType>> typesByCategory();
+  }
+
+  @androidx.compose.runtime.Immutable public sealed exhaustive interface HighlightedAnalyticsLog {
+    method @InaccessibleFromKotlin public int getCount();
+    method @InaccessibleFromKotlin public androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    property public abstract androidx.compose.ui.graphics.Color containerColor;
+    property public abstract androidx.compose.ui.graphics.Color contentColor;
+    property public abstract int count;
+    property public abstract androidx.compose.ui.graphics.vector.ImageVector icon;
+  }
+
+  @androidx.compose.runtime.Immutable public static final class HighlightedAnalyticsLog.Total implements com.worldline.devview.analytics.model.HighlightedAnalyticsLog {
+    ctor public HighlightedAnalyticsLog.Total(int count);
+    method public int component1();
+    method public com.worldline.devview.analytics.model.HighlightedAnalyticsLog.Total copy(optional int count);
+    method @InaccessibleFromKotlin public int getCount();
+    method @InaccessibleFromKotlin public androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    property public androidx.compose.ui.graphics.Color containerColor;
+    property public androidx.compose.ui.graphics.Color contentColor;
+    property public int count;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+  }
+
+  @androidx.compose.runtime.Immutable public static final class HighlightedAnalyticsLog.Type implements com.worldline.devview.analytics.model.HighlightedAnalyticsLog {
+    ctor public HighlightedAnalyticsLog.Type(com.worldline.devview.analytics.model.AnalyticsLogType type, int count);
+    method public com.worldline.devview.analytics.model.AnalyticsLogType component1();
+    method public int component2();
+    method public com.worldline.devview.analytics.model.HighlightedAnalyticsLog.Type copy(optional com.worldline.devview.analytics.model.AnalyticsLogType type, optional int count);
+    method @InaccessibleFromKotlin public int getCount();
+    method @InaccessibleFromKotlin public androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogType getType();
+    property public androidx.compose.ui.graphics.Color containerColor;
+    property public androidx.compose.ui.graphics.Color contentColor;
+    property public int count;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    property public com.worldline.devview.analytics.model.AnalyticsLogType type;
+  }
+
+}
+
