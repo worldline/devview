@@ -1137,6 +1137,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#tags" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Tags
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#request-matching" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1144,6 +1155,23 @@
       </span>
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Request Matching">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-body-matching" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Request body matching
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1160,10 +1188,32 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#response-headers-and-content-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Response headers and content type
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ref-resolution" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         <code>$ref</code> resolution
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema-based-response-synthesis" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Schema-based response synthesis
       </span>
     </span>
   </a>
@@ -1187,10 +1237,43 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#simulating-failures" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Simulating failures
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#caching-reload" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Caching &amp; Reload
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#datastore-schema" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         DataStore Schema
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Logging
       </span>
     </span>
   </a>
@@ -2345,8 +2428,10 @@
 - <strong>No manifest, no per-environment overrides.</strong> A group spanning multiple API versions (<code>/v1/...</code>, <code>/v2/...</code>) is simply multiple <code>paths</code> entries — and therefore multiple distinct <code>operationId</code>s — in the same document.
 - <strong><code>responses.&lt;code&gt;.content.&lt;mediaType&gt;.examples.&lt;name&gt;</code></strong> → one entry per response variant this operation can mock; <code>externalValue</code> points at the response body file on disk. By convention the primary/original response for a status code is named <code>"default"</code>.
 - <strong><code>parameters</code> with <code>in: query</code></strong> → a literal <code>example</code> value on a query parameter becomes a required match for that operation (e.g. <code>listUsers</code> only matches requests carrying <code>?type=user</code>).
+- <strong><code>requestBody.content.&lt;mediaType&gt;.schema</code></strong> → optionally disambiguates operations that collide on path/method/query — see <a href="#request-body-matching">Request body matching</a> below.
 - <strong><code>x-devview.delayMs</code></strong> → simulated response delay, at the document root (spec-wide default) and/or per operation (overrides the default). See <a href="#x-devview-extension">x-devview extension</a> below.
-- <strong><code>{param}</code> placeholders</strong>: Path segments like <code>{userId}</code> match any value during request matching.</p>
+- <strong><code>{param}</code> placeholders</strong>: Path segments like <code>{userId}</code> match any value during request matching.
+- <strong><code>tags</code></strong> → display-only labels, read into <code>Operation.tags</code> — see <a href="#tags">Tags</a> below.</p>
 <h2 id="version-tags">Version Tags</h2>
 <p><code>Operation.version</code> is a display-only tag extracted from a <code>/v{n}/</code> segment in the operation's
 path (e.g. <code>/api/v2/x</code> → <code>"v2"</code>, <code>/health</code> → <code>null</code>). It drives the version chip and filter in
@@ -2355,12 +2440,28 @@ the NetworkMock UI — see <a href="../networkmock-ui/">NetworkMock UI</a>.</p>
 remain two distinct operations matched only by path, method, and query params (see
 <a href="#request-matching">Request Matching</a> below). The extraction pattern is not currently
 configurable.</p>
+<h2 id="tags">Tags</h2>
+<p><code>Operation.tags</code> is read verbatim from the operation's OpenAPI <code>tags</code> array (<code>emptyList()</code> if
+absent) — purely a display/filter label, like <a href="#version-tags"><code>version</code></a>: it has no effect on
+request matching. It drives the NetworkMock UI's tag filter chips and its "Tag" sort option —
+see <a href="../networkmock-ui/">NetworkMock UI</a>.</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">"paths"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">"/api/users"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">"get"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">      </span><span class="nt">"operationId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"listUsers"</span><span class="p">,</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">      </span><span class="nt">"tags"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"Users"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Admin"</span><span class="p">],</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">      </span><span class="nt">"responses"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"..."</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">}</span>
+</span></code></pre></div>
 <h2 id="request-matching">Request Matching</h2>
-<p><code>MockConfigRepository.findMatchingMock(host, path, method, queryParameters)</code> resolves a mock in three steps:</p>
+<p><code>MockConfigRepository.findMatchingMock(host, path, method, queryParameters, requestBody)</code> resolves a mock in four steps:</p>
 <ol>
 <li><strong>Hostname match</strong> — compares the request host (case-insensitive) against every hostname declared in the spec's <code>servers[]</code>. If two specs both declare a matching hostname, the first spec (in configuration order) that also has a matching operation wins.</li>
 <li><strong>Path match</strong> — splits path by <code>/</code>, compares segment by segment; <code>{param}</code> segments match any value; non-param segments are case-sensitive.</li>
 <li><strong>Method match</strong> — case-sensitive exact match. Use uppercase (<code>"GET"</code>, <code>"POST"</code>).</li>
+<li><strong>Request body match</strong> (only for operations that declare one — see below) — narrow, non-validating checks against the operation's declared <code>requestBody</code> schema.</li>
 </ol>
 <p><code>Operation.method</code> is typed as <code>HttpMethod</code>, a small value class modeled after Ktor's own
 <code>io.ktor.http.HttpMethod</code> (open set, <code>HttpMethod.Get</code>/<code>.Post</code>/etc. constants, plus
@@ -2369,31 +2470,235 @@ itself, so the type exists to give the NetworkMock UI's method filter the same s
 pulling one in. <code>findMatchingMock</code>'s own <code>method</code> parameter stays a plain <code>String</code>, since it
 receives the raw wire value from <code>devview-networkmock-ktor</code>.</p>
 <p>There is no stored active-server selection. The matching server is determined purely from the request hostname at interception time.</p>
+<h3 id="request-body-matching">Request body matching</h3>
+<p>An operation's <code>requestBody.content.&lt;mediaType&gt;.schema</code> (<code>application/json</code> if declared,
+otherwise whichever media type comes first) is read into a narrow <code>RequestBodyMatch</code> — this
+exists purely to <strong>disambiguate</strong> operations that would otherwise collide on path, method, and
+query alone (e.g. two specs sharing a host, each declaring <code>POST /api/payments</code>, differing only
+by body shape); it is not a substitute for path/method/query matching, and an operation without
+<code>requestBodyMatch</code> still matches any body.</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">"requestBody"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">"application/json"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">      </span><span class="nt">"schema"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"object"</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="nt">"required"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"amount"</span><span class="p">],</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="nt">"discriminator"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"propertyName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"type"</span><span class="w"> </span><span class="p">},</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">          </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span><span class="w"> </span><span class="nt">"enum"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"card"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">      </span><span class="p">}</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>Two things are read from the schema, both deliberately narrow (not full JSON Schema validation):</p>
+<table>
+<thead>
+<tr>
+<th>Schema field</th>
+<th>Becomes</th>
+<th>Matching rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>required</code></td>
+<td><code>RequestBodyMatch.requiredFields</code></td>
+<td>every listed property must be a top-level key in the request body</td>
+</tr>
+<tr>
+<td><code>discriminator.propertyName</code></td>
+<td><code>RequestBodyMatch.discriminatorField</code></td>
+<td>that property must be a top-level key</td>
+</tr>
+<tr>
+<td>that property's own single-value <code>enum</code></td>
+<td><code>RequestBodyMatch.discriminatorValue</code></td>
+<td>if present, the key's value must equal it exactly</td>
+</tr>
+</tbody>
+</table>
+<p>If the schema yields neither a required field nor a usable discriminator (no <code>discriminator</code>, or
+one whose property doesn't declare a single-value <code>enum</code>), <code>requestBodyMatch</code> is <code>null</code> — same
+as an operation declaring no <code>requestBody</code> at all. <code>$ref</code>s (both the <code>requestBody</code> itself, under
+<code>components.requestBodies</code>, and its schema, under <code>components.schemas</code>) resolve the same way as
+elsewhere in this document.</p>
+<p><code>devview-networkmock-ktor</code>'s plugin only reads the request body when it's already a fully
+in-memory <code>OutgoingContent.ByteArrayContent</code> (the shape Ktor's content negotiation produces for
+a JSON-serialized body) — a streaming or multipart body is never touched, and <code>requestBodyMatch</code>
+simply doesn't apply to it (treated as no body). Reading it is a pure, repeatable operation that
+never consumes or mutates anything the real network call still needs to send.</p>
 <h2 id="response-variant-discovery">Response Variant Discovery</h2>
 <p>Response bodies live wherever <code>externalValue</code> points them — the sample app uses <code>composeResources/files/networkmocks/responses/{specId}/{operationId}/{operationId}-{status}[-{suffix}].json</code>, but this is only a convention, not a requirement.</p>
 <p>Discovery reads exactly the <code>(statusCode, exampleName)</code> pairs declared in the spec — <strong>there is no probing</strong> of status codes or file-name suffixes. If a variant isn't declared, it doesn't exist.</p>
 <p><code>discoverResponseFiles</code>/<code>loadMockResponse</code> read and decode response body files — this is real I/O, on top of the one-time spec parse. <code>MockConfigRepository</code> doesn't call either eagerly; <code>devview-networkmock</code>'s main operation list is built from parsed spec metadata alone (<code>OperationDescriptor</code> carries only <code>key</code> and <code>config</code>, no responses), and a given operation's variants are only discovered when its operation sheet actually opens. See <a href="../networkmock-ui/">NetworkMock UI</a>.</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">MockConfigRepository</span><span class="p">(</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">specPaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span><span class="s">"files/networkmocks/specs/my-backend.json"</span><span class="p">),</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="n">resourceLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Res</span><span class="p">.</span><span class="na">readBytes</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">)</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">MockConfigRepository</span><span class="p">(</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">specPaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span><span class="s">"files/networkmocks/specs/my-backend.json"</span><span class="p">),</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="n">resourceLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Res</span><span class="p">.</span><span class="na">readBytes</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">)</span>
 </span></code></pre></div>
+<h3 id="response-headers-and-content-type">Response headers and content type</h3>
+<p><code>responses.&lt;code&gt;.headers</code> declares extra headers to serve alongside a mocked response, and the
+media type key under <code>responses.&lt;code&gt;.content</code> (e.g. <code>application/json</code>) becomes the response's
+<code>Content-Type</code> — both are threaded through to the app via the Ktor plugin's synthetic response.</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">"200"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">"headers"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">"X-RateLimit-Remaining"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"example"</span><span class="p">:</span><span class="w"> </span><span class="s2">"42"</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="nt">"application/json"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">      </span><span class="nt">"examples"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">        </span><span class="nt">"default"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"externalValue"</span><span class="p">:</span><span class="w"> </span><span class="s2">"responses/getUser-200.json"</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">      </span><span class="p">}</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>Like <a href="#request-matching">query parameters</a>, a header's literal <code>example</code> value is the only field
+read — no <code>schema</code> resolution. <code>Content-Type</code> defaults to <code>application/json</code> when a response
+declares no content at all; a spec can still override it explicitly by declaring its own
+<code>Content-Type</code> entry under <code>headers</code>, which wins over the media-type-derived default.</p>
 <h3 id="ref-resolution"><code>$ref</code> resolution</h3>
-<p>Parameters, responses, and examples may be declared via <code>$ref</code> instead of inline:
+<p>Parameters, responses, examples, and headers may be declared via <code>$ref</code> instead of inline:
 - <strong>Local</strong>: <code>"$ref": "#/components/parameters/UserId"</code> resolves against the same document's <code>components</code>.
-- <strong>External</strong>: <code>"$ref": "./common.json#/components/responses/Error"</code> loads another file (relative to the spec's own location) via the same <code>NetworkMockResourceLoader</code>.</p>
-<p>Refs resolve one level deep — a referenced component's own <code>$ref</code> (if any) is not followed further.</p>
-<h3 id="x-devview-extension">x-devview extension</h3>
-<p>Vanilla OpenAPI has no field for response delay simulation, so it lives under the standard <code>x-</code>-prefixed <a href="https://spec.openapis.org/oas/v3.1.0#specification-extensions">Specification Extensions</a> mechanism:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">x-devview</span><span class="p">:</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">delayMs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">200</span><span class="w">        </span><span class="c1"># document root — spec-wide default</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="nt">paths</span><span class="p">:</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">/users/{userId}</span><span class="p p-Indicator">:</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="nt">get</span><span class="p">:</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">      </span><span class="nt">x-devview</span><span class="p">:</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">        </span><span class="nt">delayMs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">500</span><span class="w">  </span><span class="c1"># per-operation — overrides the document default</span>
+- <strong>External</strong>: <code>"$ref": "./common.json#/components/responses/Error"</code> loads another file via the same <code>NetworkMockResourceLoader</code>.</p>
+<p>A file path in a <code>$ref</code> (or an <code>externalValue</code>) is relative to the file that contains it, not to the root spec — so after <code>specs/api.json</code> references <code>./shared/a.json</code>, a <code>./b.json</code> inside <code>a.json</code> means <code>specs/shared/b.json</code>. A leading <code>/</code> is relative to the resources root. Local <code>#/...</code> refs inside an external file resolve against that file's own <code>components</code>.</p>
+<p>Refs are followed as a chain — a referenced component's own <code>$ref</code> (if any) is resolved again,
+until a non-ref entry is reached — with a cycle guard that fails clearly instead of hanging on a
+circular reference. Each ref's fragment must name the section its context expects (e.g. a response
+<code>$ref</code> must point into <code>components/responses</code>), so a same-named entry in a different section is
+never resolved by mistake.</p>
+<h3 id="schema-based-response-synthesis">Schema-based response synthesis</h3>
+<p>A status code with <strong>no</strong> <code>examples</code> at all, but a declared <code>content.&lt;mediaType&gt;.schema</code>,
+synthesizes one placeholder body per such media type instead of being unmockable:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">"200"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">"application/json"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">      </span><span class="nt">"schema"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"object"</span><span class="p">,</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">        </span><span class="nt">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">          </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"integer"</span><span class="w"> </span><span class="p">},</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">          </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span><span class="w"> </span><span class="nt">"enum"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"ACTIVE"</span><span class="p">,</span><span class="w"> </span><span class="s2">"INACTIVE"</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">      </span><span class="p">}</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="p">}</span>
 </span></code></pre></div>
+<p>synthesizes <code>{"id":0,"status":"ACTIVE"}</code> under the example name <code>"default"</code>. A status code that
+declares <strong>any</strong> <code>examples</code> for a media type never falls back to synthesis for that media type,
+even if it also declares a <code>schema</code> — an author-provided example always wins. <code>MockResponse.isSynthesized</code>
+is <code>true</code> for a synthesized body, <code>false</code> otherwise; the operation picker page shows a small
+"Generated" badge on a synthesized response's row.</p>
+<p>This is deliberately narrow, not full JSON Schema conformance — no <code>required</code>,
+<code>additionalProperties</code>, string patterns, <code>minimum</code>/<code>maximum</code>, etc. (anything that would matter for
+<em>validating</em> a body rather than <em>synthesizing one plausible value</em>):</p>
+<table>
+<thead>
+<tr>
+<th>Shape</th>
+<th>Synthesized value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>string</code></td>
+<td><code>"string"</code>, or the first <code>enum</code> value if declared</td>
+</tr>
+<tr>
+<td><code>integer</code> / <code>number</code></td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td><code>boolean</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>object</code> (or any schema with <code>properties</code>)</td>
+<td>each property synthesized recursively</td>
+</tr>
+<tr>
+<td><code>array</code> (or any schema with <code>items</code>)</td>
+<td>a single-element array of the synthesized item</td>
+</tr>
+<tr>
+<td><code>allOf</code></td>
+<td>member schemas' properties merged into one object; conflicting property definitions across members throw a clear error</td>
+</tr>
+<tr>
+<td><code>oneOf</code></td>
+<td>the first declared variant — <code>discriminator</code> is parsed but doesn't currently steer variant selection, since there's no concrete request/response data at spec-parse time to disambiguate against</td>
+</tr>
+</tbody>
+</table>
+<p><code>nullable</code> is read but ignored — a real value is always synthesized, never a JSON <code>null</code>, since
+this library mocks responses rather than exercising null-handling. A schema shape outside this
+list (or a schema declaring none of <code>type</code>/<code>properties</code>/<code>items</code>/<code>enum</code>/<code>allOf</code>/<code>oneOf</code>) throws a
+clear error rather than guessing. <code>$ref</code>s inside a schema (including nested ones under
+<code>properties</code>/<code>items</code>/<code>allOf</code>/<code>oneOf</code>) resolve against <code>components/schemas</code> the same way as
+elsewhere in this document — including relative to the file containing the <code>$ref</code>, so a schema
+in an external file can reference its own <code>#/components/schemas/...</code> siblings.</p>
+<h3 id="x-devview-extension">x-devview extension</h3>
+<p>Vanilla OpenAPI has no field for response delay simulation or failure injection, so both live under the standard <code>x-</code>-prefixed <a href="https://spec.openapis.org/oas/v3.1.0#specification-extensions">Specification Extensions</a> mechanism:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">x-devview</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">delayMs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">200</span><span class="w">          </span><span class="c1"># document root — spec-wide default</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">failureRate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span><span class="w">      </span><span class="c1"># ignored at the document root, see below</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="nt">paths</span><span class="p">:</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">/users/{userId}</span><span class="p p-Indicator">:</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="nt">get</span><span class="p">:</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">      </span><span class="nt">x-devview</span><span class="p">:</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">        </span><span class="nt">delayMs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">500</span><span class="w">       </span><span class="c1"># per-operation — overrides the document default</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">        </span><span class="nt">failureRate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span><span class="w">   </span><span class="c1"># per-operation only — 10% of otherwise-mocked requests fail</span>
+</span></code></pre></div>
+<p><code>failureRate</code>, unlike <code>delayMs</code>, has <strong>no spec-wide default</strong> — a document-root <code>failureRate</code> is
+parsed but ignored. "Some percentage of everything fails" is a much blunter tool than "this
+specific flaky endpoint fails sometimes", so it's deliberately operation-level only. See
+<a href="#simulating-failures">Simulating failures</a>.</p>
+<h2 id="simulating-failures">Simulating failures</h2>
+<p>An operation can be made to fail instead of returning a response, two ways:</p>
+<ul>
+<li><strong>Deterministically</strong>, by selecting a failure kind in the operation sheet's picker page (a
+  <code>Failure</code> row alongside the response variants) — every request to that operation fails the
+  same way until the selection changes, the same way <a href="#datastore-schema"><code>Mock</code></a> always serves
+  the same response.</li>
+<li><strong>Probabilistically</strong>, via the spec's <code>x-devview.failureRate</code> (0.0–1.0) — each request to an
+  otherwise-mocked operation independently rolls against the configured rate. This only applies
+  when the operation would otherwise serve a mock response; an operation left on <code>Network</code>
+  passthrough is never affected, keeping real network traffic untouched by default.</li>
+</ul>
+<p>Two failure kinds are supported, each mirroring the exception a real Ktor engine (OkHttp on
+Android, Darwin on iOS) throws for the equivalent real condition, so an app's existing error
+handling exercises the same code path:</p>
+<table>
+<thead>
+<tr>
+<th>Kind</th>
+<th>Mirrors</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Timeout</td>
+<td><code>io.ktor.client.plugins.HttpRequestTimeoutException</code></td>
+</tr>
+<tr>
+<td>Connection Refused</td>
+<td>a connection-level <code>kotlinx.io.IOException</code></td>
+</tr>
+</tbody>
+</table>
+<p>The probabilistic roll uses an injectable <code>Random</code> (<code>NetworkMockConfig.random</code>, defaulting to
+<code>Random.Default</code>) — override it in tests to pin the outcome deterministically.</p>
+<h2 id="caching-reload">Caching &amp; Reload</h2>
+<p><code>MockConfigRepository</code> parses every configured spec once and caches the result — subsequent
+<code>loadConfiguration()</code> calls return the cached value without re-reading any file. Call
+<code>invalidate()</code> to clear that cache, then <code>loadConfiguration()</code> (or anything that calls it
+internally, like <code>findMatchingMock</code>) to force a fresh read — this is how a developer picks up
+an edited spec file without restarting the app. In <code>devview-networkmock</code>, the "Reload Config"
+toolbar action does exactly this via <code>NetworkMockViewModel.reloadConfiguration()</code>; see
+<a href="../networkmock-ui/">NetworkMock UI</a>.</p>
 <h2 id="datastore-schema">DataStore Schema</h2>
 <p>State is persisted via <code>MockStateRepository</code>:</p>
 <table>
@@ -2427,32 +2732,48 @@ receives the raw wire value from <code>devview-networkmock-ktor</code>.</p>
 </tr>
 </tbody>
 </table>
-<p><code>OperationMockState</code> is serialized as <code>{"type":"network"}</code> (pass-through) or <code>{"type":"mock","statusCode":200,"exampleName":"default"}</code>.</p>
+<p><code>OperationMockState</code> is serialized as <code>{"type":"network"}</code> (pass-through),
+<code>{"type":"mock","statusCode":200,"exampleName":"default"}</code>, or
+<code>{"type":"failure","kind":"timeout"}</code> / <code>{"type":"failure","kind":"connection_refused"}</code>, or
+<code>{"type":"sequence","responses":[...],"currentIndex":0}</code> — an ordered list of <code>Mock</code> steps plus
+the position to serve next. The position is part of this same persisted value, not a separate
+key, so resetting the operation to <code>Network</code> (or resetting all mocks) discards it along with
+everything else about the sequence. See <a href="../networkmock-workflows/#simulating-a-stagedpolling-flow-sequential-mocks">Simulating a staged/polling flow</a>.</p>
 <p><strong>Upgrading from a pre-0.2.0 release</strong>: the operation-state key shape changed (<code>{groupId}-{environmentId}-{endpointId}</code> → <code>{specId}-{operationId}</code>), and so did the <code>Mock</code> payload (a response file name → <code>(statusCode, exampleName)</code>). On first launch after upgrading, every <code>network_mock_endpoint_*</code> entry from the old shape is wiped once — this is disabled-by-default developer-tooling state, not user data, so previously-selected mocks are reset rather than translated. The global mocking toggle is unaffected. See the <a href="../../guides/migrating-to-openapi/">migration guide</a> for converting an existing <code>mocks.json</code>.</p>
+<h2 id="logging">Logging</h2>
+<p><code>MockConfigRepository</code> logs spec-load outcomes through <a href="https://github.com/touchlab/Kermit">Kermit</a>, tagged <code>DevViewNetworkMock</code> — the same tag used by <code>devview-networkmock</code> and <code>devview-networkmock-ktor</code>, so a host can filter every NetworkMock-related log line by tag regardless of which module emitted it. Spec load success logs at <code>debug</code>, load failures at <code>warn</code> with the causing throwable attached. Request-matching outcomes (<code>findMatchingMock</code>) log at <code>verbose</code>, since they fire on every intercepted request.</p>
+<p>No response body content is ever logged. To silence NetworkMock's logs (or raise/lower their verbosity) in a host app, configure Kermit directly — this module adds no separate on/off flag of its own:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">import</span><span class="w"> </span><span class="nn">co.touchlab.kermit.Logger</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">import</span><span class="w"> </span><span class="nn">co.touchlab.kermit.Severity</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1">// Silence everything below warnings, repo-wide (affects every Kermit-backed DevView module)</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">Logger</span><span class="p">.</span><span class="na">setMinSeverity</span><span class="p">(</span><span class="n">Severity</span><span class="p">.</span><span class="na">Warn</span><span class="p">)</span>
+</span></code></pre></div>
+<p><code>devview-consolelogger</code>, if installed, captures these logs into DevView's own in-app console screen for free — no extra wiring needed.</p>
 <h2 id="networkmockresourceloader">NetworkMockResourceLoader</h2>
 <p><em>Added in v0.1.3.</em></p>
 <p><code>NetworkMockResourceLoader</code> is a <code>fun interface</code> that abstracts how mock resource bytes are loaded from a path. It exists to support DI-friendly architectures where the spec files live in a different Gradle module than the one constructing <code>NetworkMock</code>.</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">public</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nc">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="n">path</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="n">ByteArray</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kd">public</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nc">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="n">path</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="n">ByteArray</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="p">}</span>
 </span></code></pre></div>
 <h3 id="basic-usage">Basic Usage</h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">NetworkMock</span><span class="p">(</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="n">resourceLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Res</span><span class="p">.</span><span class="na">readBytes</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">},</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="n">specPaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span><span class="s">"files/networkmocks/specs/my-backend.json"</span><span class="p">)</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">)</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">NetworkMock</span><span class="p">(</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="n">resourceLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Res</span><span class="p">.</span><span class="na">readBytes</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">},</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="n">specPaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span><span class="s">"files/networkmocks/specs/my-backend.json"</span><span class="p">)</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="di-usage-koin-example">DI Usage (Koin example)</h3>
 <p>In the module that owns the mock resource files:
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">single</span><span class="o">&lt;</span><span class="n">NetworkMockResourceLoader</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="n">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Res</span><span class="p">.</span><span class="na">readBytes</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">single</span><span class="o">&lt;</span><span class="n">NetworkMockResourceLoader</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="n">NetworkMockResourceLoader</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Res</span><span class="p">.</span><span class="na">readBytes</span><span class="p">(</span><span class="nb">it</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="p">}</span>
 </span></code></pre></div></p>
 <p>In the presentation module where <code>NetworkMock</code> is constructed:
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">loader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">koinInject</span><span class="o">&lt;</span><span class="n">NetworkMockResourceLoader</span><span class="o">&gt;</span><span class="p">()</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rememberModules</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="n">module</span><span class="p">(</span><span class="n">NetworkMock</span><span class="p">(</span><span class="n">resourceLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">specPaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span><span class="s">"files/networkmocks/specs/my-backend.json"</span><span class="p">)))</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">loader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">koinInject</span><span class="o">&lt;</span><span class="n">NetworkMockResourceLoader</span><span class="o">&gt;</span><span class="p">()</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kd">val</span><span class="w"> </span><span class="nv">modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rememberModules</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="n">module</span><span class="p">(</span><span class="n">NetworkMock</span><span class="p">(</span><span class="n">resourceLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">specPaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span><span class="s">"files/networkmocks/specs/my-backend.json"</span><span class="p">)))</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="p">}</span>
 </span></code></pre></div></p>
 <h3 id="why-this-exists">Why This Exists</h3>
 <p>Before v0.1.3, <code>NetworkMock</code> accepted a raw <code>suspend (String) -&gt; ByteArray</code> lambda. This worked but was impossible to register as a typed binding in DI frameworks (Koin, Hilt) across Gradle module boundaries. The named <code>NetworkMockResourceLoader</code> type solves this.</p>

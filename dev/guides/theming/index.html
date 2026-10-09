@@ -2344,8 +2344,9 @@ system setting (e.g. a feature flag), and the theme actually in effect is the on
 signal.</p>
 <h2 id="network-mock-status-colors">Network Mock Status Colors</h2>
 <p>Like the Console Logger's <code>LogColorScheme</code>, the Network Mock module's per-status-family colors
-(2xx green, 4xx/5xx red, etc.) are <strong>not</strong> derived from <code>MaterialTheme.colorScheme</code> — a mocked
-2xx response needs to read as "success" regardless of your app's brand colors. <code>MockColorScheme.Light</code>
+(2xx green, 4xx/5xx red, etc.), the network pass-through state, and simulated-failure state are
+<strong>not</strong> derived from <code>MaterialTheme.colorScheme</code> — a mocked 2xx response needs to read as
+"success" regardless of your app's brand colors. <code>MockColorScheme.Light</code>
 and <code>MockColorScheme.Dark</code> are two complete, hand-tuned palettes chosen for contrast in each theme.</p>
 <p>Provide the palette where you already configure your app's <code>MaterialTheme</code>, so it switches
 alongside your light/dark theme:</p>

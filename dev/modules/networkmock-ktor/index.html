@@ -2264,10 +2264,17 @@
 <li>If no match → sends the real request.</li>
 <li>If matched, reads the operation's <code>OperationMockState</code>:</li>
 <li><code>Network</code> or <code>null</code> → sends the real request.</li>
-<li><code>Mock(statusCode, exampleName)</code> → loads that declared response variant and returns a synthetic response.</li>
-<li>On any error (undeclared variant, missing file, exception) → falls back to the real network and logs the reason. <strong>The plugin never throws.</strong></li>
+<li><code>Failure(kind)</code> → throws immediately, simulating that failure kind (see below). No response is loaded.</li>
+<li><code>Mock(statusCode, exampleName)</code>:<ul>
+<li>If the operation declares <code>x-devview.failureRate</code> and the configured <code>Random</code> rolls below it → throws a simulated connection failure instead, same as <code>Failure(CONNECTION_REFUSED)</code>.</li>
+<li>Otherwise, loads that declared response variant and returns a synthetic response.</li>
+</ul>
+</li>
+<li>On any error loading a declared mock (undeclared variant, missing file, exception) → falls back to the real network and logs the reason.</li>
 </ol>
-<p>Mock responses are returned with HTTP/1.1 status, an empty header set, and the response body as the content.</p>
+<p>Simulated failures (deterministic <code>Failure</code> states and the probabilistic <code>failureRate</code> roll) are the one case where <strong>the plugin does throw</strong> — this is deliberate: it's mirroring a real network failure, not an internal error to recover from. See <a href="../networkmock-core/#simulating-failures">Simulating failures</a> for which exception each failure kind throws.</p>
+<p>Mock responses are returned with HTTP/1.1 status, <code>Content-Type</code> set from the response's declared media type (defaulting to <code>application/json</code>), any additional headers declared on <code>responses.&lt;code&gt;.headers</code>, and the response body as the content. See <a href="../networkmock-core/#response-headers-and-content-type">Response headers and content type</a>.</p>
+<p>Each intercepted request logs exactly one line through <a href="https://github.com/touchlab/Kermit">Kermit</a> (tag <code>DevViewNetworkMock</code>, <code>debug</code> level, <code>warn</code> for a failed mock load) — e.g. <code>GET /v1/users/42 -&gt; MOCK 200/default</code> or <code>-&gt; NETWORK (no operation match)</code>. No response body content is ever logged. See <a href="../networkmock-core/#logging">Logging</a> for how to adjust verbosity or route these into <code>devview-consolelogger</code>.</p>
 <h2 id="platform-actuals">Platform Actuals</h2>
 <ul>
 <li><strong>Android</strong>: Use <code>HttpClient(OkHttp)</code> as the engine.</li>
