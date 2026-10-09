@@ -3,6 +3,7 @@ package com.worldline.devview.networkmock.viewmodel
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.MockConfiguration
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.OperationDescriptor
@@ -210,6 +211,21 @@ public class NetworkMockViewModel(
     }
 
     /**
+     * Re-reads and re-parses every configured OpenAPI spec, picking up edits made to a spec
+     * file since the app started without requiring a restart.
+     *
+     * Invalidates [configRepository]'s cache, then re-runs [loadConfiguration] — operations
+     * added, removed, or renamed in the spec are reflected in [uiState] once this completes.
+     * The operation picker/preview sheet ([sheetState]) is unaffected by this call; if it's
+     * open for an operation that no longer exists, it keeps showing its last-loaded content
+     * until closed.
+     */
+    public fun reloadConfiguration() {
+        configRepository.invalidate()
+        loadConfiguration()
+    }
+
+    /**
      * Loads the mock configuration from the configured OpenAPI specs.
      *
      * This only parses spec metadata — no response body is read or decoded here. See #98:
@@ -280,6 +296,64 @@ public class NetworkMockViewModel(
                 OperationMockState.Network
             }
             stateRepository.setOperationMockState(key = key, state = newState)
+        }
+    }
+
+    /**
+     * Sets an operation to deterministically simulate a network failure of the given [kind].
+     *
+     * Every request to the operation fails the same way, the same way [setOperationMockState]
+     * makes an operation always serve the same response — the two are mutually exclusive
+     * states, so selecting a failure kind here replaces any previously-selected mock response.
+     *
+     * @param key The [OperationKey] identifying the spec and operation
+     * @param kind The kind of network failure to simulate
+     * @see OperationMockState.Failure
+     */
+    public fun setOperationFailureState(key: OperationKey, kind: FailureKind) {
+        viewModelScope.launch {
+            stateRepository.setOperationMockState(
+                key = key,
+                state = OperationMockState.Failure(kind = kind)
+            )
+        }
+    }
+
+    /**
+     * Sets an operation to advance through [responses] in order on each successive request,
+     * starting at the first step. Replaces any previously-selected mock/failure state.
+     *
+     * @param key The [OperationKey] identifying the spec and operation
+     * @param responses The ordered steps, at least one (two-or-more is the useful case)
+     * @see OperationMockState.Sequence
+     */
+    public fun setOperationSequenceState(key: OperationKey, responses: List<MockResponse>) {
+        viewModelScope.launch {
+            val steps = responses.map {
+                OperationMockState.Mock(statusCode = it.statusCode, exampleName = it.exampleName)
+            }
+            stateRepository.setOperationMockState(
+                key = key,
+                state = OperationMockState.Sequence(responses = steps)
+            )
+        }
+    }
+
+    /**
+     * Resets an active sequence's position back to its first step, without leaving the
+     * [OperationMockState.Sequence] state. A no-op if the operation isn't currently a sequence.
+     *
+     * @param key The [OperationKey] identifying the spec and operation
+     */
+    public fun resetOperationSequencePosition(key: OperationKey) {
+        viewModelScope.launch {
+            val current = stateRepository.getState().getOperationState(key = key)
+            if (current is OperationMockState.Sequence) {
+                stateRepository.setOperationMockState(
+                    key = key,
+                    state = current.copy(currentIndex = 0)
+                )
+            }
         }
     }
 

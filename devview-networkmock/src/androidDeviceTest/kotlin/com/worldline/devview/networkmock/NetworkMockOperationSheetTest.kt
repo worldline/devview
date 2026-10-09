@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
+import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.HttpMethod
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.Operation
@@ -47,6 +48,16 @@ class NetworkMockOperationSheetTest {
         onNodeWithTag(testTag = "operation_sheet_network_item").assertIsDisplayed()
         onNodeWithTag(testTag = "mock_item_200_default").assertIsDisplayed()
         onNodeWithTag(testTag = "mock_item_404_default").assertIsDisplayed()
+    }
+
+    @Test
+    fun groupsResponsesByStatusFamily_showingAStickyHeaderPerFamily() = runComposeUiTest {
+        // response200 (2xx) and response404 (4xx) fall into distinct StatusCodeFamily groups -
+        // each must get its own sticky header, not be lumped under one.
+        setPickerPage(currentState = OperationMockState.Network)
+
+        onNodeWithText(text = "SUCCESSFUL MOCKS").assertIsDisplayed()
+        onNodeWithText(text = "CLIENT ERROR MOCKS").assertIsDisplayed()
     }
 
     @Test
@@ -125,6 +136,9 @@ class NetworkMockOperationSheetTest {
     private fun ComposeUiTest.setPickerPage(
         currentState: OperationMockState,
         onSelectResponse: (MockResponse?) -> Unit = {},
+        onSelectFailure: (FailureKind) -> Unit = {},
+        onCommitSequence: (List<MockResponse>) -> Unit = {},
+        onResetSequencePosition: () -> Unit = {},
         onOpenPreview: () -> Unit = {},
         onClose: () -> Unit = {}
     ) {
@@ -151,6 +165,9 @@ class NetworkMockOperationSheetTest {
                     ),
                     markedForPreview = marked,
                     onSelectResponse = onSelectResponse,
+                    onSelectFailure = onSelectFailure,
+                    onCommitSequence = onCommitSequence,
+                    onResetSequencePosition = onResetSequencePosition,
                     onTogglePreview = { response -> marked = marked.transition(response = response) },
                     onOpenPreview = onOpenPreview,
                     onClose = onClose

@@ -1,12 +1,17 @@
 package com.worldline.devview.networkmock.core.repository
 
+import co.touchlab.kermit.Logger
 import com.worldline.devview.networkmock.core.NetworkMockResourceLoader
 import com.worldline.devview.networkmock.core.model.MockConfiguration
 import com.worldline.devview.networkmock.core.model.MockMatch
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.openapi.OpenApiParser
+import com.worldline.devview.networkmock.core.openapi.ResolvedResponse
+import com.worldline.devview.networkmock.core.openapi.ResponseContent
 import kotlinx.serialization.SerializationException
+
+private val logger = Logger.withTag(tag = "DevViewNetworkMock")
 
 /**
  * Repository for loading OpenAPI-based mock configuration and response files from resources.
@@ -19,7 +24,7 @@ import kotlinx.serialization.SerializationException
  *
  * Format parsing is delegated entirely to [OpenApiParser] — this repository never sees
  * OpenAPI-shaped types itself, only the resulting [MockConfiguration] and a plain response
- * index (`specId -> operationId -> statusCode -> exampleName -> file path`) used by
+ * index (`specId -> operationId -> statusCode -> exampleName -> `[ResolvedResponse]) used by
  * [discoverResponseFiles] and [loadMockResponse].
  *
  * This repository is intentionally agnostic of any specific HTTP client implementation — it
@@ -41,9 +46,24 @@ public class MockConfigRepository(
     // Cache the loaded configuration to avoid re-parsing every spec on every call.
     private var cachedConfig: MockConfiguration? = null
 
-    /** `specId -> operationId -> statusCode -> exampleName -> resolved response file path`. */
+    /** `specId -> operationId -> statusCode -> exampleName -> ResolvedResponse`. */
     @Suppress("DocumentationOverPrivateProperty")
-    private var responseIndex: Map<String, Map<String, Map<Int, Map<String, String>>>> = emptyMap()
+    private var responseIndex: Map<String, Map<String, Map<Int, Map<String, ResolvedResponse>>>> =
+        emptyMap()
+
+    /**
+     * Clears the cached configuration, forcing the next [loadConfiguration] call to re-read
+     * and re-parse every configured spec from scratch.
+     *
+     * Use this to pick up edits to a spec file without restarting the app/process — call this,
+     * then [loadConfiguration] (or anything that calls it internally, e.g. [findMatchingMock])
+     * to actually reload.
+     */
+    public fun invalidate() {
+        cachedConfig = null
+        responseIndex = emptyMap()
+        logger.d { "Configuration cache invalidated" }
+    }
 
     /**
      * Loads and parses every configured OpenAPI spec.
@@ -68,20 +88,16 @@ public class MockConfigRepository(
             cachedConfig = config
             responseIndex = parsed.associate { it.apiSpec.id to it.responseIndex }
 
-            println(
-                message = "[NetworkMock][Config] Loaded ${config.specs.size} spec(s): " +
+            logger.d {
+                "Loaded ${config.specs.size} spec(s): " +
                     config.specs.joinToString { "${it.id} (${it.operations.size} operations)" }
-            )
+            }
             Result.success(value = config)
         } catch (e: IllegalStateException) {
-            println(
-                message = "[NetworkMock][Config] ERROR: Failed to load configuration - ${e.message}"
-            )
+            logger.w(throwable = e) { "Failed to load configuration" }
             Result.failure(exception = e)
         } catch (e: SerializationException) {
-            println(
-                message = "[NetworkMock][Config] ERROR: Failed to load configuration - ${e.message}"
-            )
+            logger.w(throwable = e) { "Failed to load configuration" }
             Result.failure(exception = e)
         }
     }
@@ -90,21 +106,27 @@ public class MockConfigRepository(
      * Finds a matching operation for an incoming HTTP request.
      *
      * Specs are checked in configuration order. Within a spec whose [servers][com.worldline.devview.networkmock.core.model.ApiSpec.servers]
-     * include a hostname matching [host], the first operation whose path, method, and query
-     * parameters all match wins. If no operation in that spec matches, the next spec is
-     * tried — two specs may legitimately share a hostname, and the first spec that actually
-     * has a matching operation wins.
+     * include a hostname matching [host], the first operation whose path, method, query
+     * parameters, and (if it declares constraints) request body all match wins. If no operation
+     * in that spec matches, the next spec is tried — two specs may legitimately share a
+     * hostname, and the first spec that actually has a matching operation wins. Request-body
+     * matching only disambiguates operations that already collide on path/method/query — see
+     * [com.worldline.devview.networkmock.core.model.RequestBodyMatch].
      *
      * @param host The request hostname (e.g., `"staging.api.example.com"`)
      * @param path The request path (e.g., `"/v1/users/123"`)
      * @param method The HTTP method (e.g., `"GET"`, `"POST"`)
+     * @param requestBody The request body as text, or `null` if none was read. Only checked
+     *   against operations that declare their own [com.worldline.devview.networkmock.core.model.RequestBodyMatch]
+     *   — operations without one match regardless of this value.
      * @return A [MockMatch] if a matching operation is found, or `null` otherwise
      */
     public suspend fun findMatchingMock(
         host: String,
         path: String,
         method: String,
-        queryParameters: Map<String, List<String>> = emptyMap()
+        queryParameters: Map<String, List<String>> = emptyMap(),
+        requestBody: String? = null
     ): MockMatch? {
         val config = loadConfiguration().getOrNull() ?: return null
 
@@ -120,6 +142,10 @@ public class MockConfigRepository(
                     RequestMatcher.matchesQueryParams(
                         configQueryParams = operation.queryParameters,
                         requestQueryParams = queryParameters
+                    ) &&
+                    RequestMatcher.matchesRequestBody(
+                        configMatch = operation.requestBodyMatch,
+                        requestBody = requestBody
                     )
             } ?: return@firstNotNullOfOrNull null
 
@@ -127,15 +153,12 @@ public class MockConfigRepository(
         }
 
         if (match == null) {
-            println(message = "[NetworkMock][Matching] No match for $method $host$path")
+            logger.v { "No match for $method $host$path" }
             return null
         }
 
         val (spec, matchingOperation) = match
-        println(
-            message = "[NetworkMock][Matching] Matched $method $path -> " +
-                "${spec.id}/${matchingOperation.operationId}"
-        )
+        logger.v { "Matched $method $path -> ${spec.id}/${matchingOperation.operationId}" }
         return MockMatch(
             key = OperationKey(specId = spec.id, operationId = matchingOperation.operationId),
             config = matchingOperation,
@@ -161,9 +184,9 @@ public class MockConfigRepository(
         ) ?: return emptyList()
         return variantsByStatusCode
             .flatMap { (statusCode, examplesByName) ->
-                examplesByName.mapNotNull { (exampleName, path) ->
+                examplesByName.mapNotNull { (exampleName, resolved) ->
                     loadResponseFromPath(
-                        path = path,
+                        resolved = resolved,
                         statusCode = statusCode,
                         exampleName = exampleName
                     )
@@ -186,22 +209,36 @@ public class MockConfigRepository(
         exampleName: String
     ): MockResponse? {
         loadConfiguration()
-        val path = responseIndex[key.specId]
+        val resolved = responseIndex[key.specId]
             ?.get(key = key.operationId)
             ?.get(key = statusCode)
             ?.get(key = exampleName)
             ?: return null
-        return loadResponseFromPath(path = path, statusCode = statusCode, exampleName = exampleName)
+        return loadResponseFromPath(
+            resolved = resolved,
+            statusCode = statusCode,
+            exampleName = exampleName
+        )
     }
 
     @Suppress("DocumentationOverPrivateFunction")
     private suspend fun loadResponseFromPath(
-        path: String,
+        resolved: ResolvedResponse,
         statusCode: Int,
         exampleName: String
     ): MockResponse? = try {
-        val content = resourceLoader.load(path = path).decodeToString()
-        MockResponse.create(statusCode = statusCode, exampleName = exampleName, content = content)
+        val content = when (val source = resolved.content) {
+            is ResponseContent.FromFile -> resourceLoader.load(path = source.path).decodeToString()
+            is ResponseContent.Synthesized -> source.json
+        }
+        MockResponse.create(
+            statusCode = statusCode,
+            exampleName = exampleName,
+            content = content,
+            contentType = resolved.contentType,
+            headers = resolved.headers,
+            isSynthesized = resolved.content is ResponseContent.Synthesized
+        )
     } catch (@Suppress("SwallowedException") e: IllegalStateException) {
         null
     }

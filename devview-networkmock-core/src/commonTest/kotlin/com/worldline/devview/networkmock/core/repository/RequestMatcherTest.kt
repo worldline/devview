@@ -1,5 +1,6 @@
 package com.worldline.devview.networkmock.core.repository
 
+import com.worldline.devview.networkmock.core.model.RequestBodyMatch
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
@@ -427,6 +428,136 @@ class RequestMatcherTest {
         RequestMatcher.matchesQueryParams(
             configQueryParams = mapOf("type" to "user"),
             requestQueryParams = emptyMap()
+        ) shouldBe false
+    }
+
+    // endregion
+
+    // region Request body matching
+
+    @Test
+    fun `matchesRequestBody returns true when configMatch is null regardless of body`() {
+        RequestMatcher.matchesRequestBody(
+            configMatch = null,
+            requestBody = """{"anything":"goes"}"""
+        ) shouldBe true
+        RequestMatcher.matchesRequestBody(configMatch = null, requestBody = null) shouldBe true
+    }
+
+    @Test
+    fun `matchesRequestBody returns false when configMatch is non-null but requestBody is null`() {
+        RequestMatcher.matchesRequestBody(
+            configMatch = RequestBodyMatch(requiredFields = listOf("name")),
+            requestBody = null
+        ) shouldBe false
+    }
+
+    @Test
+    fun `matchesRequestBody returns false when requestBody is not valid JSON`() {
+        RequestMatcher.matchesRequestBody(
+            configMatch = RequestBodyMatch(requiredFields = listOf("name")),
+            requestBody = "not json"
+        ) shouldBe false
+    }
+
+    @Test
+    fun `matchesRequestBody returns false when requestBody is valid JSON but not an object`() {
+        RequestMatcher.matchesRequestBody(
+            configMatch = RequestBodyMatch(requiredFields = listOf("name")),
+            requestBody = """["name"]"""
+        ) shouldBe false
+    }
+
+    @Test
+    fun `matchesRequestBody returns true when all required fields are present`() {
+        RequestMatcher.matchesRequestBody(
+            configMatch = RequestBodyMatch(requiredFields = listOf("name", "email")),
+            requestBody = """{"name":"Bob","email":"bob@example.com"}"""
+        ) shouldBe true
+    }
+
+    @Test
+    fun `matchesRequestBody returns false when a required field is missing`() {
+        RequestMatcher.matchesRequestBody(
+            configMatch = RequestBodyMatch(requiredFields = listOf("name", "email")),
+            requestBody = """{"name":"Bob"}"""
+        ) shouldBe false
+    }
+
+    @Test
+    fun `matchesRequestBody ignores the required field's actual value and only checks presence`() {
+        RequestMatcher.matchesRequestBody(
+            configMatch = RequestBodyMatch(requiredFields = listOf("name")),
+            requestBody = """{"name":null}"""
+        ) shouldBe true
+    }
+
+    @Test
+    fun `matchesRequestBody returns true when discriminator field matches expected value`() {
+        RequestMatcher.matchesRequestBody(
+            configMatch = RequestBodyMatch(
+                discriminatorField = "type",
+                discriminatorValue = "card"
+            ),
+            requestBody = """{"type":"card","number":"4242"}"""
+        ) shouldBe true
+    }
+
+    @Test
+    fun `matchesRequestBody returns false when discriminator field has a different value`() {
+        RequestMatcher.matchesRequestBody(
+            configMatch = RequestBodyMatch(
+                discriminatorField = "type",
+                discriminatorValue = "card"
+            ),
+            requestBody = """{"type":"bank_transfer","iban":"..."}"""
+        ) shouldBe false
+    }
+
+    @Test
+    fun `matchesRequestBody returns false when discriminator field is absent from the body`() {
+        RequestMatcher.matchesRequestBody(
+            configMatch = RequestBodyMatch(
+                discriminatorField = "type",
+                discriminatorValue = "card"
+            ),
+            requestBody = """{"number":"4242"}"""
+        ) shouldBe false
+    }
+
+    @Test
+    fun `matchesRequestBody only checks discriminator field presence when no discriminatorValue is declared`() {
+        val configMatch = RequestBodyMatch(discriminatorField = "type", discriminatorValue = null)
+
+        RequestMatcher.matchesRequestBody(
+            configMatch = configMatch,
+            requestBody = """{"type":"anything"}"""
+        ) shouldBe true
+        RequestMatcher.matchesRequestBody(
+            configMatch = configMatch,
+            requestBody = """{"other":"field"}"""
+        ) shouldBe false
+    }
+
+    @Test
+    fun `matchesRequestBody requires both required fields and discriminator when both are declared`() {
+        val configMatch = RequestBodyMatch(
+            requiredFields = listOf("amount"),
+            discriminatorField = "type",
+            discriminatorValue = "card"
+        )
+
+        RequestMatcher.matchesRequestBody(
+            configMatch = configMatch,
+            requestBody = """{"amount":100,"type":"card"}"""
+        ) shouldBe true
+        RequestMatcher.matchesRequestBody(
+            configMatch = configMatch,
+            requestBody = """{"type":"card"}"""
+        ) shouldBe false
+        RequestMatcher.matchesRequestBody(
+            configMatch = configMatch,
+            requestBody = """{"amount":100,"type":"bank_transfer"}"""
         ) shouldBe false
     }
 

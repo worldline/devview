@@ -43,6 +43,13 @@ package com.worldline.devview.networkmock.core.model {
     property public java.util.List<java.lang.String> servers;
   }
 
+  @kotlinx.serialization.Serializable public enum FailureKind {
+    method @InaccessibleFromKotlin public String getDisplayName();
+    property public String displayName;
+    enum_constant @kotlinx.serialization.SerialName("connection_refused") public static final com.worldline.devview.networkmock.core.model.FailureKind CONNECTION_REFUSED;
+    enum_constant @kotlinx.serialization.SerialName("timeout") public static final com.worldline.devview.networkmock.core.model.FailureKind TIMEOUT;
+  }
+
   @kotlin.jvm.JvmInline @kotlinx.serialization.Serializable public final value class HttpMethod {
     ctor @KotlinOnly public HttpMethod(String value);
     method @InaccessibleFromKotlin public String getValue();
@@ -89,25 +96,34 @@ package com.worldline.devview.networkmock.core.model {
   }
 
   @androidx.compose.runtime.Immutable @kotlinx.serialization.Serializable public final class MockResponse {
-    ctor public MockResponse(int statusCode, String exampleName, String displayName, String content);
+    ctor public MockResponse(int statusCode, String exampleName, String displayName, String content, optional String contentType, optional java.util.Map<java.lang.String,java.lang.String> headers, optional boolean isSynthesized);
     method public int component1();
     method public String component2();
     method public String component3();
     method public String component4();
-    method public com.worldline.devview.networkmock.core.model.MockResponse copy(optional int statusCode, optional String exampleName, optional String displayName, optional String content);
+    method public String component5();
+    method public java.util.Map<java.lang.String,java.lang.String> component6();
+    method public boolean component7();
+    method public com.worldline.devview.networkmock.core.model.MockResponse copy(optional int statusCode, optional String exampleName, optional String displayName, optional String content, optional String contentType, optional java.util.Map<java.lang.String,java.lang.String> headers, optional boolean isSynthesized);
     method @InaccessibleFromKotlin public String getContent();
+    method @InaccessibleFromKotlin public String getContentType();
     method @InaccessibleFromKotlin public String getDisplayName();
     method @InaccessibleFromKotlin public String getExampleName();
+    method @InaccessibleFromKotlin public java.util.Map<java.lang.String,java.lang.String> getHeaders();
     method @InaccessibleFromKotlin public int getStatusCode();
+    method @InaccessibleFromKotlin public boolean isSynthesized();
     property public String content;
+    property public String contentType;
     property public String displayName;
     property public String exampleName;
+    property public java.util.Map<java.lang.String,java.lang.String> headers;
+    property public boolean isSynthesized;
     property public int statusCode;
     field public static final com.worldline.devview.networkmock.core.model.MockResponse.Companion Companion;
   }
 
   public static final class MockResponse.Companion {
-    method public com.worldline.devview.networkmock.core.model.MockResponse create(int statusCode, String exampleName, String content, optional kotlin.jvm.functions.Function1<? super java.lang.Integer,java.lang.String> statusTextProvider);
+    method public com.worldline.devview.networkmock.core.model.MockResponse create(int statusCode, String exampleName, String content, optional String contentType, optional java.util.Map<java.lang.String,java.lang.String> headers, optional boolean isSynthesized, optional kotlin.jvm.functions.Function1<? super java.lang.Integer,java.lang.String> statusTextProvider);
   }
 
   @kotlinx.serialization.Serializable public final class NetworkMockState {
@@ -129,27 +145,36 @@ package com.worldline.devview.networkmock.core.model {
   }
 
   @androidx.compose.runtime.Immutable @kotlinx.serialization.Serializable public final class Operation {
-    ctor @KotlinOnly public Operation(String operationId, String name, String path, com.worldline.devview.networkmock.core.model.HttpMethod method, optional java.util.Map<java.lang.String,java.lang.String>? queryParameters, optional Long? delayMs, optional String? version);
+    ctor @KotlinOnly public Operation(String operationId, String name, String path, com.worldline.devview.networkmock.core.model.HttpMethod method, optional java.util.Map<java.lang.String,java.lang.String>? queryParameters, optional Long? delayMs, optional String? version, optional Double? failureRate, optional com.worldline.devview.networkmock.core.model.RequestBodyMatch? requestBodyMatch, optional java.util.List<java.lang.String> tags);
     method public String component1();
+    method public java.util.List<java.lang.String> component10();
     method public String component2();
     method public String component3();
     method @KotlinOnly public operator com.worldline.devview.networkmock.core.model.HttpMethod component4();
     method public java.util.Map<java.lang.String,java.lang.String>? component5();
     method public Long? component6();
     method public String? component7();
-    method @KotlinOnly public com.worldline.devview.networkmock.core.model.Operation copy(optional String operationId, optional String name, optional String path, optional com.worldline.devview.networkmock.core.model.HttpMethod method, optional java.util.Map<java.lang.String,java.lang.String>? queryParameters, optional Long? delayMs, optional String? version);
+    method public Double? component8();
+    method public com.worldline.devview.networkmock.core.model.RequestBodyMatch? component9();
+    method @KotlinOnly public com.worldline.devview.networkmock.core.model.Operation copy(optional String operationId, optional String name, optional String path, optional com.worldline.devview.networkmock.core.model.HttpMethod method, optional java.util.Map<java.lang.String,java.lang.String>? queryParameters, optional Long? delayMs, optional String? version, optional Double? failureRate, optional com.worldline.devview.networkmock.core.model.RequestBodyMatch? requestBodyMatch, optional java.util.List<java.lang.String> tags);
     method @InaccessibleFromKotlin public Long? getDelayMs();
+    method @InaccessibleFromKotlin public Double? getFailureRate();
     method @InaccessibleFromKotlin public String getName();
     method @InaccessibleFromKotlin public String getOperationId();
     method @InaccessibleFromKotlin public String getPath();
     method @InaccessibleFromKotlin public java.util.Map<java.lang.String,java.lang.String>? getQueryParameters();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.model.RequestBodyMatch? getRequestBodyMatch();
+    method @InaccessibleFromKotlin public java.util.List<java.lang.String> getTags();
     method @InaccessibleFromKotlin public String? getVersion();
     property public Long? delayMs;
+    property public Double? failureRate;
     property public com.worldline.devview.networkmock.core.model.HttpMethod method;
     property public String name;
     property public String operationId;
     property public String path;
     property public java.util.Map<java.lang.String,java.lang.String>? queryParameters;
+    property public com.worldline.devview.networkmock.core.model.RequestBodyMatch? requestBodyMatch;
+    property public java.util.List<java.lang.String> tags;
     property public String? version;
   }
 
@@ -194,6 +219,16 @@ package com.worldline.devview.networkmock.core.model {
     property public abstract String displayName;
   }
 
+  @androidx.compose.runtime.Immutable @kotlinx.serialization.SerialName("failure") @kotlinx.serialization.Serializable public static final class OperationMockState.Failure implements com.worldline.devview.networkmock.core.model.OperationMockState {
+    ctor public OperationMockState.Failure(com.worldline.devview.networkmock.core.model.FailureKind kind);
+    method public com.worldline.devview.networkmock.core.model.FailureKind component1();
+    method public com.worldline.devview.networkmock.core.model.OperationMockState.Failure copy(optional com.worldline.devview.networkmock.core.model.FailureKind kind);
+    method @InaccessibleFromKotlin public String getDisplayName();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.model.FailureKind getKind();
+    property public String displayName;
+    property public com.worldline.devview.networkmock.core.model.FailureKind kind;
+  }
+
   @androidx.compose.runtime.Immutable @kotlinx.serialization.SerialName("mock") @kotlinx.serialization.Serializable public static final class OperationMockState.Mock implements com.worldline.devview.networkmock.core.model.OperationMockState {
     ctor public OperationMockState.Mock(int statusCode, String exampleName);
     method public int component1();
@@ -211,6 +246,36 @@ package com.worldline.devview.networkmock.core.model {
     method @InaccessibleFromKotlin public String getDisplayName();
     property public String displayName;
     field public static final com.worldline.devview.networkmock.core.model.OperationMockState.Network INSTANCE;
+  }
+
+  @androidx.compose.runtime.Immutable @kotlinx.serialization.SerialName("sequence") @kotlinx.serialization.Serializable public static final class OperationMockState.Sequence implements com.worldline.devview.networkmock.core.model.OperationMockState {
+    ctor public OperationMockState.Sequence(java.util.List<com.worldline.devview.networkmock.core.model.OperationMockState.Mock> responses, optional int currentIndex);
+    method public java.util.List<com.worldline.devview.networkmock.core.model.OperationMockState.Mock> component1();
+    method public int component2();
+    method public com.worldline.devview.networkmock.core.model.OperationMockState.Sequence copy(optional java.util.List<com.worldline.devview.networkmock.core.model.OperationMockState.Mock> responses, optional int currentIndex);
+    method @InaccessibleFromKotlin public int getCurrentIndex();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.model.OperationMockState.Mock? getCurrentResponse();
+    method @InaccessibleFromKotlin public String getDisplayName();
+    method @InaccessibleFromKotlin public java.util.List<com.worldline.devview.networkmock.core.model.OperationMockState.Mock> getResponses();
+    property public int currentIndex;
+    property public com.worldline.devview.networkmock.core.model.OperationMockState.Mock? currentResponse;
+    property public String displayName;
+    property public java.util.List<com.worldline.devview.networkmock.core.model.OperationMockState.Mock> responses;
+  }
+
+  @androidx.compose.runtime.Immutable @kotlinx.serialization.Serializable public final class RequestBodyMatch {
+    ctor public RequestBodyMatch();
+    ctor public RequestBodyMatch(optional java.util.List<java.lang.String> requiredFields, optional String? discriminatorField, optional String? discriminatorValue);
+    method public java.util.List<java.lang.String> component1();
+    method public String? component2();
+    method public String? component3();
+    method public com.worldline.devview.networkmock.core.model.RequestBodyMatch copy(optional java.util.List<java.lang.String> requiredFields, optional String? discriminatorField, optional String? discriminatorValue);
+    method @InaccessibleFromKotlin public String? getDiscriminatorField();
+    method @InaccessibleFromKotlin public String? getDiscriminatorValue();
+    method @InaccessibleFromKotlin public java.util.List<java.lang.String> getRequiredFields();
+    property public String? discriminatorField;
+    property public String? discriminatorValue;
+    property public java.util.List<java.lang.String> requiredFields;
   }
 
   public enum StatusCodeFamily {
@@ -236,7 +301,8 @@ package com.worldline.devview.networkmock.core.repository {
   public final class MockConfigRepository {
     ctor public MockConfigRepository(java.util.List<java.lang.String> specPaths, com.worldline.devview.networkmock.core.NetworkMockResourceLoader resourceLoader);
     method public suspend Object? discoverResponseFiles(com.worldline.devview.networkmock.core.model.OperationKey key, kotlin.coroutines.Continuation<? super java.util.List<com.worldline.devview.networkmock.core.model.MockResponse>>);
-    method public suspend Object? findMatchingMock(String host, String path, String method, optional java.util.Map<java.lang.String,? extends java.util.List<java.lang.String>> queryParameters, kotlin.coroutines.Continuation<? super com.worldline.devview.networkmock.core.model.MockMatch?>);
+    method public suspend Object? findMatchingMock(String host, String path, String method, optional java.util.Map<java.lang.String,? extends java.util.List<java.lang.String>> queryParameters, optional String? requestBody, kotlin.coroutines.Continuation<? super com.worldline.devview.networkmock.core.model.MockMatch?>);
+    method public void invalidate();
     method @KotlinOnly public suspend Object? loadConfiguration(kotlin.coroutines.Continuation<? super kotlin.Result<com.worldline.devview.networkmock.core.model.MockConfiguration>>);
     method public suspend Object? loadMockResponse(com.worldline.devview.networkmock.core.model.OperationKey key, int statusCode, String exampleName, kotlin.coroutines.Continuation<? super com.worldline.devview.networkmock.core.model.MockResponse?>);
   }
@@ -258,6 +324,7 @@ package com.worldline.devview.networkmock.core.repository {
   public final class RequestMatcher {
     method public boolean matchesPath(String configPath, String requestPath);
     method public boolean matchesQueryParams(java.util.Map<java.lang.String,java.lang.String>? configQueryParams, java.util.Map<java.lang.String,? extends java.util.List<java.lang.String>> requestQueryParams);
+    method public boolean matchesRequestBody(com.worldline.devview.networkmock.core.model.RequestBodyMatch? configMatch, String? requestBody);
     field public static final com.worldline.devview.networkmock.core.repository.RequestMatcher INSTANCE;
   }
 

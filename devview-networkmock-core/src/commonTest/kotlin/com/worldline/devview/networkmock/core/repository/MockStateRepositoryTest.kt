@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import app.cash.turbine.test
 import com.worldline.devview.networkmock.core.fixtures.MockTestData
 import com.worldline.devview.networkmock.core.fixtures.ThrowingPreferencesDataStore
+import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.test.FakePreferencesDataStore
@@ -108,6 +109,57 @@ class MockStateRepositoryTest {
         val repository = createRepository()
 
         repository.setOperationMockState(key = key(operationId = "getUser"), state = MockTestData.mockState200())
+        repository.setOperationMockState(key = key(operationId = "getUser"), state = OperationMockState.Network)
+
+        val operationState = repository.getState().getOperationState(key = key(operationId = "getUser"))
+        operationState shouldBe OperationMockState.Network
+    }
+
+    @Test
+    fun `setOperationMockState persists failure state for an operation`() = runTest {
+        val repository = createRepository()
+
+        repository.setOperationMockState(
+            key = key(operationId = "getUser"),
+            state = OperationMockState.Failure(kind = FailureKind.TIMEOUT)
+        )
+
+        val operationState = repository.getState().getOperationState(key = key(operationId = "getUser"))
+        operationState.shouldBeInstanceOf<OperationMockState.Failure>()
+        operationState.kind shouldBe FailureKind.TIMEOUT
+    }
+
+    @Test
+    fun `setOperationMockState persists sequence state with its position for an operation`() = runTest {
+        val repository = createRepository()
+        val steps = listOf(
+            OperationMockState.Mock(statusCode = 202, exampleName = "pending"),
+            OperationMockState.Mock(statusCode = 200, exampleName = "default")
+        )
+
+        repository.setOperationMockState(
+            key = key(operationId = "getUser"),
+            state = OperationMockState.Sequence(responses = steps, currentIndex = 1)
+        )
+
+        val operationState = repository.getState().getOperationState(key = key(operationId = "getUser"))
+        operationState.shouldBeInstanceOf<OperationMockState.Sequence>()
+        operationState.responses shouldBe steps
+        operationState.currentIndex shouldBe 1
+    }
+
+    @Test
+    fun `setOperationMockState persists network state and discards a previous sequence position`() = runTest {
+        val repository = createRepository()
+        val steps = listOf(
+            OperationMockState.Mock(statusCode = 202, exampleName = "pending"),
+            OperationMockState.Mock(statusCode = 200, exampleName = "default")
+        )
+        repository.setOperationMockState(
+            key = key(operationId = "getUser"),
+            state = OperationMockState.Sequence(responses = steps, currentIndex = 1)
+        )
+
         repository.setOperationMockState(key = key(operationId = "getUser"), state = OperationMockState.Network)
 
         val operationState = repository.getState().getOperationState(key = key(operationId = "getUser"))

@@ -7,6 +7,7 @@ import androidx.navigation3.runtime.NavKey
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import kotlin.test.Test
@@ -95,6 +96,54 @@ class DestinationMetadataExtensionsTest {
         metadata.actions.single().action()
 
         calls shouldBe 1
+    }
+
+    @Test
+    fun `menu builds an action with ordered menu items and no popup`() {
+        val key = TestNavKey::class
+        val icon = Icons.Default.Check
+        var firstCalls = 0
+        var secondCalls = 0
+
+        val (registeredKey, metadata) = key.withActions {
+            menu(icon = icon) {
+                item(label = "First") { firstCalls++ }
+                item(label = "Second") { secondCalls++ }
+            }
+        }
+
+        registeredKey shouldBeSameInstanceAs key
+        metadata.actions shouldHaveSize 1
+
+        val action = metadata.actions.single()
+        action.icon shouldBeSameInstanceAs icon
+        action.popup.shouldBeNull()
+
+        val menuItems = action.menuItems.shouldNotBeNull()
+        menuItems shouldHaveSize 2
+        menuItems[0].label shouldBe "First"
+        menuItems[1].label shouldBe "Second"
+
+        menuItems[0].onClick()
+        menuItems[1].onClick()
+
+        firstCalls shouldBe 1
+        secondCalls shouldBe 1
+    }
+
+    @Test
+    fun `menu action invoking the plain action lambda is a no-op`() {
+        val key = TestNavKey::class
+
+        val (_, metadata) = key.withActions {
+            menu(icon = Icons.Default.Check) {
+                item(label = "Only") {}
+            }
+        }
+
+        // The base `action` lambda defaults to a no-op for menu actions — it must never throw
+        // and is simply ignored by DevView's rendering when menuItems is non-null.
+        metadata.actions.single().action()
     }
 }
 

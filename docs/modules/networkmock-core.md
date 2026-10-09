@@ -49,8 +49,10 @@ Key concepts:
 - **No manifest, no per-environment overrides.** A group spanning multiple API versions (`/v1/...`, `/v2/...`) is simply multiple `paths` entries — and therefore multiple distinct `operationId`s — in the same document.
 - **`responses.<code>.content.<mediaType>.examples.<name>`** → one entry per response variant this operation can mock; `externalValue` points at the response body file on disk. By convention the primary/original response for a status code is named `"default"`.
 - **`parameters` with `in: query`** → a literal `example` value on a query parameter becomes a required match for that operation (e.g. `listUsers` only matches requests carrying `?type=user`).
+- **`requestBody.content.<mediaType>.schema`** → optionally disambiguates operations that collide on path/method/query — see [Request body matching](#request-body-matching) below.
 - **`x-devview.delayMs`** → simulated response delay, at the document root (spec-wide default) and/or per operation (overrides the default). See [x-devview extension](#x-devview-extension) below.
 - **`{param}` placeholders**: Path segments like `{userId}` match any value during request matching.
+- **`tags`** → display-only labels, read into `Operation.tags` — see [Tags](#tags) below.
 
 ## Version Tags
 
@@ -63,13 +65,33 @@ remain two distinct operations matched only by path, method, and query params (s
 [Request Matching](#request-matching) below). The extraction pattern is not currently
 configurable.
 
+## Tags
+
+`Operation.tags` is read verbatim from the operation's OpenAPI `tags` array (`emptyList()` if
+absent) — purely a display/filter label, like [`version`](#version-tags): it has no effect on
+request matching. It drives the NetworkMock UI's tag filter chips and its "Tag" sort option —
+see [NetworkMock UI](networkmock-ui.md).
+
+```json
+"paths": {
+  "/api/users": {
+    "get": {
+      "operationId": "listUsers",
+      "tags": ["Users", "Admin"],
+      "responses": { "...": "..." }
+    }
+  }
+}
+```
+
 ## Request Matching
 
-`MockConfigRepository.findMatchingMock(host, path, method, queryParameters)` resolves a mock in three steps:
+`MockConfigRepository.findMatchingMock(host, path, method, queryParameters, requestBody)` resolves a mock in four steps:
 
 1. **Hostname match** — compares the request host (case-insensitive) against every hostname declared in the spec's `servers[]`. If two specs both declare a matching hostname, the first spec (in configuration order) that also has a matching operation wins.
 2. **Path match** — splits path by `/`, compares segment by segment; `{param}` segments match any value; non-param segments are case-sensitive.
 3. **Method match** — case-sensitive exact match. Use uppercase (`"GET"`, `"POST"`).
+4. **Request body match** (only for operations that declare one — see below) — narrow, non-validating checks against the operation's declared `requestBody` schema.
 
 `Operation.method` is typed as `HttpMethod`, a small value class modeled after Ktor's own
 `io.ktor.http.HttpMethod` (open set, `HttpMethod.Get`/`.Post`/etc. constants, plus
@@ -79,6 +101,52 @@ pulling one in. `findMatchingMock`'s own `method` parameter stays a plain `Strin
 receives the raw wire value from `devview-networkmock-ktor`.
 
 There is no stored active-server selection. The matching server is determined purely from the request hostname at interception time.
+
+### Request body matching
+
+An operation's `requestBody.content.<mediaType>.schema` (`application/json` if declared,
+otherwise whichever media type comes first) is read into a narrow `RequestBodyMatch` — this
+exists purely to **disambiguate** operations that would otherwise collide on path, method, and
+query alone (e.g. two specs sharing a host, each declaring `POST /api/payments`, differing only
+by body shape); it is not a substitute for path/method/query matching, and an operation without
+`requestBodyMatch` still matches any body.
+
+```json
+"requestBody": {
+  "content": {
+    "application/json": {
+      "schema": {
+        "type": "object",
+        "required": ["amount"],
+        "discriminator": { "propertyName": "type" },
+        "properties": {
+          "type": { "type": "string", "enum": ["card"] }
+        }
+      }
+    }
+  }
+}
+```
+
+Two things are read from the schema, both deliberately narrow (not full JSON Schema validation):
+
+| Schema field | Becomes | Matching rule |
+|---|---|---|
+| `required` | `RequestBodyMatch.requiredFields` | every listed property must be a top-level key in the request body |
+| `discriminator.propertyName` | `RequestBodyMatch.discriminatorField` | that property must be a top-level key |
+| that property's own single-value `enum` | `RequestBodyMatch.discriminatorValue` | if present, the key's value must equal it exactly |
+
+If the schema yields neither a required field nor a usable discriminator (no `discriminator`, or
+one whose property doesn't declare a single-value `enum`), `requestBodyMatch` is `null` — same
+as an operation declaring no `requestBody` at all. `$ref`s (both the `requestBody` itself, under
+`components.requestBodies`, and its schema, under `components.schemas`) resolve the same way as
+elsewhere in this document.
+
+`devview-networkmock-ktor`'s plugin only reads the request body when it's already a fully
+in-memory `OutgoingContent.ByteArrayContent` (the shape Ktor's content negotiation produces for
+a JSON-serialized body) — a streaming or multipart body is never touched, and `requestBodyMatch`
+simply doesn't apply to it (treated as no body). Reading it is a pure, repeatable operation that
+never consumes or mutates anything the real network call still needs to send.
 
 ## Response Variant Discovery
 
@@ -95,28 +163,151 @@ MockConfigRepository(
 )
 ```
 
+### Response headers and content type
+
+`responses.<code>.headers` declares extra headers to serve alongside a mocked response, and the
+media type key under `responses.<code>.content` (e.g. `application/json`) becomes the response's
+`Content-Type` — both are threaded through to the app via the Ktor plugin's synthetic response.
+
+```json
+"200": {
+  "headers": {
+    "X-RateLimit-Remaining": { "example": "42" }
+  },
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "externalValue": "responses/getUser-200.json" }
+      }
+    }
+  }
+}
+```
+
+Like [query parameters](#request-matching), a header's literal `example` value is the only field
+read — no `schema` resolution. `Content-Type` defaults to `application/json` when a response
+declares no content at all; a spec can still override it explicitly by declaring its own
+`Content-Type` entry under `headers`, which wins over the media-type-derived default.
+
 ### `$ref` resolution
 
-Parameters, responses, and examples may be declared via `$ref` instead of inline:
+Parameters, responses, examples, and headers may be declared via `$ref` instead of inline:
 - **Local**: `"$ref": "#/components/parameters/UserId"` resolves against the same document's `components`.
-- **External**: `"$ref": "./common.json#/components/responses/Error"` loads another file (relative to the spec's own location) via the same `NetworkMockResourceLoader`.
+- **External**: `"$ref": "./common.json#/components/responses/Error"` loads another file via the same `NetworkMockResourceLoader`.
 
-Refs resolve one level deep — a referenced component's own `$ref` (if any) is not followed further.
+A file path in a `$ref` (or an `externalValue`) is relative to the file that contains it, not to the root spec — so after `specs/api.json` references `./shared/a.json`, a `./b.json` inside `a.json` means `specs/shared/b.json`. A leading `/` is relative to the resources root. Local `#/...` refs inside an external file resolve against that file's own `components`.
+
+Refs are followed as a chain — a referenced component's own `$ref` (if any) is resolved again,
+until a non-ref entry is reached — with a cycle guard that fails clearly instead of hanging on a
+circular reference. Each ref's fragment must name the section its context expects (e.g. a response
+`$ref` must point into `components/responses`), so a same-named entry in a different section is
+never resolved by mistake.
+
+### Schema-based response synthesis
+
+A status code with **no** `examples` at all, but a declared `content.<mediaType>.schema`,
+synthesizes one placeholder body per such media type instead of being unmockable:
+
+```json
+"200": {
+  "content": {
+    "application/json": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE"] }
+        }
+      }
+    }
+  }
+}
+```
+
+synthesizes `{"id":0,"status":"ACTIVE"}` under the example name `"default"`. A status code that
+declares **any** `examples` for a media type never falls back to synthesis for that media type,
+even if it also declares a `schema` — an author-provided example always wins. `MockResponse.isSynthesized`
+is `true` for a synthesized body, `false` otherwise; the operation picker page shows a small
+"Generated" badge on a synthesized response's row.
+
+This is deliberately narrow, not full JSON Schema conformance — no `required`,
+`additionalProperties`, string patterns, `minimum`/`maximum`, etc. (anything that would matter for
+*validating* a body rather than *synthesizing one plausible value*):
+
+| Shape | Synthesized value |
+|---|---|
+| `string` | `"string"`, or the first `enum` value if declared |
+| `integer` / `number` | `0` |
+| `boolean` | `false` |
+| `object` (or any schema with `properties`) | each property synthesized recursively |
+| `array` (or any schema with `items`) | a single-element array of the synthesized item |
+| `allOf` | member schemas' properties merged into one object; conflicting property definitions across members throw a clear error |
+| `oneOf` | the first declared variant — `discriminator` is parsed but doesn't currently steer variant selection, since there's no concrete request/response data at spec-parse time to disambiguate against |
+
+`nullable` is read but ignored — a real value is always synthesized, never a JSON `null`, since
+this library mocks responses rather than exercising null-handling. A schema shape outside this
+list (or a schema declaring none of `type`/`properties`/`items`/`enum`/`allOf`/`oneOf`) throws a
+clear error rather than guessing. `$ref`s inside a schema (including nested ones under
+`properties`/`items`/`allOf`/`oneOf`) resolve against `components/schemas` the same way as
+elsewhere in this document — including relative to the file containing the `$ref`, so a schema
+in an external file can reference its own `#/components/schemas/...` siblings.
 
 ### x-devview extension
 
-Vanilla OpenAPI has no field for response delay simulation, so it lives under the standard `x-`-prefixed [Specification Extensions](https://spec.openapis.org/oas/v3.1.0#specification-extensions) mechanism:
+Vanilla OpenAPI has no field for response delay simulation or failure injection, so both live under the standard `x-`-prefixed [Specification Extensions](https://spec.openapis.org/oas/v3.1.0#specification-extensions) mechanism:
 
 ```yaml
 x-devview:
-  delayMs: 200        # document root — spec-wide default
+  delayMs: 200          # document root — spec-wide default
+  failureRate: 0.1      # ignored at the document root, see below
 
 paths:
   /users/{userId}:
     get:
       x-devview:
-        delayMs: 500  # per-operation — overrides the document default
+        delayMs: 500       # per-operation — overrides the document default
+        failureRate: 0.1   # per-operation only — 10% of otherwise-mocked requests fail
 ```
+
+`failureRate`, unlike `delayMs`, has **no spec-wide default** — a document-root `failureRate` is
+parsed but ignored. "Some percentage of everything fails" is a much blunter tool than "this
+specific flaky endpoint fails sometimes", so it's deliberately operation-level only. See
+[Simulating failures](#simulating-failures).
+
+## Simulating failures
+
+An operation can be made to fail instead of returning a response, two ways:
+
+- **Deterministically**, by selecting a failure kind in the operation sheet's picker page (a
+  `Failure` row alongside the response variants) — every request to that operation fails the
+  same way until the selection changes, the same way [`Mock`](#datastore-schema) always serves
+  the same response.
+- **Probabilistically**, via the spec's `x-devview.failureRate` (0.0–1.0) — each request to an
+  otherwise-mocked operation independently rolls against the configured rate. This only applies
+  when the operation would otherwise serve a mock response; an operation left on `Network`
+  passthrough is never affected, keeping real network traffic untouched by default.
+
+Two failure kinds are supported, each mirroring the exception a real Ktor engine (OkHttp on
+Android, Darwin on iOS) throws for the equivalent real condition, so an app's existing error
+handling exercises the same code path:
+
+| Kind | Mirrors |
+|---|---|
+| Timeout | `io.ktor.client.plugins.HttpRequestTimeoutException` |
+| Connection Refused | a connection-level `kotlinx.io.IOException` |
+
+The probabilistic roll uses an injectable `Random` (`NetworkMockConfig.random`, defaulting to
+`Random.Default`) — override it in tests to pin the outcome deterministically.
+
+## Caching & Reload
+
+`MockConfigRepository` parses every configured spec once and caches the result — subsequent
+`loadConfiguration()` calls return the cached value without re-reading any file. Call
+`invalidate()` to clear that cache, then `loadConfiguration()` (or anything that calls it
+internally, like `findMatchingMock`) to force a fresh read — this is how a developer picks up
+an edited spec file without restarting the app. In `devview-networkmock`, the "Reload Config"
+toolbar action does exactly this via `NetworkMockViewModel.reloadConfiguration()`; see
+[NetworkMock UI](networkmock-ui.md).
 
 ## DataStore Schema
 
@@ -129,9 +320,31 @@ State is persisted via `MockStateRepository`:
 | `network_mock_schema_version` | Int | Gates the one-shot pre-0.2.0 migration below |
 | `network_mock_operation_{compositeKey}` | String (JSON) | Per-operation state |
 
-`OperationMockState` is serialized as `{"type":"network"}` (pass-through) or `{"type":"mock","statusCode":200,"exampleName":"default"}`.
+`OperationMockState` is serialized as `{"type":"network"}` (pass-through),
+`{"type":"mock","statusCode":200,"exampleName":"default"}`, or
+`{"type":"failure","kind":"timeout"}` / `{"type":"failure","kind":"connection_refused"}`, or
+`{"type":"sequence","responses":[...],"currentIndex":0}` — an ordered list of `Mock` steps plus
+the position to serve next. The position is part of this same persisted value, not a separate
+key, so resetting the operation to `Network` (or resetting all mocks) discards it along with
+everything else about the sequence. See [Simulating a staged/polling flow](networkmock-workflows.md#simulating-a-stagedpolling-flow-sequential-mocks).
 
 **Upgrading from a pre-0.2.0 release**: the operation-state key shape changed (`{groupId}-{environmentId}-{endpointId}` → `{specId}-{operationId}`), and so did the `Mock` payload (a response file name → `(statusCode, exampleName)`). On first launch after upgrading, every `network_mock_endpoint_*` entry from the old shape is wiped once — this is disabled-by-default developer-tooling state, not user data, so previously-selected mocks are reset rather than translated. The global mocking toggle is unaffected. See the [migration guide](../guides/migrating-to-openapi.md) for converting an existing `mocks.json`.
+
+## Logging
+
+`MockConfigRepository` logs spec-load outcomes through [Kermit](https://github.com/touchlab/Kermit), tagged `DevViewNetworkMock` — the same tag used by `devview-networkmock` and `devview-networkmock-ktor`, so a host can filter every NetworkMock-related log line by tag regardless of which module emitted it. Spec load success logs at `debug`, load failures at `warn` with the causing throwable attached. Request-matching outcomes (`findMatchingMock`) log at `verbose`, since they fire on every intercepted request.
+
+No response body content is ever logged. To silence NetworkMock's logs (or raise/lower their verbosity) in a host app, configure Kermit directly — this module adds no separate on/off flag of its own:
+
+```kotlin
+import co.touchlab.kermit.Logger
+import co.touchlab.kermit.Severity
+
+// Silence everything below warnings, repo-wide (affects every Kermit-backed DevView module)
+Logger.setMinSeverity(Severity.Warn)
+```
+
+`devview-consolelogger`, if installed, captures these logs into DevView's own in-app console screen for free — no extra wiring needed.
 
 ## NetworkMockResourceLoader
 

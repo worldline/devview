@@ -55,6 +55,10 @@ public data class StatusColors(public val container: Color, public val content: 
  * @property serverError Colors for [StatusCodeFamily.SERVER_ERROR] (5xx).
  * @property unknown Colors for [StatusCodeFamily.UNKNOWN].
  * @property network Colors for the network pass-through state (no mock active).
+ * @property failure Colors for a simulated network failure (see
+ *   [com.worldline.devview.networkmock.core.model.OperationMockState.Failure]) — deliberately
+ *   distinct from [clientError]/[serverError], since a failure is DevView breaking the
+ *   connection, not the mocked API returning an error status.
  *
  * @see StatusColors
  * @see LocalMockColorScheme
@@ -67,7 +71,8 @@ public data class MockColorScheme(
     public val clientError: StatusColors,
     public val serverError: StatusColors,
     public val unknown: StatusColors,
-    public val network: StatusColors
+    public val network: StatusColors,
+    public val failure: StatusColors
 ) {
     /**
      * Returns the [StatusColors] for the given [family].
@@ -113,6 +118,10 @@ public data class MockColorScheme(
             network = StatusColors(
                 container = Color(color = 0xFFABC4ED),
                 content = Color(color = 0xFF0D1F3A)
+            ),
+            failure = StatusColors(
+                container = Color(color = 0xFFF6D186),
+                content = Color(color = 0xFF4D3300)
             )
         )
 
@@ -147,6 +156,10 @@ public data class MockColorScheme(
             network = StatusColors(
                 container = Color(color = 0xFF6290DD),
                 content = Color(color = 0xFF0D1F3A)
+            ),
+            failure = StatusColors(
+                container = Color(color = 0xFFE6B84D),
+                content = Color(color = 0xFF4D3300)
             )
         )
     }

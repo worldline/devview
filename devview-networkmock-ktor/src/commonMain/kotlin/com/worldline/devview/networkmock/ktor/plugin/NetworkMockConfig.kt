@@ -3,6 +3,7 @@ package com.worldline.devview.networkmock.ktor.plugin
 import com.worldline.devview.networkmock.core.NetworkMockInitializer
 import com.worldline.devview.networkmock.core.repository.MockConfigRepository
 import com.worldline.devview.networkmock.core.repository.MockStateRepository
+import kotlin.random.Random
 
 /**
  * Configuration class for the [NetworkMockPlugin].
@@ -56,6 +57,15 @@ public class NetworkMockConfig {
      * for testing or when not using `rememberModules`.
      */
     public var stateRepository: MockStateRepository? = null
+
+    /**
+     * The random source used to roll against an operation's declared `x-devview.failureRate`
+     * (see [com.worldline.devview.networkmock.core.model.Operation.failureRate]).
+     *
+     * Overridable so tests can pin the outcome deterministically — a fake source that always
+     * "hits" or always "misses" — rather than relying on [Random.Default]'s real randomness.
+     */
+    public var random: Random = Random.Default
 
     /**
      * Resolves the [MockConfigRepository] to use, falling back to

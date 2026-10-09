@@ -34,7 +34,8 @@ Single test class:
 | `MockMatch` | Returned by `findMatchingMock()`; carries `OperationKey` + resolved `Operation` — kept unrenamed, see naming note below |
 | `OperationDescriptor` | Static `(key, config)` pair for an operation; used by the UI layer. Does not carry response variants — see below |
 | `NetworkMockState` | Persisted state: `globalMockingEnabled`, `operationStates: Map<String, OperationMockState>`, `lastModified` |
-| `OperationMockState` | Sealed interface: `Network` (pass-through) or `Mock(statusCode: Int, exampleName: String)` |
+| `OperationMockState` | Sealed interface: `Network` (pass-through), `Mock(statusCode: Int, exampleName: String)`, or `Failure(kind: FailureKind)` (deterministic simulated network failure) |
+| `FailureKind` | `@Serializable enum`: `TIMEOUT` / `CONNECTION_REFUSED` — mirrors what a real Ktor engine throws for the equivalent condition |
 
 **Naming note**: `MockResponse` and `MockMatch` are deliberately *not* renamed to OpenAPI vocabulary — they model DevView's own runtime mocking behavior (a served response, a request-to-operation match), which OpenAPI has no concept of. Everything that models something the spec itself describes uses OpenAPI terms (`ApiSpec`, `Operation`, `OperationKey`).
 
@@ -102,7 +103,7 @@ There is no environment axis and no manifest file. `servers[]` lists every base 
 | `network_mock_schema_version` | Int | Gates the one-shot pre-0.2.0 migration |
 | `network_mock_operation_{compositeKey}` | String (JSON) | `OperationMockState` per operation |
 
-`OperationMockState` is serialized as `{"type":"network"}` or `{"type":"mock","statusCode":200,"exampleName":"default"}` (discriminator field `type`).
+`OperationMockState` is serialized as `{"type":"network"}`, `{"type":"mock","statusCode":200,"exampleName":"default"}`, or `{"type":"failure","kind":"timeout"}` (discriminator field `type`).
 
 Each operation is stored under its own key, so updating one operation never overwrites another.
 
@@ -113,6 +114,8 @@ Each operation is stored under its own key, so updating one operation never over
 ## Non-Obvious Patterns
 
 **`NetworkMockInitializer.initialize()` is `@Composable`** even though it is a process-level singleton. It uses `remember` internally so that the repo objects are tied to the Composition. Subsequent calls are early-returned no-ops (`if (stateRepository != null) return`).
+
+**`Operation.failureRate` has no spec-wide default**, unlike `delayMs`. `DevViewExtension.failureRate` is parsed at the document root too but deliberately unused there — see the doc comment on `Operation.failureRate` for why (an operation-level-only knob is a much narrower blast radius than "some percentage of everything fails").
 
 **`MockConfigRepository` caches** the parsed `MockConfiguration` in `cachedConfig` after the first successful load. Tests verify this with a recording resource loader that asserts each spec file is read exactly once.
 

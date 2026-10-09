@@ -1,5 +1,11 @@
 package com.worldline.devview.networkmock.core.repository
 
+import com.worldline.devview.networkmock.core.model.RequestBodyMatch
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+
 /**
  * Utility object for matching HTTP request paths against configured endpoint paths.
  *
@@ -146,6 +152,57 @@ public object RequestMatcher {
         return configQueryParams.all { (key, value) ->
             requestQueryParams[key]?.contains(element = value) == true
         }
+    }
+
+    /**
+     * Checks if a request body satisfies an operation's [RequestBodyMatch] constraints, if any.
+     *
+     * This is **not** JSON Schema validation — only [RequestBodyMatch.requiredFields] presence
+     * and, if declared, [RequestBodyMatch.discriminatorField]'s value are checked, mirroring how
+     * lenient [matchesPath]/[matchesQueryParams] already are.
+     *
+     * ## Matching Rules
+     * 1. `null` [configMatch] always matches — an operation with no declared `requestBody`
+     *    constraints matches any body (or none at all).
+     * 2. A `null` [requestBody], or one that isn't a valid JSON object, never matches a non-null
+     *    [configMatch] — there's nothing to check required fields or a discriminator against.
+     * 3. Every [RequestBodyMatch.requiredFields] entry must be present as a top-level key.
+     * 4. If [RequestBodyMatch.discriminatorField] is declared, it must be present as a
+     *    top-level key; if [RequestBodyMatch.discriminatorValue] is also declared, that key's
+     *    value must equal it exactly (as a JSON primitive's textual content).
+     *
+     * @param configMatch The operation's declared constraints, or `null` if it declares none
+     * @param requestBody The actual incoming request body as text, or `null` if none was read
+     * @return `true` if [requestBody] satisfies [configMatch] (or [configMatch] is `null`)
+     */
+    public fun matchesRequestBody(configMatch: RequestBodyMatch?, requestBody: String?): Boolean {
+        if (configMatch == null) return true
+        val json = requestBody?.let { parseJsonObject(requestBody = it) } ?: return false
+
+        val hasRequiredFields = configMatch.requiredFields.all { field ->
+            json.containsKey(key = field)
+        }
+        val matchesDiscriminator = configMatch.discriminatorField?.let { field ->
+            val actualValue = (json[field] as? JsonPrimitive)?.content
+            actualValue != null &&
+                (
+                    configMatch.discriminatorValue == null ||
+                        actualValue == configMatch.discriminatorValue
+                    )
+        } ?: true
+
+        return hasRequiredFields && matchesDiscriminator
+    }
+
+    /**
+     * Parses [requestBody] as a JSON object for [matchesRequestBody], or `null` if it isn't
+     * valid JSON, or is valid JSON that isn't an object (e.g. a bare array or primitive).
+     */
+    @Suppress("DocumentationOverPrivateFunction")
+    private fun parseJsonObject(requestBody: String): JsonObject? = try {
+        Json.parseToJsonElement(string = requestBody) as? JsonObject
+    } catch (@Suppress("SwallowedException") e: SerializationException) {
+        null
     }
 
     /**

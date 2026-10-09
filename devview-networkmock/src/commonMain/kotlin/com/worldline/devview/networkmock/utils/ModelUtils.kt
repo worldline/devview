@@ -10,6 +10,7 @@ import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Wifi
+import androidx.compose.material.icons.rounded.WifiOff
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
@@ -77,6 +78,10 @@ internal fun OperationUiModel.Companion.fake(
 internal val OperationMockState.icon: ImageVector
     get() = when (this) {
         is OperationMockState.Mock -> iconForStatusCode(statusCode = statusCode)
+        is OperationMockState.Sequence -> iconForStatusCode(
+            statusCode = currentResponse?.statusCode
+        )
+        is OperationMockState.Failure -> Icons.Rounded.WifiOff
         OperationMockState.Network -> Icons.Rounded.Wifi
     }
 
@@ -94,6 +99,10 @@ internal val OperationMockState.contentColor: Color
     @ReadOnlyComposable
     get() = when (this) {
         is OperationMockState.Mock -> contentColorForStatusCode(statusCode = statusCode)
+        is OperationMockState.Sequence -> contentColorForStatusCode(
+            statusCode = currentResponse?.statusCode
+        )
+        is OperationMockState.Failure -> rememberMockColorScheme().failure.content
         OperationMockState.Network -> rememberMockColorScheme().network.content
     }
 
@@ -107,6 +116,10 @@ internal val OperationMockState.containerColor: Color
     @ReadOnlyComposable
     get() = when (this) {
         is OperationMockState.Mock -> containerColorForStatusCode(statusCode = statusCode)
+        is OperationMockState.Sequence -> containerColorForStatusCode(
+            statusCode = currentResponse?.statusCode
+        )
+        is OperationMockState.Failure -> rememberMockColorScheme().failure.container
         OperationMockState.Network -> rememberMockColorScheme().network.container
     }
 

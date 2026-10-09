@@ -21,6 +21,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -221,6 +222,27 @@ class NetworkMockViewModelTest : ViewModelTest() {
         allNetwork[OperationKey("user-api", "getUser")] shouldBe OperationMockState.Network
         allNetwork[OperationKey("user-api", "createUser")] shouldBe OperationMockState.Network
         allNetwork[OperationKey("catalog-api", "getProduct")] shouldBe OperationMockState.Network
+    }
+
+    @Test
+    fun reloadConfiguration_invalidatesRepositoryThenReloads() = runTest {
+        val stateFlow = MutableStateFlow(NetworkMockState())
+        val configRepository =
+            createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val stateRepository = createStateRepositoryMock(stateFlow)
+        every { configRepository.invalidate() } just Runs
+
+        val viewModel = NetworkMockViewModel(configRepository, stateRepository)
+        collectState(viewModel.uiState)
+
+        viewModel.reloadConfiguration()
+
+        coVerifyOrder {
+            configRepository.loadConfiguration()
+            configRepository.invalidate()
+            configRepository.loadConfiguration()
+        }
+        viewModel.uiState.value.shouldBeInstanceOf<NetworkMockUiState.Content>()
     }
 
     @Test

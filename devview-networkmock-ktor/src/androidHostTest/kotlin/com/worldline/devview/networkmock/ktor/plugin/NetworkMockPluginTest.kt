@@ -1,6 +1,8 @@
 package com.worldline.devview.networkmock.ktor.plugin
 
+import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.NetworkMockState
+import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.networkmock.core.repository.MockConfigRepository
 import com.worldline.devview.networkmock.core.repository.MockStateRepository
@@ -10,18 +12,25 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
+import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.OutgoingContent
 import io.ktor.http.headersOf
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlin.random.Random
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.IOException
 
 class NetworkMockPluginTest {
 
@@ -132,6 +141,479 @@ class NetworkMockPluginTest {
 
         response.status shouldBe HttpStatusCode.OK
         response.body<String>() shouldBe """{"id":10,"name":"Widget"}"""
+    }
+
+    // endregion
+
+    // region Response headers and content type
+
+    @Test
+    fun returnsMockResponse_withDefaultContentTypeHeader() = runTest {
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        val response: HttpResponse = client.get(
+            urlString = "https://staging.api.example.com/api/users/42"
+        )
+
+        // getUser's 200 response declares no explicit headers - Content-Type still defaults.
+        response.headers[HttpHeaders.ContentType] shouldBe "application/json"
+    }
+
+    @Test
+    fun returnsMockResponse_withDeclaredHeadersAndContentType() = runTest {
+        val specWithHeaders = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://staging.api.example.com" } ],
+              "paths": {
+                "/api/users/{userId}": {
+                  "get": {
+                    "operationId": "getUser",
+                    "responses": {
+                      "200": {
+                        "headers": {
+                          "X-RateLimit-Remaining": { "example": "42" }
+                        },
+                        "content": {
+                          "application/vnd.example+json": {
+                            "examples": {
+                              "default": { "externalValue": "/files/networkmocks/responses/getUser-200.json" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val resources = mapOf(
+            KtorPluginTestData.SPEC_PATH to specWithHeaders,
+            "files/networkmocks/responses/getUser-200.json" to """{"id":1,"name":"Alice"}"""
+        )
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(resources = resources),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        val response: HttpResponse = client.get(
+            urlString = "https://staging.api.example.com/api/users/42"
+        )
+
+        response.headers["X-RateLimit-Remaining"] shouldBe "42"
+        response.headers[HttpHeaders.ContentType] shouldBe "application/vnd.example+json"
+    }
+
+    // endregion
+
+    // region Sequential mocks
+
+    @Test
+    fun sequence_advancesThroughStepsOnSuccessiveRequests_andSticksOnLastOnceExhausted() = runTest {
+        val steps = listOf(
+            OperationMockState.Mock(statusCode = 200, exampleName = "default"),
+            OperationMockState.Mock(statusCode = 404, exampleName = "default")
+        )
+        val stateRepository = mutableStateRepositoryMock(
+            initial = NetworkMockState(
+                globalMockingEnabled = true,
+                operationStates = mapOf(
+                    "example-getUser" to OperationMockState.Sequence(responses = steps)
+                )
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(),
+            stateRepository = stateRepository
+        )
+
+        // Step 1: the first response, then advances to index 1.
+        client.get(urlString = "https://staging.api.example.com/api/users/42")
+            .status shouldBe HttpStatusCode.OK
+        // Step 2: the second (last) response, then sticks at index 1 - no third step exists.
+        client.get(urlString = "https://staging.api.example.com/api/users/42")
+            .status shouldBe HttpStatusCode.NotFound
+        // Step 3 onward: still the last response.
+        client.get(urlString = "https://staging.api.example.com/api/users/42")
+            .status shouldBe HttpStatusCode.NotFound
+    }
+
+    @Test
+    fun probabilisticFailure_appliesToSequenceStatesToo() = runTest {
+        val resources = flakySpecResources(failureRate = 1.0)
+        val stateRepository = mutableStateRepositoryMock(
+            initial = NetworkMockState(
+                globalMockingEnabled = true,
+                operationStates = mapOf(
+                    "example-getUser" to OperationMockState.Sequence(
+                        responses = listOf(OperationMockState.Mock(statusCode = 200, exampleName = "default"))
+                    )
+                )
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(resources = resources),
+            stateRepository = stateRepository,
+            random = FixedRandom(value = 0.0)
+        )
+
+        assertFailsWith<IOException> {
+            client.get(urlString = "https://staging.api.example.com/api/users/42")
+        }
+    }
+
+    /**
+     * Unlike [stateRepositoryMock], writes actually mutate the backing state, so a test can
+     * make more than one request and observe the plugin's own advance-and-persist write.
+     */
+    private fun mutableStateRepositoryMock(initial: NetworkMockState): MockStateRepository {
+        val stateFlow = MutableStateFlow(initial)
+        return mockk<MockStateRepository>(relaxed = true) {
+            coEvery { getState() } answers { stateFlow.value }
+            every { observeState() } returns stateFlow
+            coEvery { setOperationMockState(key = any(), state = any()) } answers {
+                val key = firstArg<OperationKey>()
+                val newState = secondArg<OperationMockState>()
+                stateFlow.value = stateFlow.value.withOperationState(key = key, state = newState)
+            }
+        }
+    }
+
+    // endregion
+
+    // region Request body matching
+
+    @Test
+    fun requestBodyDisambiguation_selectsCorrectOperationByDiscriminatorValue() = runTest {
+        val resources = requestBodyDisambiguationResources()
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "card-payByCard" to OperationMockState.Mock(statusCode = 200, exampleName = "default"),
+                "bank-payByBankTransfer" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(body = """{"source":"network"}"""),
+            configRepository = requestBodyDisambiguationRepository(resources = resources),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        val cardResponse = client.post(urlString = "https://staging.api.example.com/api/payments") {
+            setBody("""{"type":"card","number":"4242"}""")
+        }
+        val bankResponse = client.post(urlString = "https://staging.api.example.com/api/payments") {
+            setBody("""{"type":"bank_transfer","iban":"DE00"}""")
+        }
+
+        cardResponse.body<String>() shouldBe """{"method":"card"}"""
+        bankResponse.body<String>() shouldBe """{"method":"bank_transfer"}"""
+    }
+
+    @Test
+    fun requestBodyDisambiguation_fallsBackToNetworkWithOriginalBodyIntact_whenNoShapeMatches() = runTest {
+        val resources = requestBodyDisambiguationResources()
+        var capturedBody: String? = null
+        val engine = MockEngine { request ->
+            capturedBody = (request.body as? OutgoingContent.ByteArrayContent)
+                ?.bytes()
+                ?.decodeToString()
+            respond(
+                content = """{"source":"network"}""",
+                status = HttpStatusCode.OK,
+                headers = headersOf("Content-Type", "application/json")
+            )
+        }
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "card-payByCard" to OperationMockState.Mock(statusCode = 200, exampleName = "default"),
+                "bank-payByBankTransfer" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = engine,
+            configRepository = requestBodyDisambiguationRepository(resources = resources),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+        val originalBody = """{"type":"crypto","wallet":"abc123"}"""
+
+        val response: HttpResponse = client.post(
+            urlString = "https://staging.api.example.com/api/payments"
+        ) {
+            setBody(originalBody)
+        }
+
+        // No declared operation's requestBody shape matches "crypto" - falls through to network,
+        // and the original body must still reach it byte-for-byte, unconsumed.
+        response.body<String>() shouldBe """{"source":"network"}"""
+        capturedBody shouldBe originalBody
+    }
+
+    /**
+     * Two specs, sharing a host and declaring the identical `POST /api/payments` path/method,
+     * disambiguated only by a `type` discriminator in their respective `requestBody` schemas -
+     * the scenario [MockConfigRepository.findMatchingMock]'s own KDoc describes for why
+     * request-body matching exists.
+     */
+    private fun requestBodyDisambiguationResources(): Map<String, String> {
+        val cardSpec = """
+            {
+              "info": { "title": "Card" },
+              "servers": [ { "url": "https://staging.api.example.com" } ],
+              "paths": {
+                "/api/payments": {
+                  "post": {
+                    "operationId": "payByCard",
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "type": "object",
+                            "discriminator": { "propertyName": "type" },
+                            "properties": { "type": { "type": "string", "enum": ["card"] } }
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "content": {
+                          "application/json": {
+                            "examples": {
+                              "default": { "externalValue": "/files/networkmocks/responses/payByCard-200.json" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val bankSpec = """
+            {
+              "info": { "title": "Bank" },
+              "servers": [ { "url": "https://staging.api.example.com" } ],
+              "paths": {
+                "/api/payments": {
+                  "post": {
+                    "operationId": "payByBankTransfer",
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "type": "object",
+                            "discriminator": { "propertyName": "type" },
+                            "properties": { "type": { "type": "string", "enum": ["bank_transfer"] } }
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "content": {
+                          "application/json": {
+                            "examples": {
+                              "default": {
+                                "externalValue": "/files/networkmocks/responses/payByBankTransfer-200.json"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        return mapOf(
+            "files/networkmocks/specs/card.json" to cardSpec,
+            "files/networkmocks/specs/bank.json" to bankSpec,
+            "files/networkmocks/responses/payByCard-200.json" to """{"method":"card"}""",
+            "files/networkmocks/responses/payByBankTransfer-200.json" to """{"method":"bank_transfer"}"""
+        )
+    }
+
+    private fun requestBodyDisambiguationRepository(resources: Map<String, String>): MockConfigRepository =
+        MockConfigRepository(
+            specPaths = listOf(
+                "files/networkmocks/specs/card.json",
+                "files/networkmocks/specs/bank.json"
+            ),
+            resourceLoader = KtorPluginTestData.resourceLoader(resources = resources)
+        )
+
+    // endregion
+
+    // region Failure simulation
+
+    @Test
+    fun returnsFailure_whenEndpointStateIsFailureTimeout() = runTest {
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Failure(kind = FailureKind.TIMEOUT)
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        assertFailsWith<HttpRequestTimeoutException> {
+            client.get(urlString = "https://staging.api.example.com/api/users/42")
+        }
+    }
+
+    @Test
+    fun returnsFailure_whenEndpointStateIsFailureConnectionRefused() = runTest {
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Failure(kind = FailureKind.CONNECTION_REFUSED)
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        assertFailsWith<IOException> {
+            client.get(urlString = "https://staging.api.example.com/api/users/42")
+        }
+    }
+
+    @Test
+    fun probabilisticFailure_throwsWhenRandomRollHitsTheConfiguredRate() = runTest {
+        val resources = flakySpecResources(failureRate = 0.5)
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(resources = resources),
+            stateRepository = stateRepositoryMock(state = state),
+            // 0.0 < 0.5 -> always "hits" the configured rate.
+            random = FixedRandom(value = 0.0)
+        )
+
+        assertFailsWith<IOException> {
+            client.get(urlString = "https://staging.api.example.com/api/users/42")
+        }
+    }
+
+    @Test
+    fun probabilisticFailure_servesMockWhenRandomRollMissesTheConfiguredRate() = runTest {
+        val resources = flakySpecResources(failureRate = 0.5)
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(resources = resources),
+            stateRepository = stateRepositoryMock(state = state),
+            // 0.99 >= 0.5 -> always "misses" the configured rate.
+            random = FixedRandom(value = 0.99)
+        )
+
+        val response: HttpResponse = client.get(
+            urlString = "https://staging.api.example.com/api/users/42"
+        )
+
+        response.status shouldBe HttpStatusCode.OK
+        response.body<String>() shouldBe """{"id":1,"name":"Alice"}"""
+    }
+
+    @Test
+    fun probabilisticFailure_doesNotApply_whenEndpointStateIsNetwork() = runTest {
+        // The roll only applies to otherwise-mocked requests - see the plugin's own doc note.
+        val resources = flakySpecResources(failureRate = 1.0)
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf("example-getUser" to OperationMockState.Network)
+        )
+        val client = buildClient(
+            engine = networkEngine(body = """{"source":"network"}"""),
+            configRepository = configRepository(resources = resources),
+            stateRepository = stateRepositoryMock(state = state),
+            random = FixedRandom(value = 0.0)
+        )
+
+        val response: HttpResponse = client.get(
+            urlString = "https://staging.api.example.com/api/users/42"
+        )
+
+        response.body<String>() shouldBe """{"source":"network"}"""
+    }
+
+    /** A spec with `x-devview.failureRate` declared on `getUser`, backed by its response file. */
+    private fun flakySpecResources(failureRate: Double): Map<String, String> {
+        val spec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://staging.api.example.com" } ],
+              "paths": {
+                "/api/users/{userId}": {
+                  "get": {
+                    "operationId": "getUser",
+                    "x-devview": { "failureRate": $failureRate },
+                    "responses": {
+                      "200": {
+                        "content": {
+                          "application/json": {
+                            "examples": {
+                              "default": { "externalValue": "/files/networkmocks/responses/getUser-200.json" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        return mapOf(
+            KtorPluginTestData.SPEC_PATH to spec,
+            "files/networkmocks/responses/getUser-200.json" to """{"id":1,"name":"Alice"}"""
+        )
+    }
+
+    /** A [Random] pinned to always return [value] from [nextDouble], for deterministic rolls. */
+    private class FixedRandom(private val value: Double) : Random() {
+        override fun nextBits(bitCount: Int): Int = 0
+        override fun nextDouble(): Double = value
     }
 
     // endregion
@@ -259,6 +741,75 @@ class NetworkMockPluginTest {
 
     // endregion
 
+    // region Query parameter matching
+
+    @Test
+    fun queryParameterMatching_matchesWhenDeclaredQueryParamValueIsPresent() = runTest {
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-listUsers" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(body = """{"source":"network"}"""),
+            configRepository = configRepository(),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        val response: HttpResponse = client.get(
+            urlString = "https://staging.api.example.com/api/users?type=user"
+        )
+
+        response.status shouldBe HttpStatusCode.OK
+        response.body<String>() shouldBe """[{"id":1,"name":"Alice"}]"""
+    }
+
+    @Test
+    fun queryParameterMatching_fallsThroughToNetwork_whenDeclaredQueryParamValueDiffers() = runTest {
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-listUsers" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(body = """{"source":"network"}"""),
+            configRepository = configRepository(),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        // listUsers only declares a match for ?type=user - a different value doesn't match.
+        val response: HttpResponse = client.get(
+            urlString = "https://staging.api.example.com/api/users?type=admin"
+        )
+
+        response.body<String>() shouldBe """{"source":"network"}"""
+    }
+
+    @Test
+    fun queryParameterMatching_fallsThroughToNetwork_whenDeclaredQueryParamIsMissing() = runTest {
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-listUsers" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val client = buildClient(
+            engine = networkEngine(body = """{"source":"network"}"""),
+            configRepository = configRepository(),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        val response: HttpResponse = client.get(
+            urlString = "https://staging.api.example.com/api/users"
+        )
+
+        response.body<String>() shouldBe """{"source":"network"}"""
+    }
+
+    // endregion
+
     // region Error / fallback behaviour
 
     @Test
@@ -374,11 +925,15 @@ class NetworkMockPluginTest {
     private fun buildClient(
         engine: MockEngine,
         configRepository: MockConfigRepository,
-        stateRepository: MockStateRepository
+        stateRepository: MockStateRepository,
+        random: Random? = null
     ): HttpClient = HttpClient(engine = engine) {
         install(plugin = NetworkMockPlugin) {
             mockRepository = configRepository
             this.stateRepository = stateRepository
+            if (random != null) {
+                this.random = random
+            }
         }
     }
 

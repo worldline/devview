@@ -114,10 +114,58 @@ paths:
         delayMs: 500  # overrides the 200ms default for this operation only
 ```
 
+## Simulating a network failure
+
+**Deterministically** — every request to the operation fails the same way until you change it:
+
+1. Open DevView → Network Mock → tap your operation.
+2. Scroll past the response variants to "Simulate Failure" and tap Timeout or Connection Refused.
+3. The operation's state chip reflects the selected failure. Tap "No mock" (or select a response) to stop simulating it.
+
+**Probabilistically** — a percentage of requests fail on their own, the rest behave normally:
+
+```yaml
+paths:
+  /v1/users/{userId}:
+    get:
+      x-devview:
+        failureRate: 0.1  # 10% of requests to this operation fail, independently, each time
+```
+
+This only rolls for requests that would otherwise be mocked — an operation left on `Network`
+passthrough is never affected. If the operation's picker page shows a configured failure rate,
+that's this field — it's read-only in the UI; edit the spec to change it. See
+[Simulating failures](networkmock-core.md#simulating-failures) for the exact exception each
+failure kind throws.
+
+## Simulating a staged/polling flow (sequential mocks)
+
+For endpoints where the interesting behavior is the transition across repeated calls (order
+status, upload progress, async job completion):
+
+1. Open DevView → Network Mock → tap your operation.
+2. In the "SEQUENCE" section, tap "Build a Sequence".
+3. Tap responses above, in the order you want them served (e.g. `202 Pending`, then `200 Success`).
+4. Tap "Save Sequence" (needs at least 2 steps). The operation now advances one step per request.
+
+Once the sequence reaches its last step, every further request keeps serving that last step —
+it does not loop back to the start. "Reset Position" (in the same section) restarts at step 1
+without leaving the sequence; selecting "No mock" or a single response exits it entirely.
+
 ## Resetting all mocks
 
 - **UI**: Open DevView → Network Mock → tap the restore icon in the top toolbar.
 - **All mocks are reset to `Network` state**, including operations the user has never explicitly touched.
+
+## Reloading a spec after editing it
+
+Editing a spec file on disk (adding an operation, changing a response example) isn't picked up
+automatically — `MockConfigRepository` caches the parsed spec after the first load.
+
+- **UI**: Open DevView → Network Mock → tap the refresh icon in the top toolbar.
+- The spec is re-read and re-parsed from scratch; operations added, removed, or renamed appear
+  immediately. Per-operation mock selections already stored in DataStore are untouched.
+- No app restart required.
 
 ## Related Modules
 
