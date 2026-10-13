@@ -47,7 +47,7 @@ package com.worldline.devview.consolelogger {
   }
 
   public final class DevViewLogWriter extends co.touchlab.kermit.LogWriter {
-    method public void log(co.touchlab.kermit.Severity severity, String message, String tag, Throwable? throwable);
+    method public void log(co.touchlab.kermit.Severity severity, String message, String tag, optional Throwable? throwable);
     field public static final com.worldline.devview.consolelogger.DevViewLogWriter INSTANCE;
   }
 
