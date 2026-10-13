@@ -1,0 +1,60 @@
+name: Renovate API signatures
+
+on:
+  push:
+    branches:
+      - 'renovate/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    if: >-
+      startsWith(github.ref, 'refs/heads/renovate/') &&
+      (github.actor == 'renovate[bot]' || github.event_name == 'workflow_dispatch')
+    concurrency:
+      group: renovate-api-signatures-${{ github.ref }}
+      cancel-in-progress: true
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - name: Require fixup credentials
+        env:
+          FIXUP_TOKEN: ${{ secrets.RENOVATE_FIXUP_TOKEN }}
+        run: |
+          if [ -z "$FIXUP_TOKEN" ]; then
+            echo '::error::Create RENOVATE_FIXUP_TOKEN with contents:write so fixup pushes trigger CI.'
+            exit 1
+          fi
+
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.RENOVATE_FIXUP_TOKEN }}
+
+      - uses: gradle/actions/wrapper-validation@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Regenerate API signatures
+        run: ./gradlew metalavaGenerateSignature -Pandroidx.baselineprofile.skipgeneration
+
+      - name: Check regenerated signatures
+        run: ./gradlew metalavaCheckCompatibility -Pandroidx.baselineprofile.skipgeneration
+
+      - name: Commit API signatures
+        run: |
+          if [ -n "$(git status --porcelain -- '**/api/api.txt')" ]; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -- '**/api/api.txt'
+            git commit -m ':arrow_up: Update metalava API signatures'
+            git push origin HEAD
+          fi
