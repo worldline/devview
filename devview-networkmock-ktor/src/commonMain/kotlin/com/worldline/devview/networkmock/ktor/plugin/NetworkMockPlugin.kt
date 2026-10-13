@@ -412,7 +412,7 @@ private suspend fun buildMockCall(
  * @param requestData The original request data
  * @param statusCode The HTTP status code for the mock response
  * @param content The response body content as a string
- * @param contentType The response's declared media type
+ * @param contentType The response's declared media type, or empty to omit the derived header
  *   (see [com.worldline.devview.networkmock.core.model.MockResponse.contentType])
  * @param headers Additional headers declared on the response (see
  *   [com.worldline.devview.networkmock.core.model.MockResponse.headers]) — merged over the
@@ -434,7 +434,9 @@ private fun createMockHttpClientCall(
         requestTime = GMTDate(),
         headers = HeadersBuilder()
             .apply {
-                set(name = HttpHeaders.ContentType, value = contentType)
+                if (contentType.isNotBlank()) {
+                    set(name = HttpHeaders.ContentType, value = contentType)
+                }
                 headers.forEach { (name, value) -> set(name = name, value = value) }
             }.build(),
         version = HttpProtocolVersion.HTTP_1_1,

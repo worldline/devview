@@ -17,10 +17,12 @@ import kotlinx.serialization.Serializable
  *   By convention, the primary/original response for a status code is named `"default"`.
  * @property displayName Human-readable name for UI display (e.g. `"Success (200)"`,
  *   `"Not Found - Detailed (404)"`)
- * @property content The raw response body, read from the example's `externalValue` file
+ * @property content The raw response body, read from an example file or schema-synthesized.
+ *   Empty for a bodyless response.
  * @property contentType The response's declared media type (the key under `responses.<code>.content`
  *   in the spec, e.g. `"application/json"`). Defaults to `"application/json"` for response
- *   variants built without one (e.g. hand-built test fixtures).
+ *   variants built without one (e.g. hand-built test fixtures). Empty for a bodyless response
+ *   so no media-type-derived `Content-Type` header is sent.
  * @property headers Response headers declared on `responses.<code>.headers` in the spec
  *   (name to literal `example` value). Does not include `Content-Type`, which is carried
  *   separately by [contentType]. Empty if the spec declares none.
@@ -56,7 +58,8 @@ public data class MockResponse(
          * @param statusCode The HTTP status code
          * @param exampleName The OpenAPI example name
          * @param content The raw response body
-         * @param contentType The response's declared media type. Defaults to `"application/json"`.
+         * @param contentType The response's declared media type, or empty for a bodyless response.
+         *   Defaults to `"application/json"`.
          * @param headers Response headers declared on `responses.<code>.headers`. Defaults to none.
          * @param isSynthesized Whether [content] was schema-synthesized rather than author-provided.
          *   Defaults to `false`.

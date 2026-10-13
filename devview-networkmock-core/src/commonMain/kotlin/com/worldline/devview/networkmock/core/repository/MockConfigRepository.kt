@@ -169,6 +169,7 @@ public class MockConfigRepository(
     /**
      * Discovers the response variants declared for a specific operation.
      *
+     * Includes an empty-body `"default"` variant for each response with no `content`.
      * Reads the variants declared in the spec's `responses.<code>.content.*.examples` for
      * this operation — there is no probing, every returned variant corresponds to a
      * `(statusCode, exampleName)` pair the spec author explicitly declared.
@@ -228,6 +229,7 @@ public class MockConfigRepository(
         exampleName: String
     ): MockResponse? = try {
         val content = when (val source = resolved.content) {
+            ResponseContent.Empty -> ""
             is ResponseContent.FromFile -> resourceLoader.load(path = source.path).decodeToString()
             is ResponseContent.Synthesized -> source.json
         }

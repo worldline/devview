@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- NetworkMock: OpenAPI responses without `content` now expose an empty-body `"default"`
+  variant, including `$ref` responses and bodyless 200/204 statuses. No fixture file is
+  needed, and the Ktor plugin omits the media-type-derived `Content-Type` header while
+  preserving declared response headers.
+
 ## [0.2.0-alpha04] - 2026-10-09
 
 ### Added
