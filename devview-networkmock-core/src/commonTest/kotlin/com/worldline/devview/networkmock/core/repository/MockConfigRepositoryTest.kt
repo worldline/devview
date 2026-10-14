@@ -1417,6 +1417,117 @@ class MockConfigRepositoryTest {
     }
 
     @Test
+    fun `parses OpenAPI 3_1 YAML type arrays and null enum values`() = runTest {
+        val yamlSpec = $$"""
+            openapi: 3.1.0
+            info:
+              title: Example
+            servers:
+              - url: https://api.example.com
+            paths:
+              /users:
+                get:
+                  operationId: getUser
+                  requestBody:
+                    content:
+                      application/json:
+                        schema:
+                          $ref: "#/components/schemas/User"
+                  responses:
+                    "200":
+                      content:
+                        application/json:
+                          schema:
+                            $ref: "#/components/schemas/User"
+            components:
+              schemas:
+                User:
+                  type: object
+                  discriminator:
+                    propertyName: status
+                  properties:
+                    activationDateTime:
+                      type:
+                        - string
+                        - "null"
+                    count:
+                      type: ["null", integer]
+                    status:
+                      type: [string, "null"]
+                      enum: [null, ACTIVE]
+        """.trimIndent()
+        val specPath = "specs/v31.yaml"
+        val repository = MockConfigRepository(
+            specPaths = listOf(specPath),
+            resourceLoader = RecordingResourceLoader(resources = mapOf(specPath to yamlSpec))
+        )
+
+        val config = repository.loadConfiguration().getOrThrow()
+        config.specs.single().operations.single().requestBodyMatch?.discriminatorValue shouldBe "ACTIVE"
+        val responses = repository.discoverResponseFiles(
+            key = OperationKey(specId = "example", operationId = "getUser")
+        )
+
+        responses shouldHaveSize 1
+        responses.single().isSynthesized shouldBe true
+        responses.single().content shouldBe """{"activationDateTime":"string","count":0,"status":"ACTIVE"}"""
+    }
+
+    @Test
+    fun `parses OpenAPI 3_1 JSON type arrays and null enum values`() = runTest {
+        val spec = $$"""
+            {
+              "openapi": "3.1.0",
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/users": {
+                  "get": {
+                    "operationId": "getUser",
+                    "requestBody": {
+                      "content": {
+                        "application/json": { "schema": { "$ref": "#/components/schemas/User" } }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "content": {
+                          "application/json": { "schema": { "$ref": "#/components/schemas/User" } }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "User": {
+                    "type": "object",
+                    "discriminator": { "propertyName": "status" },
+                    "properties": {
+                      "activationDateTime": { "type": ["string", "null"] },
+                      "count": { "type": ["null", "integer"] },
+                      "status": { "type": ["string", "null"], "enum": [null, "ACTIVE"] }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val repository = createRepository(resources = mapOf(SPEC_PATH to spec))
+
+        val config = repository.loadConfiguration().getOrThrow()
+        config.specs.single().operations.single().requestBodyMatch?.discriminatorValue shouldBe "ACTIVE"
+        val responses = repository.discoverResponseFiles(
+            key = OperationKey(specId = "example", operationId = "getUser")
+        )
+
+        responses shouldHaveSize 1
+        responses.single().isSynthesized shouldBe true
+        responses.single().content shouldBe """{"activationDateTime":"string","count":0,"status":"ACTIVE"}"""
+    }
+
+    @Test
     fun `parses a real-world YAML spec with dollar-ref schemas declared after paths`() = runTest {
         // Mirrors a shape seen in real API docs: a YAML spec whose components.schemas section
         // sits after paths, a requestBody with its own $ref'd schema and a requestBody.required

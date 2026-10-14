@@ -1,16 +1,16 @@
-# Graph Report - devview  (2026-10-13)
+# Graph Report - devview  (2026-10-14)
 
 ## Corpus Check
-- 362 files · ~259,821 words
+- 362 files · ~260,387 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 3036 nodes · 5456 edges · 277 communities (161 shown, 95 thin omitted)
+- 3046 nodes · 5475 edges · 276 communities (160 shown, 95 thin omitted)
 - Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 448 edges (avg confidence: 0.88)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6dca70b1`
+- Built from commit: `208e8709`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -19,7 +19,7 @@
 - Style Rule Set
 - MockConfigRepository (api 0.1.3)
 - FeatureTriStateSwitch.kt
-- EndpointCard
+- OperationUiModel
 - .setScreen
 - StateDiffTest
 - RequestMatcherTest
@@ -34,8 +34,8 @@
 - MockConfigRepositoryTest
 - MultiplatformLibraryConventionPlugin.kt
 - Root CLAUDE.md project guidance
-- NetworkMockPlugin.kt
-- OperationUiModel
+- baseHttpClientConfig
+- .operation
 - NetworkMockState
 - NetworkMockViewModel
 - SchemaObject
@@ -44,7 +44,7 @@
 - GroupEnvironmentUiModel (0.1.5, environment axis)
 - MockConfigRepository (module doc)
 - NetworkMockScreen.kt
-- MockStateRepository
+- MockStateRepositoryTest
 - What You Must Do When Invoked
 - Troubleshooting & FAQ
 - Custom Modules
@@ -57,13 +57,13 @@
 - DestinationMetadata
 - Complexity Rule Set
 - DiffLineUtilsTest
-- Section
+- OpenApiDocument.kt
 - DataStoreDelegate (v0.1.2)
 - update-docs Skill
 - KMP Test Source-Set Exclusion Glob Pattern
 - AnalyticsLog
 - DevViewTest.kt
-- HomeScreen.kt
+- TestModule
 - NetworkMockPlugin
 - NetworkMock Workflows
 - Module interface concept
@@ -86,9 +86,9 @@
 - Exceptions Rule Set
 - FeatureFlip.kt
 - StatusCodeFamily
-- DataStoreDelegate
-- Module
-- NetworkMockViewModel.kt
+- NetworkMock.kt
+- Section
+- ParseContext
 - Installation
 - devview Module (Core Framework)
 - DevViewLogWriter.kt
@@ -96,9 +96,9 @@
 - NetworkMock class (current, OpenAPI)
 - NetworkMockConfig (v0.1.2)
 - DiffLine
-- FeatureHandler
+- FakePreferencesDataStore
 - devview-test Module Documentation
-- containerColorForStatusCode
+- NetworkMockPlugin.kt
 - graphify Skill (/graphify)
 - parseLogcatLine
 - devview-consolelogger CLAUDE.md
@@ -255,27 +255,26 @@
 - JSONPlaceholder spec configuration
 - DevView CHANGELOG.md
 - MockResponse
-- TestModule
+- .synthesize
 - MockResponsePreviewPageTest
 - Module Development Guide
 - Analytics Logger
-- TimeCapsuleScreen
-- NetworkMockResourceLoader
+- PaddingValues
+- Logger
 - configureDetekt
-- NetworkMockUiState
-- FeatureFlipScreen
-- FakePreferencesDataStore
+- OpenApiDocument
+- FeatureFlipScreen.kt
+- FeatureHandler
 - FeatureState
 - rememberMockColorScheme
-- iconForStatusCode
-- OperationSort
-- LogColorScheme
-- GlobalMockToggle
+- .parse
+- createDataStore.kt
+- ResponseContent
 
 ## God Nodes (most connected - your core abstractions)
 1. `Style Rule Set` - 95 edges
-2. `OperationKey` - 72 edges
-3. `MockConfigRepositoryTest` - 71 edges
+2. `OperationKey` - 74 edges
+3. `MockConfigRepositoryTest` - 73 edges
 4. `NetworkMockState` - 62 edges
 5. `AnalyticsLogCategory` - 60 edges
 6. `RequestMatcherTest` - 60 edges
@@ -314,7 +313,7 @@
 - **mocks.json to OpenAPI 3.x breaking migration** — devview_networkmock_api_0_1_5_networkmock, devview_networkmock_api_api_networkmock, docs_guides_migrating_to_openapi_overview, sample_claude_sampleapi_versions [INFERRED 0.85]
 - **TimeCapsule Module Documentation Set** — devview_timecapsule_claude_document, devview_timecapsule_api_api_timecapsuleowner, devview_timecapsule_api_api_timecapsuleeffect, readme_document, changelog_document [INFERRED 0.85]
 
-## Communities (277 total, 95 thin omitted)
+## Communities (276 total, 95 thin omitted)
 
 ### Community 0 - "AnalyticsLogCategory"
 Cohesion: 0.13
@@ -329,20 +328,20 @@ Cohesion: 0.06
 Nodes (74): ApiGroupConfig (api 0.1.1), EndpointConfig (api 0.1.1), EndpointDefinition (api 0.1.1), EndpointDescriptor (api 0.1.1), EndpointKey (api 0.1.1), EndpointMockState (api 0.1.1), EndpointMockState.Mock (api 0.1.1), EndpointMockState.Network (api 0.1.1) (+66 more)
 
 ### Community 3 - "FeatureTriStateSwitch.kt"
-Cohesion: 0.14
-Nodes (31): Animatable, AnimationVector1D, BorderStroke, Constraints, applyTonalElevation(), borderColor(), containerColor(), contentColor() (+23 more)
+Cohesion: 0.13
+Nodes (32): Animatable, AnimationVector1D, BorderStroke, Constraints, applyTonalElevation(), borderColor(), containerColor(), contentColor() (+24 more)
 
-### Community 4 - "EndpointCard"
-Cohesion: 0.26
-Nodes (8): EndpointCard(), EndpointCardPreview(), Modifier, EndpointStateChip(), EndpointStateChipPreview(), Modifier, PreviewParameterProvider, OperationUiModelPreviewParameterProvider
+### Community 4 - "OperationUiModel"
+Cohesion: 0.13
+Nodes (15): OperationDescriptor, MockScreenTestData, EndpointCard(), EndpointCardPreview(), Modifier, EndpointStateChip(), EndpointStateChipPreview(), Modifier (+7 more)
 
 ### Community 6 - "StateDiffTest"
 Cohesion: 0.18
 Nodes (4): diffLabels(), ParsedField, parseFields(), StateDiffTest
 
 ### Community 8 - "OperationMockState"
-Cohesion: 0.16
-Nodes (8): ApiSpec, MockConfiguration, Failure, Mock, Network, OperationMockState, Sequence, MockTestData
+Cohesion: 0.09
+Nodes (15): HttpMethod, ApiSpec, MockConfiguration, Operation, Failure, FailureKind, CONNECTION_REFUSED, TIMEOUT (+7 more)
 
 ### Community 9 - "TimeCapsuleOwner"
 Cohesion: 0.13
@@ -369,8 +368,8 @@ Cohesion: 0.05
 Nodes (38): AvoidReferentialEquality Rule, CastNullableToNonNullableType Rule, CastToNullableType Rule, CharArrayToStringCall Rule, Deprecation Rule, DontDowncastCollectionTypes Rule, DoubleMutabilityForCollection Rule, ElseCaseInsteadOfExhaustiveWhen Rule (+30 more)
 
 ### Community 15 - "MockItem.kt"
-Cohesion: 0.31
-Nodes (13): FailureItem(), FailureItemPreview(), Color, ImageVector, Modifier, MockItem(), MockItemContent(), MockItemMarkedForPreviewPreview() (+5 more)
+Cohesion: 0.15
+Nodes (19): Color, ImageVector, Modifier, MockItem(), MockItemContent(), MockItemMarkedForPreviewPreview(), MockItemPreview(), MockItemSelectedPreview() (+11 more)
 
 ### Community 16 - "MockConfigRepositoryTest"
 Cohesion: 0.06
@@ -384,33 +383,29 @@ Nodes (7): configureAndroidMultiplatformLibrary(), configureJava(), java(), conf
 Cohesion: 0.22
 Nodes (14): Publish (Maven Central release) GitHub Actions workflow, Root CLAUDE.md project guidance, Git workflow conventions (branch naming, PR titles, gitmoji commits), Konsist architecture enforcement concept, ModuleRegistry DSL concept, Network mock engine concept, Code of Conduct guide, Compose List Keys rule (+6 more)
 
-### Community 19 - "NetworkMockPlugin.kt"
-Cohesion: 0.09
-Nodes (24): buildMockCall(), createMockHttpClientCall(), extractRequestBodyText(), HttpClient, HttpStatusCode, MockHttpClientCall, NetworkMockPluginConfig, simulatedFailure() (+16 more)
-
-### Community 20 - "OperationUiModel"
-Cohesion: 0.18
-Nodes (9): HttpMethod, Operation, OperationDescriptor, MockScreenTestData, ApiSpecUiModel, OperationUiModel, exampleStatusCode(), fake() (+1 more)
+### Community 19 - "baseHttpClientConfig"
+Cohesion: 0.14
+Nodes (11): Exception, HttpClientConfig, createHttpClientWithMocking(), HttpClient, baseHttpClientConfig(), T, baseHttpContentNegotiation(), baseHttpResponseValidator() (+3 more)
 
 ### Community 21 - "NetworkMockState"
-Cohesion: 0.16
-Nodes (8): NetworkMockState, ByteArray, KtorPluginTestData, FixedRandom, HttpClient, HttpStatusCode, NetworkMockPluginTest, MockEngine
+Cohesion: 0.09
+Nodes (16): NetworkMockState, DataStore, Preferences, NetworkMockInitializer, Flow, Preferences, MockStateRepository, ByteArray (+8 more)
 
 ### Community 22 - "NetworkMockViewModel"
-Cohesion: 0.21
-Nodes (10): CoroutineDispatcher, MutableStateFlow, Result, NetworkMockViewModelTest, NetworkMockViewModel, collectState(), collectStates(), StateFlow (+2 more)
+Cohesion: 0.17
+Nodes (12): CoroutineDispatcher, ByteArray, MutableStateFlow, Result, NetworkMockViewModelTest, RecordingResourceLoader, NetworkMockViewModel, collectState() (+4 more)
 
 ### Community 23 - "SchemaObject"
-Cohesion: 0.05
-Nodes (37): ComponentsObject, DevViewExtension, DiscriminatorObject, ExampleObject, HeaderObject, InfoObject, MediaTypeObject, OpenApiDocument (+29 more)
+Cohesion: 0.15
+Nodes (4): SchemaObject, SchemaResolver, SchemaSynthesizerTest, SchemaResolver
 
 ### Community 24 - "DevView Public API Signature (0.1.2)"
 Cohesion: 0.06
 Nodes (60): DevView Public API Signature (0.1.1), DestinationMetadata [0.1.1], DestinationMetadataBuilder [0.1.1], DestinationMetadataExtensionsKt [0.1.1], DevViewKt (DevView composable) [0.1.1], Home (implements NavKey) [0.1.1], Module Interface [0.1.1], ModuleDestinationAction [0.1.1] (+52 more)
 
 ### Community 25 - "OperationKey"
-Cohesion: 0.15
-Nodes (3): ByteArray, RealSampleSpecTest, OperationKey
+Cohesion: 0.13
+Nodes (7): ByteArray, RealSampleSpecTest, MockMatch, OperationKey, ResolvedResponse, Result, MockConfigRepository
 
 ### Community 26 - "GroupEnvironmentUiModel (0.1.5, environment axis)"
 Cohesion: 0.19
@@ -421,12 +416,12 @@ Cohesion: 0.08
 Nodes (28): MockConfigRepository (0.1.5 API), MockMatch (0.1.5 API), MockResponse (0.1.5 API), MockStateRepository (0.1.5 API), ApiSpec (current API), MockConfigRepository (current API), MockMatch (current API), MockResponse (current API) (+20 more)
 
 ### Community 28 - "NetworkMockScreen.kt"
-Cohesion: 0.27
-Nodes (14): EmptyState(), Modifier, ContentState(), Dp, Modifier, SharedFlow, matches(), MockStateFilter (+6 more)
+Cohesion: 0.14
+Nodes (23): EmptyState(), Modifier, ContentState(), Dp, Modifier, SharedFlow, matches(), MockStateFilter (+15 more)
 
-### Community 29 - "MockStateRepository"
-Cohesion: 0.08
-Nodes (13): DataStore, Preferences, NetworkMockInitializer, Flow, Preferences, MockStateRepository, DataStore, Flow (+5 more)
+### Community 29 - "MockStateRepositoryTest"
+Cohesion: 0.15
+Nodes (5): DataStore, Flow, Preferences, ThrowingPreferencesDataStore, MockStateRepositoryTest
 
 ### Community 30 - "What You Must Do When Invoked"
 Cohesion: 0.07
@@ -457,8 +452,8 @@ Cohesion: 0.15
 Nodes (11): Console, ConsoleDestination, Dp, ImageVector, KClass, Module, NavKey, PersistentMap (+3 more)
 
 ### Community 37 - "ConsoleScreen.kt"
-Cohesion: 0.20
-Nodes (9): ConsoleScreenTest, ConsoleScreen(), NestedScrollConnection, ConsoleScreenPreview(), Dp, Modifier, rememberLogColorScheme(), NestedScrollSource (+1 more)
+Cohesion: 0.17
+Nodes (11): ConsoleScreenTest, ConsoleScreen(), NestedScrollConnection, ConsoleScreenPreview(), Dp, Modifier, rememberLogColorScheme(), LogColorScheme (+3 more)
 
 ### Community 38 - "mocks_json_to_openapi.py"
 Cohesion: 0.19
@@ -476,9 +471,9 @@ Nodes (21): CognitiveComplexMethod Rule, ComplexCondition Rule, ComplexInterface
 Cohesion: 0.12
 Nodes (8): computeLineDiff(), PersistentList, lcsLength(), lcsTable(), shouldUseInlineDiff(), toDisplayLines(), DiffLineUtilsTest, IntArray
 
-### Community 42 - "Section"
-Cohesion: 0.14
-Nodes (8): FeatureFlipModuleTest, NetworkMockModuleTest, Section, CUSTOM, FEATURES, LOGGING, NETWORK, SETTINGS
+### Community 42 - "OpenApiDocument.kt"
+Cohesion: 0.12
+Nodes (16): ComponentsObject, DevViewExtension, DiscriminatorObject, ExampleObject, HeaderObject, InfoObject, Decoder, MediaTypeObject (+8 more)
 
 ### Community 43 - "DataStoreDelegate (v0.1.2)"
 Cohesion: 0.18
@@ -500,9 +495,9 @@ Nodes (8): AnalyticsLogger, SnapshotStateList, AnalyticsLog, AnalyticsLogListPre
 Cohesion: 0.12
 Nodes (20): DevViewDestination, DevViewModule, DevViewTest, NavigationEventHandler, Dp, KClass, Module, NavigationEventHandler (+12 more)
 
-### Community 48 - "HomeScreen.kt"
-Cohesion: 0.18
-Nodes (15): Home, HomeScreen(), HomeScreenPreview(), Modifier, Module, Modifier, Module, ModuleItem() (+7 more)
+### Community 48 - "TestModule"
+Cohesion: 0.10
+Nodes (23): HomeScreenTest, ModuleItemUiTest, Dp, KClass, Module, NavKey, PersistentMap, TestModule (+15 more)
 
 ### Community 49 - "NetworkMockPlugin"
 Cohesion: 0.12
@@ -541,8 +536,8 @@ Cohesion: 0.20
 Nodes (12): Modifier, MockResponsePreviewPage(), MockResponsePreviewPagePreview(), PreviewPageHeader(), PreviewParameterProvider, PreviewSheetStatePreviewParameterProvider, Compare, HasResponse (+4 more)
 
 ### Community 58 - "NetworkMockOperationSheet.kt"
-Cohesion: 0.29
-Nodes (10): ErrorState(), Modifier, Modifier, LoadingState(), Modifier, NetworkMockOperationSheet(), NetworkMockOperationSheetPickerPreview(), OperationPickerHeader() (+2 more)
+Cohesion: 0.16
+Nodes (19): ErrorState(), Modifier, Modifier, LoadingState(), FailureItem(), FailureItemPreview(), Modifier, NetworkMockOperationSheet() (+11 more)
 
 ### Community 59 - "ConsoleLog"
 Cohesion: 0.24
@@ -553,8 +548,8 @@ Cohesion: 0.27
 Nodes (12): HighlightedAnalyticsLogCard(), HighlightedAnalyticsLogCardPreview(), Modifier, HighlightedAnalyticsLogsHeader(), HighlightedAnalyticsLogsHeaderPreview(), Modifier, PersistentList, HighlightedAnalyticsLog (+4 more)
 
 ### Community 61 - "LogLevel"
-Cohesion: 0.14
-Nodes (12): toLogLevel(), LogLevel, ASSERT, DEBUG, ERROR, INFO, UNKNOWN, VERBOSE (+4 more)
+Cohesion: 0.15
+Nodes (11): LogLevel, ASSERT, DEBUG, ERROR, INFO, UNKNOWN, VERBOSE, WARNING (+3 more)
 
 ### Community 62 - "Detekt Default Config (default-config.yml)"
 Cohesion: 0.14
@@ -581,24 +576,24 @@ Cohesion: 0.15
 Nodes (13): ErrorUsageWithThrowable Rule, ExceptionRaisedInUnexpectedLocation Rule, Exceptions Rule Set, NotImplementedDeclaration Rule, ObjectExtendsThrowable Rule, PrintStackTrace Rule, RethrowCaughtException Rule, ReturnFromFinally Rule (+5 more)
 
 ### Community 69 - "FeatureFlip.kt"
-Cohesion: 0.24
-Nodes (9): FeatureFlip, FeatureFlipDestination, Dp, KClass, Module, NavKey, PersistentMap, Main (+1 more)
+Cohesion: 0.33
+Nodes (8): FeatureFlip, FeatureFlipDestination, Dp, KClass, Module, NavKey, PersistentMap, Main
 
 ### Community 70 - "StatusCodeFamily"
-Cohesion: 0.15
-Nodes (8): StatusCodeFamily, CLIENT_ERROR, INFORMATIONAL, REDIRECTION, SERVER_ERROR, SUCCESSFUL, UNKNOWN, MockColorSchemeTest
+Cohesion: 0.14
+Nodes (10): StatusCodeFamily, CLIENT_ERROR, INFORMATIONAL, REDIRECTION, SERVER_ERROR, SUCCESSFUL, UNKNOWN, MockColorScheme (+2 more)
 
-### Community 71 - "DataStoreDelegate"
-Cohesion: 0.16
-Nodes (10): DataStoreDelegateUiTest, InitDelegate(), createDataStore(), DataStore, Preferences, rememberDataStore(), DataStoreDelegate, DataStore (+2 more)
+### Community 71 - "NetworkMock.kt"
+Cohesion: 0.10
+Nodes (16): Dp, KClass, Module, NavKey, PersistentMap, Main, NetworkMock, NetworkMockDestination (+8 more)
 
-### Community 72 - "Module"
-Cohesion: 0.31
-Nodes (9): Color, Dp, ImageVector, KClass, NavKey, PersistentMap, Module, previewModule() (+1 more)
+### Community 72 - "Section"
+Cohesion: 0.13
+Nodes (16): FeatureFlipModuleTest, Color, Dp, ImageVector, KClass, NavKey, PersistentMap, Module (+8 more)
 
-### Community 73 - "NetworkMockViewModel.kt"
-Cohesion: 0.22
-Nodes (6): FailureKind, CONNECTION_REFUSED, TIMEOUT, StateFlow, LoadedOperation, ViewModel
+### Community 73 - "ParseContext"
+Cohesion: 0.29
+Nodes (8): RequestBodyObject, SchemaResolver, T, ParseContext, SchemaResolver, Resolved, resolvePath(), SourceDocument
 
 ### Community 74 - "Installation"
 Cohesion: 0.23
@@ -628,25 +623,25 @@ Nodes (12): NetworkMockConfig (v0.1.1), NetworkMockPlugin (v0.1.1), NetworkMockP
 Cohesion: 0.18
 Nodes (8): Different, DiffLine, Unchanged, Collapsed, DisplayLine, Left, Right, Unchanged
 
-### Community 81 - "FeatureHandler"
-Cohesion: 0.19
-Nodes (10): FeatureFlipScreenTest, FeatureHandler, Feature, Flow, Preferences, State, rememberFeatureHandler(), waitUntilTagCount() (+2 more)
+### Community 81 - "FakePreferencesDataStore"
+Cohesion: 0.22
+Nodes (10): FeatureFlipScreenTest, FeatureFlipScreen(), waitUntilTagCount(), waitUntilTagExists(), waitUntilTagGone(), FakePreferencesDataStore, DataStore, Flow (+2 more)
 
 ### Community 82 - "devview-test Module Documentation"
 Cohesion: 0.21
 Nodes (12): devview-test Module Documentation, ComposeUiTestWait.kt extensions (waitUntilTagCount/Exists/Gone), FakePreferencesDataStore, assertEmitsExactly (FlowAssertions.kt), collectState/collectStates (StateFlowCollectors.kt), TestDispatchers / testDispatchers() / runTestWithDispatchers, ViewModelTest, ViewModelTest Uses Unconfined, Not Main, Dispatcher (+4 more)
 
-### Community 83 - "containerColorForStatusCode"
-Cohesion: 0.28
-Nodes (5): ModelUtilsColorTest, containerColorForStatusCode(), contentColorForStatusCode(), Color, toStatusCodeFamily()
+### Community 83 - "NetworkMockPlugin.kt"
+Cohesion: 0.35
+Nodes (11): buildMockCall(), createMockHttpClientCall(), extractRequestBodyText(), HttpClient, HttpStatusCode, MockHttpClientCall, NetworkMockPluginConfig, simulatedFailure() (+3 more)
 
 ### Community 84 - "graphify Skill (/graphify)"
 Cohesion: 0.18
 Nodes (11): /graphify Trigger Directive (.claude/CLAUDE.md), /graphify add Command, --watch Background Rebuild Flag, Wiki Export (--wiki), graphify clone Command, Native CLAUDE.md Integration (graphify claude install), Post-commit Auto-rebuild Hook, --cluster-only Flow (+3 more)
 
 ### Community 85 - "parseLogcatLine"
-Cohesion: 0.31
-Nodes (3): tailNativeConsole(), parseLogcatLine(), LogcatLineTest
+Cohesion: 0.33
+Nodes (3): parseLogcatLine(), toLogLevel(), LogcatLineTest
 
 ### Community 86 - "devview-consolelogger CLAUDE.md"
 Cohesion: 0.22
@@ -681,8 +676,8 @@ Cohesion: 0.44
 Nodes (9): applyBrandingTheme(), getAssetPrefix(), init(), isDarkScheme(), observeColorScheme(), observePageChanges(), scheduleApplyBrandingTheme(), setHeaderLogo() (+1 more)
 
 ### Community 94 - "DevViewApp.kt"
-Cohesion: 0.13
-Nodes (16): Bundle, ComponentActivity, Dp, KClass, Module, NavKey, PersistentMap, Main (+8 more)
+Cohesion: 0.21
+Nodes (8): Bundle, ComponentActivity, MainActivity, AppFeatures, DARK_MODE, DevViewApp(), UIViewController, MainViewController()
 
 ### Community 95 - "add-konsist-rule Skill"
 Cohesion: 0.21
@@ -765,8 +760,8 @@ Cohesion: 0.70
 Nodes (5): test-writer Agent, write-tests Skill, Kotest Infix Assertion Convention, Test Source Set Selection Convention, ViewModelTest Base Class Convention
 
 ### Community 120 - "BooleanPreviewParameterProvider"
-Cohesion: 0.32
-Nodes (3): BooleanPreviewParameterProvider, PreviewParameterProvider, BooleanPreviewParameterProviderTest
+Cohesion: 0.23
+Nodes (6): GlobalMockToggle(), GlobalMockToggleEnabledPreview(), Modifier, BooleanPreviewParameterProvider, PreviewParameterProvider, BooleanPreviewParameterProviderTest
 
 ### Community 121 - "FeatureType"
 Cohesion: 0.40
@@ -845,8 +840,8 @@ Cohesion: 0.50
 Nodes (4): MockHttpClientCall (v0.1.1), MockHttpClientCall (v0.1.2), MockHttpClientCall (v0.1.3), MockHttpClientCall (v0.1.4)
 
 ### Community 145 - "Feature"
-Cohesion: 0.15
-Nodes (12): FeatureItem(), FeatureItemPreview(), Feature, Modifier, Feature, LocalFeature, RemoteFeature, FeaturePreviewParameterProvider (+4 more)
+Cohesion: 0.17
+Nodes (11): FeatureItem(), FeatureItemPreview(), Feature, Modifier, Feature, LocalFeature, FeaturePreviewParameterProvider, Feature (+3 more)
 
 ### Community 146 - "BooleanPreviewParameterProvider (devview-utils)"
 Cohesion: 0.50
@@ -893,11 +888,11 @@ Cohesion: 0.33
 Nodes (5): configureDefaultExcludes(), Versions, ComposeMultiplatformConventionPlugin, Plugin, Project
 
 ### Community 226 - "TimeCapsuleRow.kt"
-Cohesion: 0.33
+Cohesion: 0.30
 Nodes (14): AnnotatedString, DeltaPill(), formatDelta(), formatTimestamp(), highlightedLabel(), Color, Modifier, RowContent() (+6 more)
 
 ### Community 227 - "ScreenCapsule"
-Cohesion: 0.25
+Cohesion: 0.27
 Nodes (6): S, ScreenCapsule, CounterState, FakeOwner, StateFlow, ScreenCapsuleTest
 
 ### Community 259 - "DevView CHANGELOG.md"
@@ -905,12 +900,12 @@ Cohesion: 0.25
 Nodes (7): ApiGroupConfig -> ApiSpec vocabulary rename (networkmock), DevView CHANGELOG.md, Migration from mocks.json to OpenAPI 3.x spec parsing, TimeCapsuleEffect subtitle parameter (breaking change), Detekt Compose rule set (compose-config.yml), LocalConsoleLogs CompositionLocal, LocalLogColorScheme CompositionLocal
 
 ### Community 260 - "MockResponse"
-Cohesion: 0.17
-Nodes (7): MockMatch, MockResponse, ResolvedResponse, Result, MockConfigRepository, PreviewParameterProvider, MockResponsePreviewParameterProvider
+Cohesion: 0.29
+Nodes (4): MockResponse, PreviewParameterProvider, MockResponsePreviewParameterProvider, fake()
 
-### Community 261 - "TestModule"
-Cohesion: 0.19
-Nodes (8): HomeScreenTest, ModuleItemUiTest, Dp, KClass, Module, NavKey, PersistentMap, TestModule
+### Community 261 - ".synthesize"
+Cohesion: 0.56
+Nodes (3): SchemaResolver, SchemaSynthesizer, JsonElement
 
 ### Community 263 - "Module Development Guide"
 Cohesion: 0.47
@@ -920,45 +915,45 @@ Nodes (6): MyAdvancedModule custom module example, Module Development Guide, MyM
 Cohesion: 0.40
 Nodes (5): Analytics Logger, AnalyticsLog, AnalyticsLogCategory, AnalyticsScreen, LocalAnalytics
 
-### Community 265 - "TimeCapsuleScreen"
-Cohesion: 0.83
-Nodes (3): Dp, Modifier, TimeCapsuleScreen()
+### Community 265 - "PaddingValues"
+Cohesion: 0.70
+Nodes (4): Dp, Modifier, TimeCapsuleScreen(), PaddingValues
 
-### Community 266 - "NetworkMockResourceLoader"
-Cohesion: 0.22
-Nodes (4): ByteArray, NetworkMockResourceLoader, ByteArray, RecordingResourceLoader
+### Community 266 - "Logger"
+Cohesion: 0.38
+Nodes (3): tailNativeConsole(), baseHttpLogging(), Logger
 
-### Community 268 - "NetworkMockUiState"
+### Community 268 - "OpenApiDocument"
+Cohesion: 0.33
+Nodes (4): OpenApiDocument, ByteArray, Decoder, YamlSupport
+
+### Community 269 - "FeatureFlipScreen.kt"
 Cohesion: 0.18
-Nodes (12): SharedFlow, PreviewParameterProvider, NetworkMockUiStatePreviewParameterProvider, Content, Empty, Error, Hidden, Loaded (+4 more)
+Nodes (9): FeatureFilter, LOCAL, OFF, ON, REMOTE, FeaturesScreenPreview(), Dp, Feature (+1 more)
 
-### Community 269 - "FeatureFlipScreen"
+### Community 270 - "FeatureHandler"
 Cohesion: 0.22
-Nodes (11): FeatureFilter, LOCAL, OFF, ON, REMOTE, FeatureFlipScreen(), FeaturesScreenPreview(), Dp (+3 more)
-
-### Community 270 - "FakePreferencesDataStore"
-Cohesion: 0.27
-Nodes (6): FeatureHandlerTest, FakePreferencesDataStore, DataStore, Flow, MutableStateFlow, Preferences
+Nodes (7): FeatureHandler, Feature, Flow, Preferences, State, rememberFeatureHandler(), FeatureHandlerTest
 
 ### Community 271 - "FeatureState"
-Cohesion: 0.18
+Cohesion: 0.20
 Nodes (5): FeatureTriStateSwitchTest, FeatureState, LOCAL_OFF, LOCAL_ON, REMOTE
 
 ### Community 272 - "rememberMockColorScheme"
-Cohesion: 0.25
-Nodes (4): MockColorSchemeResolutionTest, rememberMockColorScheme(), MockColorScheme, StatusColors
+Cohesion: 0.18
+Nodes (3): MockColorSchemeResolutionTest, ModelUtilsColorTest, rememberMockColorScheme()
 
-### Community 273 - "iconForStatusCode"
-Cohesion: 0.29
-Nodes (3): iconForStatusCode(), ImageVector, ModelUtilsTest
+### Community 273 - ".parse"
+Cohesion: 0.52
+Nodes (3): ByteArray, OpenApiParser, ParsedSpec
 
-### Community 274 - "OperationSort"
-Cohesion: 0.40
-Nodes (5): OperationSort, METHOD, PATH, SPEC_ORDER, TAG
+### Community 274 - "createDataStore.kt"
+Cohesion: 0.60
+Nodes (4): createDataStore(), DataStore, Preferences, rememberDataStore()
 
-### Community 276 - "GlobalMockToggle"
-Cohesion: 0.83
-Nodes (3): GlobalMockToggle(), GlobalMockToggleEnabledPreview(), Modifier
+### Community 275 - "ResponseContent"
+Cohesion: 0.50
+Nodes (4): Empty, FromFile, ResponseContent, Synthesized
 
 ## Ambiguous Edges - Review These
 - `Token Reduction Benchmark` → `MCP Stdio Server (--mcp)`  [AMBIGUOUS]
@@ -982,7 +977,7 @@ Nodes (3): GlobalMockToggle(), GlobalMockToggleEnabledPreview(), Modifier
 
 ## Knowledge Gaps
 - **654 isolated node(s):** `Main`, `All`, `Last5Min`, `Last15Min`, `Last30Min` (+649 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 960 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 959 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **95 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions

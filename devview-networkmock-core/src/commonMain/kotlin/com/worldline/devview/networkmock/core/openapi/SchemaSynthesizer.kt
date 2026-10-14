@@ -36,7 +36,7 @@ internal object SchemaSynthesizer {
      * `ParseContext.schemaResolver`) wherever a nested schema is encountered.
      *
      * Resolution order once `$ref` is resolved: `allOf` (merge), then `oneOf` (first variant),
-     * then `enum` (first value), then `object`/`array` shape (by declared `type` or by the mere
+     * then `enum` (first non-null value), then `object`/`array` shape (by declared `type` or by the mere
      * presence of `properties`/`items`), then primitive `type`s. [SchemaObject.nullable] is
      * ignored — a real value is always produced, never a JSON `null`; this library mocks
      * responses, it doesn't exercise null-handling.
@@ -51,10 +51,11 @@ internal object SchemaSynthesizer {
      */
     suspend fun synthesize(schema: SchemaObject, resolver: SchemaResolver): JsonElement {
         val (resolved, scoped) = resolver.resolve(schema = schema)
+        val enumValue = resolved.enum?.firstNotNullOfOrNull { it }
         return when {
             resolved.allOf != null -> synthesizeAllOf(members = resolved.allOf, resolver = scoped)
             resolved.oneOf != null -> synthesizeOneOf(members = resolved.oneOf, resolver = scoped)
-            !resolved.enum.isNullOrEmpty() -> JsonPrimitive(value = resolved.enum.first())
+            enumValue != null -> JsonPrimitive(value = enumValue)
             resolved.type == "object" || resolved.properties != null ->
                 synthesizeObject(schema = resolved, resolver = scoped)
             resolved.type == "array" || resolved.items != null ->

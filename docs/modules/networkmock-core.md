@@ -250,7 +250,7 @@ This is deliberately narrow, not full JSON Schema conformance — no `required`,
 
 | Shape | Synthesized value |
 |---|---|
-| `string` | `"string"`, or the first `enum` value if declared |
+| `string` | `"string"`, or the first non-null `enum` value if declared |
 | `integer` / `number` | `0` |
 | `boolean` | `false` |
 | `object` (or any schema with `properties`) | each property synthesized recursively |
@@ -259,7 +259,10 @@ This is deliberately narrow, not full JSON Schema conformance — no `required`,
 | `oneOf` | the first declared variant — `discriminator` is parsed but doesn't currently steer variant selection, since there's no concrete request/response data at spec-parse time to disambiguate against |
 
 `nullable` is read but ignored — a real value is always synthesized, never a JSON `null`, since
-this library mocks responses rather than exercising null-handling. A schema shape outside this
+this library mocks responses rather than exercising null-handling. OpenAPI 3.1 `type` arrays
+(e.g. `[string, "null"]`) are accepted in JSON and YAML specs; the first non-`"null"` type
+is used. Null entries in `enum` are skipped when synthesizing values or matching a request-body
+discriminator. A schema shape outside this
 list (or a schema declaring none of `type`/`properties`/`items`/`enum`/`allOf`/`oneOf`) throws a
 clear error rather than guessing. `$ref`s inside a schema (including nested ones under
 `properties`/`items`/`allOf`/`oneOf`) resolve against `components/schemas` the same way as
