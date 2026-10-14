@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0-alpha05] - 2026-10-14
+
 ### Fixed
 - NetworkMock: OpenAPI 3.1 schemas declaring `type` as an array (e.g. `[string, "null"]`)
   or `null` in `enum` no longer fail spec loading.
@@ -374,7 +376,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added and expanded unit test coverage for all primary `devview-*` modules.
 - Added Konsist architecture enforcement tests and Kover coverage reporting across the module set.
 
-[Unreleased]: https://github.com/worldline/DevView/compare/0.2.0-alpha04...HEAD
+[Unreleased]: https://github.com/worldline/DevView/compare/0.2.0-alpha05...HEAD
+[0.2.0-alpha05]: https://github.com/worldline/DevView/compare/0.2.0-alpha04...0.2.0-alpha05
 [0.2.0-alpha04]: https://github.com/worldline/DevView/compare/0.2.0-alpha03...0.2.0-alpha04
 [0.2.0-alpha03]: https://github.com/worldline/DevView/compare/0.2.0-alpha02...0.2.0-alpha03
 [0.2.0-alpha02]: https://github.com/worldline/DevView/compare/0.2.0-alpha01...0.2.0-alpha02

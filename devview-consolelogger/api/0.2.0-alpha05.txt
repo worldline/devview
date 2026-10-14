@@ -1,0 +1,143 @@
+// Signature format: 4.0
+package com.worldline.devview.consolelogger {
+
+  public final class Console implements com.worldline.devview.core.Module {
+    ctor public Console();
+    ctor public Console(optional int maxEntries, optional boolean captureNativeConsole);
+    method @InaccessibleFromKotlin public boolean getCaptureNativeConsole();
+    method @InaccessibleFromKotlin public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> getDestinations();
+    method @InaccessibleFromKotlin public androidx.navigation3.runtime.NavKey getEntryDestination();
+    method @InaccessibleFromKotlin public int getMaxEntries();
+    method @InaccessibleFromKotlin public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<? super androidx.navigation3.runtime.NavKey>,kotlin.Unit> getRegisterSerializers();
+    method @InaccessibleFromKotlin public com.worldline.devview.core.Section getSection();
+    method @KotlinOnly @androidx.compose.runtime.Composable public void initModule();
+    method @KotlinOnly public void registerContent(androidx.navigation3.runtime.EntryProviderScope<androidx.navigation3.runtime.NavKey>, kotlin.jvm.functions.Function0<kotlin.Unit> onNavigateBack, kotlin.jvm.functions.Function1<androidx.navigation3.runtime.NavKey,kotlin.Unit> onNavigate, androidx.compose.ui.unit.Dp bottomPadding);
+    property public boolean captureNativeConsole;
+    property public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> destinations;
+    property public androidx.navigation3.runtime.NavKey entryDestination;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    property public int maxEntries;
+    property public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<androidx.navigation3.runtime.NavKey>,kotlin.Unit> registerSerializers;
+    property public com.worldline.devview.core.Section section;
+  }
+
+  public sealed exhaustive interface ConsoleDestination extends androidx.navigation3.runtime.NavKey {
+  }
+
+  @kotlinx.serialization.Serializable public static final class ConsoleDestination.Main implements com.worldline.devview.consolelogger.ConsoleDestination {
+    field public static final com.worldline.devview.consolelogger.ConsoleDestination.Main INSTANCE;
+  }
+
+  public final class ConsoleLogger {
+    method @InaccessibleFromKotlin public boolean getHasLogs();
+    method @InaccessibleFromKotlin public androidx.compose.runtime.snapshots.SnapshotStateList<com.worldline.devview.consolelogger.model.ConsoleLog> getLogs();
+    method public void log(com.worldline.devview.consolelogger.model.ConsoleLog log);
+    property public boolean hasLogs;
+    property public androidx.compose.runtime.snapshots.SnapshotStateList<com.worldline.devview.consolelogger.model.ConsoleLog> logs;
+    field public static final com.worldline.devview.consolelogger.ConsoleLogger INSTANCE;
+  }
+
+  public final class ConsoleLoggerKt {
+    method @InaccessibleFromKotlin public static androidx.compose.runtime.ProvidableCompositionLocal<java.util.List<com.worldline.devview.consolelogger.model.ConsoleLog>> getLocalConsoleLogs();
+    property public static androidx.compose.runtime.ProvidableCompositionLocal<java.util.List<com.worldline.devview.consolelogger.model.ConsoleLog>> LocalConsoleLogs;
+  }
+
+  public final class ConsoleScreenKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void ConsoleScreen(optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding);
+  }
+
+  public final class DevViewLogWriter extends co.touchlab.kermit.LogWriter {
+    method public void log(co.touchlab.kermit.Severity severity, String message, String tag, Throwable? throwable);
+    field public static final com.worldline.devview.consolelogger.DevViewLogWriter INSTANCE;
+  }
+
+}
+
+package com.worldline.devview.consolelogger.model {
+
+  @androidx.compose.runtime.Immutable public final class ConsoleLog {
+    ctor public ConsoleLog(com.worldline.devview.consolelogger.model.LogLevel level, String tag, String message, long timestamp);
+    method public com.worldline.devview.consolelogger.model.LogLevel component1();
+    method public String component2();
+    method public String component3();
+    method public long component4();
+    method public com.worldline.devview.consolelogger.model.ConsoleLog copy(optional com.worldline.devview.consolelogger.model.LogLevel level, optional String tag, optional String message, optional long timestamp);
+    method @InaccessibleFromKotlin public com.worldline.devview.consolelogger.model.LogLevel getLevel();
+    method @InaccessibleFromKotlin public String getMessage();
+    method @InaccessibleFromKotlin public String getTag();
+    method @InaccessibleFromKotlin public long getTimestamp();
+    property public com.worldline.devview.consolelogger.model.LogLevel level;
+    property public String message;
+    property public String tag;
+    property public long timestamp;
+  }
+
+  @androidx.compose.runtime.Stable public enum LogLevel {
+    enum_constant public static final com.worldline.devview.consolelogger.model.LogLevel ASSERT;
+    enum_constant public static final com.worldline.devview.consolelogger.model.LogLevel DEBUG;
+    enum_constant public static final com.worldline.devview.consolelogger.model.LogLevel ERROR;
+    enum_constant public static final com.worldline.devview.consolelogger.model.LogLevel INFO;
+    enum_constant public static final com.worldline.devview.consolelogger.model.LogLevel UNKNOWN;
+    enum_constant public static final com.worldline.devview.consolelogger.model.LogLevel VERBOSE;
+    enum_constant public static final com.worldline.devview.consolelogger.model.LogLevel WARNING;
+  }
+
+}
+
+package com.worldline.devview.consolelogger.theme {
+
+  public final class LocalLogColorSchemeKt {
+    method @InaccessibleFromKotlin public static androidx.compose.runtime.ProvidableCompositionLocal<com.worldline.devview.consolelogger.theme.LogColorScheme?> getLocalLogColorScheme();
+    property public static androidx.compose.runtime.ProvidableCompositionLocal<com.worldline.devview.consolelogger.theme.LogColorScheme?> LocalLogColorScheme;
+  }
+
+  @androidx.compose.runtime.Immutable public final class LogColorScheme {
+    ctor public LogColorScheme(com.worldline.devview.consolelogger.theme.LogLevelColors verbose, com.worldline.devview.consolelogger.theme.LogLevelColors debug, com.worldline.devview.consolelogger.theme.LogLevelColors info, com.worldline.devview.consolelogger.theme.LogLevelColors warning, com.worldline.devview.consolelogger.theme.LogLevelColors error, com.worldline.devview.consolelogger.theme.LogLevelColors assert, com.worldline.devview.consolelogger.theme.LogLevelColors unknown);
+    method public com.worldline.devview.consolelogger.theme.LogLevelColors component1();
+    method public com.worldline.devview.consolelogger.theme.LogLevelColors component2();
+    method public com.worldline.devview.consolelogger.theme.LogLevelColors component3();
+    method public com.worldline.devview.consolelogger.theme.LogLevelColors component4();
+    method public com.worldline.devview.consolelogger.theme.LogLevelColors component5();
+    method public com.worldline.devview.consolelogger.theme.LogLevelColors component6();
+    method public com.worldline.devview.consolelogger.theme.LogLevelColors component7();
+    method public com.worldline.devview.consolelogger.theme.LogColorScheme copy(optional com.worldline.devview.consolelogger.theme.LogLevelColors verbose, optional com.worldline.devview.consolelogger.theme.LogLevelColors debug, optional com.worldline.devview.consolelogger.theme.LogLevelColors info, optional com.worldline.devview.consolelogger.theme.LogLevelColors warning, optional com.worldline.devview.consolelogger.theme.LogLevelColors error, optional com.worldline.devview.consolelogger.theme.LogLevelColors assert, optional com.worldline.devview.consolelogger.theme.LogLevelColors unknown);
+    method public operator com.worldline.devview.consolelogger.theme.LogLevelColors get(com.worldline.devview.consolelogger.model.LogLevel level);
+    method @InaccessibleFromKotlin public com.worldline.devview.consolelogger.theme.LogLevelColors getAssert();
+    method @InaccessibleFromKotlin public com.worldline.devview.consolelogger.theme.LogLevelColors getDebug();
+    method @InaccessibleFromKotlin public com.worldline.devview.consolelogger.theme.LogLevelColors getError();
+    method @InaccessibleFromKotlin public com.worldline.devview.consolelogger.theme.LogLevelColors getInfo();
+    method @InaccessibleFromKotlin public com.worldline.devview.consolelogger.theme.LogLevelColors getUnknown();
+    method @InaccessibleFromKotlin public com.worldline.devview.consolelogger.theme.LogLevelColors getVerbose();
+    method @InaccessibleFromKotlin public com.worldline.devview.consolelogger.theme.LogLevelColors getWarning();
+    property public com.worldline.devview.consolelogger.theme.LogLevelColors assert;
+    property public com.worldline.devview.consolelogger.theme.LogLevelColors debug;
+    property public com.worldline.devview.consolelogger.theme.LogLevelColors error;
+    property public com.worldline.devview.consolelogger.theme.LogLevelColors info;
+    property public com.worldline.devview.consolelogger.theme.LogLevelColors unknown;
+    property public com.worldline.devview.consolelogger.theme.LogLevelColors verbose;
+    property public com.worldline.devview.consolelogger.theme.LogLevelColors warning;
+    field public static final com.worldline.devview.consolelogger.theme.LogColorScheme.Companion Companion;
+  }
+
+  public static final class LogColorScheme.Companion {
+    method @InaccessibleFromKotlin public com.worldline.devview.consolelogger.theme.LogColorScheme getDark();
+    method @InaccessibleFromKotlin public com.worldline.devview.consolelogger.theme.LogColorScheme getLight();
+    property public com.worldline.devview.consolelogger.theme.LogColorScheme Dark;
+    property public com.worldline.devview.consolelogger.theme.LogColorScheme Light;
+  }
+
+  @androidx.compose.runtime.Immutable public final class LogLevelColors {
+    ctor @KotlinOnly public LogLevelColors(androidx.compose.ui.graphics.Color label, androidx.compose.ui.graphics.Color selectedContainer, androidx.compose.ui.graphics.Color selectedContent, androidx.compose.ui.graphics.Color unselectedContent);
+    method @KotlinOnly public operator androidx.compose.ui.graphics.Color component1();
+    method @KotlinOnly public operator androidx.compose.ui.graphics.Color component2();
+    method @KotlinOnly public operator androidx.compose.ui.graphics.Color component3();
+    method @KotlinOnly public operator androidx.compose.ui.graphics.Color component4();
+    method @KotlinOnly public com.worldline.devview.consolelogger.theme.LogLevelColors copy(optional androidx.compose.ui.graphics.Color label, optional androidx.compose.ui.graphics.Color selectedContainer, optional androidx.compose.ui.graphics.Color selectedContent, optional androidx.compose.ui.graphics.Color unselectedContent);
+    property public androidx.compose.ui.graphics.Color label;
+    property public androidx.compose.ui.graphics.Color selectedContainer;
+    property public androidx.compose.ui.graphics.Color selectedContent;
+    property public androidx.compose.ui.graphics.Color unselectedContent;
+  }
+
+}
+
