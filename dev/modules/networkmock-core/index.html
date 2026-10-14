@@ -1210,6 +1210,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#bodyless-responses" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Bodyless responses
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#schema-based-response-synthesis" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2569,6 +2580,17 @@ until a non-ref entry is reached — with a cycle guard that fails clearly inste
 circular reference. Each ref's fragment must name the section its context expects (e.g. a response
 <code>$ref</code> must point into <code>components/responses</code>), so a same-named entry in a different section is
 never resolved by mistake.</p>
+<h3 id="bodyless-responses">Bodyless responses</h3>
+<p>A response with no <code>content</code> (or an empty <code>content: {}</code> map) is available as one
+<code>"default"</code> variant, including a response resolved through <code>$ref</code>. For example,
+<code>"204": { "description": "No Content" }</code> needs no example or fixture file.</p>
+<p>Its <code>MockResponse.content</code> and <code>contentType</code> are empty strings, and <code>isSynthesized</code>
+is <code>false</code>: it is not schema-generated and gets no "Generated" badge. The Ktor plugin
+returns zero body bytes without adding a media-type-derived <code>Content-Type</code> header;
+declared response header examples are still served, including an explicit <code>Content-Type</code>.
+This also supports bodyless 200 responses such as logout. A declared media type with
+neither examples nor a schema remains unmockable; missing fixtures still fall through
+to the real network, so mocking is not a blanket network-isolation guarantee.</p>
 <h3 id="schema-based-response-synthesis">Schema-based response synthesis</h3>
 <p>A status code with <strong>no</strong> <code>examples</code> at all, but a declared <code>content.&lt;mediaType&gt;.schema</code>,
 synthesizes one placeholder body per such media type instead of being unmockable:</p>

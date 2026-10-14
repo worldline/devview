@@ -1998,6 +1998,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Unreleased">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Fixed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2035,7 +2052,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fixed" class="md-nav__link">
+  <a href="#fixed_1" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Fixed
@@ -2102,7 +2119,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#fixed_1" class="md-nav__link">
+  <a href="#fixed_2" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Fixed
@@ -2208,7 +2225,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fixed_2" class="md-nav__link">
+  <a href="#fixed_3" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Fixed
@@ -2258,7 +2275,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fixed_3" class="md-nav__link">
+  <a href="#fixed_4" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Fixed
@@ -2286,7 +2303,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#fixed_4" class="md-nav__link">
+  <a href="#fixed_5" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Fixed
@@ -2397,7 +2414,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fixed_5" class="md-nav__link">
+  <a href="#fixed_6" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         Fixed
@@ -2499,6 +2516,13 @@
 <p>The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>,
 and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
 <h2 id="unreleased"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha04...HEAD">Unreleased</a></h2>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li>NetworkMock: OpenAPI responses without <code>content</code> now expose an empty-body <code>"default"</code>
+  variant, including <code>$ref</code> responses and bodyless 200/204 statuses. No fixture file is
+  needed, and the Ktor plugin omits the media-type-derived <code>Content-Type</code> header while
+  preserving declared response headers.</li>
+</ul>
 <h2 id="020-alpha04-2026-10-09"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha03...0.2.0-alpha04">0.2.0-alpha04</a> - 2026-10-09</h2>
 <h3 id="added">Added</h3>
 <ul>
@@ -2611,7 +2635,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
   API, so staying public compounded that instability onto this library's own tracked surface.
   (<code>devview-networkmock-ktor</code>, #89)</li>
 </ul>
-<h3 id="fixed">Fixed</h3>
+<h3 id="fixed_1">Fixed</h3>
 <ul>
 <li>NetworkMock: <code>OpenApiParser</code>'s <code>$ref</code> resolution now disambiguates by the full
   <code>components.&lt;section&gt;</code> a fragment names, not just its trailing name — a <code>$ref</code> whose fragment
@@ -2692,7 +2716,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
   (<code>devview-networkmock</code>)</li>
 </ul>
 <h2 id="020-alpha02-2026-09-11"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha01...0.2.0-alpha02">0.2.0-alpha02</a> - 2026-09-11</h2>
-<h3 id="fixed_1">Fixed</h3>
+<h3 id="fixed_2">Fixed</h3>
 <ul>
 <li>Fixed ViewModel persistence during navigation: the <code>rememberViewModelStoreNavEntryDecorator()</code> was 
   not applied to the <code>NavDisplay</code>'s <code>entryDecorators</code> causing <code>ViewModel</code>s to persist once instantiated.</li>
@@ -2781,7 +2805,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <li>Unified surface backgrounds: the <code>surfaceContainer</code> explicit color has been removed from the Analytics highlighted-logs header and the NetworkMock global toggle wrapper — backgrounds now inherit from <code>MaterialTheme</code> uniformly. (<code>devview-analytics</code>, <code>devview-networkmock</code>)</li>
 <li>Diff colors shifted from generic blue to lavender (<code>#DDD8FF</code>) to align with the brand palette. (<code>devview-networkmock</code>)</li>
 </ul>
-<h3 id="fixed_2">Fixed</h3>
+<h3 id="fixed_3">Fixed</h3>
 <ul>
 <li>Fixed excessive recompositions and broken Switch animation on <code>FeatureFlipScreen</code>: item keys now use the stable <code>feature.name</code> instead of <code>hashCode()</code>, <code>FeatureHandler</code> caches its Flow to prevent <code>collectAsStateWithLifecycle</code> from restarting on every recomposition, and redundant explicit <code>remember</code> keys have been removed from <code>derivedStateOf</code> blocks. (<code>devview-featureflip</code>)</li>
 <li>Added <code>distinctUntilChanged()</code> to <code>FeatureHandler.isFeatureEnabledFlow</code> and <code>getFeatures</code> to suppress recompositions when DataStore emits structurally identical values. (<code>devview-featureflip</code>)</li>
@@ -2799,13 +2823,13 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <ul>
 <li><code>NetworkMockResourceLoader</code> fun interface in <code>devview-networkmock-core</code>: provides a named type for DI frameworks (Koin, Hilt, etc.) to bind, eliminating the need for a custom bridge interface in multi-module KMP projects where mock resource files live in a different module than where <code>NetworkMock</code> is constructed. Both <code>devview-networkmock</code> and <code>devview-networkmock-ktor</code> now expose <code>devview-networkmock-core</code> as an <code>api</code> dependency so the type is available to all integrators.</li>
 </ul>
-<h3 id="fixed_3">Fixed</h3>
+<h3 id="fixed_4">Fixed</h3>
 <ul>
 <li>Fixed DevView overlay back navigation: the overlay's back handler now correctly yields priority to the host app when closed, preventing it from silently consuming back events.</li>
 <li>Fixed crash on Network Mock screen startup: <code>MissingResourceException</code> thrown by Compose Resources when probing absent response files was not caught by the <code>IllegalStateException</code> handler in <code>MockConfigRepository</code>, causing a fatal crash. The exception is now normalised at the <code>NetworkMock</code> boundary before reaching the core module.</li>
 </ul>
 <h2 id="012-2026-07-17"><a href="https://github.com/worldline/DevView/compare/0.1.1...0.1.2">0.1.2</a> - 2026-07-17</h2>
-<h3 id="fixed_4">Fixed</h3>
+<h3 id="fixed_5">Fixed</h3>
 <ul>
 <li>Preserved Kotlin module metadata in Android packaging by replacing broad <code>META-INF/**</code> excludes with selective license/signature excludes.</li>
 <li>Fixed docs list rendering on Home (<code>What's New</code>) and License (<code>Third-Party Licences</code>) pages.</li>
@@ -2854,7 +2878,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <li>Updated Kotlin to 2.4.10 and Compose Multiplatform to 2.11.0; bulk transitive dependency upgrades via Renovate.</li>
 <li>Migrated documentation site from MkDocs to Zensical.</li>
 </ul>
-<h3 id="fixed_5">Fixed</h3>
+<h3 id="fixed_6">Fixed</h3>
 <ul>
 <li>Resolved Dokka unresolved link warnings and broken KDoc links across all modules.</li>
 <li>Fixed Detekt <code>MaxLineLength</code> violations in KDoc link references.</li>

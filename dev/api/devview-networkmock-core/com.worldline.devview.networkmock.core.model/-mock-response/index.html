@@ -148,7 +148,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="content.html">content</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The raw response body, read from the example's <code class="lang-kotlin">externalValue</code> file</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="content.html">content</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The raw response body, read from an example file or schema-synthesized. Empty for a bodyless response.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -163,7 +163,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="content-type.html">contentType</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The response's declared media type (the key under <code class="lang-kotlin">responses.&lt;code&gt;.content</code> in the spec, e.g. <code class="lang-kotlin">"application/json"</code>). Defaults to <code class="lang-kotlin">"application/json"</code> for response variants built without one (e.g. hand-built test fixtures).</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-networkmock-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="content-type.html">contentType</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The response's declared media type (the key under <code class="lang-kotlin">responses.&lt;code&gt;.content</code> in the spec, e.g. <code class="lang-kotlin">"application/json"</code>). Defaults to <code class="lang-kotlin">"application/json"</code> for response variants built without one (e.g. hand-built test fixtures). Empty for a bodyless response so no media-type-derived <code class="lang-kotlin">Content-Type</code> header is sent.</p></div></div></div>
                 </div>
               </div>
             </div>
