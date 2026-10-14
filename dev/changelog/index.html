@@ -2518,6 +2518,8 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <h2 id="unreleased"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha04...HEAD">Unreleased</a></h2>
 <h3 id="fixed">Fixed</h3>
 <ul>
+<li>NetworkMock: OpenAPI 3.1 schemas declaring <code>type</code> as an array (e.g. <code>[string, "null"]</code>)
+  or <code>null</code> in <code>enum</code> no longer fail spec loading.</li>
 <li>NetworkMock: OpenAPI responses without <code>content</code> now expose an empty-body <code>"default"</code>
   variant, including <code>$ref</code> responses and bodyless 200/204 statuses. No fixture file is
   needed, and the Ktor plugin omits the media-type-derived <code>Content-Type</code> header while

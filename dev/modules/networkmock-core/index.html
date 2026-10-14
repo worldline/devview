@@ -2626,7 +2626,7 @@ is <code>true</code> for a synthesized body, <code>false</code> otherwise; the o
 <tbody>
 <tr>
 <td><code>string</code></td>
-<td><code>"string"</code>, or the first <code>enum</code> value if declared</td>
+<td><code>"string"</code>, or the first non-null <code>enum</code> value if declared</td>
 </tr>
 <tr>
 <td><code>integer</code> / <code>number</code></td>
@@ -2655,7 +2655,10 @@ is <code>true</code> for a synthesized body, <code>false</code> otherwise; the o
 </tbody>
 </table>
 <p><code>nullable</code> is read but ignored — a real value is always synthesized, never a JSON <code>null</code>, since
-this library mocks responses rather than exercising null-handling. A schema shape outside this
+this library mocks responses rather than exercising null-handling. OpenAPI 3.1 <code>type</code> arrays
+(e.g. <code>[string, "null"]</code>) are accepted in JSON and YAML specs; the first non-<code>"null"</code> type
+is used. Null entries in <code>enum</code> are skipped when synthesizing values or matching a request-body
+discriminator. A schema shape outside this
 list (or a schema declaring none of <code>type</code>/<code>properties</code>/<code>items</code>/<code>enum</code>/<code>allOf</code>/<code>oneOf</code>) throws a
 clear error rather than guessing. <code>$ref</code>s inside a schema (including nested ones under
 <code>properties</code>/<code>items</code>/<code>allOf</code>/<code>oneOf</code>) resolve against <code>components/schemas</code> the same way as
