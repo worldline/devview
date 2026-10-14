@@ -24,7 +24,8 @@ class MetalavaConventionPlugin : Plugin<Project> {
                 it.startsWith("generateResourceAccessors") ||
                     it.startsWith("generateActualResourceCollectors") ||
                     it.startsWith("generateComposeResClass") ||
-                    it.startsWith("generateExpectResourceCollectors")
+                    it.startsWith("generateExpectResourceCollectors") ||
+                    (it.startsWith("ksp") && !it.contains("test", ignoreCase = true))
             })
         }
     }
