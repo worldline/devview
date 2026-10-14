@@ -203,6 +203,20 @@ circular reference. Each ref's fragment must name the section its context expect
 `$ref` must point into `components/responses`), so a same-named entry in a different section is
 never resolved by mistake.
 
+### Bodyless responses
+
+A response with no `content` (or an empty `content: {}` map) is available as one
+`"default"` variant, including a response resolved through `$ref`. For example,
+`"204": { "description": "No Content" }` needs no example or fixture file.
+
+Its `MockResponse.content` and `contentType` are empty strings, and `isSynthesized`
+is `false`: it is not schema-generated and gets no "Generated" badge. The Ktor plugin
+returns zero body bytes without adding a media-type-derived `Content-Type` header;
+declared response header examples are still served, including an explicit `Content-Type`.
+This also supports bodyless 200 responses such as logout. A declared media type with
+neither examples nor a schema remains unmockable; missing fixtures still fall through
+to the real network, so mocking is not a blanket network-isolation guarantee.
+
 ### Schema-based response synthesis
 
 A status code with **no** `examples` at all, but a declared `content.<mediaType>.schema`,

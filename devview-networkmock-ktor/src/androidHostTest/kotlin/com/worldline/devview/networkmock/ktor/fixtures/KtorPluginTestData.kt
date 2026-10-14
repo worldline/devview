@@ -28,6 +28,7 @@ internal object KtorPluginTestData {
                       }
                     }
                   },
+                  "204": { "description": "No Content" },
                   "404": {
                     "content": {
                       "application/json": {

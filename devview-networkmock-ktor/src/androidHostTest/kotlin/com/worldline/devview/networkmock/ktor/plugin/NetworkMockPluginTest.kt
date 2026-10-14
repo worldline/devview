@@ -17,6 +17,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.OutgoingContent
@@ -73,6 +74,33 @@ class NetworkMockPluginTest {
 
         response.status shouldBe HttpStatusCode.OK
         response.body<String>() shouldBe """{"id":1,"name":"Alice"}"""
+    }
+
+    @Test
+    fun returnsBodylessMockResponse_withoutCallingNetwork() = runTest {
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 204, exampleName = "default")
+            )
+        )
+        val engine = networkEngine()
+        val client = buildClient(
+            engine = engine,
+            configRepository = configRepository(),
+            stateRepository = stateRepositoryMock(state = state)
+        )
+
+        try {
+            val response = client.get(urlString = "https://staging.api.example.com/api/users/42")
+
+            response.status shouldBe HttpStatusCode.NoContent
+            response.bodyAsText() shouldBe ""
+            response.headers[HttpHeaders.ContentType] shouldBe null
+            engine.requestHistory shouldBe emptyList()
+        } finally {
+            client.close()
+        }
     }
 
     @Test

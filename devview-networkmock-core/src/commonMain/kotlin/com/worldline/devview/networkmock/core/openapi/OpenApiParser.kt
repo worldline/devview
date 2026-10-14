@@ -9,9 +9,12 @@ import kotlinx.serialization.json.Json
 /**
  * A resolved response variant's actual content source: either a file on disk (an OpenAPI
  * example's `externalValue`) or an in-memory body synthesized once from a declared `schema`
- * when the status code has no `examples` (see [SchemaSynthesizer]).
+ * when the status code has no `examples` (see [SchemaSynthesizer]), or an empty body.
  */
 internal sealed interface ResponseContent {
+    /** No body declared by the response. Requires no resource file. */
+    data object Empty : ResponseContent
+
     /** Loaded via [NetworkMockResourceLoader.load] at [path]. */
     data class FromFile(val path: String) : ResponseContent
 
@@ -42,6 +45,8 @@ internal data class ResolvedResponse(
  * uses for response-file discovery.
  *
  * ## Scope decisions (deliberate, not oversights)
+ * - A response with no `content` gets one empty-body `"default"` variant. A declared media
+ *   type with neither examples nor schema remains unmockable.
  * - Query-parameter matching values come from a parameter's top-level `example` field only
  *   (not `schema.example`/`schema.default`) — see [ParameterObject].
  * - Response bodies are sourced from `examples.<name>.externalValue` first; a status code with
@@ -157,12 +162,12 @@ internal object OpenApiParser {
     private val json = Json { ignoreUnknownKeys = true }
 
     /**
-     * The example name a synthesized response body (see [SchemaSynthesizer]) is stored under —
+     * The example name an empty or synthesized response body (see [SchemaSynthesizer]) uses —
      * `"default"`, matching this codebase's own convention for the primary/original response
      * for a status code (see [com.worldline.devview.networkmock.core.model.MockResponse.exampleName]).
      */
     @Suppress("DocumentationOverPrivateProperty")
-    private const val SYNTHESIZED_EXAMPLE_NAME = "default"
+    private const val DEFAULT_EXAMPLE_NAME = "default"
 
     /**
      * The media type [ParseContext.buildRequestBodyMatch] prefers when a `requestBody` declares
@@ -251,6 +256,13 @@ internal object OpenApiParser {
 
                 val headers = resolveHeaders(raw = response.headers, source = responseSource)
                 val examplesForCode = mutableMapOf<String, ResolvedResponse>()
+                if (response.content.isEmpty()) {
+                    examplesForCode[DEFAULT_EXAMPLE_NAME] = ResolvedResponse(
+                        content = ResponseContent.Empty,
+                        contentType = "",
+                        headers = headers
+                    )
+                }
                 for ((mediaType, media) in response.content) {
                     examplesForCode += resolveMediaTypeResponses(
                         mediaType = mediaType,
@@ -268,7 +280,7 @@ internal object OpenApiParser {
 
         /**
          * Resolves every declared `examples.<name>` for [mediaType], falling back to one
-         * schema-synthesized body (see [SchemaSynthesizer], stored under [SYNTHESIZED_EXAMPLE_NAME])
+         * schema-synthesized body (see [SchemaSynthesizer], stored under [DEFAULT_EXAMPLE_NAME])
          * when [media] declares no examples of its own but does declare a `schema`.
          */
         @Suppress("DocumentationOverPrivateFunction")
@@ -310,7 +322,7 @@ internal object OpenApiParser {
                     schema = schema,
                     resolver = schemaResolver(source = source)
                 )
-                resolved[SYNTHESIZED_EXAMPLE_NAME] = ResolvedResponse(
+                resolved[DEFAULT_EXAMPLE_NAME] = ResolvedResponse(
                     content = ResponseContent.Synthesized(json = synthesized.toString()),
                     contentType = mediaType,
                     headers = headers

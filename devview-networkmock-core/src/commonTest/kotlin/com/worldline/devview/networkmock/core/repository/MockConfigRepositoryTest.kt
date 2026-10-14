@@ -1243,6 +1243,55 @@ class MockConfigRepositoryTest {
         }
 
     @Test
+    fun `bodyless responses are discoverable and load without fixture files`() = runTest {
+        val spec = $$"""
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://api.example.com" } ],
+              "paths": {
+                "/api/users/{userId}": {
+                  "get": {
+                    "operationId": "getUser",
+                    "responses": {
+                      "204": { "description": "No Content" },
+                      "200": { "$ref": "#/components/responses/Empty" },
+                      "202": { "description": "Empty content map", "content": {} },
+                      "404": { "content": { "application/json": {} } }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "responses": {
+                  "Empty": {
+                    "description": "No body",
+                    "headers": { "X-Request-Id": { "example": "logout-42" } }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val repository = createRepository(resources = mapOf(SPEC_PATH to spec))
+
+        val responses = repository.discoverResponseFiles(key = getUserKey)
+
+        responses.map { it.statusCode } shouldBe listOf(200, 202, 204)
+        for (response in responses) {
+            response.exampleName shouldBe "default"
+            response.content shouldBe ""
+            response.contentType shouldBe ""
+            response.isSynthesized shouldBe false
+            repository.loadMockResponse(
+                key = getUserKey,
+                statusCode = response.statusCode,
+                exampleName = "default"
+            ) shouldBe response
+        }
+        responses.first().headers shouldBe mapOf("X-Request-Id" to "logout-42")
+        responses.last().headers shouldBe emptyMap()
+    }
+
+    @Test
     fun `discoverResponseFiles synthesizes a body from schema when a status code declares no examples`() = runTest {
         val spec = """
             {
