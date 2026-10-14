@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- NetworkMock: OpenAPI 3.1 schemas declaring `type` as an array (e.g. `[string, "null"]`)
+  or `null` in `enum` no longer fail spec loading.
 - NetworkMock: OpenAPI responses without `content` now expose an empty-body `"default"`
   variant, including `$ref` responses and bodyless 200/204 statuses. No fixture file is
   needed, and the Ktor plugin omits the media-type-derived `Content-Type` header while

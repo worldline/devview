@@ -1,8 +1,20 @@
 package com.worldline.devview.networkmock.core.openapi
 
 import com.worldline.devview.networkmock.core.model.HttpMethod
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.descriptors.SerialKind
+import kotlinx.serialization.descriptors.buildSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 
 /**
  * Minimal OpenAPI 3.x document model — only the subset this library reads.
@@ -167,9 +179,10 @@ internal data class RequestBodyObject(
  * one plausible value* or checking narrow request-body match constraints.
  *
  * @property type The schema's declared type (`"string"`, `"integer"`, `"number"`, `"boolean"`,
- *   `"object"`, or `"array"`). May be absent when [properties] or [items] alone implies it.
- * @property enum If non-empty, [SchemaSynthesizer] uses the first declared value verbatim
- *   instead of a generic placeholder for [type] `"string"`.
+ *   `"object"`, or `"array"`). OpenAPI 3.1 arrays keep the first non-`"null"` entry.
+ *   May be absent when [properties] or [items] alone implies it.
+ * @property enum [SchemaSynthesizer] uses the first non-null declared value verbatim
+ *   instead of a generic placeholder for [type] `"string"`; null entries are skipped.
  * @property properties For `type: object` (or when present at all, regardless of [type]):
  *   each property's own schema, synthesized recursively.
  * @property items For `type: array` (or when present at all, regardless of [type]): the
@@ -194,8 +207,8 @@ internal data class RequestBodyObject(
 @Serializable
 internal data class SchemaObject(
     @SerialName("\$ref") val ref: String? = null,
-    val type: String? = null,
-    val enum: List<String>? = null,
+    @Serializable(with = SchemaTypeSerializer::class) val type: String? = null,
+    val enum: List<String?>? = null,
     val properties: Map<String, SchemaObject>? = null,
     val items: SchemaObject? = null,
     val nullable: Boolean? = null,
@@ -205,6 +218,33 @@ internal data class SchemaObject(
     val discriminator: DiscriminatorObject? = null,
     val required: List<String>? = null
 )
+
+/**
+ * Decodes OpenAPI 3.0 scalar types and 3.1 type arrays, keeping the first non-`"null"` name.
+ * Nullability is ignored just like [SchemaObject.nullable].
+ */
+@OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
+internal object SchemaTypeSerializer : KSerializer<String> {
+    // CONTEXTUAL lets kaml hand us either a scalar or a list without requiring a type tag.
+    override val descriptor = buildSerialDescriptor(
+        serialName = "com.worldline.devview.networkmock.core.openapi.SchemaType",
+        kind = SerialKind.CONTEXTUAL
+    )
+
+    override fun deserialize(decoder: Decoder): String {
+        val names = if (decoder is JsonDecoder) {
+            val element = decoder.decodeJsonElement()
+            (element as? JsonArray ?: listOf(element = element)).mapNotNull {
+                (it as? JsonPrimitive)?.contentOrNull
+            }
+        } else {
+            YamlSupport.typeNames(decoder = decoder)
+        } ?: throw SerializationException(message = "Unsupported schema 'type' value")
+        return names.firstOrNull { it != "null" } ?: "null"
+    }
+
+    override fun serialize(encoder: Encoder, value: String) = encoder.encodeString(value = value)
+}
 
 /**
  * A `oneOf` discriminator declaration — identifies which property carries the type tag, and

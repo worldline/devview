@@ -399,7 +399,7 @@ internal object OpenApiParser {
                     schema.properties
                         ?.get(key = field)
                         ?.enum
-                        ?.firstOrNull()
+                        ?.firstNotNullOfOrNull { it }
                 }
 
             return if (requiredFields.isEmpty() && discriminatorField == null) {
