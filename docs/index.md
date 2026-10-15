@@ -14,7 +14,7 @@
 <!-- renovate: datasource=maven depName=org.jetbrains.kotlin:kotlin-stdlib -->
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 <!-- renovate: datasource=maven depName=org.jetbrains.compose:compose-gradle-plugin -->
-[![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.11.1-green.svg?style=flat)](https://www.jetbrains.com/lp/compose-multiplatform/)
+[![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.12.2-green.svg?style=flat)](https://www.jetbrains.com/lp/compose-multiplatform/)
 [![Licence](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
 [![GitHub](https://img.shields.io/badge/GitHub-worldline%2Fdevview-blue.svg?style=flat&logo=github)](https://github.com/worldline/devview)
 
