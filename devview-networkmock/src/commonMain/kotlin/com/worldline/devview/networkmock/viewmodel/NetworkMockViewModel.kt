@@ -280,7 +280,7 @@ public class NetworkMockViewModel(
      * [OperationMockState.Network], effectively disabling mocking for that operation.
      *
      * When [response] is non-null, the operation transitions to [OperationMockState.Mock]
-     * with the given response's `(statusCode, exampleName)`, replacing any previous state.
+     * with the given response's `(statusCode, mediaType, exampleName)`, replacing any previous state.
      *
      * @param key The [OperationKey] identifying the spec and operation
      * @param response The response variant to activate, or `null` to use the actual network
@@ -290,6 +290,7 @@ public class NetworkMockViewModel(
             val newState = if (response != null) {
                 OperationMockState.Mock(
                     statusCode = response.statusCode,
+                    mediaType = response.mediaType,
                     exampleName = response.exampleName
                 )
             } else {
@@ -330,7 +331,11 @@ public class NetworkMockViewModel(
     public fun setOperationSequenceState(key: OperationKey, responses: List<MockResponse>) {
         viewModelScope.launch {
             val steps = responses.map {
-                OperationMockState.Mock(statusCode = it.statusCode, exampleName = it.exampleName)
+                OperationMockState.Mock(
+                    statusCode = it.statusCode,
+                    mediaType = it.mediaType,
+                    exampleName = it.exampleName
+                )
             }
             stateRepository.setOperationMockState(
                 key = key,

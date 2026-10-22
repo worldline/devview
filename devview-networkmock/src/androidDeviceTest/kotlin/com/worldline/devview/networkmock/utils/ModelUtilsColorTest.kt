@@ -99,7 +99,11 @@ class ModelUtilsColorTest {
         setContent {
             MaterialTheme {
                 CompositionLocalProvider(LocalMockColorScheme provides MockColorScheme.Light) {
-                    val state = OperationMockState.Mock(statusCode = 404, exampleName = "default")
+                    val state = OperationMockState.Mock(
+                        statusCode = 404,
+                        mediaType = "application/json",
+                        exampleName = "default"
+                    )
                     content = state.contentColor
                     container = state.containerColor
                 }

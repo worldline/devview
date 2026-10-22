@@ -25,8 +25,8 @@ private val logger = Logger.withTag(tag = "DevViewNetworkMock")
  *
  * Format parsing is delegated entirely to [OpenApiParser] — this repository never sees
  * OpenAPI-shaped types itself, only the resulting [MockConfiguration] and a plain response
- * index (`specId -> operationId -> statusCode -> exampleName -> `[ResolvedResponse]) used by
- * [discoverResponseFiles] and [loadMockResponse].
+ * index (`specId -> operationId -> statusCode -> mediaType -> exampleName -> `[ResolvedResponse])
+ * used by [discoverResponseFiles] and [loadMockResponse].
  *
  * This repository is intentionally agnostic of any specific HTTP client implementation — it
  * operates purely on file paths and raw content, making it usable by any HTTP client module
@@ -47,9 +47,10 @@ public class MockConfigRepository(
     // Cache the loaded configuration to avoid re-parsing every spec on every call.
     private var cachedConfig: MockConfiguration? = null
 
-    /** `specId -> operationId -> statusCode -> exampleName -> ResolvedResponse`. */
+    /** `specId -> operationId -> statusCode -> mediaType -> exampleName -> ResolvedResponse`. */
     @Suppress("DocumentationOverPrivateProperty")
-    private var responseIndex: Map<String, Map<String, Map<Int, Map<String, ResolvedResponse>>>> =
+    private var responseIndex:
+        Map<String, Map<String, Map<Int, Map<String, Map<String, ResolvedResponse>>>>> =
         emptyMap()
 
     /**
@@ -171,9 +172,9 @@ public class MockConfigRepository(
      * Discovers the response variants declared for a specific operation.
      *
      * Includes an empty-body `"default"` variant for each response with no `content`.
-     * Reads the variants declared in the spec's `responses.<code>.content.*.examples` for
-     * this operation — there is no probing, every returned variant corresponds to a
-     * `(statusCode, exampleName)` pair the spec author explicitly declared.
+     * Reads the variants declared in the spec's `responses.<code>.content.<mediaType>.examples`
+     * for this operation — there is no probing, every returned variant corresponds to a
+     * `(statusCode, mediaType, exampleName)` triple the spec author explicitly declared.
      *
      * @param key The [OperationKey] identifying the spec and operation
      * @return The declared response variants, sorted by status code (may be empty if the
@@ -185,13 +186,16 @@ public class MockConfigRepository(
             key = key.operationId
         ) ?: return emptyList()
         return variantsByStatusCode
-            .flatMap { (statusCode, examplesByName) ->
-                examplesByName.mapNotNull { (exampleName, resolved) ->
-                    loadResponseFromPath(
-                        resolved = resolved,
-                        statusCode = statusCode,
-                        exampleName = exampleName
-                    )
+            .flatMap { (statusCode, byMediaType) ->
+                byMediaType.flatMap { (mediaType, examplesByName) ->
+                    examplesByName.mapNotNull { (exampleName, resolved) ->
+                        loadResponseFromPath(
+                            resolved = resolved,
+                            statusCode = statusCode,
+                            mediaType = mediaType,
+                            exampleName = exampleName
+                        )
+                    }
                 }
             }.sortedBy { it.statusCode }
     }
@@ -201,6 +205,7 @@ public class MockConfigRepository(
      *
      * @param key The [OperationKey] identifying the spec and operation
      * @param statusCode The variant's HTTP status code
+     * @param mediaType The variant's declared OpenAPI media type (e.g. `"application/json"`, `""`)
      * @param exampleName The variant's OpenAPI example name
      * @return The loaded [MockResponse], or `null` if the variant isn't declared or its file
      *   can't be read
@@ -208,17 +213,20 @@ public class MockConfigRepository(
     public suspend fun loadMockResponse(
         key: OperationKey,
         statusCode: Int,
+        mediaType: String,
         exampleName: String
     ): MockResponse? {
         loadConfiguration()
         val resolved = responseIndex[key.specId]
             ?.get(key = key.operationId)
             ?.get(key = statusCode)
+            ?.get(key = mediaType)
             ?.get(key = exampleName)
             ?: return null
         return loadResponseFromPath(
             resolved = resolved,
             statusCode = statusCode,
+            mediaType = mediaType,
             exampleName = exampleName
         )
     }
@@ -227,6 +235,7 @@ public class MockConfigRepository(
     private suspend fun loadResponseFromPath(
         resolved: ResolvedResponse,
         statusCode: Int,
+        mediaType: String,
         exampleName: String
     ): MockResponse? = try {
         val content = when (val source = resolved.content) {
@@ -240,6 +249,7 @@ public class MockConfigRepository(
         )
         MockResponse.create(
             statusCode = statusCode,
+            mediaType = mediaType,
             exampleName = exampleName,
             content = content,
             contentType = resolvedContentType,

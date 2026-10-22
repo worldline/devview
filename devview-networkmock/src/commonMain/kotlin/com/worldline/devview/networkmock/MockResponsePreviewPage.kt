@@ -116,6 +116,7 @@ private fun PreviewPageHeader(
                     EndpointStateChip(
                         endpointMockState = OperationMockState.Mock(
                             statusCode = previewSheetState.response.statusCode,
+                            mediaType = previewSheetState.response.mediaType,
                             exampleName = previewSheetState.response.exampleName
                         ),
                         label = previewSheetState.response.displayName
@@ -126,6 +127,7 @@ private fun PreviewPageHeader(
                     EndpointStateChip(
                         endpointMockState = OperationMockState.Mock(
                             statusCode = previewSheetState.first.statusCode,
+                            mediaType = previewSheetState.first.mediaType,
                             exampleName = previewSheetState.first.exampleName
                         ),
                         label = previewSheetState.first.displayName
@@ -138,6 +140,7 @@ private fun PreviewPageHeader(
                     EndpointStateChip(
                         endpointMockState = OperationMockState.Mock(
                             statusCode = previewSheetState.second.statusCode,
+                            mediaType = previewSheetState.second.mediaType,
                             exampleName = previewSheetState.second.exampleName
                         ),
                         label = previewSheetState.second.displayName

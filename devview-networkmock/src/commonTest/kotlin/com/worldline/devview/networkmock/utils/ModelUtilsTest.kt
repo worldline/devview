@@ -62,7 +62,11 @@ class ModelUtilsTest {
         val responses = MockResponse.fake(amount = 4)
 
         operations shouldHaveSize 5
-        operations[0].currentState shouldBe OperationMockState.Mock(statusCode = 100, exampleName = "default")
+        operations[0].currentState shouldBe OperationMockState.Mock(
+            statusCode = 100,
+            mediaType = "application/json",
+            exampleName = "default"
+        )
 
         responses shouldHaveSize 4
         responses[1].exampleName shouldBe "default"

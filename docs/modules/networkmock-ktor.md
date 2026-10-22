@@ -47,7 +47,7 @@ For every outgoing request, the plugin:
 5. If matched, reads the operation's `OperationMockState`:
    - `Network` or `null` → sends the real request.
    - `Failure(kind)` → throws immediately, simulating that failure kind (see below). No response is loaded.
-   - `Mock(statusCode, exampleName)`:
+   - `Mock(statusCode, mediaType, exampleName)`:
      - If the operation declares `x-devview.failureRate` and the configured `Random` rolls below it → throws a simulated connection failure instead, same as `Failure(CONNECTION_REFUSED)`.
      - Otherwise, loads that declared response variant and returns a synthetic response.
 6. On any error loading a declared mock (undeclared variant, missing file, exception) → falls back to the real network and logs the reason.

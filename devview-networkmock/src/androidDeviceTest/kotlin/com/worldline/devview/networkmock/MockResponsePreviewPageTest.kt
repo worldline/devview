@@ -15,12 +15,14 @@ class MockResponsePreviewPageTest {
 
     private val response200 = MockResponse(
         statusCode = 200,
+        mediaType = "application/json",
         exampleName = "default",
         displayName = "200 - default",
         content = "{\"ok\":true}"
     )
     private val response404 = MockResponse(
         statusCode = 404,
+        mediaType = "application/json",
         exampleName = "not-found",
         displayName = "404 - not-found",
         content = "{\"error\":\"not found\"}"

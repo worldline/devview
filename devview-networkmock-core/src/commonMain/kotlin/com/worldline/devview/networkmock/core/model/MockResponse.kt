@@ -38,6 +38,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 public data class MockResponse(
     val statusCode: Int,
+    val mediaType: String,
     val exampleName: String,
     val displayName: String,
     val content: String,
@@ -57,6 +58,7 @@ public data class MockResponse(
          * and specific, e.g. `"detailed"` → `"Success - Detailed (200)"`).
          *
          * @param statusCode The HTTP status code
+         * @param mediaType The declared OpenAPI media type, or empty for bodyless
          * @param exampleName The OpenAPI example name
          * @param content The raw response body
          * @param contentType The response's declared media type, or empty for a bodyless response.
@@ -70,6 +72,7 @@ public data class MockResponse(
          */
         public fun create(
             statusCode: Int,
+            mediaType: String,
             exampleName: String,
             content: String,
             contentType: String = "application/json",
@@ -78,6 +81,7 @@ public data class MockResponse(
             statusTextProvider: (Int) -> String = ::getStatusText
         ): MockResponse = MockResponse(
             statusCode = statusCode,
+            mediaType = mediaType,
             exampleName = exampleName,
             displayName = generateDisplayName(
                 statusCode = statusCode,

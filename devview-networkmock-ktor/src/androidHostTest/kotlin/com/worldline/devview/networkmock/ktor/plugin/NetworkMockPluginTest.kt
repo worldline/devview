@@ -62,7 +62,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "example-getUser" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -84,7 +88,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-getUser" to OperationMockState.Mock(statusCode = 204, exampleName = "default")
+                "example-getUser" to OperationMockState.Mock(
+                    statusCode = 204,
+                    mediaType = "",
+                    exampleName = "default"
+                )
             )
         )
         val engine = networkEngine()
@@ -111,7 +119,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-getUser" to OperationMockState.Mock(statusCode = 404, exampleName = "default")
+                "example-getUser" to OperationMockState.Mock(
+                    statusCode = 404,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -133,7 +145,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-createUser" to OperationMockState.Mock(statusCode = 201, exampleName = "default")
+                "example-createUser" to OperationMockState.Mock(
+                    statusCode = 201,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -157,7 +173,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-getProduct" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "example-getProduct" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -183,7 +203,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "example-getUser" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -236,7 +260,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "example-getUser" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/vnd.example+json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -286,7 +314,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "example-getUser" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "*/*",
+                    exampleName = "default"
+                )
             )
         )
         val configRepo = configRepository(resources = resources)
@@ -313,6 +345,90 @@ class NetworkMockPluginTest {
     @Serializable
     private data class UserDto(val id: Int, val name: String)
 
+    @Test
+    fun returnsMockResponse_selectedByMediaType_whenSameNamedExamplesExistAcrossMediaTypes() = runTest {
+        val multiMediaTypeSpec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://staging.api.example.com" } ],
+              "paths": {
+                "/api/users/{userId}": {
+                  "get": {
+                    "operationId": "getUser",
+                    "responses": {
+                      "200": {
+                        "content": {
+                          "application/json": {
+                            "examples": {
+                              "default": { "externalValue": "/files/networkmocks/responses/getUser-200.json" }
+                            }
+                          },
+                          "application/xml": {
+                            "examples": {
+                              "default": { "externalValue": "/files/networkmocks/responses/getUser-200.xml" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val resources = mapOf(
+            KtorPluginTestData.SPEC_PATH to multiMediaTypeSpec,
+            "files/networkmocks/responses/getUser-200.json" to """{"id":1,"name":"Alice"}""",
+            "files/networkmocks/responses/getUser-200.xml" to """<user><id>1</id><name>Alice</name></user>"""
+        )
+
+        // Select the XML variant explicitly.
+        val stateXml = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/xml",
+                    exampleName = "default"
+                )
+            )
+        )
+        val clientXml = buildClient(
+            engine = networkEngine(),
+            configRepository = configRepository(resources = resources),
+            stateRepository = stateRepositoryMock(state = stateXml)
+        )
+        val responseXml: HttpResponse = clientXml.get(
+            urlString = "https://staging.api.example.com/api/users/42"
+        )
+        responseXml.headers[HttpHeaders.ContentType] shouldBe "application/xml"
+        responseXml.bodyAsText() shouldBe """<user><id>1</id><name>Alice</name></user>"""
+
+        // Select the JSON variant explicitly with ContentNegotiation installed.
+        val stateJson = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
+            )
+        )
+        val clientJson = HttpClient(engine = networkEngine()) {
+            install(plugin = ContentNegotiation) { json() }
+            install(plugin = NetworkMockPlugin) {
+                mockRepository = configRepository(resources = resources)
+                this.stateRepository = stateRepositoryMock(state = stateJson)
+            }
+        }
+        val responseJson: HttpResponse = clientJson.get(
+            urlString = "https://staging.api.example.com/api/users/42"
+        )
+        responseJson.headers[HttpHeaders.ContentType] shouldBe "application/json"
+        responseJson.body<UserDto>() shouldBe UserDto(id = 1, name = "Alice")
+    }
+
     // endregion
 
     // region Sequential mocks
@@ -320,8 +436,16 @@ class NetworkMockPluginTest {
     @Test
     fun sequence_advancesThroughStepsOnSuccessiveRequests_andSticksOnLastOnceExhausted() = runTest {
         val steps = listOf(
-            OperationMockState.Mock(statusCode = 200, exampleName = "default"),
-            OperationMockState.Mock(statusCode = 404, exampleName = "default")
+            OperationMockState.Mock(
+                statusCode = 200,
+                mediaType = "application/json",
+                exampleName = "default"
+            ),
+            OperationMockState.Mock(
+                statusCode = 404,
+                mediaType = "application/json",
+                exampleName = "default"
+            )
         )
         val stateRepository = mutableStateRepositoryMock(
             initial = NetworkMockState(
@@ -356,7 +480,13 @@ class NetworkMockPluginTest {
                 globalMockingEnabled = true,
                 operationStates = mapOf(
                     "example-getUser" to OperationMockState.Sequence(
-                        responses = listOf(OperationMockState.Mock(statusCode = 200, exampleName = "default"))
+                        responses = listOf(
+                            OperationMockState.Mock(
+                                statusCode = 200,
+                                mediaType = "application/json",
+                                exampleName = "default"
+                            )
+                        )
                     )
                 )
             )
@@ -400,8 +530,16 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "card-payByCard" to OperationMockState.Mock(statusCode = 200, exampleName = "default"),
-                "bank-payByBankTransfer" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "card-payByCard" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                ),
+                "bank-payByBankTransfer" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -438,8 +576,16 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "card-payByCard" to OperationMockState.Mock(statusCode = 200, exampleName = "default"),
-                "bank-payByBankTransfer" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "card-payByCard" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                ),
+                "bank-payByBankTransfer" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -605,7 +751,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "example-getUser" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -627,7 +777,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "example-getUser" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -749,7 +903,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "example-getUser" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -814,7 +972,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "example-getUser" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -839,7 +1001,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-listUsers" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "example-listUsers" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -861,7 +1027,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-listUsers" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "example-listUsers" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -883,7 +1053,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-listUsers" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "example-listUsers" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -911,7 +1085,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "example-getUser" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -956,7 +1134,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                "example-getUser" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             )
         )
         val client = buildClient(
@@ -977,7 +1159,11 @@ class NetworkMockPluginTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
-                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "doesNotExist")
+                "example-getUser" to OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "doesNotExist"
+                )
             )
         )
         val client = buildClient(

@@ -29,12 +29,14 @@ class NetworkMockOperationSheetTest {
 
     private val response200 = MockResponse(
         statusCode = 200,
+        mediaType = "application/json",
         exampleName = "default",
         displayName = "200 - default",
         content = "{}"
     )
     private val response404 = MockResponse(
         statusCode = 404,
+        mediaType = "application/json",
         exampleName = "default",
         displayName = "404 - default",
         content = "{}"
@@ -46,8 +48,8 @@ class NetworkMockOperationSheetTest {
 
         onNodeWithText(text = "Get User").assertIsDisplayed()
         onNodeWithTag(testTag = "operation_sheet_network_item").assertIsDisplayed()
-        onNodeWithTag(testTag = "mock_item_200_default").assertIsDisplayed()
-        onNodeWithTag(testTag = "mock_item_404_default").assertIsDisplayed()
+        onNodeWithTag(testTag = "mock_item_200_application/json_default").assertIsDisplayed()
+        onNodeWithTag(testTag = "mock_item_404_application/json_default").assertIsDisplayed()
     }
 
     @Test
@@ -64,7 +66,11 @@ class NetworkMockOperationSheetTest {
     fun tappingNetworkItem_selectsNetwork() = runComposeUiTest {
         var selected: MockResponse? = response200
         setPickerPage(
-            currentState = OperationMockState.Mock(statusCode = 200, exampleName = "default"),
+            currentState = OperationMockState.Mock(
+                statusCode = 200,
+                mediaType = "application/json",
+                exampleName = "default"
+            ),
             onSelectResponse = { selected = it }
         )
 
@@ -81,7 +87,7 @@ class NetworkMockOperationSheetTest {
             onSelectResponse = { selected = it }
         )
 
-        onNodeWithTag(testTag = "mock_item_404_default").performClick()
+        onNodeWithTag(testTag = "mock_item_404_application/json_default").performClick()
 
         selected shouldBe response404
     }
@@ -107,7 +113,7 @@ class NetworkMockOperationSheetTest {
     fun togglingOneResponse_showsPreviewButton_labeledWithThatResponse() = runComposeUiTest {
         setPickerPage(currentState = OperationMockState.Network)
 
-        onNodeWithTag(testTag = "mock_item_200_default_preview_toggle").performClick()
+        onNodeWithTag(testTag = "mock_item_200_application/json_default_preview_toggle").performClick()
 
         onNodeWithText(text = "Preview 200 - default").assertIsDisplayed()
     }
@@ -116,8 +122,8 @@ class NetworkMockOperationSheetTest {
     fun togglingTwoResponses_showsCompareButton() = runComposeUiTest {
         setPickerPage(currentState = OperationMockState.Network)
 
-        onNodeWithTag(testTag = "mock_item_200_default_preview_toggle").performClick()
-        onNodeWithTag(testTag = "mock_item_404_default_preview_toggle").performClick()
+        onNodeWithTag(testTag = "mock_item_200_application/json_default_preview_toggle").performClick()
+        onNodeWithTag(testTag = "mock_item_404_application/json_default_preview_toggle").performClick()
 
         onNodeWithText(text = "Compare 2 responses").assertIsDisplayed()
     }
@@ -127,10 +133,61 @@ class NetworkMockOperationSheetTest {
         var opened = false
         setPickerPage(currentState = OperationMockState.Network, onOpenPreview = { opened = true })
 
-        onNodeWithTag(testTag = "mock_item_200_default_preview_toggle").performClick()
+        onNodeWithTag(testTag = "mock_item_200_application/json_default_preview_toggle").performClick()
         onNodeWithTag(testTag = "open_preview_button").performClick()
 
         opened shouldBe true
+    }
+
+    @Test
+    fun disambiguatesResponsesByMediaType_whenSameStatusCodeHasMultipleMediaTypes() = runComposeUiTest {
+        val jsonVariant = MockResponse(
+            statusCode = 200,
+            mediaType = "application/json",
+            exampleName = "default",
+            displayName = "200 - default",
+            content = "{}"
+        )
+        val xmlVariant = MockResponse(
+            statusCode = 200,
+            mediaType = "application/xml",
+            exampleName = "default",
+            displayName = "200 - default",
+            content = "<user/>"
+        )
+
+        setContent {
+            MaterialTheme {
+                OperationPickerPage(
+                    content = OperationSheetState.Content(
+                        operationUiModel = OperationUiModel(
+                            descriptor = OperationDescriptor(
+                                key = OperationKey(specId = "test", operationId = "getUser"),
+                                config = Operation(
+                                    operationId = "getUser",
+                                    name = "Get User",
+                                    path = "/api/users/{userId}",
+                                    method = HttpMethod.Get
+                                )
+                            ),
+                            currentState = OperationMockState.Network
+                        ),
+                        responses = listOf(jsonVariant, xmlVariant).toPersistentList()
+                    ),
+                    markedForPreview = PreviewSheetState.Hidden,
+                    onSelectResponse = {},
+                    onSelectFailure = {},
+                    onCommitSequence = {},
+                    onResetSequencePosition = {},
+                    onTogglePreview = {},
+                    onOpenPreview = {},
+                    onClose = {}
+                )
+            }
+        }
+
+        onNodeWithText(text = "application/json").assertIsDisplayed()
+        onNodeWithText(text = "application/xml").assertIsDisplayed()
     }
 
     private fun ComposeUiTest.setPickerPage(

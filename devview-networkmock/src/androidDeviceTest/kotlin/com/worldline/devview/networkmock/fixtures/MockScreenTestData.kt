@@ -56,7 +56,11 @@ internal object MockScreenTestData {
                         tags = if (tagged) listOf("Admin") else emptyList()
                     )
                 ),
-                currentState = OperationMockState.Mock(statusCode = 201, exampleName = "default")
+                currentState = OperationMockState.Mock(
+                    statusCode = 201,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
             ),
             OperationUiModel(
                 descriptor = OperationDescriptor(

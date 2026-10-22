@@ -96,20 +96,22 @@ package com.worldline.devview.networkmock.core.model {
   }
 
   @androidx.compose.runtime.Immutable @kotlinx.serialization.Serializable public final class MockResponse {
-    ctor public MockResponse(int statusCode, String exampleName, String displayName, String content, optional String contentType, optional java.util.Map<java.lang.String,java.lang.String> headers, optional boolean isSynthesized);
+    ctor public MockResponse(int statusCode, String mediaType, String exampleName, String displayName, String content, optional String contentType, optional java.util.Map<java.lang.String,java.lang.String> headers, optional boolean isSynthesized);
     method public int component1();
     method public String component2();
     method public String component3();
     method public String component4();
     method public String component5();
-    method public java.util.Map<java.lang.String,java.lang.String> component6();
-    method public boolean component7();
-    method public com.worldline.devview.networkmock.core.model.MockResponse copy(optional int statusCode, optional String exampleName, optional String displayName, optional String content, optional String contentType, optional java.util.Map<java.lang.String,java.lang.String> headers, optional boolean isSynthesized);
+    method public String component6();
+    method public java.util.Map<java.lang.String,java.lang.String> component7();
+    method public boolean component8();
+    method public com.worldline.devview.networkmock.core.model.MockResponse copy(optional int statusCode, optional String mediaType, optional String exampleName, optional String displayName, optional String content, optional String contentType, optional java.util.Map<java.lang.String,java.lang.String> headers, optional boolean isSynthesized);
     method @InaccessibleFromKotlin public String getContent();
     method @InaccessibleFromKotlin public String getContentType();
     method @InaccessibleFromKotlin public String getDisplayName();
     method @InaccessibleFromKotlin public String getExampleName();
     method @InaccessibleFromKotlin public java.util.Map<java.lang.String,java.lang.String> getHeaders();
+    method @InaccessibleFromKotlin public String getMediaType();
     method @InaccessibleFromKotlin public int getStatusCode();
     method @InaccessibleFromKotlin public boolean isSynthesized();
     property public String content;
@@ -118,12 +120,13 @@ package com.worldline.devview.networkmock.core.model {
     property public String exampleName;
     property public java.util.Map<java.lang.String,java.lang.String> headers;
     property public boolean isSynthesized;
+    property public String mediaType;
     property public int statusCode;
     field public static final com.worldline.devview.networkmock.core.model.MockResponse.Companion Companion;
   }
 
   public static final class MockResponse.Companion {
-    method public com.worldline.devview.networkmock.core.model.MockResponse create(int statusCode, String exampleName, String content, optional String contentType, optional java.util.Map<java.lang.String,java.lang.String> headers, optional boolean isSynthesized, optional kotlin.jvm.functions.Function1<? super java.lang.Integer,java.lang.String> statusTextProvider);
+    method public com.worldline.devview.networkmock.core.model.MockResponse create(int statusCode, String mediaType, String exampleName, String content, optional String contentType, optional java.util.Map<java.lang.String,java.lang.String> headers, optional boolean isSynthesized, optional kotlin.jvm.functions.Function1<? super java.lang.Integer,java.lang.String> statusTextProvider);
   }
 
   @kotlinx.serialization.Serializable public final class NetworkMockState {
@@ -230,15 +233,18 @@ package com.worldline.devview.networkmock.core.model {
   }
 
   @androidx.compose.runtime.Immutable @kotlinx.serialization.SerialName("mock") @kotlinx.serialization.Serializable public static final class OperationMockState.Mock implements com.worldline.devview.networkmock.core.model.OperationMockState {
-    ctor public OperationMockState.Mock(int statusCode, String exampleName);
+    ctor public OperationMockState.Mock(int statusCode, String mediaType, String exampleName);
     method public int component1();
     method public String component2();
-    method public com.worldline.devview.networkmock.core.model.OperationMockState.Mock copy(optional int statusCode, optional String exampleName);
+    method public String component3();
+    method public com.worldline.devview.networkmock.core.model.OperationMockState.Mock copy(optional int statusCode, optional String mediaType, optional String exampleName);
     method @InaccessibleFromKotlin public String getDisplayName();
     method @InaccessibleFromKotlin public String getExampleName();
+    method @InaccessibleFromKotlin public String getMediaType();
     method @InaccessibleFromKotlin public int getStatusCode();
     property public String displayName;
     property public String exampleName;
+    property public String mediaType;
     property public int statusCode;
   }
 
@@ -304,7 +310,7 @@ package com.worldline.devview.networkmock.core.repository {
     method public suspend Object? findMatchingMock(String host, String path, String method, optional java.util.Map<java.lang.String,? extends java.util.List<java.lang.String>> queryParameters, optional String? requestBody, kotlin.coroutines.Continuation<? super com.worldline.devview.networkmock.core.model.MockMatch?>);
     method public void invalidate();
     method @KotlinOnly public suspend Object? loadConfiguration(kotlin.coroutines.Continuation<? super kotlin.Result<com.worldline.devview.networkmock.core.model.MockConfiguration>>);
-    method public suspend Object? loadMockResponse(com.worldline.devview.networkmock.core.model.OperationKey key, int statusCode, String exampleName, kotlin.coroutines.Continuation<? super com.worldline.devview.networkmock.core.model.MockResponse?>);
+    method public suspend Object? loadMockResponse(com.worldline.devview.networkmock.core.model.OperationKey key, int statusCode, String mediaType, String exampleName, kotlin.coroutines.Continuation<? super com.worldline.devview.networkmock.core.model.MockResponse?>);
   }
 
   public final class MockStateRepository {
@@ -316,7 +322,7 @@ package com.worldline.devview.networkmock.core.repository {
     method public suspend Object? setAllOperationStates(java.util.Map<com.worldline.devview.networkmock.core.model.OperationKey,? extends com.worldline.devview.networkmock.core.model.OperationMockState> states, kotlin.coroutines.Continuation<? super kotlin.Unit>);
     method public suspend Object? setGlobalMockingEnabled(boolean enabled, kotlin.coroutines.Continuation<? super kotlin.Unit>);
     method public suspend Object? setOperationMockState(com.worldline.devview.networkmock.core.model.OperationKey key, com.worldline.devview.networkmock.core.model.OperationMockState state, kotlin.coroutines.Continuation<? super kotlin.Unit>);
-    field public static final int CURRENT_SCHEMA_VERSION = 1; // 0x1
+    field public static final int CURRENT_SCHEMA_VERSION = 2; // 0x2
     field public static final String LEGACY_ENDPOINT_KEY_PREFIX = "network_mock_endpoint_";
     field public static final String OPERATION_KEY_PREFIX = "network_mock_operation_";
   }

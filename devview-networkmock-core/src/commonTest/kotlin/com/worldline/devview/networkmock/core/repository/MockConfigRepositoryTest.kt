@@ -1148,6 +1148,7 @@ class MockConfigRepositoryTest {
             val response = repository.loadMockResponse(
                 key = getUserKey,
                 statusCode = 200,
+                mediaType = "application/json",
                 exampleName = "default"
             )
 
@@ -1284,6 +1285,7 @@ class MockConfigRepositoryTest {
             repository.loadMockResponse(
                 key = getUserKey,
                 statusCode = response.statusCode,
+                mediaType = response.mediaType,
                 exampleName = "default"
             ) shouldBe response
         }
@@ -1683,6 +1685,7 @@ class MockConfigRepositoryTest {
         val response = repository.loadMockResponse(
             key = OperationKey(specId = "example", operationId = "getUser"),
             statusCode = 200,
+            mediaType = "application/json",
             exampleName = "default"
         )
 
@@ -1731,6 +1734,7 @@ class MockConfigRepositoryTest {
         val response = repository.loadMockResponse(
             key = OperationKey(specId = "example", operationId = "getUser"),
             statusCode = 200,
+            mediaType = "application/vnd.example+json",
             exampleName = "default"
         )
 
@@ -1783,6 +1787,7 @@ class MockConfigRepositoryTest {
         val response = repository.loadMockResponse(
             key = OperationKey(specId = "example", operationId = "getUser"),
             statusCode = 200,
+            mediaType = "application/json",
             exampleName = "default"
         )
 
@@ -1796,6 +1801,7 @@ class MockConfigRepositoryTest {
         val response = repository.loadMockResponse(
             key = OperationKey(specId = "example", operationId = "getUser"),
             statusCode = 999,
+            mediaType = "application/json",
             exampleName = "default"
         )
 
@@ -2085,6 +2091,7 @@ class MockConfigRepositoryTest {
             val response = repository.loadMockResponse(
                 key = OperationKey(specId = "example", operationId = "getTest"),
                 statusCode = 200,
+                mediaType = "*/*",
                 exampleName = "default"
             )
 
@@ -2129,11 +2136,81 @@ class MockConfigRepositoryTest {
             val response = repository.loadMockResponse(
                 key = OperationKey(specId = "example", operationId = "getTest"),
                 statusCode = 200,
+                mediaType = "*/*",
                 exampleName = "default"
             )
 
             response?.isSynthesized shouldBe true
             response?.contentType shouldBe "application/json"
+        }
+
+    @Test
+    fun `discoverResponseFiles preserves both media types when multiple media types declare same-named examples`() =
+        runTest {
+            val multiMediaTypeSpec = """
+                {
+                  "info": { "title": "Example" },
+                  "servers": [ { "url": "https://api.example.com" } ],
+                  "paths": {
+                    "/api/users": {
+                      "get": {
+                        "operationId": "getUsers",
+                        "responses": {
+                          "200": {
+                            "content": {
+                              "application/json": {
+                                "examples": {
+                                  "default": { "externalValue": "/responses/users.json" }
+                                }
+                              },
+                              "application/xml": {
+                                "examples": {
+                                  "default": { "externalValue": "/responses/users.xml" }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+            """.trimIndent()
+            val repository = MockConfigRepository(
+                specPaths = listOf(SPEC_PATH),
+                resourceLoader = RecordingResourceLoader(
+                    resources = mapOf(
+                        SPEC_PATH to multiMediaTypeSpec,
+                        "responses/users.json" to """[{"id":1}]""",
+                        "responses/users.xml" to """<users><user><id>1</id></user></users>"""
+                    )
+                )
+            )
+
+            val opKey = OperationKey(specId = "example", operationId = "getUsers")
+            val variants = repository.discoverResponseFiles(key = opKey)
+
+            variants shouldHaveSize 2
+            variants.map { it.mediaType } shouldBe listOf("application/json", "application/xml")
+            variants.map { it.exampleName } shouldBe listOf("default", "default")
+
+            val jsonResponse = repository.loadMockResponse(
+                key = opKey,
+                statusCode = 200,
+                mediaType = "application/json",
+                exampleName = "default"
+            )
+            jsonResponse?.content shouldBe """[{"id":1}]"""
+            jsonResponse?.contentType shouldBe "application/json"
+
+            val xmlResponse = repository.loadMockResponse(
+                key = opKey,
+                statusCode = 200,
+                mediaType = "application/xml",
+                exampleName = "default"
+            )
+            xmlResponse?.content shouldBe """<users><user><id>1</id></user></users>"""
+            xmlResponse?.contentType shouldBe "application/xml"
         }
 
     private companion object {

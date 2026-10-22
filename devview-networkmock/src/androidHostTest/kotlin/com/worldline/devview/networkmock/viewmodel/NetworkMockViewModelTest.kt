@@ -177,13 +177,20 @@ class NetworkMockViewModelTest : ViewModelTest() {
         val viewModel = NetworkMockViewModel(configRepository, stateRepository)
 
         val key = OperationKey(specId = "user-api", operationId = "getUser")
-        val response = MockResponse(statusCode = 200, exampleName = "default", displayName = "Success (200)", content = "{}")
+        val response = MockResponse(
+            statusCode = 200,
+            mediaType = "application/json",
+            exampleName = "default",
+            displayName = "Success (200)",
+            content = "{}"
+        )
 
         viewModel.setOperationMockState(key, response)
         stateFlow.value.getOperationState(key)
             .shouldBeInstanceOf<OperationMockState.Mock>()
             .let {
                 it.statusCode shouldBe 200
+                it.mediaType shouldBe "application/json"
                 it.exampleName shouldBe "default"
             }
 
@@ -202,11 +209,23 @@ class NetworkMockViewModelTest : ViewModelTest() {
 
         viewModel.setOperationMockState(
             key = OperationKey(specId = "user-api", operationId = "getUser"),
-            response = MockResponse(statusCode = 200, exampleName = "default", displayName = "Success (200)", content = "{}")
+            response = MockResponse(
+                statusCode = 200,
+                mediaType = "application/json",
+                exampleName = "default",
+                displayName = "Success (200)",
+                content = "{}"
+            )
         )
         viewModel.setOperationMockState(
             key = OperationKey(specId = "catalog-api", operationId = "getProduct"),
-            response = MockResponse(statusCode = 200, exampleName = "default", displayName = "Success (200)", content = "{}")
+            response = MockResponse(
+                statusCode = 200,
+                mediaType = "application/json",
+                exampleName = "default",
+                displayName = "Success (200)",
+                content = "{}"
+            )
         )
 
         val statesSlot = slot<Map<OperationKey, OperationMockState>>()
@@ -358,11 +377,25 @@ class NetworkMockViewModelTest : ViewModelTest() {
         val configRepository = mockk<MockConfigRepository>()
         coEvery { configRepository.loadConfiguration() } returns Result.success(testConfiguration())
         coEvery { configRepository.discoverResponseFiles(key = firstKey) } returns listOf(
-            MockResponse(statusCode = 200, exampleName = "default", displayName = "Success (200)", content = "{}")
+            MockResponse(
+                statusCode = 200,
+                mediaType = "application/json",
+                exampleName = "default",
+                displayName = "Success (200)",
+                content = "{}"
+            )
         )
         coEvery { configRepository.discoverResponseFiles(key = secondKey) } coAnswers {
             delay(timeMillis = 500)
-            listOf(MockResponse(statusCode = 201, exampleName = "default", displayName = "Created (201)", content = "{}"))
+            listOf(
+                MockResponse(
+                    statusCode = 201,
+                    mediaType = "application/json",
+                    exampleName = "default",
+                    displayName = "Created (201)",
+                    content = "{}"
+                )
+            )
         }
         val stateRepository = createStateRepositoryMock(stateFlow)
 
@@ -387,7 +420,13 @@ class NetworkMockViewModelTest : ViewModelTest() {
         )
         val stateRepository = createStateRepositoryMock(stateFlow)
         val key = OperationKey(specId = "user-api", operationId = "getUser")
-        val response = MockResponse(statusCode = 200, exampleName = "default", displayName = "Success (200)", content = "{}")
+        val response = MockResponse(
+            statusCode = 200,
+            mediaType = "application/json",
+            exampleName = "default",
+            displayName = "Success (200)",
+            content = "{}"
+        )
 
         val viewModel = NetworkMockViewModel(configRepository, stateRepository)
         collectStates(viewModel.uiState, viewModel.sheetState)
@@ -396,14 +435,24 @@ class NetworkMockViewModelTest : ViewModelTest() {
         viewModel.setOperationMockState(key = key, response = response)
 
         val content = viewModel.sheetState.value.shouldBeInstanceOf<OperationSheetState.Content>()
-        content.operationUiModel.currentState shouldBe OperationMockState.Mock(statusCode = 200, exampleName = "default")
+        content.operationUiModel.currentState shouldBe OperationMockState.Mock(
+            statusCode = 200,
+            mediaType = "application/json",
+            exampleName = "default"
+        )
     }
 
     private fun createConfigRepositoryMock(
         loadResult: Result<MockConfiguration>,
         loadDelayMs: Long = 0L,
         discoveryResult: List<MockResponse> = listOf(
-            MockResponse(statusCode = 200, exampleName = "default", displayName = "Success (200)", content = "{}")
+            MockResponse(
+                statusCode = 200,
+                mediaType = "application/json",
+                exampleName = "default",
+                displayName = "Success (200)",
+                content = "{}"
+            )
         ),
         discoveryException: Exception? = null,
         discoveryDelayMs: Long = 0L

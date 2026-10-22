@@ -103,8 +103,8 @@ unchanged — operation, then spec, then no delay.
 
 The operation-state key shape changed (`{groupId}-{environmentId}-{endpointId}` →
 `{specId}-{operationId}`), and so did the persisted `Mock` payload (a response file name →
-`(statusCode, exampleName)`). On first launch after upgrading, every old-shape
-`network_mock_endpoint_*` entry is wiped once — see the
+`(statusCode, mediaType, exampleName)`). On first launch after upgrading, legacy
+entries are wiped once — see the
 [DataStore Schema](../modules/networkmock-core.md#datastore-schema) table. This is
 disabled-by-default developer-tooling state, not user data: previously-selected mocks
 reset to "network" rather than being translated, but the global mocking toggle is

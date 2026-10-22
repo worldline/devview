@@ -210,9 +210,17 @@ internal fun OperationPickerPage(
     // immediately - see the "SEQUENCE" section below for the Save/Cancel affordance.
     var buildingSequence by remember { mutableStateOf(value = false) }
     var sequenceInProgress by remember { mutableStateOf(value = persistentListOf<MockResponse>()) }
+    val hasMultipleMediaTypes = remember(key1 = content.responses) {
+        content.responses
+            .map { it.mediaType }
+            .distinct()
+            .size > 1
+    }
     val selectedResponse = when (val currentState = endpoint.currentState) {
         is OperationMockState.Mock -> content.responses.find {
-            it.statusCode == currentState.statusCode && it.exampleName == currentState.exampleName
+            it.statusCode == currentState.statusCode &&
+                it.mediaType == currentState.mediaType &&
+                it.exampleName == currentState.exampleName
         }
 
         is OperationMockState.Sequence -> null
@@ -254,13 +262,21 @@ internal fun OperationPickerPage(
                     }
                 }
                 mockResponses.forEachIndexed { index, mockResponse ->
-                    val itemKey = "mock_item_${mockResponse.statusCode}_${mockResponse.exampleName}"
+                    val itemKey =
+                        "mock_item_${mockResponse.statusCode}_${mockResponse.mediaType}_${mockResponse.exampleName}"
                     item(key = itemKey) {
                         MockItem(
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .testTag(tag = itemKey),
                             mockResponse = mockResponse,
+                            secondaryLabel = if (hasMultipleMediaTypes &&
+                                mockResponse.mediaType.isNotBlank()
+                            ) {
+                                mockResponse.mediaType
+                            } else {
+                                null
+                            },
                             selected = !buildingSequence && selectedResponse == mockResponse,
                             onClick = {
                                 if (buildingSequence) {

@@ -237,6 +237,7 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                                 request = request,
                                 key = mockMatch.key,
                                 statusCode = endpointState.statusCode,
+                                mediaType = endpointState.mediaType,
                                 exampleName = endpointState.exampleName,
                                 delayMs = mockMatch.delayMs
                             )
@@ -244,13 +245,15 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                             if (call == null) {
                                 logger.w {
                                     "$method $path -> NETWORK (declared mock " +
-                                        "${endpointState.statusCode}/${endpointState.exampleName} not found)"
+                                        "${endpointState.statusCode}/${endpointState.mediaType}/" +
+                                        "${endpointState.exampleName} not found)"
                                 }
                                 return@intercept execute(requestBuilder = requestBuilder)
                             }
 
                             logger.d {
-                                "$method $path -> MOCK ${endpointState.statusCode}/${endpointState.exampleName}"
+                                "$method $path -> MOCK ${endpointState.statusCode}/" +
+                                    "${endpointState.mediaType}/${endpointState.exampleName}"
                             }
                             call
                         } catch (e: Exception) {
@@ -286,6 +289,7 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                                 request = request,
                                 key = mockMatch.key,
                                 statusCode = step.statusCode,
+                                mediaType = step.mediaType,
                                 exampleName = step.exampleName,
                                 delayMs = mockMatch.delayMs
                             )
@@ -293,7 +297,7 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                             if (call == null) {
                                 logger.w {
                                     "$method $path -> NETWORK (declared sequence step " +
-                                        "${step.statusCode}/${step.exampleName} not found)"
+                                        "${step.statusCode}/${step.mediaType}/${step.exampleName} not found)"
                                 }
                                 return@intercept execute(requestBuilder = requestBuilder)
                             }
@@ -383,12 +387,14 @@ private suspend fun buildMockCall(
     request: HttpRequestData,
     key: OperationKey,
     statusCode: Int,
+    mediaType: String,
     exampleName: String,
     delayMs: Long?
 ): HttpClientCall? {
     val mockResponse = mockRepository.loadMockResponse(
         key = key,
         statusCode = statusCode,
+        mediaType = mediaType,
         exampleName = exampleName
     ) ?: return null
     delayMs?.let { ms -> delay(timeMillis = ms) }
