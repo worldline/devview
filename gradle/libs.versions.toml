@@ -31,15 +31,15 @@ mrmans0n-detekt-compose-rules = "0.6.8"
 turbine = "1.2.1"
 
 # Kotlin only dependencies
-kotlin = "2.3.21"
+kotlin = "2.4.20"
 kover = "0.9.8"
 kotlinx-collections-immutable = "0.5.1"
 kotlinx-coroutines = "1.11.0"
 kotlinx-datetime = "0.8.0-0.6.x-compat"
 kotlinx-io = "0.9.1"
 kotlinx-serialization-json = "1.11.0"
-mokkery = "3.3.0"
-poko = "0.22.1"
+mokkery = "3.5.1"
+poko = "0.23.2"
 
 # Compose Multiplatform only dependencies
 jetbrains-androidx-lifecycle = "2.11.0"
