@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- NetworkMock: wildcard response media types (e.g. `*/*`, `application/*`) are no longer
+  emitted verbatim as the HTTP `Content-Type`; they resolve to concrete types (`application/json`,
+  `text/plain`, `application/octet-stream`) based on the loaded body so Ktor `ContentNegotiation`
+  can deserialize responses (#143).
+
 ## [0.2.0-alpha05] - 2026-10-14
 
 ### Fixed

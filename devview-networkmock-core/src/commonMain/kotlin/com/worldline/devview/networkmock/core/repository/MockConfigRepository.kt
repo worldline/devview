@@ -10,6 +10,7 @@ import com.worldline.devview.networkmock.core.openapi.OpenApiParser
 import com.worldline.devview.networkmock.core.openapi.ResolvedResponse
 import com.worldline.devview.networkmock.core.openapi.ResponseContent
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
 
 private val logger = Logger.withTag(tag = "DevViewNetworkMock")
 
@@ -233,11 +234,15 @@ public class MockConfigRepository(
             is ResponseContent.FromFile -> resourceLoader.load(path = source.path).decodeToString()
             is ResponseContent.Synthesized -> source.json
         }
+        val resolvedContentType = resolveContentType(
+            declared = resolved.contentType,
+            content = content
+        )
         MockResponse.create(
             statusCode = statusCode,
             exampleName = exampleName,
             content = content,
-            contentType = resolved.contentType,
+            contentType = resolvedContentType,
             headers = resolved.headers,
             isSynthesized = resolved.content is ResponseContent.Synthesized
         )
@@ -264,5 +269,40 @@ public class MockConfigRepository(
         hostname = hostname.substringBefore(delimiter = ":")
         hostname = hostname.substringBefore(delimiter = "/")
         return hostname
+    }
+}
+
+/**
+ * Resolves a response's declared media type to a concrete HTTP Content-Type header value.
+ *
+ * OpenAPI content keys may declare media ranges such as wildcard types. Emitting a wildcard
+ * range verbatim causes HTTP clients (such as Ktor ContentNegotiation) to skip concrete
+ * converters (e.g. JSON), leaving the response body as a raw stream and failing deserialization.
+ *
+ * Concrete (non-wildcard) declared media types and empty bodies pass through unchanged.
+ */
+internal fun resolveContentType(declared: String, content: String): String {
+    if (!declared.contains(char = '*') || content.isBlank()) {
+        return declared
+    }
+
+    val trimmedContent = content.trim()
+    val isJson = try {
+        Json.parseToJsonElement(string = trimmedContent)
+        true
+    } catch (@Suppress("SwallowedException") e: SerializationException) {
+        false
+    } catch (@Suppress("SwallowedException") e: IllegalArgumentException) {
+        false
+    }
+
+    return when {
+        declared == "*/*" -> if (isJson) "application/json" else "text/plain"
+        declared.startsWith(
+            prefix = "application/"
+        ) -> if (isJson) "application/json" else "application/octet-stream"
+        declared.startsWith(prefix = "text/") -> "text/plain"
+        // shortcut: unhandled wildcard categories fall back to the declared value; add specific mappings if requested
+        else -> declared
     }
 }

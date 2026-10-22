@@ -19,10 +19,11 @@ import kotlinx.serialization.Serializable
  *   `"Not Found - Detailed (404)"`)
  * @property content The raw response body, read from an example file or schema-synthesized.
  *   Empty for a bodyless response.
- * @property contentType The response's declared media type (the key under `responses.<code>.content`
- *   in the spec, e.g. `"application/json"`). Defaults to `"application/json"` for response
- *   variants built without one (e.g. hand-built test fixtures). Empty for a bodyless response
- *   so no media-type-derived `Content-Type` header is sent.
+ * @property contentType The concrete HTTP Content-Type header value emitted for this
+ *   response. OpenAPI media ranges (such as wildcard types) are resolved to a concrete
+ *   type compatible with [content] (application/json, text/plain, or
+ *   application/octet-stream). Explicit types pass through unchanged, and empty bodies
+ *   remain empty so no media-type-derived header is sent. Defaults to "application/json".
  * @property headers Response headers declared on `responses.<code>.headers` in the spec
  *   (name to literal `example` value). Does not include `Content-Type`, which is carried
  *   separately by [contentType]. Empty if the spec declares none.

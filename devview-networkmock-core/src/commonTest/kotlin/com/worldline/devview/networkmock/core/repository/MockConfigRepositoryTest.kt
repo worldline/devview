@@ -2045,6 +2045,97 @@ class MockConfigRepositoryTest {
         "responses/getUser-404-detailed.json" to """{"error":"not found","reason":"deleted"}"""
     )
 
+    @Test
+    fun `loadMockResponse resolves wildcard content-type to application-json for JSON fixture`() =
+        runTest {
+            val spec = """
+                {
+                  "info": { "title": "Example" },
+                  "servers": [ { "url": "https://api.example.com" } ],
+                  "paths": {
+                    "/api/test": {
+                      "get": {
+                        "operationId": "getTest",
+                        "responses": {
+                          "200": {
+                            "content": {
+                              "*/*": {
+                                "examples": {
+                                  "default": { "externalValue": "/responses/test.json" }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+            """.trimIndent()
+            val repository = MockConfigRepository(
+                specPaths = listOf(SPEC_PATH),
+                resourceLoader = RecordingResourceLoader(
+                    resources = mapOf(
+                        SPEC_PATH to spec,
+                        "responses/test.json" to """{"ipagoId":"ipago-773201"}"""
+                    )
+                )
+            )
+
+            val response = repository.loadMockResponse(
+                key = OperationKey(specId = "example", operationId = "getTest"),
+                statusCode = 200,
+                exampleName = "default"
+            )
+
+            response?.contentType shouldBe "application/json"
+        }
+
+    @Test
+    fun `loadMockResponse resolves wildcard content-type to application-json for synthesized body`() =
+        runTest {
+            val spec = """
+                {
+                  "info": { "title": "Example" },
+                  "servers": [ { "url": "https://api.example.com" } ],
+                  "paths": {
+                    "/api/test": {
+                      "get": {
+                        "operationId": "getTest",
+                        "responses": {
+                          "200": {
+                            "content": {
+                              "*/*": {
+                                "schema": {
+                                  "type": "object",
+                                  "properties": {
+                                    "status": { "type": "string" }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+            """.trimIndent()
+            val repository = MockConfigRepository(
+                specPaths = listOf(SPEC_PATH),
+                resourceLoader = RecordingResourceLoader(resources = mapOf(SPEC_PATH to spec))
+            )
+
+            val response = repository.loadMockResponse(
+                key = OperationKey(specId = "example", operationId = "getTest"),
+                statusCode = 200,
+                exampleName = "default"
+            )
+
+            response?.isSynthesized shouldBe true
+            response?.contentType shouldBe "application/json"
+        }
+
     private companion object {
         const val SPEC_PATH: String = "specs/example.json"
     }

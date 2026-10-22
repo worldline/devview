@@ -13,6 +13,7 @@ import io.ktor.client.call.body
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -25,6 +26,7 @@ import io.ktor.http.headersOf
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.ktor.serialization.kotlinx.json.json
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
@@ -32,6 +34,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.io.IOException
+import kotlinx.serialization.Serializable
 
 class NetworkMockPluginTest {
 
@@ -249,6 +252,66 @@ class NetworkMockPluginTest {
         response.headers["X-RateLimit-Remaining"] shouldBe "42"
         response.headers[HttpHeaders.ContentType] shouldBe "application/vnd.example+json"
     }
+
+    @Test
+    fun returnsMockResponse_withWildcardContentType_deserializesThroughKtorContentNegotiation() = runTest {
+        val wildcardSpec = """
+            {
+              "info": { "title": "Example" },
+              "servers": [ { "url": "https://staging.api.example.com" } ],
+              "paths": {
+                "/api/users/{userId}": {
+                  "get": {
+                    "operationId": "getUser",
+                    "responses": {
+                      "200": {
+                        "content": {
+                          "*/*": {
+                            "examples": {
+                              "default": { "externalValue": "/files/networkmocks/responses/getUser-200.json" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        val resources = mapOf(
+            KtorPluginTestData.SPEC_PATH to wildcardSpec,
+            "files/networkmocks/responses/getUser-200.json" to """{"id":42,"name":"ArubaUser"}"""
+        )
+        val state = NetworkMockState(
+            globalMockingEnabled = true,
+            operationStates = mapOf(
+                "example-getUser" to OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            )
+        )
+        val configRepo = configRepository(resources = resources)
+        val stateRepo = stateRepositoryMock(state = state)
+        val client = HttpClient(engine = networkEngine()) {
+            install(plugin = ContentNegotiation) {
+                json()
+            }
+            install(plugin = NetworkMockPlugin) {
+                mockRepository = configRepo
+                this.stateRepository = stateRepo
+            }
+        }
+
+        val response: HttpResponse = client.get(
+            urlString = "https://staging.api.example.com/api/users/42"
+        )
+
+        response.headers[HttpHeaders.ContentType] shouldBe "application/json"
+        val user = response.body<UserDto>()
+        user shouldBe UserDto(id = 42, name = "ArubaUser")
+    }
+
+    @Serializable
+    private data class UserDto(val id: Int, val name: String)
 
     // endregion
 

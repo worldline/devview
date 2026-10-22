@@ -203,6 +203,23 @@ circular reference. Each ref's fragment must name the section its context expect
 `$ref` must point into `components/responses`), so a same-named entry in a different section is
 never resolved by mistake.
 
+### Wildcard content-type resolution
+
+OpenAPI `responses.<code>.content` keys may declare media ranges rather than concrete
+MIME types (`*/*`, `application/*`, `text/*`). DevView resolves ranges to a concrete
+`MockResponse.contentType` header value based on the loaded body content so HTTP
+client converters (such as Ktor's `ContentNegotiation`) can deserialize mocked responses:
+
+| Declared range | Body content | Resolved `Content-Type` |
+|---|---|---|
+| `*/*` or `application/*` | Parses as JSON | `application/json` |
+| `*/*` | Not JSON | `text/plain` |
+| `application/*` | Not JSON | `application/octet-stream` |
+| `text/*` | Any | `text/plain` |
+
+Explicit media types (no `*`) pass through unchanged. Bodyless responses retain an
+empty `contentType` string so no media-type-derived header is sent.
+
 ### Bodyless responses
 
 A response with no `content` (or an empty `content: {}` map) is available as one
