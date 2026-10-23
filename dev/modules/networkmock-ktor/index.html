@@ -2277,7 +2277,7 @@
 <li>If matched, reads the operation's <code>OperationMockState</code>:</li>
 <li><code>Network</code> or <code>null</code> → sends the real request.</li>
 <li><code>Failure(kind)</code> → throws immediately, simulating that failure kind (see below). No response is loaded.</li>
-<li><code>Mock(statusCode, exampleName)</code>:<ul>
+<li><code>Mock(statusCode, mediaType, exampleName)</code>:<ul>
 <li>If the operation declares <code>x-devview.failureRate</code> and the configured <code>Random</code> rolls below it → throws a simulated connection failure instead, same as <code>Failure(CONNECTION_REFUSED)</code>.</li>
 <li>Otherwise, loads that declared response variant and returns a synthetic response.</li>
 </ul>
