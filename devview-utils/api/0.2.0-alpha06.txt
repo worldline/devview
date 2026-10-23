@@ -1,0 +1,41 @@
+// Signature format: 4.0
+package com.worldline.devview.utils {
+
+  public final class CreateDataStoreKt {
+    method public static androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> createDataStore(kotlin.jvm.functions.Function0<java.lang.String> producePath);
+  }
+
+  public final class CreateDataStore_androidKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> rememberDataStore(String dataStoreName);
+  }
+
+  public final class CreateDataStore_iosKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> rememberDataStore(String dataStoreName);
+  }
+
+  public final class DataStoreDelegate {
+    ctor public DataStoreDelegate();
+    method public androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> get();
+    method @KotlinOnly @androidx.compose.runtime.Composable public void init(String dataStoreName);
+  }
+
+  public interface RequiresDataStore {
+    method @InaccessibleFromKotlin public com.worldline.devview.utils.DataStoreDelegate getDataStoreDelegate();
+    method @InaccessibleFromKotlin public String getDataStoreName();
+    method @KotlinOnly @androidx.compose.runtime.Composable public default void initDataStore();
+    property public abstract com.worldline.devview.utils.DataStoreDelegate dataStoreDelegate;
+    property public abstract String dataStoreName;
+  }
+
+}
+
+package com.worldline.devview.utils.preview {
+
+  public final class BooleanPreviewParameterProvider implements androidx.compose.ui.tooling.preview.PreviewParameterProvider<java.lang.Boolean> {
+    ctor public BooleanPreviewParameterProvider();
+    method @InaccessibleFromKotlin public kotlin.sequences.Sequence<java.lang.Boolean> getValues();
+    property public kotlin.sequences.Sequence<java.lang.Boolean> values;
+  }
+
+}
+

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0-alpha06] - 2026-10-23
+
 ### Changed
 - **Breaking** NetworkMock: response variant identity is now `(statusCode, mediaType, exampleName)`
   instead of `(statusCode, exampleName)`. `MockResponse` and `OperationMockState.Mock` now carry
@@ -391,7 +393,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added and expanded unit test coverage for all primary `devview-*` modules.
 - Added Konsist architecture enforcement tests and Kover coverage reporting across the module set.
 
-[Unreleased]: https://github.com/worldline/DevView/compare/0.2.0-alpha05...HEAD
+[Unreleased]: https://github.com/worldline/DevView/compare/0.2.0-alpha06...HEAD
+[0.2.0-alpha06]: https://github.com/worldline/DevView/compare/0.2.0-alpha05...0.2.0-alpha06
 [0.2.0-alpha05]: https://github.com/worldline/DevView/compare/0.2.0-alpha04...0.2.0-alpha05
 [0.2.0-alpha04]: https://github.com/worldline/DevView/compare/0.2.0-alpha03...0.2.0-alpha04
 [0.2.0-alpha03]: https://github.com/worldline/DevView/compare/0.2.0-alpha02...0.2.0-alpha03

@@ -24,12 +24,16 @@
 
 ## What's New
 
-### v0.2.0-alpha05
+### v0.2.0-alpha06
+
+**Changed**
+
+- **Breaking** NetworkMock: response variant identity is now `(statusCode, mediaType, exampleName)` instead of `(statusCode, exampleName)`. `MockResponse` and `OperationMockState.Mock` now carry `mediaType`, and `MockConfigRepository.loadMockResponse` accepts `mediaType` as its third parameter. Persisted operation mock selections are wiped once on upgrade (schema version 2) (#143).
 
 **Fixed**
 
-- NetworkMock: OpenAPI 3.1 schemas declaring `type` as an array (e.g. `[string, "null"]`) or `null` in `enum` no longer fail spec loading.
-- NetworkMock: OpenAPI responses without `content` now expose an empty-body `"default"` variant, including `$ref` responses and bodyless 200/204 statuses. No fixture file is needed, and the Ktor plugin omits the media-type-derived `Content-Type` header while preserving declared response headers.
+- NetworkMock: wildcard response media types (e.g. `*/*`, `application/*`) are no longer emitted verbatim as the HTTP `Content-Type`; they resolve to concrete types (`application/json`, `text/plain`, `application/octet-stream`) based on the loaded body so Ktor `ContentNegotiation` can deserialize responses (#143).
+- NetworkMock: multiple media types declared under the same status code no longer overwrite each other when they declare same-named examples (such as `default`); both are retained as distinct selectable variants disambiguated in the UI (#143).
 
 ---
 
