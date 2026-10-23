@@ -122,21 +122,23 @@ public sealed interface OperationMockState {
 
     /**
      * The operation will return the response variant identified by
-     * `(statusCode, exampleName)`.
+     * `(statusCode, mediaType, exampleName)`.
      *
-     * This pair — not a file name — is the identity of the selected variant, since the
+     * This triple — not a file name — is the identity of the selected variant, since the
      * underlying `externalValue` file path is an implementation detail a spec author is free
-     * to move. Both fields are required: two different status codes can each declare an
-     * example named `"default"`.
+     * to move. All three fields are required: two different status codes or two different media
+     * types under the same status code can each declare an example named `"default"`.
      *
      * @property statusCode The HTTP status code of the selected variant
+     * @property mediaType The declared media type of the selected variant, or empty for bodyless
      * @property exampleName The OpenAPI example name of the selected variant
      * @see MockResponse
      */
     @Immutable
     @Serializable
     @SerialName("mock")
-    public data class Mock(val statusCode: Int, val exampleName: String) : OperationMockState {
+    public data class Mock(val statusCode: Int, val mediaType: String, val exampleName: String) :
+        OperationMockState {
         override val displayName: String get() = "$statusCode - $exampleName"
     }
 

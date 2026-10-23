@@ -1,6 +1,7 @@
 package com.worldline.devview.networkmock.core.repository
 
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import app.cash.turbine.test
 import com.worldline.devview.networkmock.core.fixtures.MockTestData
@@ -95,12 +96,17 @@ class MockStateRepositoryTest {
 
         repository.setOperationMockState(
             key = key(operationId = "getUser"),
-            state = OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            state = OperationMockState.Mock(
+                statusCode = 200,
+                mediaType = "application/json",
+                exampleName = "default"
+            )
         )
 
         val operationState = repository.getState().getOperationState(key = key(operationId = "getUser"))
         operationState.shouldBeInstanceOf<OperationMockState.Mock>()
         operationState.statusCode shouldBe 200
+        operationState.mediaType shouldBe "application/json"
         operationState.exampleName shouldBe "default"
     }
 
@@ -133,8 +139,16 @@ class MockStateRepositoryTest {
     fun `setOperationMockState persists sequence state with its position for an operation`() = runTest {
         val repository = createRepository()
         val steps = listOf(
-            OperationMockState.Mock(statusCode = 202, exampleName = "pending"),
-            OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            OperationMockState.Mock(
+                statusCode = 202,
+                mediaType = "application/json",
+                exampleName = "pending"
+            ),
+            OperationMockState.Mock(
+                statusCode = 200,
+                mediaType = "application/json",
+                exampleName = "default"
+            )
         )
 
         repository.setOperationMockState(
@@ -152,8 +166,16 @@ class MockStateRepositoryTest {
     fun `setOperationMockState persists network state and discards a previous sequence position`() = runTest {
         val repository = createRepository()
         val steps = listOf(
-            OperationMockState.Mock(statusCode = 202, exampleName = "pending"),
-            OperationMockState.Mock(statusCode = 200, exampleName = "default")
+            OperationMockState.Mock(
+                statusCode = 202,
+                mediaType = "application/json",
+                exampleName = "pending"
+            ),
+            OperationMockState.Mock(
+                statusCode = 200,
+                mediaType = "application/json",
+                exampleName = "default"
+            )
         )
         repository.setOperationMockState(
             key = key(operationId = "getUser"),
@@ -191,7 +213,11 @@ class MockStateRepositoryTest {
         repository.setOperationMockState(key = key(operationId = "getUser"), state = MockTestData.mockState200())
         repository.setOperationMockState(
             key = key(operationId = "createUser"),
-            state = OperationMockState.Mock(statusCode = 201, exampleName = "default")
+            state = OperationMockState.Mock(
+                statusCode = 201,
+                mediaType = "application/json",
+                exampleName = "default"
+            )
         )
 
         val state = repository.getState()
@@ -209,7 +235,11 @@ class MockStateRepositoryTest {
         repository.setOperationMockState(key = key(operationId = "getUser"), state = MockTestData.mockState200())
         repository.setOperationMockState(
             key = key(operationId = "createUser"),
-            state = OperationMockState.Mock(statusCode = 201, exampleName = "default")
+            state = OperationMockState.Mock(
+                statusCode = 201,
+                mediaType = "application/json",
+                exampleName = "default"
+            )
         )
 
         repository.setOperationMockState(key = key(operationId = "getUser"), state = MockTestData.mockState404())
@@ -229,7 +259,11 @@ class MockStateRepositoryTest {
         repository.setOperationMockState(key = key(operationId = "getUser"), state = MockTestData.mockState200())
         repository.setOperationMockState(
             key = key(operationId = "createUser"),
-            state = OperationMockState.Mock(statusCode = 201, exampleName = "default")
+            state = OperationMockState.Mock(
+                statusCode = 201,
+                mediaType = "application/json",
+                exampleName = "default"
+            )
         )
 
         repository.resetKnownOperationsToNetwork()
@@ -367,6 +401,39 @@ class MockStateRepositoryTest {
         val state = repository.getState()
 
         state.operationStates shouldContainKey key(operationId = "getUser").compositeKey
+    }
+
+    @Test
+    fun `schema v1 operation states are wiped on upgrade to schema v2`() = runTest {
+        val dataStore = FakePreferencesDataStore()
+        dataStore.updateData { preferences ->
+            preferences.toMutablePreferences().apply {
+                this[intPreferencesKey(name = "network_mock_schema_version")] = 1
+                this[booleanPreferencesKey(name = "network_mock_global_enabled")] = true
+                this[stringPreferencesKey(name = "network_mock_operation_example-getUser")] =
+                    """{"type":"mock","statusCode":200,"exampleName":"default"}"""
+            }
+        }
+        val repository = MockStateRepository(dataStore = dataStore)
+
+        val state = repository.getState()
+
+        state.operationStates shouldBe emptyMap()
+        state.globalMockingEnabled shouldBe true
+    }
+
+    @Test
+    fun `schema v2 mock state round-trips correctly`() = runTest {
+        val repository = createRepository()
+        val mock = OperationMockState.Mock(
+            statusCode = 200,
+            mediaType = "application/vnd.custom+json",
+            exampleName = "custom"
+        )
+        repository.setOperationMockState(key = key(operationId = "getUser"), state = mock)
+
+        val retrieved = repository.getState().getOperationState(key = key(operationId = "getUser"))
+        retrieved shouldBe mock
     }
 
     // endregion

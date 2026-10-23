@@ -82,7 +82,7 @@ internal object OpenApiParser {
      */
     data class ParsedSpec(
         val apiSpec: ApiSpec,
-        val responseIndex: Map<String, Map<Int, Map<String, ResolvedResponse>>>
+        val responseIndex: Map<String, Map<Int, Map<String, Map<String, ResolvedResponse>>>>
     )
 
     /**
@@ -103,7 +103,8 @@ internal object OpenApiParser {
         val document = root.document
 
         val operations = mutableListOf<Operation>()
-        val responseIndex = mutableMapOf<String, Map<Int, Map<String, ResolvedResponse>>>()
+        val responseIndex =
+            mutableMapOf<String, Map<Int, Map<String, Map<String, ResolvedResponse>>>>()
 
         for ((path, pathItem) in document.paths) {
             for ((method, rawOperation) in pathItem.operationsByMethod()) {
@@ -236,8 +237,8 @@ internal object OpenApiParser {
         suspend fun resolveResponseIndex(
             responses: Map<String, ResponseObject>,
             source: SourceDocument
-        ): Map<Int, Map<String, ResolvedResponse>> {
-            val result = mutableMapOf<Int, Map<String, ResolvedResponse>>()
+        ): Map<Int, Map<String, Map<String, ResolvedResponse>>> {
+            val result = mutableMapOf<Int, Map<String, Map<String, ResolvedResponse>>>()
             for ((codeText, rawResponse) in responses) {
                 val statusCode = codeText.toIntOrNull() ?: continue
                 val resolvedResponse = if (rawResponse.ref != null) {
@@ -255,24 +256,33 @@ internal object OpenApiParser {
                 val responseSource = resolvedResponse.source
 
                 val headers = resolveHeaders(raw = response.headers, source = responseSource)
-                val examplesForCode = mutableMapOf<String, ResolvedResponse>()
+                val byMediaType = mutableMapOf<String, Map<String, ResolvedResponse>>()
                 if (response.content.isEmpty()) {
-                    examplesForCode[DEFAULT_EXAMPLE_NAME] = ResolvedResponse(
-                        content = ResponseContent.Empty,
-                        contentType = "",
-                        headers = headers
+                    val emptyMap = mapOf(
+                        pair = Pair(
+                            first = DEFAULT_EXAMPLE_NAME,
+                            second = ResolvedResponse(
+                                content = ResponseContent.Empty,
+                                contentType = "",
+                                headers = headers
+                            )
+                        )
                     )
+                    byMediaType[""] = emptyMap
                 }
                 for ((mediaType, media) in response.content) {
-                    examplesForCode += resolveMediaTypeResponses(
+                    val examples = resolveMediaTypeResponses(
                         mediaType = mediaType,
                         media = media,
                         source = responseSource,
                         headers = headers
                     )
+                    if (examples.isNotEmpty()) {
+                        byMediaType[mediaType] = examples
+                    }
                 }
-                if (examplesForCode.isNotEmpty()) {
-                    result[statusCode] = examplesForCode
+                if (byMediaType.isNotEmpty()) {
+                    result[statusCode] = byMediaType
                 }
             }
             return result

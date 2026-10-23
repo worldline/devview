@@ -11,6 +11,7 @@ androidx-navigation = "2.10.2"
 androidx-room = "2.8.5"
 androidx-sqlite = "2.7.1"
 androidx-test = "1.7.0"
+androidx-test-espresso = "3.7.0"
 coil = "3.6.3"
 compose-screenshot = "0.0.1-alpha16" # Issue https://issuetracker.google.com/issues/422412664 -> Test on Mac
 detekt = "2.0.0-alpha.6"
@@ -68,6 +69,7 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidx-room" }
 androidx-room-paging = { group = "androidx.room", name = "room-paging", version.ref = "androidx-room" }
 androidx-sqlite = { module = "androidx.sqlite:sqlite-bundled", version.ref = "androidx-sqlite" }
+androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx-test-espresso" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test" }
 coil = { module = "io.coil-kt.coil3:coil" }
 coil-bom = { module = "io.coil-kt.coil3:coil-bom", version.ref = "coil" }

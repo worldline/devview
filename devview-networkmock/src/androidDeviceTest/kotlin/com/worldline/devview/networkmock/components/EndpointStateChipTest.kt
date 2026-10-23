@@ -20,7 +20,13 @@ class EndpointStateChipTest {
 
     @Test
     fun displaysBareStatusCode_forMockState_200() = runComposeUiTest {
-        setChip(state = OperationMockState.Mock(statusCode = 200, exampleName = "default"))
+        setChip(
+            state = OperationMockState.Mock(
+                statusCode = 200,
+                mediaType = "application/json",
+                exampleName = "default"
+            )
+        )
 
         onNodeWithTag(testTag = "endpoint_state_chip_label_200", useUnmergedTree = true)
             .assertIsDisplayed()
@@ -28,7 +34,13 @@ class EndpointStateChipTest {
 
     @Test
     fun displaysBareStatusCode_forMockState_404() = runComposeUiTest {
-        setChip(state = OperationMockState.Mock(statusCode = 404, exampleName = "default"))
+        setChip(
+            state = OperationMockState.Mock(
+                statusCode = 404,
+                mediaType = "application/json",
+                exampleName = "default"
+            )
+        )
 
         onNodeWithTag(testTag = "endpoint_state_chip_label_404", useUnmergedTree = true)
             .assertIsDisplayed()
@@ -36,7 +48,13 @@ class EndpointStateChipTest {
 
     @Test
     fun displaysBareStatusCode_forMockState_500() = runComposeUiTest {
-        setChip(state = OperationMockState.Mock(statusCode = 500, exampleName = "default"))
+        setChip(
+            state = OperationMockState.Mock(
+                statusCode = 500,
+                mediaType = "application/json",
+                exampleName = "default"
+            )
+        )
 
         onNodeWithTag(testTag = "endpoint_state_chip_label_500", useUnmergedTree = true)
             .assertIsDisplayed()
@@ -44,7 +62,13 @@ class EndpointStateChipTest {
 
     @Test
     fun displaysBareStatusCode_ignoringExampleName() = runComposeUiTest {
-        setChip(state = OperationMockState.Mock(statusCode = 404, exampleName = "simple"))
+        setChip(
+            state = OperationMockState.Mock(
+                statusCode = 404,
+                mediaType = "application/json",
+                exampleName = "simple"
+            )
+        )
 
         onNodeWithTag(testTag = "endpoint_state_chip_label_404", useUnmergedTree = true)
             .assertIsDisplayed()
@@ -53,7 +77,11 @@ class EndpointStateChipTest {
     @Test
     fun displaysExplicitLabel_whenOverridden() = runComposeUiTest {
         setChip(
-            state = OperationMockState.Mock(statusCode = 404, exampleName = "simple"),
+            state = OperationMockState.Mock(
+                statusCode = 404,
+                mediaType = "application/json",
+                exampleName = "simple"
+            ),
             label = "404 - simple"
         )
 
@@ -70,7 +98,13 @@ class EndpointStateChipTest {
 
     @Test
     fun chipIsDisplayed_forMockState() = runComposeUiTest {
-        setChip(state = OperationMockState.Mock(statusCode = 200, exampleName = "default"))
+        setChip(
+            state = OperationMockState.Mock(
+                statusCode = 200,
+                mediaType = "application/json",
+                exampleName = "default"
+            )
+        )
 
         onNodeWithTag(testTag = "endpoint_state_chip", useUnmergedTree = true).assertIsDisplayed()
     }

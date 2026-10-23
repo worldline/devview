@@ -127,7 +127,11 @@ class EndpointCardTest {
                 method = HttpMethod.Get
             )
         ),
-        currentState = OperationMockState.Mock(statusCode = 200, exampleName = "default")
+        currentState = OperationMockState.Mock(
+            statusCode = 200,
+            mediaType = "application/json",
+            exampleName = "default"
+        )
     )
 
     private fun ComposeUiTest.setEndpointCard(

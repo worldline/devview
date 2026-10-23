@@ -41,6 +41,8 @@ class DeviceTestConventionPlugin : Plugin<Project> {
                             val kotestBom = libs.findLibrary("kotest.bom").get()
                             implementation(project.dependencies.platform(kotestBom))
                             implementation(libs.findLibrary("kotest.assertions.core").get())
+                            // Workaround for Espresso reflection crash on Android 15+ (InputManager.getInstance)
+                            implementation(libs.findLibrary("androidx.test.espresso.core").get())
                         }
                     }
                 }

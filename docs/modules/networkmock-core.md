@@ -152,7 +152,7 @@ never consumes or mutates anything the real network call still needs to send.
 
 Response bodies live wherever `externalValue` points them — the sample app uses `composeResources/files/networkmocks/responses/{specId}/{operationId}/{operationId}-{status}[-{suffix}].json`, but this is only a convention, not a requirement.
 
-Discovery reads exactly the `(statusCode, exampleName)` pairs declared in the spec — **there is no probing** of status codes or file-name suffixes. If a variant isn't declared, it doesn't exist.
+Discovery reads exactly the `(statusCode, mediaType, exampleName)` triples declared in the spec — **there is no probing** of status codes or file-name suffixes. If a variant isn't declared, it doesn't exist.
 
 `discoverResponseFiles`/`loadMockResponse` read and decode response body files — this is real I/O, on top of the one-time spec parse. `MockConfigRepository` doesn't call either eagerly; `devview-networkmock`'s main operation list is built from parsed spec metadata alone (`OperationDescriptor` carries only `key` and `config`, no responses), and a given operation's variants are only discovered when its operation sheet actually opens. See [NetworkMock UI](networkmock-ui.md).
 
@@ -162,6 +162,16 @@ MockConfigRepository(
     resourceLoader = NetworkMockResourceLoader { path -> Res.readBytes(path) }
 )
 ```
+
+### Multiple media types per status code
+
+When an operation declares multiple media types under the same status code (e.g. `application/json`
+and `application/xml` under `200`), each media type's examples are retained as distinct response
+variants identified by `(statusCode, mediaType, exampleName)`. The UI displays the media type
+as a secondary label whenever an operation's variants span more than one media type, allowing
+developers to explicitly choose which payload format to simulate. Callers of
+`loadMockResponse(key, statusCode, mediaType, exampleName)` pass the declared media type to load
+that exact variant.
 
 ### Response headers and content type
 
@@ -202,6 +212,23 @@ until a non-ref entry is reached — with a cycle guard that fails clearly inste
 circular reference. Each ref's fragment must name the section its context expects (e.g. a response
 `$ref` must point into `components/responses`), so a same-named entry in a different section is
 never resolved by mistake.
+
+### Wildcard content-type resolution
+
+OpenAPI `responses.<code>.content` keys may declare media ranges rather than concrete
+MIME types (`*/*`, `application/*`, `text/*`). DevView resolves ranges to a concrete
+`MockResponse.contentType` header value based on the loaded body content so HTTP
+client converters (such as Ktor's `ContentNegotiation`) can deserialize mocked responses:
+
+| Declared range | Body content | Resolved `Content-Type` |
+|---|---|---|
+| `*/*` or `application/*` | Parses as JSON | `application/json` |
+| `*/*` | Not JSON | `text/plain` |
+| `application/*` | Not JSON | `application/octet-stream` |
+| `text/*` | Any | `text/plain` |
+
+Explicit media types (no `*`) pass through unchanged. Bodyless responses retain an
+empty `contentType` string so no media-type-derived header is sent.
 
 ### Bodyless responses
 
@@ -338,14 +365,14 @@ State is persisted via `MockStateRepository`:
 | `network_mock_operation_{compositeKey}` | String (JSON) | Per-operation state |
 
 `OperationMockState` is serialized as `{"type":"network"}` (pass-through),
-`{"type":"mock","statusCode":200,"exampleName":"default"}`, or
+`{"type":"mock","statusCode":200,"mediaType":"application/json","exampleName":"default"}`, or
 `{"type":"failure","kind":"timeout"}` / `{"type":"failure","kind":"connection_refused"}`, or
 `{"type":"sequence","responses":[...],"currentIndex":0}` — an ordered list of `Mock` steps plus
 the position to serve next. The position is part of this same persisted value, not a separate
 key, so resetting the operation to `Network` (or resetting all mocks) discards it along with
 everything else about the sequence. See [Simulating a staged/polling flow](networkmock-workflows.md#simulating-a-stagedpolling-flow-sequential-mocks).
 
-**Upgrading from a pre-0.2.0 release**: the operation-state key shape changed (`{groupId}-{environmentId}-{endpointId}` → `{specId}-{operationId}`), and so did the `Mock` payload (a response file name → `(statusCode, exampleName)`). On first launch after upgrading, every `network_mock_endpoint_*` entry from the old shape is wiped once — this is disabled-by-default developer-tooling state, not user data, so previously-selected mocks are reset rather than translated. The global mocking toggle is unaffected. See the [migration guide](../guides/migrating-to-openapi.md) for converting an existing `mocks.json`.
+**Upgrading from a pre-0.2.0 release**: the operation-state key shape changed (`{groupId}-{environmentId}-{endpointId}` → `{specId}-{operationId}`), and so did the `Mock` payload (a response file name → `(statusCode, exampleName)` in schema 1, then gaining `mediaType` in schema 2). On first launch after upgrading across schema changes, legacy operation entries are wiped once — this is disabled-by-default developer-tooling state, not user data, so previously-selected mocks are reset rather than translated. The global mocking toggle is unaffected. See the [migration guide](../guides/migrating-to-openapi.md) for converting an existing `mocks.json`.
 
 ## Logging
 

@@ -68,6 +68,7 @@ internal fun OperationUiModel.Companion.fake(
             currentState = when (index) {
                 in 0..5 -> OperationMockState.Mock(
                     statusCode = exampleStatusCode(index = index),
+                    mediaType = "application/json",
                     exampleName = "default"
                 )
                 else -> OperationMockState.Network
@@ -163,6 +164,7 @@ internal fun MockResponse.Companion.fake(amount: Int = 3): List<MockResponse> =
     List(size = amount) { index ->
         MockResponse(
             statusCode = exampleStatusCode(index = index),
+            mediaType = "application/json",
             exampleName = "default",
             displayName = "Response $index",
             content = "{\n  \"message\": \"This is a mock response $index\"\n}"

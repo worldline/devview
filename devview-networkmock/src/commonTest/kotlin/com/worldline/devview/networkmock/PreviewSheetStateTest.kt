@@ -9,18 +9,21 @@ class PreviewSheetStateTest {
 
     private val responseA = MockResponse(
         statusCode = 200,
+        mediaType = "application/json",
         exampleName = "default",
         displayName = "Success (200)",
         content = """{"id":1}"""
     )
     private val responseB = MockResponse(
         statusCode = 404,
+        mediaType = "application/json",
         exampleName = "default",
         displayName = "Not Found (404)",
         content = """{"error":"not found"}"""
     )
     private val responseC = MockResponse(
         statusCode = 500,
+        mediaType = "application/json",
         exampleName = "default",
         displayName = "Server Error (500)",
         content = """{"error":"server error"}"""

@@ -95,19 +95,36 @@ internal object MockTestData {
     val networkState: OperationMockState = OperationMockState.Network
 
     /** A mock state selecting the `default` 200 OK example. */
-    fun mockState200(): OperationMockState.Mock = OperationMockState.Mock(statusCode = 200, exampleName = "default")
+    fun mockState200(): OperationMockState.Mock = OperationMockState.Mock(
+        statusCode = 200,
+        mediaType = "application/json",
+        exampleName = "default"
+    )
 
     /** A mock state selecting the `default` 404 Not Found example. */
-    fun mockState404(): OperationMockState.Mock = OperationMockState.Mock(statusCode = 404, exampleName = "default")
+    fun mockState404(): OperationMockState.Mock = OperationMockState.Mock(
+        statusCode = 404,
+        mediaType = "application/json",
+        exampleName = "default"
+    )
 
     /** A mock state selecting the `default` 500 Internal Server Error example. */
-    fun mockState500(): OperationMockState.Mock = OperationMockState.Mock(statusCode = 500, exampleName = "default")
+    fun mockState500(): OperationMockState.Mock = OperationMockState.Mock(
+        statusCode = 500,
+        mediaType = "application/json",
+        exampleName = "default"
+    )
 
     /** A mock state selecting a named example other than `default`. */
     fun mockStateWithExample(
         statusCode: Int = 404,
+        mediaType: String = "application/json",
         exampleName: String = "simple",
-    ): OperationMockState.Mock = OperationMockState.Mock(statusCode = statusCode, exampleName = exampleName)
+    ): OperationMockState.Mock = OperationMockState.Mock(
+        statusCode = statusCode,
+        mediaType = mediaType,
+        exampleName = exampleName
+    )
 
     // -------------------------------------------------------------------------
     // NetworkMockState builders
@@ -128,7 +145,11 @@ internal object MockTestData {
         globalMockingEnabled = true,
         operationStates = mapOf(
             OperationKey(specId = "example", operationId = "getUser").compositeKey to
-                OperationMockState.Mock(statusCode = 200, exampleName = "default")
+                OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                )
         )
     )
 
@@ -142,9 +163,17 @@ internal object MockTestData {
         globalMockingEnabled = true,
         operationStates = mapOf(
             OperationKey(specId = "example", operationId = "getUser").compositeKey to
-                OperationMockState.Mock(statusCode = 200, exampleName = "default"),
+                OperationMockState.Mock(
+                    statusCode = 200,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                ),
             OperationKey(specId = "example", operationId = "createUser").compositeKey to
-                OperationMockState.Mock(statusCode = 201, exampleName = "default"),
+                OperationMockState.Mock(
+                    statusCode = 201,
+                    mediaType = "application/json",
+                    exampleName = "default"
+                ),
         )
     )
 }

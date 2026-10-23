@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Breaking** NetworkMock: response variant identity is now `(statusCode, mediaType, exampleName)`
+  instead of `(statusCode, exampleName)`. `MockResponse` and `OperationMockState.Mock` now carry
+  `mediaType`, and `MockConfigRepository.loadMockResponse` accepts `mediaType` as its third parameter.
+  Persisted operation mock selections are wiped once on upgrade (schema version 2) (#143).
+
+### Fixed
+- NetworkMock: wildcard response media types (e.g. `*/*`, `application/*`) are no longer
+  emitted verbatim as the HTTP `Content-Type`; they resolve to concrete types (`application/json`,
+  `text/plain`, `application/octet-stream`) based on the loaded body so Ktor `ContentNegotiation`
+  can deserialize responses (#143).
+- NetworkMock: multiple media types declared under the same status code no longer overwrite each
+  other when they declare same-named examples (such as `default`); both are retained as distinct
+  selectable variants disambiguated in the UI (#143).
+
 ## [0.2.0-alpha05] - 2026-10-14
 
 ### Fixed

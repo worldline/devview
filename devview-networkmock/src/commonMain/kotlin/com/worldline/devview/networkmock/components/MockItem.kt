@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -63,7 +64,8 @@ internal fun MockItem(
     onToggleMarkedForPreview: () -> Unit,
     modifier: Modifier = Modifier,
     selected: Boolean = false,
-    previewToggleTestTag: String = "mock_item_preview_toggle"
+    previewToggleTestTag: String = "mock_item_preview_toggle",
+    secondaryLabel: String? = null
 ) {
     MockItemContent(
         modifier = modifier,
@@ -71,6 +73,7 @@ internal fun MockItem(
         contentColor = contentColorForStatusCode(statusCode = mockResponse.statusCode),
         containerColor = containerColorForStatusCode(statusCode = mockResponse.statusCode),
         label = mockResponse.displayName,
+        secondaryLabel = secondaryLabel,
         isSynthesized = mockResponse.isSynthesized,
         selected = selected,
         onClick = onClick,
@@ -141,6 +144,7 @@ private fun MockItemContent(
     onToggleMarkedForPreview: (() -> Unit)?,
     previewToggleTestTag: String,
     modifier: Modifier = Modifier,
+    secondaryLabel: String? = null,
     isSynthesized: Boolean = false
 ) {
     Row(
@@ -170,12 +174,21 @@ private fun MockItemContent(
             contentDescription = null,
             tint = contentColor
         )
-        Text(
-            modifier = Modifier
-                .weight(weight = 1f),
-            text = label,
-            style = MaterialTheme.typography.bodyLargeEmphasized
-        )
+        Column(
+            modifier = Modifier.weight(weight = 1f)
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLargeEmphasized
+            )
+            if (!secondaryLabel.isNullOrBlank()) {
+                Text(
+                    text = secondaryLabel,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
         if (isSynthesized) {
             Box(
                 modifier = Modifier

@@ -75,7 +75,7 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
         const val LEGACY_ENDPOINT_KEY_PREFIX = "network_mock_endpoint_"
 
         /** Bump when the persisted key or payload shape changes again. */
-        const val CURRENT_SCHEMA_VERSION = 1
+        const val CURRENT_SCHEMA_VERSION = 2
     }
 
     /**
@@ -89,16 +89,14 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
         }
 
     /**
-     * Removes every DataStore entry written under the pre-0.2.0 key shape, once.
+     * Removes every DataStore entry written under legacy key/payload shapes, once.
      *
-     * The 0.2.0 migration changes both the operation-state key shape (3-tuple `EndpointKey`
-     * → 2-tuple [OperationKey]) and the `Mock` payload shape (response file name →
-     * `(statusCode, exampleName)`), so any pre-existing `network_mock_endpoint_*` entry is
-     * unreadable under the new shape regardless of which change orphaned it. Rather than
-     * attempt a best-effort translation of two incompatible shapes at once, every such entry
-     * is wiped — this is disabled-by-default developer-tooling state, not user data, so
-     * losing previously-selected mocks across the upgrade is an acceptable trade for not
-     * carrying a second parser for a one-time migration.
+     * - Schema 1: wiped pre-0.2.0 `EndpointKey` entries.
+     * - Schema 2: [OperationMockState.Mock] gained `mediaType`, changing the serialized payload
+     *   shape from `(statusCode, exampleName)` to `(statusCode, mediaType, exampleName)`.
+     *   Pre-schema-2 [OPERATION_KEY_PREFIX] entries fail deserialization under the new shape,
+     *   so all existing operation mock selections are wiped once. This is developer-tooling state,
+     *   not user data.
      *
      * Gated by [KEY_SCHEMA_VERSION] so this only ever performs the wipe once; safe to call
      * on every entry point since it's a cheap no-op once the version is current.
@@ -114,8 +112,10 @@ public class MockStateRepository(private val dataStore: DataStore<Preferences>) 
                 .asMap()
                 .keys
                 .map { it.name }
-                .filter { it.startsWith(prefix = LEGACY_ENDPOINT_KEY_PREFIX) }
-                .forEach { name -> preferences.remove(key = stringPreferencesKey(name = name)) }
+                .filter { name ->
+                    name.startsWith(prefix = LEGACY_ENDPOINT_KEY_PREFIX) ||
+                        schemaVersion < 2 && name.startsWith(prefix = OPERATION_KEY_PREFIX)
+                }.forEach { name -> preferences.remove(key = stringPreferencesKey(name = name)) }
             preferences[KEY_SCHEMA_VERSION] = CURRENT_SCHEMA_VERSION
         }
     }

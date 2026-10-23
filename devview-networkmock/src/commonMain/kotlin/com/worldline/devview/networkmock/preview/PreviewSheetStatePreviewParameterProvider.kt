@@ -6,6 +6,7 @@ import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.utils.fake
 
 private const val DEFAULT_EXAMPLE_NAME = "default"
+private const val JSON_MEDIA_TYPE = "application/json"
 
 internal class PreviewSheetStatePreviewParameterProvider :
     PreviewParameterProvider<PreviewSheetState.HasResponse> {
@@ -17,6 +18,7 @@ internal class PreviewSheetStatePreviewParameterProvider :
             PreviewSheetState.Compare(
                 first = MockResponse(
                     statusCode = 200,
+                    mediaType = JSON_MEDIA_TYPE,
                     exampleName = DEFAULT_EXAMPLE_NAME,
                     displayName = "Success (200)",
                     content =
@@ -31,6 +33,7 @@ internal class PreviewSheetStatePreviewParameterProvider :
                 ),
                 second = MockResponse(
                     statusCode = 200,
+                    mediaType = JSON_MEDIA_TYPE,
                     exampleName = DEFAULT_EXAMPLE_NAME,
                     displayName = "Success (200)",
                     content =
@@ -47,6 +50,7 @@ internal class PreviewSheetStatePreviewParameterProvider :
             PreviewSheetState.Compare(
                 first = MockResponse(
                     statusCode = 200,
+                    mediaType = JSON_MEDIA_TYPE,
                     exampleName = DEFAULT_EXAMPLE_NAME,
                     displayName = "Success (200)",
                     content =
@@ -61,6 +65,7 @@ internal class PreviewSheetStatePreviewParameterProvider :
                 ),
                 second = MockResponse(
                     statusCode = 500,
+                    mediaType = JSON_MEDIA_TYPE,
                     exampleName = DEFAULT_EXAMPLE_NAME,
                     displayName = "Server Error (500)",
                     content =
