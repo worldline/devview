@@ -6,7 +6,7 @@
   ],
   "x-devview": { "delayMs": 200 },
   "paths": {
-    "/api/v1/profile/{userId}": {
+    "/api/v1/profilewithuseridandsuperduperlongname/{userId}": {
       "get": {
         "operationId": "getUserProfile",
         "summary": "Get User Profile",
