@@ -88,6 +88,34 @@ internal class StateDiffTest {
     }
 
     @Test
+    fun `diffLabels treats quotes inside bare values as literal characters`() {
+        listOf("""a"b""", """a"b"c""", """a\"b""").forEach { name ->
+            val previous = "Form(name=$name, count=0)"
+            val current = "Form(name=$name, count=1)"
+
+            val changes = diffLabels(current = current, previous = previous)
+
+            changes shouldHaveSize 1
+            changes.single().key shouldBe "count"
+            changes.single().old shouldBe "0"
+            changes.single().new shouldBe "1"
+            current.substring(range = changes.single().newValueRange) shouldBe "1"
+        }
+    }
+
+    @Test
+    fun `diffLabels supports quoted values after whitespace without swallowing later fields`() {
+        val previous = """Form(name= "(a, \"b\")", count=0)"""
+        val current = """Form(name= "(a, \"b\")", count=1)"""
+
+        val changes = diffLabels(current = current, previous = previous)
+
+        changes shouldHaveSize 1
+        changes.single().key shouldBe "count"
+        current.substring(range = changes.single().newValueRange) shouldBe "1"
+    }
+
+    @Test
     fun `shownChanges caps at the limit when collapsed`() {
         val changes = fieldChanges(count = 7)
 

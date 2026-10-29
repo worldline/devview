@@ -105,17 +105,19 @@ private fun fieldSeparators(content: String): List<Int> {
     var depth = 0
     var quoted = false
     var escaped = false
+    var previousNonWhitespace: Char? = null
     content.forEachIndexed { index, character ->
         when {
             escaped -> escaped = false
             quoted && character == '\\' -> escaped = true
-            character == '"' -> quoted = !quoted
+            character == '"' && (quoted || previousNonWhitespace == '=') -> quoted = !quoted
             !quoted -> when (character) {
                 '(', '[', '{' -> depth++
                 ')', ']', '}' -> depth--
                 ',' -> if (depth == 0) separators += index
             }
         }
+        if (!character.isWhitespace()) previousNonWhitespace = character
     }
     return separators
 }
