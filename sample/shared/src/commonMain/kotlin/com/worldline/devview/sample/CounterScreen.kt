@@ -38,6 +38,7 @@ internal fun CounterScreen(modifier: Modifier = Modifier) {
 
     Column(
         modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
         Row(
