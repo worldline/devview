@@ -48,7 +48,8 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import com.worldline.devview.timecapsule.FieldChange
 import com.worldline.devview.timecapsule.Recorded
-import com.worldline.devview.timecapsule.diffLabels
+import com.worldline.devview.timecapsule.changesFrom
+import com.worldline.devview.timecapsule.displayLabel
 import com.worldline.devview.timecapsule.shownChanges
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
@@ -68,12 +69,12 @@ private val CardShape = RoundedCornerShape(size = 12.dp)
 /**
  * Single entry in the [com.worldline.devview.timecapsule.TimeCapsuleScreen] timeline.
  *
- * The first line is a change summary against [previousLabel] (e.g. `"count: 3 → 4"`), falling
+ * The first line is a change summary against [previous] (e.g. `"count: 3 → 4"`), falling
  * back to [Recorded.label] verbatim when it isn't `key=value`-shaped. Expanding a row reveals
  * the full label below a divider, with changed values highlighted. A rail on the left threads
  * the row into the surrounding timeline, marking [isCurrent] with a small halo.
  *
- * @param previousLabel Label of the entry recorded just before this one, or `null` for the
+ * @param previous Entry recorded just before this one, or `null` for the
  *   oldest entry.
  * @param deltaMillis Time elapsed since the previous entry, or `null` for the oldest entry.
  * @param isCurrent Whether this is the most recently recorded entry.
@@ -82,7 +83,7 @@ private val CardShape = RoundedCornerShape(size = 12.dp)
 @Composable
 internal fun TimeCapsuleRow(
     entry: Recorded<*>,
-    previousLabel: String?,
+    previous: Recorded<*>?,
     deltaMillis: Long?,
     isCurrent: Boolean,
     isLast: Boolean,
@@ -91,8 +92,8 @@ internal fun TimeCapsuleRow(
     onRestoreClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val changes = remember(key1 = entry.label, key2 = previousLabel) {
-        diffLabels(current = entry.label, previous = previousLabel)
+    val changes = remember(key1 = entry, key2 = previous) {
+        entry.changesFrom(previous = previous)
     }
     var summaryOverflows by remember { mutableStateOf(value = false) }
     val isExpandable = changes.isNotEmpty() || summaryOverflows
@@ -166,7 +167,7 @@ private fun RowContent(
     ) {
         Text(
             text = summaryText(
-                label = entry.label,
+                label = entry.displayLabel,
                 changes = changes,
                 expanded = expanded,
                 mutedColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -196,7 +197,7 @@ private fun RowContent(
                 Text(
                     modifier = Modifier.padding(top = 10.dp),
                     text = highlightedLabel(
-                        label = entry.label,
+                        label = entry.displayLabel,
                         changes = changes,
                         highlightBackground = MaterialTheme.colorScheme.primaryContainer,
                         highlightContent = MaterialTheme.colorScheme.onPrimaryContainer

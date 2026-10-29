@@ -99,7 +99,7 @@ public fun TimeCapsuleScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 
                 val previous = entries.getOrNull(index = index + 1)
                 TimeCapsuleRow(
                     entry = entry,
-                    previousLabel = previous?.label,
+                    previous = previous,
                     deltaMillis = previous?.let { entry.atMillis - it.atMillis },
                     isCurrent = index == 0,
                     isLast = index == entries.lastIndex,

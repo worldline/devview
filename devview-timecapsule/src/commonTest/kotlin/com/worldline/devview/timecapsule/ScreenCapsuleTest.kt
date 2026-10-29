@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 internal class ScreenCapsuleTest {
-
     @Test
     fun `record appends a labelled entry per call`() {
         val capsule = ScreenCapsule(
@@ -22,7 +21,10 @@ internal class ScreenCapsuleTest {
         capsule.record(state = CounterState(count = 2))
 
         capsule.entries.map { it.label } shouldBe listOf("Count=1", "Count=2")
-        capsule.entries.map { it.state } shouldBe listOf(CounterState(count = 1), CounterState(count = 2))
+        capsule.entries.map { it.state } shouldBe listOf(
+            CounterState(count = 1),
+            CounterState(count = 2)
+        )
     }
 
     @Test
