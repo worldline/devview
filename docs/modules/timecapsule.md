@@ -64,6 +64,22 @@ so a tester can confirm which screen they're looking at. Defaults to `owner`'s c
 pass this explicitly if `owner` is an anonymous class, where the class name is unavailable.
 `maxEntries` bounds retention; the oldest entry is dropped once reached.
 
+For states containing `TextFieldState`, use the additional overload:
+
+```kotlin
+@Composable
+public fun <S : Any> TimeCapsuleEffect(
+    owner: TimeCapsuleOwner<S>,
+    textFields: List<KProperty1<S, TextFieldState>>,
+    label: (S) -> String = { it.toString() },
+    subtitle: String? = null,
+    maxEntries: Int = TimeCapsule.DEFAULT_MAX_ENTRIES
+)
+```
+
+Declare the properties once at the call site; DevView handles observation, capture, and
+restore internally. The existing overload and `TimeCapsuleOwner` contract are unchanged.
+
 ### `TimeCapsule`
 
 The DevView module. Registered with no arguments, like `FeatureFlip`:
@@ -109,6 +125,69 @@ change summary (`count 3 → 4`) instead of the full state, expandable to see th
 Tapping **Restore** on any entry calls `restoreState` with that entry's value, and the
 running screen reflects it immediately. Navigating away from `CounterScreen` and back
 starts a fresh, empty history.
+
+## State-based text fields
+
+`TextFieldState` is mutable: typing changes its contents without necessarily emitting a
+new value through the screen's `StateFlow`. Keeping the screen state alone, or making a
+shallow data-class copy, does not freeze these contents.
+
+Pass property references to capture those fields alongside the ordinary screen state:
+
+```kotlin
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.material3.TextField
+
+data class FormState(
+    val name: TextFieldState = TextFieldState(),
+    val description: TextFieldState = TextFieldState(),
+    val isLoading: Boolean = false
+)
+
+@Composable
+fun FormScreen(viewModel: FormViewModel) { // TimeCapsuleOwner<FormState>
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    TimeCapsuleEffect(
+        owner = viewModel,
+        textFields = listOf(FormState::name, FormState::description),
+        label = { "isLoading=${it.isLoading}" }
+    )
+
+    TextField(state = state.name)
+    TextField(state = state.description)
+}
+```
+
+`label` remains optional. A custom label can focus on ordinary fields and avoid repeating
+text fields in the default data-class `toString()`.
+
+Each entry holds detached text strings and selection ranges. Text edits and cursor-only
+or selection changes are observed through Compose snapshots, even without a new screen
+state emission. The timeline displays captured values under their property names and
+includes them in change summaries and expanded highlights; it does not parse text input
+out of `toString()` to find these changes.
+
+Restore edits the fields belonging to the saved screen state, then calls
+`owner.restoreState(savedState)`. This works both for shared field instances and when
+newer screen states replace them: observation follows the current state's properties.
+No wrapper owner, mirrored strings, or custom text restoration is needed.
+
+### Scope and limitations
+
+- Properties must have unique names. Use direct `TextFieldState` properties of the screen
+  state; automatic discovery, nullable properties, and nested field selectors are not provided.
+- Keep the declared property list stable. Changing the owner or property list starts a new
+  timeline; ordinary recomposition with equivalent property references does not.
+- Text and selection are restored, not IME composition, keyboard visibility, focus, or undo
+  history. Programmatic restoration can affect the editor's undo history.
+- Snapshot observation may coalesce rapid changes. This is state history, not a keystroke log.
+- Labels must be pure and read-only; restore runs on the UI thread through the overlay.
+- Other mutable objects inside the screen state are not copied. Restoration does not replay
+  business events, and is not atomic across Compose editing state and the owner's state updates
+  or side effects.
+- Captured text is retained in memory and shown in the developer overlay. Do not register
+  password or other sensitive inputs unless exposing their contents is acceptable.
 
 ## Sample
 
