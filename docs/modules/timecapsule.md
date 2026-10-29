@@ -191,8 +191,10 @@ No wrapper owner, mirrored strings, or custom text restoration is needed.
 
 ## Sample
 
-See `sample/shared/.../CounterScreen.kt` for a runnable end-to-end example, including a
-toggle that demonstrates the history resetting when the screen is disposed.
+See `sample/shared/.../CounterScreen.kt` for a runnable end-to-end example. Increment the
+counter, type in the **Time Capsule note** field, and restore an earlier entry to rewind both
+the counter and the note's text and selection. The host app's counter-screen toggle also
+demonstrates the history resetting when the screen is disposed.
 
 ## API Reference
 > _[Dokka API Reference](../api/devview-timecapsule/index.html)_
