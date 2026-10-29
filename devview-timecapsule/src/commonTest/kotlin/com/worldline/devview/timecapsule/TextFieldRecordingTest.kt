@@ -1,5 +1,6 @@
 package com.worldline.devview.timecapsule
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.text.TextRange
@@ -187,6 +188,22 @@ internal class TextFieldRecordingTest {
         owner.state.value.description.text
             .toString() shouldBe "Notes"
         owner.state.value.description.selection shouldBe TextRange(index = 2)
+    }
+
+    @Test
+    @OptIn(ExperimentalFoundationApi::class)
+    fun `restoring only selection does not add a text edit to undo history`() {
+        val field = TextFieldState(initialText = "Alice", initialSelection = TextRange(index = 1))
+        val owner = FormOwner(initial = FormState(name = field))
+        val capsule = capsule(owner = owner)
+        capsule.record(state = owner.state.value)
+        field.edit { selection = TextRange(index = 4) }
+        field.undoState.canUndo shouldBe false
+
+        capsule.restore(id = capsule.entries.first().id)
+
+        field.selection shouldBe TextRange(index = 1)
+        field.undoState.canUndo shouldBe false
     }
 
     @Test

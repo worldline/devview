@@ -100,8 +100,11 @@ internal class ScreenCapsule<S : Any>(
         val savedFields = entry.textFields.associateBy { it.name }
         textFields.forEach { property ->
             val saved = savedFields.getValue(key = property.name)
-            property.get(receiver = entry.state).edit {
-                replace(start = 0, end = length, text = saved.text)
+            val field = property.get(receiver = entry.state)
+            field.edit {
+                if (field.text.toString() != saved.text) {
+                    replace(start = 0, end = length, text = saved.text)
+                }
                 selection = saved.selection
             }
         }
