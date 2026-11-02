@@ -24,16 +24,11 @@
 
 ## What's New
 
-### v0.2.0-alpha06
+### v0.2.0-alpha07
 
-**Changed**
+**Added**
 
-- **Breaking** NetworkMock: response variant identity is now `(statusCode, mediaType, exampleName)` instead of `(statusCode, exampleName)`. `MockResponse` and `OperationMockState.Mock` now carry `mediaType`, and `MockConfigRepository.loadMockResponse` accepts `mediaType` as its third parameter. Persisted operation mock selections are wiped once on upgrade (schema version 2) (#143).
-
-**Fixed**
-
-- NetworkMock: wildcard response media types (e.g. `*/*`, `application/*`) are no longer emitted verbatim as the HTTP `Content-Type`; they resolve to concrete types (`application/json`, `text/plain`, `application/octet-stream`) based on the loaded body so Ktor `ContentNegotiation` can deserialize responses (#143).
-- NetworkMock: multiple media types declared under the same status code no longer overwrite each other when they declare same-named examples (such as `default`); both are retained as distinct selectable variants disambiguated in the UI (#143).
+- TimeCapsule: an additive `TimeCapsuleEffect` overload accepts `TextFieldState` property references to record text and selection changes without screen state emissions, retain detached editing values, and restore them alongside screen state. Named field changes appear in timeline summaries and expanded highlights.
 
 ---
 
