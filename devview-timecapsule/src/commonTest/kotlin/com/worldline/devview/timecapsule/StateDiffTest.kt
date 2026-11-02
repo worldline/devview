@@ -6,7 +6,6 @@ import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 internal class StateDiffTest {
-
     @Test
     fun `diffLabels finds a single changed field with correct range`() {
         val current = "CounterState(count=4, name=foo)"
@@ -77,6 +76,46 @@ internal class StateDiffTest {
     }
 
     @Test
+    fun `diffLabels ignores delimiters and escaped quotes inside text values`() {
+        val previous = """Form(name=TextFieldState(text="(a, \"b\""), count=0)"""
+        val current = """Form(name=TextFieldState(text="(a, \"b\""), count=1)"""
+
+        val changes = diffLabels(current = current, previous = previous)
+
+        changes shouldHaveSize 1
+        changes.single().key shouldBe "count"
+        current.substring(range = changes.single().newValueRange) shouldBe "1"
+    }
+
+    @Test
+    fun `diffLabels treats quotes inside bare values as literal characters`() {
+        listOf("""a"b""", """a"b"c""", """a\"b""").forEach { name ->
+            val previous = "Form(name=$name, count=0)"
+            val current = "Form(name=$name, count=1)"
+
+            val changes = diffLabels(current = current, previous = previous)
+
+            changes shouldHaveSize 1
+            changes.single().key shouldBe "count"
+            changes.single().old shouldBe "0"
+            changes.single().new shouldBe "1"
+            current.substring(range = changes.single().newValueRange) shouldBe "1"
+        }
+    }
+
+    @Test
+    fun `diffLabels supports quoted values after whitespace without swallowing later fields`() {
+        val previous = """Form(name= "(a, \"b\")", count=0)"""
+        val current = """Form(name= "(a, \"b\")", count=1)"""
+
+        val changes = diffLabels(current = current, previous = previous)
+
+        changes shouldHaveSize 1
+        changes.single().key shouldBe "count"
+        current.substring(range = changes.single().newValueRange) shouldBe "1"
+    }
+
+    @Test
     fun `shownChanges caps at the limit when collapsed`() {
         val changes = fieldChanges(count = 7)
 
@@ -103,6 +142,11 @@ internal class StateDiffTest {
     }
 
     private fun fieldChanges(count: Int): List<FieldChange> = (1..count).map { index ->
-        FieldChange(key = "f$index", old = "$index", new = "${index + 1}", newValueRange = 0 until 1)
+        FieldChange(
+            key = "f$index",
+            old = "$index",
+            new = "${index + 1}",
+            newValueRange = 0 until 1
+        )
     }
 }

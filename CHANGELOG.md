@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- TimeCapsule: an additive `TimeCapsuleEffect` overload accepts `TextFieldState` property
+  references to record text and selection changes without screen state emissions, retain
+  detached editing values, and restore them alongside screen state. Named field changes
+  appear in timeline summaries and expanded highlights.
+
 ## [0.2.0-alpha06] - 2026-10-23
 
 ### Changed

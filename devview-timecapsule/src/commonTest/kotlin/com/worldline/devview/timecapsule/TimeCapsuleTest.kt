@@ -12,13 +12,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 internal class TimeCapsuleTest {
-
     @Test
     fun `time capsule module exposes expected metadata`() {
         TimeCapsule.section shouldBe Section.LOGGING
         TimeCapsule.destinations.keys.shouldContain(TimeCapsule.entryDestination::class)
 
-        val metadata = TimeCapsule.destinations[TimeCapsuleDestination.Main::class].shouldNotBeNull()
+        val metadata = TimeCapsule.destinations[TimeCapsuleDestination.Main::class]
+            .shouldNotBeNull()
         metadata.title shouldBe "Time Capsule"
         metadata.actions shouldHaveSize 1
     }
@@ -61,6 +61,7 @@ internal class TimeCapsuleTest {
     private class FakeOwner : TimeCapsuleOwner<Int> {
         private val _state = MutableStateFlow(value = 0)
         override val state: StateFlow<Int> = _state.asStateFlow()
+
         override fun restoreState(state: Int) {
             _state.value = state
         }

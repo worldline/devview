@@ -70,7 +70,6 @@ private fun parseFields(label: String): List<ParsedField> {
     }
 
     val fields = mutableListOf<ParsedField>()
-    var depth = 0
     var segmentStart = 0
 
     fun addSegment(endIndex: Int) {
@@ -92,17 +91,33 @@ private fun parseFields(label: String): List<ParsedField> {
         )
     }
 
-    for (index in content.indices) {
-        when (content[index]) {
-            '(', '[', '{' -> depth++
-            ')', ']', '}' -> depth--
-            ',' -> if (depth == 0) {
-                addSegment(endIndex = index)
-                segmentStart = index + 1
-            }
-        }
+    fieldSeparators(content = content).forEach { index ->
+        addSegment(endIndex = index)
+        segmentStart = index + 1
     }
     addSegment(endIndex = content.length)
 
     return fields
+}
+
+private fun fieldSeparators(content: String): List<Int> {
+    val separators = mutableListOf<Int>()
+    var depth = 0
+    var quoted = false
+    var escaped = false
+    var previousNonWhitespace: Char? = null
+    content.forEachIndexed { index, character ->
+        when {
+            escaped -> escaped = false
+            quoted && character == '\\' -> escaped = true
+            character == '"' && (quoted || previousNonWhitespace == '=') -> quoted = !quoted
+            !quoted -> when (character) {
+                '(', '[', '{' -> depth++
+                ')', ']', '}' -> depth--
+                ',' -> if (depth == 0) separators += index
+            }
+        }
+        if (!character.isWhitespace()) previousNonWhitespace = character
+    }
+    return separators
 }

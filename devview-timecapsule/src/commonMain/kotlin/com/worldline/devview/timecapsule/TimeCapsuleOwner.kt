@@ -22,6 +22,10 @@ import kotlinx.coroutines.flow.StateFlow
  * guarantee the host app keeps working correctly after a state is pushed back into a
  * running screen out of band.
  *
+ * States containing `TextFieldState` properties can use the [TimeCapsuleEffect] overload
+ * accepting property references to capture and restore their text and selection. Other
+ * mutable objects are retained by reference, not deep-copied.
+ *
  * @see TimeCapsuleEffect
  */
 public interface TimeCapsuleOwner<S : Any> {
