@@ -14,7 +14,7 @@ Before you begin, make sure you have:
     <!-- renovate: datasource=maven depName=org.jetbrains.kotlin:kotlin-stdlib -->
     - Kotlin 2.3.21+
     <!-- renovate: datasource=maven depName=org.jetbrains.compose:compose-gradle-plugin -->
-    - Compose Multiplatform 1.11.1+
+    - Compose Multiplatform 1.12.2+
     - Android: API 26 (Oreo) or higher
     - iOS: iOS 16.0 or higher
 
