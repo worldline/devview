@@ -20,7 +20,7 @@ Regenerate the public API signature after changing a public symbol:
 .\gradlew.bat :devview-crashhistory-core:metalavaGenerateSignature "-Pandroidx.baselineprofile.skipgeneration"
 ```
 
-iOS code (`iosMain`, `iosTest`) cannot be compiled on Windows. CI runs `compileKotlinIosArm64 iosSimulatorArm64Test` on macOS.
+`iosMain` compiles on Windows too (`compileKotlinIosSimulatorArm64`, klib only), but `iosTest` can only run on macOS: CI runs `compileKotlinIosArm64 iosSimulatorArm64Test` there.
 
 ## Public API Surface
 

@@ -61,9 +61,10 @@ private class MetricKitSubscriber(
             payloads.filterIsInstance<MXDiagnosticPayload>().forEach { payload ->
                 val timestamp = (payload.timeStampEnd.timeIntervalSince1970 * MILLIS_PER_SECOND)
                     .toLong()
-                payload.crashDiagnostics?.filterIsInstance<MXCrashDiagnostic>()?.forEach { diagnostic ->
+                val crashes = payload.crashDiagnostics.orEmpty()
+                crashes.filterIsInstance<MXCrashDiagnostic>().forEach { crash ->
                     importOnce(
-                        json = jsonOf(diagnostic.JSONRepresentation()),
+                        json = jsonOf(crash.JSONRepresentation()),
                         timestampMillis = timestamp
                     )
                 }
@@ -90,8 +91,9 @@ private class MetricKitSubscriber(
         )
     }
 
-    private fun jsonOf(data: NSData): String = NSString.create(
-        data = data,
-        encoding = NSUTF8StringEncoding
-    ) as String? ?: ""
+    private fun jsonOf(data: NSData): String = NSString
+        .create(
+            data = data,
+            encoding = NSUTF8StringEncoding
+        )?.toString() ?: ""
 }

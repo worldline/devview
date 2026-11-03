@@ -1,0 +1,38 @@
+// Signature format: 4.0
+package com.worldline.devview.crashhistory {
+
+  public final class CrashHistory implements com.worldline.devview.core.Module {
+    ctor public CrashHistory();
+    ctor public CrashHistory(optional int maxRecords);
+    method @InaccessibleFromKotlin public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> getDestinations();
+    method @InaccessibleFromKotlin public androidx.navigation3.runtime.NavKey getEntryDestination();
+    method @InaccessibleFromKotlin public int getMaxRecords();
+    method @InaccessibleFromKotlin public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<? super androidx.navigation3.runtime.NavKey>,kotlin.Unit> getRegisterSerializers();
+    method @InaccessibleFromKotlin public com.worldline.devview.core.Section getSection();
+    method @KotlinOnly @androidx.compose.runtime.Composable public void initModule();
+    method @KotlinOnly public void registerContent(androidx.navigation3.runtime.EntryProviderScope<androidx.navigation3.runtime.NavKey>, kotlin.jvm.functions.Function0<kotlin.Unit> onNavigateBack, kotlin.jvm.functions.Function1<androidx.navigation3.runtime.NavKey,kotlin.Unit> onNavigate, androidx.compose.ui.unit.Dp bottomPadding);
+    property public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> destinations;
+    property public androidx.navigation3.runtime.NavKey entryDestination;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    property public int maxRecords;
+    property public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<androidx.navigation3.runtime.NavKey>,kotlin.Unit> registerSerializers;
+    property public com.worldline.devview.core.Section section;
+  }
+
+  public sealed exhaustive interface CrashHistoryDestination extends androidx.navigation3.runtime.NavKey {
+  }
+
+  @kotlinx.serialization.Serializable public static final class CrashHistoryDestination.Detail implements com.worldline.devview.crashhistory.CrashHistoryDestination {
+    ctor public CrashHistoryDestination.Detail(String id);
+    method public String component1();
+    method public com.worldline.devview.crashhistory.CrashHistoryDestination.Detail copy(optional String id);
+    method @InaccessibleFromKotlin public String getId();
+    property public String id;
+  }
+
+  @kotlinx.serialization.Serializable public static final class CrashHistoryDestination.Main implements com.worldline.devview.crashhistory.CrashHistoryDestination {
+    field public static final com.worldline.devview.crashhistory.CrashHistoryDestination.Main INSTANCE;
+  }
+
+}
+

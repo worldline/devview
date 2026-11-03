@@ -39,6 +39,7 @@ include(
     ":devview",
     ":devview-analytics",
     ":devview-consolelogger",
+    ":devview-crashhistory",
     ":devview-crashhistory-core",
     ":devview-featureflip",
     ":devview-timecapsule",

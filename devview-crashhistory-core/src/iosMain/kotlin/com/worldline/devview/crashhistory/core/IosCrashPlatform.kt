@@ -6,6 +6,8 @@ import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ReportUnhandledExceptionHook
 import kotlin.native.setUnhandledExceptionHook
 import kotlin.native.terminateWithUnhandledException
+import kotlinx.cinterop.CFunction
+import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.invoke
 import kotlinx.cinterop.staticCFunction
@@ -31,7 +33,7 @@ private var nsExceptionSink: CrashSink? = null
 
 // Handler installed before ours (Crashlytics, Sentry, ...). Always called afterwards.
 @OptIn(ExperimentalForeignApi::class)
-private var previousNsExceptionHandler: NSUncaughtExceptionHandler? = null
+private var previousNsExceptionHandler: CPointer<CFunction<(NSException?) -> Unit>>? = null
 
 /** iOS implementation: Kotlin unhandled-exception hook + NSException handler + MetricKit. */
 @OptIn(ExperimentalNativeApi::class, ExperimentalForeignApi::class)
@@ -73,7 +75,7 @@ internal class IosCrashPlatform : CrashPlatform {
         nsExceptionSink = onCrash
         previousNsExceptionHandler = NSGetUncaughtExceptionHandler()
         NSSetUncaughtExceptionHandler(
-            staticCFunction { exception: NSException? ->
+            staticCFunction<NSException?, Unit> { exception ->
                 try {
                     nsExceptionSink?.invoke(
                         exception?.name,
@@ -85,6 +87,7 @@ internal class IosCrashPlatform : CrashPlatform {
                     // Same as above: the previous handler must still run.
                 }
                 previousNsExceptionHandler?.invoke(exception)
+                Unit
             }
         )
     }

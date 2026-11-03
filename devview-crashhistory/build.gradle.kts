@@ -1,0 +1,46 @@
+plugins {
+    alias(libs.plugins.convention.multiplatform.library)
+    alias(libs.plugins.convention.compose.multiplatform)
+    alias(libs.plugins.convention.unitTest)
+    alias(libs.plugins.convention.deviceTest)
+    alias(libs.plugins.convention.kover)
+    alias(libs.plugins.convention.metalava)
+    alias(libs.plugins.dokka)
+    alias(libs.plugins.maven.publish)
+}
+
+kotlin {
+    addDefaultDevViewTargets()
+
+    android {
+        namespace = "com.worldline.devview.crashhistory"
+    }
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                api(projects.devview)
+                api(projects.devviewCrashhistoryCore)
+                implementation(libs.kotlinx.collections.immutable)
+                implementation(libs.kotlinx.datetime)
+            }
+        }
+
+        androidMain {
+            dependencies {
+                // FileProvider, to share the exported JSON file with other apps.
+                implementation(libs.androidx.core)
+            }
+        }
+
+        androidDeviceTest {
+            dependencies {
+                implementation(projects.devviewTest)
+            }
+        }
+    }
+}
+
+tasks.withType<Test> {
+    failOnNoDiscoveredTests.set(false)
+}
