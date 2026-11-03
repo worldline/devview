@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Crash History: new `devview-crashhistory` module and `devview-crashhistory-core` recorder
+  (#148). Keeps a bounded, local list of crashes (stack trace, app and device info) in
+  app-private storage and shows it in a new `CrashHistory` module with copy, share and
+  export. Captures uncaught exceptions on Android and iOS, chains to any existing handler
+  (Crashlytics, Sentry) and never uploads anything. Android 11+ also imports what
+  `ApplicationExitInfo` reports about earlier runs, and iOS imports MetricKit crash
+  diagnostics. On Android a manifest-declared provider starts recording before
+  `Application.onCreate` once `CrashHistory()` has run; iOS apps can call
+  `CrashHistoryIos.start()` for the same effect.
+
 ## [0.2.0-alpha07] - 2026-11-02
 
 ### Added
