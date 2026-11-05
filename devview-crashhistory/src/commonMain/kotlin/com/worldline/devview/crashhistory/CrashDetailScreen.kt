@@ -122,7 +122,8 @@ internal fun CrashDetailScreen(
 }
 
 private fun metadataRows(record: CrashRecord): List<Pair<String, String>> = buildList {
-    add(element = "Time" to formatCrashTime(timestampMillis = record.timestampMillis))
+    val timeLabel = if (record.source == "metrickit") "Reporting period end" else "Time"
+    add(element = timeLabel to formatCrashTime(timestampMillis = record.timestampMillis))
     if (!record.isCrash) add(element = "Note" to "Terminated by the system, not a crash")
     record.source?.let { add(element = "Source" to it) }
     record.threadName?.let { add(element = "Thread" to it) }

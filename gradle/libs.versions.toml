@@ -30,6 +30,7 @@ maven-publish = "0.37.0"
 metalava = "0.5.1"
 mockk = "1.14.11"
 mrmans0n-detekt-compose-rules = "0.6.8"
+spmForKmp = "1.9.7"
 turbine = "1.2.1"
 
 # Kotlin only dependencies
@@ -171,6 +172,7 @@ metalava = { id = "me.tylerbwong.gradle.metalava", version.ref = "metalava" }
 mokkery = { id = "dev.mokkery", version.ref = "mokkery" }
 poko = { id = "dev.drewhamilton.poko", version.ref = "poko" }
 room = { id = "androidx.room", version.ref = "androidx-room" }
+spmforkmp = { id = "io.github.frankois944.spmForKmp", version.ref = "spmForKmp" }
 
 # Plugins defined by this project
 convention-android-application = { id = "convention.android.application", version = "unspecified" }

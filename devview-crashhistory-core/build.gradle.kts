@@ -1,3 +1,6 @@
+import io.github.frankois944.spmForKmp.swiftPackageConfig
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+
 plugins {
     alias(libs.plugins.convention.multiplatform.library)
     alias(libs.plugins.compose.compiler)
@@ -7,10 +10,19 @@ plugins {
     alias(libs.plugins.convention.metalava)
     alias(libs.plugins.dokka)
     alias(libs.plugins.maven.publish)
+    alias(libs.plugins.spmforkmp)
 }
 
 kotlin {
     addDefaultDevViewTargets()
+
+    targets.withType<KotlinNativeTarget>().configureEach {
+        compilerOptions.optIn.add("kotlinx.cinterop.ExperimentalForeignApi")
+        swiftPackageConfig("crashHistoryBridge") {
+            minIos = "15.0"
+            publishSafe = true
+        }
+    }
 
     android {
         namespace = "com.worldline.devview.crashhistory.core"

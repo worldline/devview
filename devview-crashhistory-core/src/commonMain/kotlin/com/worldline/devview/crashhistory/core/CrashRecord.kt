@@ -10,7 +10,8 @@ import kotlinx.serialization.Serializable
  * explicit user action (copy, share or export).
  *
  * @property id Unique identifier, also used as part of the file name on disk.
- * @property timestampMillis When the crash happened, in milliseconds since the Unix epoch.
+ * @property timestampMillis Milliseconds since the Unix epoch: the crash time, or the reporting
+ *   period end for MetricKit (which does not supply an exact crash time).
  * @property kind How the record was obtained, see [CrashRecordKind].
  * @property exceptionType Exception class name, signal name or OS exit reason, when known.
  * @property message Exception message or OS description, truncated to

@@ -18,8 +18,9 @@ public fun CrashRecord.toReportText(): String = buildString {
     appendLine(value = exceptionType ?: "Unknown error")
     message?.let { appendLine(value = it) }
     appendLine()
+    val timeLabel = if (source == "metrickit") "Reporting period end" else "Time"
     appendLine(
-        value = "Time: ${Instant.fromEpochMilliseconds(epochMilliseconds = timestampMillis)}"
+        value = "$timeLabel: ${Instant.fromEpochMilliseconds(epochMilliseconds = timestampMillis)}"
     )
     appendLine(value = "Kind: $kind${source?.let { " ($it)" }.orEmpty()}")
     if (!isCrash) appendLine(value = "Terminated by the system, not a crash")

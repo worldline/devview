@@ -45,6 +45,12 @@ class CrashReportTest {
     }
 
     @Test
+    fun `MetricKit timestamp is labelled as the reporting period end`() {
+        testRecord().copy(source = "metrickit").toReportText() shouldContain "Reporting period end:"
+        testRecord().toReportText() shouldContain "Time:"
+    }
+
+    @Test
     fun `system terminations are labelled as not a crash`() {
         testRecord(isCrash = false).toReportText() shouldContain "not a crash"
         testRecord(isCrash = true).toReportText() shouldNotContain "not a crash"
