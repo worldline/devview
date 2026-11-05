@@ -12,11 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   preserving spec order within each group.
 
 ### Changed
-- NetworkMock: operation sheets now keep a fixed 90% height across Picker, Preview, and Sequence
-  pages, with grouped cards, matching sticky headers, inset dividers, and failure-rate footers.
+- NetworkMock: operation sheets now keep a fixed 65% height with Responses, Sequence, and Failure
+  tabs, grouped cards, matching sticky headers, inset dividers, and failure-rate footers.
   Eye icons open previews directly; a "Compare with…" dropdown replaces marking responses and
-  the bottom Preview/Compare button. The dedicated Sequence page supports numbered removable
-  steps and editing seeded from the active sequence; its Picker status card offers Reset and Edit.
+  the bottom Preview/Compare button. The Sequence tab supports numbered removable steps,
+  editing seeded from the active sequence, and resetting its position.
 - DevView: added a divider below the shared top app bar; NetworkMock operation lists animate
   filter and sort changes. The mock engine, ViewModel, repositories, Ktor behavior, persistence,
   and public API are unchanged.

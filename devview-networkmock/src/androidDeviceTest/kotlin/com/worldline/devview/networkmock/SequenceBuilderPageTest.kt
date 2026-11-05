@@ -100,6 +100,24 @@ class SequenceBuilderPageTest {
     }
 
     @Test
+    fun embeddedBuilder_hidesHeaderAndCancelStillReturnsWithoutCommitting() = runComposeUiTest {
+        var cancelled = false
+        var saved = false
+        setPage(
+            showHeader = false,
+            onBack = { cancelled = true },
+            onCommitSequence = { saved = true }
+        )
+
+        onNodeWithTag(testTag = "sequence_page_back_button").assertDoesNotExist()
+        onNodeWithText(text = "Build a Sequence").assertDoesNotExist()
+        onNodeWithTag(testTag = "sequence_response_200_application/json_default").performClick()
+        onNodeWithTag(testTag = "sequence_cancel_button").performClick()
+        cancelled shouldBe true
+        saved shouldBe false
+    }
+
+    @Test
     fun unavailableActiveStepsAreNotSilentlyDropped() = runComposeUiTest {
         val unavailable = jsonResponse.asStep().copy(exampleName = "removed")
         var saved: List<MockResponse> = emptyList()
@@ -139,7 +157,8 @@ class SequenceBuilderPageTest {
     private fun ComposeUiTest.setPage(
         currentState: OperationMockState = OperationMockState.Network,
         onBack: () -> Unit = {},
-        onCommitSequence: (List<MockResponse>) -> Unit = {}
+        onCommitSequence: (List<MockResponse>) -> Unit = {},
+        showHeader: Boolean = true
     ) {
         setContent {
             MaterialTheme {
@@ -160,7 +179,8 @@ class SequenceBuilderPageTest {
                         responses = listOf(jsonResponse, xmlResponse, namedResponse).toPersistentList()
                     ),
                     onBack = onBack,
-                    onCommitSequence = onCommitSequence
+                    onCommitSequence = onCommitSequence,
+                    showHeader = showHeader
                 )
             }
         }

@@ -46,13 +46,17 @@ import kotlinx.collections.immutable.toPersistentList
  * @param onBack Called by the back arrow or Cancel.
  * @param onCommitSequence Called by Save with the ordered draft, enabled only for at least two steps.
  * @param modifier [Modifier] applied to the root [Column].
+ * @param showHeader Whether to show the standalone back/title header.
+ * @param onResetSequencePosition Called by Reset for an active sequence.
  */
 @Composable
 internal fun SequenceBuilderPage(
     content: OperationSheetState.Content,
     onBack: () -> Unit,
     onCommitSequence: (List<MockResponse>) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showHeader: Boolean = true,
+    onResetSequencePosition: () -> Unit = {}
 ) {
     var steps by remember(key1 = content.operationUiModel.descriptor.key) {
         mutableStateOf(
@@ -76,22 +80,41 @@ internal fun SequenceBuilderPage(
         .size > 1
 
     Column(modifier = modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                modifier = Modifier.testTag(tag = "sequence_page_back_button"),
-                onClick = onBack
+        if (showHeader) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = "Back"
-                )
+                IconButton(
+                    modifier = Modifier.testTag(tag = "sequence_page_back_button"),
+                    onClick = onBack
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+                Text(text = "Build a Sequence", style = MaterialTheme.typography.titleMedium)
             }
-            Text(text = "Build a Sequence", style = MaterialTheme.typography.titleMedium)
+            HorizontalDivider()
         }
-        HorizontalDivider()
+        val activeSequence = content.operationUiModel.currentState as? OperationMockState.Sequence
+        if (activeSequence != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    modifier = Modifier.weight(weight = 1f).testTag(tag = "sequence_position"),
+                    text = "Step ${activeSequence.currentIndex + 1} of ${activeSequence.responses.size}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                TextButton(
+                    modifier = Modifier.testTag(tag = "sequence_reset_button"),
+                    onClick = onResetSequencePosition
+                ) { Text(text = "Reset") }
+            }
+        }
         Text(
             modifier = Modifier
                 .padding(

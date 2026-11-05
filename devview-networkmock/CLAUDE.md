@@ -148,36 +148,26 @@ safe, internal-only protocol despite the public parameter type. Sort selection i
 the same way as the version/method/tag filters — plain `mutableStateMapOf<String, OperationSort>`
 in `ContentState`, keyed by spec ID, never round-tripped through `NetworkMockViewModel`.
 
-### Operation sheet: one fixed-height sheet, three pages
+### Operation sheet: a fixed-height tabbed sheet and preview
 
 `NetworkMockOperationSheet.kt` renders `NetworkMockViewModel.sheetState` as a
-`ModalBottomSheet` with `surfaceContainerLow` and a fixed `fillMaxHeight(0.9f)` root.
-Local `SheetPage` state (`Picker`, `Preview`, `Sequence`) and preview state drive the
-existing `AnimatedContent` slide transitions; all pages keep the same height. These are
-internal UI details, not navigation destinations or new ViewModel state.
+`ModalBottomSheet` with `surfaceContainerLow` and a fixed `fillMaxHeight(0.65f)` root.
+An operation identity header precedes Responses / Sequence / Failure tabs. Tab choice and
+preview state are local UI details, not new ViewModel state or navigation destinations.
+Switching tabs or opening Preview leaves the height unchanged.
 
-- **Picker** (`OperationPickerPage`, internal for device tests): the header shows name,
-  method, and wrapping path without a duplicate version badge or state chip. "NO MOCK",
-  status-family groups, and "SIMULATE FAILURE" use rounded grouped cards with
-  `surfaceContainerHighest` backgrounds, inset dividers, and animated items. Sticky headers
-  match the sheet background; hints sit in footers. Tapping a network, response, or failure
-  row activates it and closes the sheet; the current choice has a checkmark. An eye tap
-  opens `PreviewSheetState.Single(response)` directly, with no marking toggle or conditional
-  bottom Preview/Compare button. Keep `previewToggleTestTag` for existing tests despite the
-  changed interaction. "Build a Sequence" opens Sequence. An active sequence shows a
-  "Step 2 of 4"-style status card with Reset and Edit; Edit seeds the draft from the saved
-  steps, preserving order and repeated variants. Failure choices remain the final group;
-  spec-authored `x-devview.failureRate` is read-only in its footer, not below its header.
-- **Preview** (`MockResponsePreviewPage.kt`): the eye-selected response's body and a
-  **"Compare with…" dropdown** (`preview_compare_button`) of other responses from the same
-  operation. Selecting one switches to `Compare(first, second)`, keeping the original as the
-  first response. Back returns to Picker; viewing or comparing never selects a mock.
-- **Sequence** (`SequenceBuilderPage.kt`): response taps append numbered steps, including
-  repeats; individual steps can be removed. Edit starts from the active sequence's steps.
-  Save Sequence (n) requires at least two steps, commits through `onCommitSequence`, and
-  closes the sheet. Cancel or Back discards draft edits and returns to Picker. Keep
-  `sequence_save_button`, `sequence_cancel_button`, and `sequence_build_hint` test tags.
-  Reset restarts the active sequence; after the final step, that response continues to repeat.
+- **Responses**: Network and status-family cards with inset dividers, matching sticky headers,
+  and animated items. Tapping a row applies it and closes the sheet; the current choice is
+  checked. The eye opens Preview directly without a marking toggle or conditional bottom button.
+- **Sequence**: the existing builder seeds active steps, preserves order/repetitions, allows
+  removal, and saves at least two available steps through `onCommitSequence` before closing.
+  Active sequence position and Reset are here. Cancel returns to Responses without applying
+  the draft. The last response continues to repeat once the sequence finishes.
+- **Failure**: grouped Timeout / Connection Refused choices close the sheet when applied.
+  Spec-authored `x-devview.failureRate` remains read-only in a footer.
+- **Preview**: the eye-selected response body and Compare with dropdown of alternatives.
+  Comparing retains the original first response; Back returns to Responses. Neither preview
+  nor comparison activates a mock. Keep `previewToggleTestTag` despite the direct-open behavior.
 
 `PreviewSheetState` holds `Hidden`, `Single(response)`, or `Compare(first, second)`.
 It no longer models marked rows or a toggle cycle: `transition` and `isInPreviewMode` are

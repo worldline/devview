@@ -58,15 +58,15 @@ Open DevView → Network Mock. Your new operation appears in the list under its 
 
 ## Previewing and comparing responses
 
-1. Open DevView → Network Mock → tap your operation. The sheet opens on **Picker**.
+1. Open DevView → Network Mock → tap your operation. The sheet opens on **Responses**.
 2. Tap a response's eye icon to open **Preview** directly, without activating the response.
 3. Use the header's **"Compare with…" dropdown** to select a second response from the same operation.
 4. Read the inline or side-by-side diff; valid JSON is pretty-printed before display and comparison. Malformed JSON and non-JSON bodies stay unchanged, and long lines wrap with vertical scrolling.
 Large comparisons fall back to stacked previews rather than allocating an unbounded diff table.
 
-5. Tap Back to return to Picker. Tap a response row there only when you want to activate it.
+5. Tap Back to return to Responses. Tap a response row there only when you want to activate it.
 
-Picker, Preview, and Sequence all use the same fixed 90% sheet height. Picker choices use grouped cards with matching sticky headers and footer hints; no Preview/Compare button appears at the bottom.
+Responses, Sequence, Failure, and Preview all use the same fixed 65% sheet height. The three tabs separate response selection, sequence building, and transport failures. Response choices use grouped cards with matching sticky headers and footer hints; no Preview/Compare button appears at the bottom.
 
 ## Finding mocked operations first
 
@@ -135,7 +135,7 @@ paths:
 **Deterministically** — every request to the operation fails the same way until you change it:
 
 1. Open DevView → Network Mock → tap your operation.
-2. In Picker, scroll past the response groups to the final "Simulate Failure" grouped card and tap Timeout or Connection Refused.
+2. Select the **Failure** tab and tap Timeout or Connection Refused.
 3. The operation's state chip reflects the selected failure. Tap "No mock" (or select a response) to stop simulating it.
 
 **Probabilistically** — a percentage of requests fail on their own, the rest behave normally:
@@ -149,7 +149,7 @@ paths:
 ```
 
 This only rolls for requests that would otherwise be mocked — an operation left on `Network`
-passthrough is never affected. If the operation's Picker page shows a configured failure rate in the footer below the failure group,
+passthrough is never affected. If the operation's Failure tab shows a configured failure rate in the footer below the failure group,
 that's this field — it's read-only in the UI; edit the spec to change it. See
 [Simulating failures](networkmock-core.md#simulating-failures) for the exact exception each
 failure kind throws.
@@ -160,15 +160,15 @@ For endpoints where the interesting behavior is the transition across repeated c
 status, upload progress, async job completion):
 
 1. Open DevView → Network Mock → tap your operation.
-2. In Picker, tap "Build a Sequence" to open the dedicated **Sequence** page.
+2. Select the **Sequence** tab.
 3. Tap responses in the order you want them served (e.g. `202 Pending`, then `200 Success`). Each tap appends a numbered step; you can repeat a response or remove an individual step.
 4. Tap **"Save Sequence (n)"** (enabled at two or more steps). The sequence applies, the sheet closes, and the operation advances one step per request.
 
-An active sequence shows a status card in Picker (e.g. "Step 2 of 4"):
+An active sequence shows its position in the Sequence tab (e.g. "Step 2 of 4"):
 
 - **Reset** restarts at step 1 without leaving the sequence.
-- **Edit** opens Sequence seeded with the existing ordered steps. Append or remove steps, then save to apply the edited sequence.
-- **Cancel** or Back returns to Picker without applying draft changes.
+- The **Sequence** tab starts with the existing ordered steps. Append or remove steps, then save to apply the edited sequence.
+- **Cancel** returns to Responses without applying draft changes.
 
 Once the sequence reaches its last step, further requests keep serving that step — it does not loop. Selecting "No mock", a single response, or a failure exits the sequence.
 

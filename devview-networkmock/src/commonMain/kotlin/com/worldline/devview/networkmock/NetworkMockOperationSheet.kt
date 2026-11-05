@@ -25,9 +25,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -66,12 +67,12 @@ import com.worldline.devview.networkmock.viewmodel.OperationSheetState
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 
-private enum class SheetPage { Picker, Preview, Sequence }
+private enum class SheetPage { Responses, Sequence, Failure, Preview }
 
 /**
- * A fixed-height operation sheet with picker, response preview/compare, and sequence builder pages.
+ * A fixed-height operation sheet with Responses, Sequence, and Failure tabs and a preview page.
  * Selecting a response or failure, or saving a sequence, activates it and closes the sheet.
- * The eye opens a response directly; Back from preview or sequence returns to the picker.
+ * The eye opens a response directly; Back from preview or sequence returns to Responses.
  *
  * @param sheetState The current [OperationSheetState] from the ViewModel.
  * @param onDismissRequest Called when the sheet should close.
@@ -106,7 +107,7 @@ internal fun NetworkMockOperationSheet(
         ?.operationUiModel
         ?.descriptor
         ?.key
-    var page by remember(key1 = operationKey) { mutableStateOf(value = SheetPage.Picker) }
+    var page by remember(key1 = operationKey) { mutableStateOf(value = SheetPage.Responses) }
     var previewState: PreviewSheetState by remember(key1 = operationKey) {
         mutableStateOf(value = PreviewSheetState.Hidden)
     }
@@ -120,79 +121,114 @@ internal fun NetworkMockOperationSheet(
         NavigationEventHandler(
             state = rememberNavigationEventState(currentInfo = NavigationEventInfo.None),
             isForwardEnabled = false,
-            isBackEnabled = page != SheetPage.Picker,
-            onBackCompleted = { page = SheetPage.Picker }
+            isBackEnabled = page != SheetPage.Responses,
+            onBackCompleted = { page = SheetPage.Responses }
         )
-        Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(fraction = 0.9f)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(fraction = 0.65f)
+                .testTag(tag = "operation_sheet_content")
+        ) {
             when (sheetState) {
                 OperationSheetState.Hidden -> Unit
                 OperationSheetState.Loading -> LoadingState()
                 is OperationSheetState.Error -> ErrorState(message = sheetState.message)
-                is OperationSheetState.Content -> AnimatedContent(
-                    modifier = Modifier.fillMaxSize(),
-                    targetState = page,
-                    transitionSpec = {
-                        if (targetState != SheetPage.Picker) {
-                            slideInHorizontally(
-                                animationSpec = tween()
-                            ) { it } + fadeIn() togetherWith
-                                slideOutHorizontally(animationSpec = tween()) { -it } + fadeOut()
-                        } else {
-                            slideInHorizontally(
-                                animationSpec = tween()
-                            ) { -it } + fadeIn() togetherWith
-                                slideOutHorizontally(animationSpec = tween()) { it } + fadeOut()
+                is OperationSheetState.Content -> Column(modifier = Modifier.fillMaxSize()) {
+                    OperationPickerHeader(endpoint = sheetState.operationUiModel, onClose = onClose)
+                    val tabs = listOf(SheetPage.Responses, SheetPage.Sequence, SheetPage.Failure)
+                    PrimaryTabRow(
+                        selectedTabIndex = tabs
+                            .indexOf(
+                                element = page
+                            ).coerceAtLeast(minimumValue = 0),
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                    ) {
+                        tabs.forEach { tab ->
+                            Tab(
+                                modifier = Modifier.testTag(
+                                    tag = "operation_sheet_tab_${tab.name.lowercase()}"
+                                ),
+                                selected =
+                                    page == tab ||
+                                        page == SheetPage.Preview && tab == SheetPage.Responses,
+                                onClick = { page = tab },
+                                text = { Text(text = tab.name) }
+                            )
                         }
-                    },
-                    label = "operationSheetPage"
-                ) { currentPage ->
-                    when (currentPage) {
-                        SheetPage.Picker -> OperationPickerPage(
-                            content = sheetState,
-                            onSelectResponse = { response ->
-                                onSelectResponse(response)
-                                onClose()
-                            },
-                            onSelectFailure = { kind ->
-                                onSelectFailure(kind)
-                                onClose()
-                            },
-                            onResetSequencePosition = onResetSequencePosition,
-                            onPreview = { response ->
-                                previewState = PreviewSheetState.Single(response = response)
-                                page = SheetPage.Preview
-                            },
-                            onOpenSequence = { page = SheetPage.Sequence },
-                            onClose = onClose
-                        )
-                        SheetPage.Preview -> {
-                            val preview = previewState as? PreviewSheetState.HasResponse
-                            if (preview != null) {
-                                val first = when (preview) {
-                                    is PreviewSheetState.Single -> preview.response
-                                    is PreviewSheetState.Compare -> preview.first
+                    }
+                    AnimatedContent(
+                        modifier = Modifier.fillMaxWidth().weight(weight = 1f),
+                        targetState = page,
+                        transitionSpec = {
+                            if (targetState.ordinal > initialState.ordinal) {
+                                slideInHorizontally(
+                                    animationSpec = tween()
+                                ) { it } + fadeIn() togetherWith
+                                    slideOutHorizontally(
+                                        animationSpec = tween()
+                                    ) { -it } + fadeOut()
+                            } else {
+                                slideInHorizontally(
+                                    animationSpec = tween()
+                                ) { -it } + fadeIn() togetherWith
+                                    slideOutHorizontally(animationSpec = tween()) { it } + fadeOut()
+                            }
+                        },
+                        label = "operationSheetPage"
+                    ) { currentPage ->
+                        when (currentPage) {
+                            SheetPage.Responses -> OperationPickerPage(
+                                content = sheetState,
+                                onSelectResponse = { response ->
+                                    onSelectResponse(response)
+                                    onClose()
+                                },
+                                onPreview = { response ->
+                                    previewState = PreviewSheetState.Single(response = response)
+                                    page = SheetPage.Preview
                                 }
-                                MockResponsePreviewPage(
-                                    previewSheetState = preview,
-                                    otherResponses = sheetState.responses.filter { it != first },
-                                    onCompareWith = { response ->
-                                        previewState = PreviewSheetState.Compare(
-                                            first = first,
-                                            second = response
-                                        )
-                                    },
-                                    onBack = { page = SheetPage.Picker }
-                                )
+                            )
+                            SheetPage.Preview -> {
+                                val preview = previewState as? PreviewSheetState.HasResponse
+                                if (preview != null) {
+                                    val first = when (preview) {
+                                        is PreviewSheetState.Single -> preview.response
+                                        is PreviewSheetState.Compare -> preview.first
+                                    }
+                                    MockResponsePreviewPage(
+                                        previewSheetState = preview,
+                                        otherResponses = sheetState.responses.filter {
+                                            it != first
+                                        },
+                                        onCompareWith = { response ->
+                                            previewState = PreviewSheetState.Compare(
+                                                first = first,
+                                                second = response
+                                            )
+                                        },
+                                        onBack = { page = SheetPage.Responses }
+                                    )
+                                }
                             }
+                            SheetPage.Failure -> OperationFailurePage(
+                                content = sheetState,
+                                onSelectFailure = { kind ->
+                                    onSelectFailure(kind)
+                                    onClose()
+                                }
+                            )
+                            SheetPage.Sequence -> SequenceBuilderPage(
+                                content = sheetState,
+                                onBack = { page = SheetPage.Responses },
+                                showHeader = false,
+                                onResetSequencePosition = onResetSequencePosition,
+                                onCommitSequence = { responses ->
+                                    onCommitSequence(responses)
+                                    onClose()
+                                }
+                            )
                         }
-                        SheetPage.Sequence -> SequenceBuilderPage(
-                            content = sheetState,
-                            onBack = { page = SheetPage.Picker },
-                            onCommitSequence = { responses ->
-                                onCommitSequence(responses)
-                                onClose()
-                            }
-                        )
                     }
                 }
             }
@@ -201,18 +237,14 @@ internal fun NetworkMockOperationSheet(
 }
 
 /**
- * The operation picker: grouped responses and failures, direct eye previews, and a sequence action.
+ * The Responses tab: grouped network/status choices and direct eye previews.
  * Kept internal so device tests can exercise callbacks without modal chrome or page animations.
  */
 @Composable
 internal fun OperationPickerPage(
     content: OperationSheetState.Content,
     onSelectResponse: (MockResponse?) -> Unit,
-    onSelectFailure: (FailureKind) -> Unit,
-    onResetSequencePosition: () -> Unit,
     onPreview: (MockResponse) -> Unit,
-    onOpenSequence: () -> Unit,
-    onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val endpoint = content.operationUiModel
@@ -224,9 +256,6 @@ internal fun OperationPickerPage(
         .distinct()
         .size > 1
     val selectedState = endpoint.currentState as? OperationMockState.Mock
-    val selectedFailureKind = (endpoint.currentState as? OperationMockState.Failure)?.kind
-    val activeSequence = endpoint.currentState as? OperationMockState.Sequence
-    val failureRate = endpoint.descriptor.config.failureRate
 
     Column(modifier = modifier.fillMaxSize()) {
         LazyColumn(
@@ -236,41 +265,6 @@ internal fun OperationPickerPage(
                     weight = 1f
                 ).testTag(tag = "operation_picker_list")
         ) {
-            item(key = "operation_header") {
-                Column(modifier = Modifier.animateItem()) {
-                    OperationPickerHeader(endpoint = endpoint, onClose = onClose)
-                    HorizontalDivider()
-                }
-            }
-            item(key = "sequence_status") {
-                Row(
-                    modifier = Modifier
-                        .animateItem()
-                        .padding(all = 16.dp)
-                        .groupedCard(index = 0, count = 1)
-                        .padding(start = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (activeSequence != null) {
-                        Text(
-                            modifier = Modifier
-                                .weight(
-                                    weight = 1f
-                                ).testTag(tag = "sequence_position"),
-                            text = "Step ${activeSequence.currentIndex + 1} of ${activeSequence.responses.size}",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        TextButton(
-                            modifier = Modifier.testTag(tag = "sequence_reset_button"),
-                            onClick = onResetSequencePosition
-                        ) { Text(text = "Reset") }
-                    }
-                    TextButton(
-                        modifier = Modifier.testTag(tag = "sequence_build_button"),
-                        onClick = onOpenSequence
-                    ) { Text(text = if (activeSequence == null) "Build a Sequence" else "Edit") }
-                }
-            }
             stickyHeader(key = "header_network") { PickerGroupHeader(text = "NO MOCK") }
             item(key = "network_item") {
                 NetworkItem(
@@ -325,57 +319,63 @@ internal fun OperationPickerPage(
                     }
                 }
             }
-            item(key = "response_hint") {
-                Text(
-                    modifier = Modifier.animateItem().padding(horizontal = 32.dp, vertical = 8.dp),
-                    text = "Tap a response to apply it, or the eye to preview and compare.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            stickyHeader(
-                key = "header_simulate_failure"
-            ) { PickerGroupHeader(text = "SIMULATE FAILURE") }
-            FailureKind.entries.forEachIndexed { index, kind ->
-                item(key = "failure_item_${kind.name}") {
-                    Column(
+        }
+    }
+}
+
+/** The Failure tab: grouped transport failures and the read-only spec failure rate. */
+@Composable
+internal fun OperationFailurePage(
+    content: OperationSheetState.Content,
+    onSelectFailure: (FailureKind) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val selectedFailureKind = (content.operationUiModel.currentState as? OperationMockState.Failure)
+        ?.kind
+    val failureRate = content.operationUiModel.descriptor.config.failureRate
+    LazyColumn(modifier = modifier.fillMaxSize().testTag(tag = "operation_failure_list")) {
+        stickyHeader(
+            key = "header_simulate_failure"
+        ) { PickerGroupHeader(text = "SIMULATE FAILURE") }
+        FailureKind.entries.forEachIndexed { index, kind ->
+            item(key = "failure_item_${kind.name}") {
+                Column(
+                    modifier = Modifier
+                        .animateItem()
+                        .padding(horizontal = 16.dp)
+                        .groupedCard(index = index, count = FailureKind.entries.size)
+                ) {
+                    FailureItem(
                         modifier = Modifier
-                            .animateItem()
-                            .padding(horizontal = 16.dp)
-                            .groupedCard(index = index, count = FailureKind.entries.size)
-                    ) {
-                        FailureItem(
-                            modifier = Modifier
-                                .padding(
-                                    horizontal = 16.dp
-                                ).testTag(tag = "failure_item_${kind.name}"),
-                            kind = kind,
-                            selected = selectedFailureKind == kind,
-                            onClick = { onSelectFailure(kind) }
+                            .padding(
+                                horizontal = 16.dp
+                            ).testTag(tag = "failure_item_${kind.name}"),
+                        kind = kind,
+                        selected = selectedFailureKind == kind,
+                        onClick = { onSelectFailure(kind) }
+                    )
+                    if (index != FailureKind.entries.lastIndex) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(start = 64.dp, end = 16.dp)
                         )
-                        if (index != FailureKind.entries.lastIndex) {
-                            HorizontalDivider(
-                                modifier = Modifier.padding(start = 64.dp, end = 16.dp)
-                            )
-                        }
                     }
                 }
             }
-            if (failureRate != null) {
-                item(key = "failure_rate") {
-                    Text(
-                        modifier = Modifier
-                            .animateItem()
-                            .padding(
-                                horizontal = 32.dp,
-                                vertical = 8.dp
-                            ).testTag(tag = "operation_sheet_failure_rate"),
-                        text = "Also configured to fail ${(failureRate * 100).toInt()}% " +
-                            "of mocked requests on its own (x-devview.failureRate)",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+        }
+        if (failureRate != null) {
+            item(key = "failure_rate") {
+                Text(
+                    modifier = Modifier
+                        .animateItem()
+                        .padding(
+                            horizontal = 32.dp,
+                            vertical = 8.dp
+                        ).testTag(tag = "operation_sheet_failure_rate"),
+                    text = "Also configured to fail ${(failureRate * 100).toInt()}% " +
+                        "of mocked requests on its own (x-devview.failureRate)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -476,11 +476,7 @@ private fun NetworkMockOperationSheetPickerPreview(
                     responses = MockResponse.fake(amount = 6).toPersistentList()
                 ),
                 onSelectResponse = {},
-                onSelectFailure = {},
-                onResetSequencePosition = {},
-                onPreview = {},
-                onOpenSequence = {},
-                onClose = {}
+                onPreview = {}
             )
         }
     }
