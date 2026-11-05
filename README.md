@@ -32,6 +32,7 @@ dependencies {
     implementation("com.worldline.devview:devview-featureflip:<version>")   // feature flags
     implementation("com.worldline.devview:devview-analytics:<version>")     // analytics inspector
     implementation("com.worldline.devview:devview-consolelogger:<version>") // native console log viewer
+    implementation("com.worldline.devview:devview-crashhistory:<version>")  // local crash history
     implementation("com.worldline.devview:devview-timecapsule:<version>")   // per-screen state history
     implementation("com.worldline.devview:devview-networkmock:<version>")   // network mock UI
 
@@ -179,6 +180,8 @@ with no debugger attached).
 | FeatureFlip | `devview-featureflip` | Runtime feature flag management with Compose UI. Supports local and remote-config flags with local overrides. |
 | Analytics | `devview-analytics` | Real-time analytics event inspector with filtering by type, category, and time range. |
 | Console Logger | `devview-consolelogger` | Native console log viewer (logcat/stdout), untethered, with level filters and text search. |
+| Crash History | `devview-crashhistory` | Local, bounded history of crashes (stack trace, device and app info) with copy, share and export. Complements Crashlytics or Sentry, never uploads. |
+| Crash History Core | `devview-crashhistory-core` | Crash recorder and platform capture. No UI dependency. |
 | TimeCapsule | `devview-timecapsule` | Records the state history of the currently visible screen and lets you restore any earlier state back into it. |
 | NetworkMock (UI) | `devview-networkmock` | Full mock management UI: enable/disable endpoints, switch responses, preview and diff mock payloads. |
 | NetworkMock Core | `devview-networkmock-core` | Mock engine: OpenAPI 3.x spec parsing, request matching, DataStore state. No UI dependency. |

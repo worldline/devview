@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!--
+            Starts crash recording before Application.onCreate (only once CrashHistory() has run once).
+            No android:initOrder on purpose: Firebase's FirebaseInitProvider uses initOrder=100 and so
+            initialises first. We then wrap Crashlytics' handler: record first, then delegate to it.
+        -->
+        <provider
+            android:name="com.worldline.devview.crashhistory.core.CrashHistoryInitProvider"
+            android:authorities="${applicationId}.devview.crashhistory.init"
+            android:exported="false" />
+    </application>
+</manifest>

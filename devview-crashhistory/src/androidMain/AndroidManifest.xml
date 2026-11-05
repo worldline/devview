@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!--
+            Own FileProvider subclass: a plain androidx FileProvider entry would clash with the
+            host app's own FileProvider declaration when manifests are merged.
+        -->
+        <provider
+            android:name="com.worldline.devview.crashhistory.CrashHistoryFileProvider"
+            android:authorities="${applicationId}.devview.crashhistory.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/devview_crashhistory_file_paths" />
+        </provider>
+    </application>
+</manifest>
