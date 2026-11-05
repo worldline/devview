@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Visibility
-import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -20,7 +19,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,22 +48,20 @@ import com.worldline.devview.utils.preview.BooleanPreviewParameterProvider
  *   when [MockResponse.isSynthesized] is `true` — see
  *   `com.worldline.devview.networkmock.core.openapi.SchemaSynthesizer`.
  * @param onClick Called when the row itself is tapped — activates this response and closes the sheet
- * @param isMarkedForPreview Whether this response is currently marked for the preview/compare page
- * @param onToggleMarkedForPreview Called when the trailing preview toggle is tapped
+ * @param onPreview Called by the eye to open a preview; null hides the eye in sequence building
  * @param selected Whether this response is the operation's currently active mock
- * @param previewToggleTestTag Test tag for the trailing preview toggle button. Callers rendering
+ * @param previewToggleTestTag Test tag for the trailing preview button. Callers rendering
  * more than one [MockItem] must pass a tag unique per response — the default is shared.
  */
 @Composable
 internal fun MockItem(
     mockResponse: MockResponse,
     onClick: () -> Unit,
-    isMarkedForPreview: Boolean,
-    onToggleMarkedForPreview: () -> Unit,
     modifier: Modifier = Modifier,
     selected: Boolean = false,
     previewToggleTestTag: String = "mock_item_preview_toggle",
-    secondaryLabel: String? = null
+    secondaryLabel: String? = null,
+    onPreview: (() -> Unit)? = null
 ) {
     MockItemContent(
         modifier = modifier,
@@ -77,8 +73,7 @@ internal fun MockItem(
         isSynthesized = mockResponse.isSynthesized,
         selected = selected,
         onClick = onClick,
-        isMarkedForPreview = isMarkedForPreview,
-        onToggleMarkedForPreview = onToggleMarkedForPreview,
+        onPreview = onPreview,
         previewToggleTestTag = previewToggleTestTag
     )
 }
@@ -99,8 +94,7 @@ internal fun NetworkItem(
         label = state.displayName,
         selected = selected,
         onClick = onClick,
-        isMarkedForPreview = false,
-        onToggleMarkedForPreview = null,
+        onPreview = null,
         previewToggleTestTag = "mock_item_preview_toggle"
     )
 }
@@ -126,8 +120,7 @@ internal fun FailureItem(
         label = state.displayName,
         selected = selected,
         onClick = onClick,
-        isMarkedForPreview = false,
-        onToggleMarkedForPreview = null,
+        onPreview = null,
         previewToggleTestTag = "mock_item_preview_toggle"
     )
 }
@@ -140,8 +133,7 @@ private fun MockItemContent(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
-    isMarkedForPreview: Boolean,
-    onToggleMarkedForPreview: (() -> Unit)?,
+    onPreview: (() -> Unit)?,
     previewToggleTestTag: String,
     modifier: Modifier = Modifier,
     secondaryLabel: String? = null,
@@ -152,11 +144,7 @@ private fun MockItemContent(
             .fillMaxWidth()
             .clickable(
                 enabled = true,
-                onClick = {
-                    if (!selected) {
-                        onClick()
-                    }
-                }
+                onClick = onClick
             ).then(
                 other = modifier
                     .minimumInteractiveComponentSize()
@@ -210,22 +198,14 @@ private fun MockItemContent(
                 contentDescription = null
             )
         }
-        if (onToggleMarkedForPreview != null) {
+        if (onPreview != null) {
             IconButton(
                 modifier = Modifier.testTag(tag = previewToggleTestTag),
-                onClick = onToggleMarkedForPreview
+                onClick = onPreview
             ) {
                 Icon(
-                    imageVector = if (isMarkedForPreview) {
-                        Icons.Rounded.Visibility
-                    } else {
-                        Icons.Rounded.VisibilityOff
-                    },
-                    contentDescription = if (isMarkedForPreview) {
-                        "Remove from preview"
-                    } else {
-                        "Add to preview"
-                    }
+                    imageVector = Icons.Rounded.Visibility,
+                    contentDescription = "Preview response"
                 )
             }
         }
@@ -242,8 +222,7 @@ private fun MockItemPreview(
             MockItem(
                 mockResponse = mockResponse,
                 onClick = {},
-                isMarkedForPreview = false,
-                onToggleMarkedForPreview = {}
+                onPreview = {}
             )
         }
     }
@@ -291,26 +270,7 @@ private fun MockItemSelectedPreview(
                 mockResponse = MockResponse.fake().first(),
                 selected = selected,
                 onClick = {},
-                isMarkedForPreview = false,
-                onToggleMarkedForPreview = {}
-            )
-        }
-    }
-}
-
-@Preview(locale = "en")
-@Composable
-private fun MockItemMarkedForPreviewPreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) isMarkedForPreview: Boolean
-) {
-    MaterialTheme {
-        Surface {
-            MockItem(
-                mockResponse = MockResponse.fake().first(),
-                selected = false,
-                onClick = {},
-                isMarkedForPreview = isMarkedForPreview,
-                onToggleMarkedForPreview = {}
+                onPreview = {}
             )
         }
     }
@@ -324,8 +284,7 @@ private fun MockItemSynthesizedPreview() {
             MockItem(
                 mockResponse = MockResponse.fake().first().copy(isSynthesized = true),
                 onClick = {},
-                isMarkedForPreview = false,
-                onToggleMarkedForPreview = {}
+                onPreview = {}
             )
         }
     }

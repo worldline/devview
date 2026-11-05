@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -13,8 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -26,10 +27,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.worldline.devview.networkmock.PreviewSheetState
 import com.worldline.devview.networkmock.core.model.MockResponse
@@ -37,6 +42,7 @@ import com.worldline.devview.networkmock.model.DiffLine
 import com.worldline.devview.networkmock.model.DisplayLine
 import com.worldline.devview.networkmock.preview.PreviewSheetStatePreviewParameterProvider
 import com.worldline.devview.networkmock.utils.CONTEXT_LINES
+import com.worldline.devview.networkmock.utils.displayContent
 import com.worldline.devview.networkmock.utils.toDisplayLines
 import kotlinx.collections.immutable.PersistentList
 
@@ -68,6 +74,16 @@ internal fun InlineDiffContent(
     colors: MockResponseDiffColors = MockResponseDiffDefaults.colors()
 ) {
     val displayLines = remember(key1 = diff) { diff.toDisplayLines() }
+    val texts = remember(key1 = displayLines) {
+        displayLines.map { line ->
+            when (line) {
+                is DisplayLine.Unchanged -> line.text
+                is DisplayLine.Left -> line.text
+                is DisplayLine.Right -> line.text
+                is DisplayLine.Collapsed -> "  ⋯  ${line.count} unchanged lines"
+            }
+        }
+    }
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -92,61 +108,61 @@ internal fun InlineDiffContent(
             HorizontalDivider()
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(state = rememberScrollState())
-        ) {
-            displayLines.forEach { line ->
-                when (line) {
-                    is DisplayLine.Unchanged -> {
-                        DiffLineRow(
-                            lineLeft = line.lineLeft.toString(),
-                            lineRight = line.lineRight.toString(),
-                            content = line.text,
-                            background = colors.surface(),
-                            textColor = colors.onSurface(),
-                            gutterColor = colors.gutterContainer(),
-                            gutterTextColor = colors.onGutterContainer()
-                        )
-                    }
+        ScrollableLinePane(
+            lines = texts,
+            gutterWidth = 66.dp,
+            tag = "preview_inline_pane"
+        ) { index ->
+            when (val line = displayLines[index]) {
+                is DisplayLine.Unchanged -> {
+                    DiffLineRow(
+                        lineLeft = line.lineLeft.toString(),
+                        lineRight = line.lineRight.toString(),
+                        content = line.text,
+                        background = colors.surface(),
+                        textColor = colors.onSurface(),
+                        gutterColor = colors.gutterContainer(),
+                        gutterTextColor = colors.onGutterContainer()
+                    )
+                }
 
-                    is DisplayLine.Left -> {
-                        DiffLineRow(
-                            lineLeft = line.line.toString(),
-                            lineRight = "",
-                            content = line.text,
-                            background = colors.leftContainer(),
-                            textColor = colors.onLeftContainer(),
-                            gutterColor = colors.gutterContainer(),
-                            gutterTextColor = colors.onGutterContainer()
-                        )
-                    }
+                is DisplayLine.Left -> {
+                    DiffLineRow(
+                        lineLeft = line.line.toString(),
+                        lineRight = "",
+                        content = line.text,
+                        background = colors.leftContainer(),
+                        textColor = colors.onLeftContainer(),
+                        gutterColor = colors.gutterContainer(),
+                        gutterTextColor = colors.onGutterContainer()
+                    )
+                }
 
-                    is DisplayLine.Right -> {
-                        DiffLineRow(
-                            lineLeft = "",
-                            lineRight = line.line.toString(),
-                            content = line.text,
-                            background = colors.rightContainer(),
-                            textColor = colors.onRightContainer(),
-                            gutterColor = colors.gutterContainer(),
-                            gutterTextColor = colors.onGutterContainer()
-                        )
-                    }
+                is DisplayLine.Right -> {
+                    DiffLineRow(
+                        lineLeft = "",
+                        lineRight = line.line.toString(),
+                        content = line.text,
+                        background = colors.rightContainer(),
+                        textColor = colors.onRightContainer(),
+                        gutterColor = colors.gutterContainer(),
+                        gutterTextColor = colors.onGutterContainer()
+                    )
+                }
 
-                    is DisplayLine.Collapsed -> {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(color = colors.collapsedContainer())
-                                .padding(horizontal = 12.dp, vertical = 2.dp),
-                            text = "  ⋯  ${line.count} unchanged lines",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = colors.onGutterContainer(),
-                            fontFamily = FontFamily.Monospace
-                        )
-                    }
+                is DisplayLine.Collapsed -> {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(color = colors.collapsedContainer())
+                            .padding(horizontal = 12.dp, vertical = 2.dp),
+                        text = "  ⋯  ${line.count} unchanged lines",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colors.onGutterContainer(),
+                        fontFamily = FontFamily.Monospace,
+                        softWrap = false,
+                        maxLines = 1
+                    )
                 }
             }
         }
@@ -220,7 +236,9 @@ internal fun DiffLineRow(
             style = MaterialTheme.typography.labelSmall,
             fontFamily = FontFamily.Monospace,
             color = gutterTextColor,
-            textAlign = TextAlign.End
+            textAlign = TextAlign.End,
+            softWrap = false,
+            maxLines = 1
         )
         VerticalDivider(modifier = Modifier.fillMaxHeight())
         // Right line number — hidden in single-response view
@@ -235,21 +253,22 @@ internal fun DiffLineRow(
                 style = MaterialTheme.typography.labelSmall,
                 fontFamily = FontFamily.Monospace,
                 color = gutterTextColor,
-                textAlign = TextAlign.End
+                textAlign = TextAlign.End,
+                softWrap = false,
+                maxLines = 1
             )
             VerticalDivider(modifier = Modifier.fillMaxHeight())
         }
-        // Content — horizontally scrollable so long lines don't wrap
         Text(
             modifier = Modifier
-                .weight(weight = 1f)
-                .horizontalScroll(state = rememberScrollState())
+                .fillMaxWidth()
                 .padding(horizontal = 8.dp, vertical = 1.dp),
             text = content,
             style = MaterialTheme.typography.bodySmall,
             fontFamily = FontFamily.Monospace,
             color = textColor,
-            softWrap = false
+            softWrap = false,
+            maxLines = 1
         )
     }
 }
@@ -258,8 +277,8 @@ internal fun DiffLineRow(
  * Renders two mock response bodies in a vertically split view for cases where the
  * responses are too dissimilar for an inline diff.
  *
- * Each half takes equal vertical space and has its own independent [verticalScroll] and
- * [horizontalScroll]; identity (which response is which) comes from the caller's chip
+ * Each half takes equal vertical space and has independent horizontal and lazy vertical scrolling;
+ * identity (which response is which) comes from the caller's chip
  * header, not from a per-pane label. A [HorizontalDivider] separates the two halves. This
  * layout is safe for portrait phone screens — no side-by-side columns.
  *
@@ -274,16 +293,20 @@ internal fun SplitDiffContent(
     colors: MockResponseDiffColors = MockResponseDiffDefaults.colors()
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            ResponseContentPane(response = first, colors = colors)
-        }
-
+        ResponseContentPane(
+            response = first,
+            colors = colors,
+            modifier = Modifier.weight(weight = 1f),
+            tag = "preview_first_pane"
+        )
         if (second != null) {
             HorizontalDivider()
-
-            Column(modifier = Modifier.fillMaxWidth()) {
-                ResponseContentPane(response = second, colors = colors)
-            }
+            ResponseContentPane(
+                response = second,
+                colors = colors,
+                modifier = Modifier.weight(weight = 1f),
+                tag = "preview_second_pane"
+            )
         }
     }
 }
@@ -295,29 +318,70 @@ internal fun SplitDiffContent(
 @Composable
 private fun ResponseContentPane(
     response: MockResponse,
+    tag: String,
     modifier: Modifier = Modifier,
     colors: MockResponseDiffColors = MockResponseDiffDefaults.colors()
 ) {
-    val lines = remember(key1 = response.content) { response.content.lines() }
+    val lines = remember(key1 = response.content, key2 = response.contentType) {
+        response.displayContent().lines()
+    }
 
-    Column(modifier = modifier.fillMaxWidth()) {
-        Column(
+    ScrollableLinePane(
+        lines = lines,
+        gutterWidth = 33.dp,
+        tag = tag,
+        modifier = modifier
+    ) { index ->
+        val lineNumber = (index + 1).toString()
+        DiffLineRow(
+            lineLeft = lineNumber,
+            lineRight = lineNumber,
+            content = lines[index],
+            background = colors.surface(),
+            textColor = colors.onSurface(),
+            gutterColor = colors.gutterContainer(),
+            gutterTextColor = colors.onGutterContainer(),
+            showRightGutter = false
+        )
+    }
+}
+
+@Suppress("NamedArguments") // Function-type invocation cannot use named arguments.
+@Composable
+private fun ScrollableLinePane(
+    lines: List<String>,
+    gutterWidth: Dp,
+    tag: String,
+    modifier: Modifier = Modifier,
+    row: @Composable (Int) -> Unit
+) {
+    val longestLine = remember(key1 = lines) { lines.maxByOrNull { it.length }.orEmpty() }
+    val textMeasurer = rememberTextMeasurer()
+    val textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace)
+    val textWidth = remember(key1 = longestLine, key2 = textMeasurer, key3 = textStyle) {
+        textMeasurer
+            .measure(
+                text = longestLine,
+                style = textStyle,
+                softWrap = false,
+                maxLines = 1
+            ).size.width
+    }
+    val contentWidth = with(LocalDensity.current) { textWidth.toDp() } + gutterWidth + 16.dp
+
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val rowWidth = maxOf(a = maxWidth, b = contentWidth)
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(state = rememberScrollState())
+                .testTag(tag = tag)
+                .horizontalScroll(state = rememberScrollState())
         ) {
-            lines.forEachIndexed { index, line ->
-                val lineNumber = (index + 1).toString()
-                DiffLineRow(
-                    lineLeft = lineNumber,
-                    lineRight = lineNumber,
-                    content = line,
-                    background = colors.surface(),
-                    textColor = colors.onSurface(),
-                    gutterColor = colors.gutterContainer(),
-                    gutterTextColor = colors.onGutterContainer(),
-                    showRightGutter = false
-                )
+            // Bound the lazy list before the horizontal scroller's infinite width reaches it.
+            LazyColumn(
+                modifier = Modifier.width(width = rowWidth).testTag(tag = "${tag}_rows")
+            ) {
+                items(count = lines.size) { index -> row(index) }
             }
         }
     }

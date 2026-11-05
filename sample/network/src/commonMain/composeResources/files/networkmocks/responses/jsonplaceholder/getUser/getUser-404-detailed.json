@@ -1,4 +1,12 @@
 {
+  "id": null,
+  "name": null,
+  "username": null,
+  "email": null,
+  "address": null,
+  "phone": null,
+  "website": null,
+  "company": null,
   "error": {
     "code": "USER_NOT_FOUND",
     "message": "No user exists with ID {userId}",
