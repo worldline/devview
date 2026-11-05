@@ -18,6 +18,8 @@ kotlin {
 
     targets.withType<KotlinNativeTarget>().configureEach {
         compilerOptions.optIn.add("kotlinx.cinterop.ExperimentalForeignApi")
+        binaries.getTest("debug").freeCompilerArgs +=
+            "-Xoverride-konan-properties=osVersionMin.ios_simulator_arm64=15.0"
         swiftPackageConfig("crashHistoryBridge") {
             minIos = "15.0"
             publishSafe = true

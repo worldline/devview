@@ -5,6 +5,7 @@ import crashHistoryBridge.DevViewMetricKitBridge
 import kotlinx.cinterop.ExperimentalForeignApi
 
 // The bridge owns the long-lived Task or legacy subscriber.
+@OptIn(ExperimentalForeignApi::class)
 private var metricKitBridge: DevViewMetricKitBridge? = null
 
 /** Imports both MetricKit paths through an Objective-C-safe Swift snapshot. */
@@ -27,15 +28,15 @@ internal fun subscribeToMetricKit(
 
 @OptIn(ExperimentalForeignApi::class)
 private fun DevViewCrashDiagnostic.snapshot(): SystemCrashDiagnostic = SystemCrashDiagnostic(
-    occurrenceId = occurrenceId,
-    periodEndMillis = periodEndMillis,
-    signal = signal?.intValue,
-    exceptionType = exceptionType?.intValue,
-    exceptionCode = exceptionCode?.stringValue,
-    terminationReason = terminationReason,
-    callStackTreeJson = callStackTreeJson,
-    appVersion = appVersion,
-    appBuildVersion = appBuildVersion,
-    osVersion = osVersion,
-    deviceType = deviceType
+    occurrenceId = occurrenceId(),
+    periodEndMillis = periodEndMillis(),
+    signal = signal()?.intValue,
+    exceptionType = exceptionType()?.intValue,
+    exceptionCode = exceptionCode()?.stringValue,
+    terminationReason = terminationReason(),
+    callStackTreeJson = callStackTreeJson(),
+    appVersion = appVersion(),
+    appBuildVersion = appBuildVersion(),
+    osVersion = osVersion(),
+    deviceType = deviceType()
 )
