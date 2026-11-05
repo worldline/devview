@@ -17,6 +17,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   diagnostics. On Android a manifest-declared provider starts recording before
   `Application.onCreate` once `CrashHistory()` has run; iOS apps can call
   `CrashHistoryIos.start()` for the same effect.
+- Crash History: Swift MetricKit bridge using the iOS 27 async API and legacy delivery on
+  iOS 15–26, with replay-stable diagnostic IDs, historical app/device metadata and reporting
+  period labels. iOS builds now require Xcode 27; runtime support starts at iOS 15.
+
+### Fixed
+- Crash History: exclude iOS records from backups (best-effort, verified on startup), serialize
+  ordinary storage/import operations, reject stale queued work after Clear, and acknowledge
+  OS imports only after record persistence succeeds.
+- Crash History: validate positive retention limits, honor updated configurations without
+  reinstalling handlers, use unique atomic-write temporary files and stable Android exit IDs,
+  bound ANR trace reads, and capture Android metadata before installing the fatal handler.
+- Crash History: preserve Android export attachments with unique filenames and aged cleanup,
+  show export/share failure feedback, check iOS writes and anchor iPad share popovers. The core
+  recorder no longer pulls in Material3 or Navigation3.
 
 ## [0.2.0-alpha07] - 2026-11-02
 

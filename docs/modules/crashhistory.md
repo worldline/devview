@@ -11,12 +11,12 @@ every crash it received before.
 ## Overview
 
 Two artifacts, so that other code (for example a future crash-SDK adapter) can use the
-recorder without pulling in any UI:
+recorder without pulling in the feature screens or Material3/Navigation3:
 
 | Artifact | Contains |
 |---|---|
 | `devview-crashhistory` | The `CrashHistory` module: list and detail screens, copy / share / export |
-| `devview-crashhistory-core` | `CrashRecorder`, the record model and the platform capture. No UI. Pulled in by `devview-crashhistory`. |
+| `devview-crashhistory-core` | `CrashRecorder`, the record model and the platform capture. No screens; uses Compose runtime/UI for installation. Pulled in by `devview-crashhistory`. |
 
 ### What a record is
 
@@ -59,6 +59,9 @@ public class CrashHistory(
 ```
 
 It lives in the **Logging** section and shows a **Clear** action in the top bar.
+`maxRecords` must be positive; zero and negative values throw `IllegalArgumentException`.
+The latest `CrashHistory` initialization, `CrashRecorder.install(...)` or iOS `start(...)`
+updates the process-wide limit without reinstalling handlers.
 
 ## Android
 
@@ -92,11 +95,19 @@ nothing to add). It starts recording before `Application.onCreate`.
 | 12+ (API 31+) | Native crash entries may carry a tombstone from the OS, which is a protobuf and is not rendered. It can be missing or already overwritten. |
 
 For an ANR, the OS trace is attached as the stack trace when the system provides one.
+Reading is bounded to the stack-trace limit, rather than loading the whole OS trace into memory.
 
 DevView does not install its own signal handler, so it does not capture native crashes itself.
 On Android 11+ the OS entry for a native crash is the only source.
 
 ## iOS
+
+### Build and deployment requirements
+
+Building the Swift bridge requires **Xcode 27 or newer** (including Gradle tasks that generate
+iOS bindings, such as Metalava). The app must target **iOS 15 or newer**. Building with Xcode 27
+does not require running on iOS 27: older supported versions use the legacy MetricKit API.
+The library uses spmForKmp 1.9.7 and system MetricKit/CryptoKit, with no external Swift package.
 
 ### Optional early start
 
@@ -144,9 +155,59 @@ Or call it from Kotlin in `iosMain` and skip the export. `start(maxRecords)` is 
 Not captured: nothing watches for Swift `fatalError`, watchdog kills or out-of-memory kills
 unless MetricKit reports them. A crash with no record is not proof there was no crash.
 
-MetricKit's `MXMetricManager` API is deprecated from iOS 27.2 and replaced by a Swift-only
-API that is not callable from Kotlin/Native today. The code is annotated to stay buildable and
-a Swift bridge would be the follow-up.
+A Swift bridge selects the MetricKit API at runtime:
+
+- **iOS 27+:** consumes `MetricManager.diagnosticReports` asynchronously and imports crash results.
+- **iOS 15–26:** registers an `MXMetricManagerSubscriber` and replays available past diagnostics.
+
+Imports use deterministic IDs derived from the reporting period, call stack, termination reason
+and signal/Mach exception fields, so replaying a diagnostic does not add another record.
+App/build/OS information comes from the diagnostic, not the current launch; unavailable values
+are shown as `unknown`. MetricKit does not give an exact crash time, so its timestamp is labeled
+**Reporting period end** in the detail screen and copied report.
+
+### Kotlin/Native consumers and `publishSafe`
+
+The bridge archive is embedded in the core klib. `publishSafe = true` removes producer-machine
+linker search paths; it does not make a downstream Gradle-linked executable independent of its
+own Xcode toolchain. A Swift host app supplies the Swift runtime linking automatically (as the
+sample does); no generated local SPM package is needed for this bridge.
+
+For a Gradle-linked Kotlin/Native binary or test consuming the core or UI module, supply the
+selected Xcode's Swift runtime search directory as a `-L` linker option. Resolve it at link time,
+not as a hard-coded path from the machine that published the library:
+
+```kotlin
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+
+kotlin.targets.withType<KotlinNativeTarget>().configureEach {
+    val sdk = if (name == "iosArm64") "iphoneos" else "iphonesimulator"
+    val swiftRuntime = providers.exec {
+        commandLine("xcrun", "--sdk", sdk, "xcode-select", "-p")
+    }.standardOutput.asText.map {
+        "${it.trim()}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$sdk"
+    }
+    binaries.configureEach {
+        linkTaskProvider.configure {
+            toolOptions.freeCompilerArgs.addAll(
+                swiftRuntime.map { listOf("-linker-option", "-L$it") }
+            )
+        }
+    }
+}
+```
+
+This is the lazy equivalent of `linkerOpts("-L<selected-Xcode>/Toolchains/" +
+"XcodeDefault.xctoolchain/usr/lib/swift/<sdk>")`. Without it, native linking can fail with
+`__swift_FORCE_LOAD_$_swiftCompatibility56` undefined symbols.
+
+Kotlin/Native simulator test executables also need an iOS 15+ minimum, otherwise Swift concurrency
+can fail to load at runtime even on a newer simulator. In each simulator target:
+
+```kotlin
+binaries.getTest("debug").freeCompilerArgs +=
+    "-Xoverride-konan-properties=osVersionMin.ios_simulator_arm64=15.0"
+```
 
 ## Handler chaining
 
@@ -161,17 +222,23 @@ DevView never takes over crash handling.
 ## Records and privacy
 
 - **Storage.** One JSON file per record, written atomically, in app-private storage that is
-  excluded from backup: `noBackupFilesDir/devview-crashhistory` on Android, Application Support
-  on iOS.
+  excluded from backup: `noBackupFilesDir/devview-crashhistory` on Android. On iOS, the
+  Application Support directory is marked with `NSURLIsExcludedFromBackupKey` on each start
+  and the value is read back. This is best-effort: filesystem failures log a warning rather
+  than preventing app startup.
 - **Retention.** The newest 20 records are kept (`CrashRecorder.DEFAULT_MAX_RECORDS`, or
-  `CrashHistory(maxRecords = ...)`).
+  `CrashHistory(maxRecords = ...)`). The latest positive configuration wins; pruning runs
+  during normal recording/startup, not inside the fatal handler.
 - **Truncation.** Messages are cut at 2,000 characters and stack traces at 32,000
   (`MAX_MESSAGE_LENGTH`, `MAX_STACK_TRACE_LENGTH`). Cut records have `truncated = true`.
 - **No redaction.** Records are raw, like Crashlytics' on-device data. Do not put secrets in
   exception messages. Redacting at share time belongs to the planned bug report feature.
 - **Nothing is sent anywhere.** Data leaves the device only when someone taps **Copy**,
   **Share** or **Export**.
-- **Clear.** The top bar action deletes every record, or call `CrashRecorder.clear()`.
+- **Clear.** The top bar action, or `CrashRecorder.clear()`, empties the visible list immediately
+  and schedules disk deletion. Queued work from before Clear cannot repopulate it. Import
+  cursors/seen IDs are retained so already imported OS history is not replayed. Persistence
+  and fatal-handler writes are best-effort; a fatal write can race with deletion.
 - Intended for debug, QA and internal builds, like the rest of DevView.
 
 ## Copy, share and export
@@ -188,7 +255,13 @@ The list screen has **Export all**, which exports every record as one JSON file.
 
 On Android, files are shared through a `FileProvider` that the module declares itself, so it
 cannot clash with a `FileProvider` of your own. The exported file is written to
-`cacheDir/devview-crashhistory-export` and replaced on each export.
+`cacheDir/devview-crashhistory-export` with a unique name for each export, so a later export
+cannot overwrite an earlier recipient's attachment. Files older than one hour are removed on
+the next export (the OS can also clear the cache). Failed file writes or unavailable share
+handlers show **Could not export crash history** on the list, or **Could not share crash report**
+on the detail screen, instead of crashing the app.
+
+iOS checks file-write success before presenting the share sheet and anchors popovers on iPad.
 
 ## Bring your own crash SDK
 
@@ -251,6 +324,8 @@ module without the UI.
   leaves no record.
 - Android 8-10 has no abnormal-exit detection.
 - MetricKit data arrives on a later launch and may duplicate an in-process record.
+- Same-period MetricKit diagnostics with identical stacks and exception fields are
+  indistinguishable to the available data and share an import ID.
 
 ## Sample
 
