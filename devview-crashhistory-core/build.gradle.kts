@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.convention.multiplatform.library)
-    alias(libs.plugins.convention.compose.multiplatform)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.convention.unitTest)
     alias(libs.plugins.convention.kover)
     alias(libs.plugins.convention.metalava)
@@ -18,6 +19,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                implementation(libs.jetbrains.compose.runtime)
+                implementation(libs.jetbrains.compose.ui)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.io.core)
                 implementation(libs.kotlinx.coroutines.core)
