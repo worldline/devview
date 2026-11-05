@@ -16,7 +16,10 @@ internal typealias CrashSink = (
 
 /** Everything [CrashRecorder] needs from the platform. */
 internal interface CrashPlatform {
-    /** App-private, non-backed-up directory holding the records and state files. */
+    /**
+     * App-private directory holding the records and state files. Android uses no-backup storage;
+     * iOS reapplies and verifies backup exclusion on every platform start, best effort.
+     */
     val storageDirectory: Path
 
     /** App and device information stamped on every record. */

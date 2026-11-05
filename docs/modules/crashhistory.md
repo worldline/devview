@@ -107,6 +107,9 @@ From Swift, export the core module from your shared framework:
 
 ```kotlin
 // shared/build.gradle.kts
+kotlin.sourceSets.commonMain.dependencies {
+    api(projects.devviewCrashhistoryCore)
+}
 iosTarget.binaries.framework {
     export(projects.devviewCrashhistoryCore)
 }

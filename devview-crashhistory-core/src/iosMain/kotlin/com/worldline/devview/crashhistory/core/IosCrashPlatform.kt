@@ -9,16 +9,24 @@ import kotlin.native.terminateWithUnhandledException
 import kotlinx.cinterop.CFunction
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ObjCObjectVar
+import kotlinx.cinterop.alloc
 import kotlinx.cinterop.invoke
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
 import kotlinx.cinterop.staticCFunction
+import kotlinx.cinterop.value
 import kotlinx.io.files.Path
 import platform.Foundation.NSApplicationSupportDirectory
 import platform.Foundation.NSBundle
 import platform.Foundation.NSException
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSGetUncaughtExceptionHandler
+import platform.Foundation.NSNumber
 import platform.Foundation.NSProcessInfo
 import platform.Foundation.NSSetUncaughtExceptionHandler
+import platform.Foundation.NSURL
+import platform.Foundation.NSURLIsExcludedFromBackupKey
 import platform.Foundation.NSUserDomainMask
 import platform.UIKit.UIDevice
 
@@ -39,6 +47,7 @@ private var previousNsExceptionHandler: CPointer<CFunction<(NSException?) -> Uni
 @OptIn(ExperimentalNativeApi::class, ExperimentalForeignApi::class)
 internal class IosCrashPlatform : CrashPlatform {
     override val storageDirectory: Path = Path(applicationSupportPath(), STORAGE_DIRECTORY)
+        .also { excludeFromBackup(directory = it) }
 
     override val processId: Int = NSProcessInfo.processInfo.processIdentifier
 
@@ -98,6 +107,35 @@ internal class IosCrashPlatform : CrashPlatform {
         onImported: (CrashRecord) -> Unit
     ) {
         subscribeToMetricKit(store, metadata, onImported)
+    }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+private fun excludeFromBackup(directory: Path) {
+    val url = NSURL.fileURLWithPath(path = directory.toString(), isDirectory = true)
+    val manager = NSFileManager.defaultManager
+    manager.createDirectoryAtURL(
+        url = url,
+        withIntermediateDirectories = true,
+        attributes = null,
+        error = null
+    )
+    url.setResourceValue(
+        value = NSNumber(bool = true),
+        forKey = NSURLIsExcludedFromBackupKey,
+        error = null
+    )
+    memScoped {
+        val excluded = alloc<ObjCObjectVar<Any?>>()
+        val read = url.getResourceValue(
+            value = excluded.ptr,
+            forKey = NSURLIsExcludedFromBackupKey,
+            error = null
+        )
+        if (!read || (excluded.value as? NSNumber)?.boolValue != true) {
+            // Backup protection is best effort; a filesystem failure must not disable recording.
+            println("DevView: crash history backup exclusion could not be verified")
+        }
     }
 }
 
