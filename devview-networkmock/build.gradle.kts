@@ -22,6 +22,7 @@ kotlin {
                 api(projects.devview)
                 api(projects.devviewNetworkmockCore)
                 implementation(libs.kotlinx.collections.immutable)
+                implementation(libs.kotlinx.serialization.json)
                 implementation(libs.jetbrains.androidx.lifecycle.viewmodel.compose)
                 implementation(libs.kermit)
             }

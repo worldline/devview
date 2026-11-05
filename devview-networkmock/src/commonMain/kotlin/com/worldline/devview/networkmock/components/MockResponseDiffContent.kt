@@ -1,7 +1,6 @@
 package com.worldline.devview.networkmock.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,6 +36,7 @@ import com.worldline.devview.networkmock.model.DiffLine
 import com.worldline.devview.networkmock.model.DisplayLine
 import com.worldline.devview.networkmock.preview.PreviewSheetStatePreviewParameterProvider
 import com.worldline.devview.networkmock.utils.CONTEXT_LINES
+import com.worldline.devview.networkmock.utils.displayContent
 import com.worldline.devview.networkmock.utils.toDisplayLines
 import kotlinx.collections.immutable.PersistentList
 
@@ -239,17 +239,16 @@ internal fun DiffLineRow(
             )
             VerticalDivider(modifier = Modifier.fillMaxHeight())
         }
-        // Content — horizontally scrollable so long lines don't wrap
+        // Wrap long lines within the pane, keeping the gutter aligned.
         Text(
             modifier = Modifier
                 .weight(weight = 1f)
-                .horizontalScroll(state = rememberScrollState())
                 .padding(horizontal = 8.dp, vertical = 1.dp),
             text = content,
             style = MaterialTheme.typography.bodySmall,
             fontFamily = FontFamily.Monospace,
             color = textColor,
-            softWrap = false
+            softWrap = true
         )
     }
 }
@@ -258,8 +257,8 @@ internal fun DiffLineRow(
  * Renders two mock response bodies in a vertically split view for cases where the
  * responses are too dissimilar for an inline diff.
  *
- * Each half takes equal vertical space and has its own independent [verticalScroll] and
- * [horizontalScroll]; identity (which response is which) comes from the caller's chip
+ * Each half takes equal vertical space and has its own independent [verticalScroll];
+ * identity (which response is which) comes from the caller's chip
  * header, not from a per-pane label. A [HorizontalDivider] separates the two halves. This
  * layout is safe for portrait phone screens — no side-by-side columns.
  *
@@ -274,16 +273,18 @@ internal fun SplitDiffContent(
     colors: MockResponseDiffColors = MockResponseDiffDefaults.colors()
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            ResponseContentPane(response = first, colors = colors)
-        }
-
+        ResponseContentPane(
+            response = first,
+            colors = colors,
+            modifier = Modifier.weight(weight = 1f)
+        )
         if (second != null) {
             HorizontalDivider()
-
-            Column(modifier = Modifier.fillMaxWidth()) {
-                ResponseContentPane(response = second, colors = colors)
-            }
+            ResponseContentPane(
+                response = second,
+                colors = colors,
+                modifier = Modifier.weight(weight = 1f)
+            )
         }
     }
 }
@@ -298,7 +299,9 @@ private fun ResponseContentPane(
     modifier: Modifier = Modifier,
     colors: MockResponseDiffColors = MockResponseDiffDefaults.colors()
 ) {
-    val lines = remember(key1 = response.content) { response.content.lines() }
+    val lines = remember(key1 = response.content, key2 = response.contentType) {
+        response.displayContent().lines()
+    }
 
     Column(modifier = modifier.fillMaxWidth()) {
         Column(

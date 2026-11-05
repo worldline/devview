@@ -5,6 +5,7 @@ import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.model.DiffLine
 import com.worldline.devview.networkmock.utils.INLINE_DIFF_THRESHOLD
 import com.worldline.devview.networkmock.utils.computeLineDiff
+import com.worldline.devview.networkmock.utils.displayContent
 import com.worldline.devview.networkmock.utils.shouldUseInlineDiff
 import kotlinx.collections.immutable.PersistentList
 
@@ -30,15 +31,15 @@ internal sealed interface PreviewSheetState {
     ) : HasResponse {
         val useInlineDiff: Boolean
             get() = shouldUseInlineDiff(
-                contentLeft = first.content,
-                contentRight = second.content,
+                contentLeft = first.displayContent(),
+                contentRight = second.displayContent(),
                 threshold = threshold
             )
 
         val lineDiff: PersistentList<DiffLine>
             get() = computeLineDiff(
-                contentLeft = first.content,
-                contentRight = second.content
+                contentLeft = first.displayContent(),
+                contentRight = second.displayContent()
             )
     }
 
