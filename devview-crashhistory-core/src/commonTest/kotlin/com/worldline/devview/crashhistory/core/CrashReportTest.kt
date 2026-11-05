@@ -33,7 +33,7 @@ internal fun testRecord(
 
 class CrashReportTest {
     @Test
-    fun `report text contains type, message, metadata and stack trace`() {
+    fun `report text contains type and message and metadata and stack trace`() {
         val text = testRecord().toReportText()
 
         text shouldContain "java.lang.IllegalStateException"

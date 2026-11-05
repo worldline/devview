@@ -8,6 +8,7 @@ import kotlin.native.setUnhandledExceptionHook
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.invoke
 import kotlinx.cinterop.staticCFunction
@@ -26,7 +27,7 @@ private val calls = mutableListOf<String>()
 @OptIn(ExperimentalNativeApi::class, ExperimentalForeignApi::class)
 class IosHandlerChainingTest {
     private var originalHook: ReportUnhandledExceptionHook? = null
-    private var originalNsHandler: NSUncaughtExceptionHandler? = null
+    private var originalNsHandler: CPointer<NSUncaughtExceptionHandler>? = null
 
     @BeforeTest
     fun setUp() {
