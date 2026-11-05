@@ -16,8 +16,24 @@ internal class FakeCrashPlatform(override val storageDirectory: Path) : CrashPla
         crashSink = onCrash
     }
 
-    override fun importHistory(store: CrashStore, existing: List<CrashRecord>, onImported: (CrashRecord) -> Unit) {
-        historyToImport.forEach(onImported)
+    var beforeImport: suspend () -> Unit = {}
+    var deliver: (CrashRecord) -> Unit = {}
+
+    override suspend fun importHistory(
+        store: CrashStore,
+        existing: List<CrashRecord>,
+        onImported: suspend (CrashRecord) -> Boolean,
+        enqueueImport: (suspend () -> Unit) -> Unit,
+        withStorage: suspend (suspend () -> Unit) -> Unit
+    ) {
+        deliver = { record -> enqueueImport { onImported(record) } }
+        withStorage {
+            beforeImport()
+            for (record in historyToImport) {
+                if (!onImported(record)) break
+                store.writeState(CrashStore.EXIT_INFO_CURSOR, record.timestampMillis.toString())
+            }
+        }
     }
 
     /** Simulates the platform handler receiving an uncaught exception. */

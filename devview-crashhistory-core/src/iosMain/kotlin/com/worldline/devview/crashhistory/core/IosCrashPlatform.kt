@@ -101,12 +101,19 @@ internal class IosCrashPlatform : CrashPlatform {
         )
     }
 
-    override fun importHistory(
+    override suspend fun importHistory(
         store: CrashStore,
         existing: List<CrashRecord>,
-        onImported: (CrashRecord) -> Unit
+        onImported: suspend (CrashRecord) -> Boolean,
+        enqueueImport: (suspend () -> Unit) -> Unit,
+        withStorage: suspend (suspend () -> Unit) -> Unit
     ) {
-        subscribeToMetricKit(store, metadata, onImported)
+        subscribeToMetricKit(
+            store = store,
+            metadata = metadata,
+            onImported = onImported,
+            enqueueImport = enqueueImport
+        )
     }
 }
 

@@ -33,9 +33,10 @@ private var metricKitSubscriber: MetricKitSubscriber? = null
 internal fun subscribeToMetricKit(
     store: CrashStore,
     metadata: CrashMetadata,
-    onImported: (CrashRecord) -> Unit
+    onImported: suspend (CrashRecord) -> Boolean,
+    enqueueImport: (suspend () -> Unit) -> Unit
 ) {
-    val subscriber = MetricKitSubscriber(store, metadata, onImported)
+    val subscriber = MetricKitSubscriber(store, metadata, onImported, enqueueImport)
     metricKitSubscriber = subscriber
     val manager = MXMetricManager.sharedManager
     manager.addSubscriber(subscriber)
@@ -49,7 +50,8 @@ internal fun subscribeToMetricKit(
 private class MetricKitSubscriber(
     private val store: CrashStore,
     private val metadata: CrashMetadata,
-    private val onImported: (CrashRecord) -> Unit
+    private val onImported: suspend (CrashRecord) -> Boolean,
+    private val enqueueImport: (suspend () -> Unit) -> Unit
 ) : NSObject(),
     MXMetricManagerSubscriberProtocol {
     override fun didReceiveDiagnosticPayloads(payloads: List<*>) {
@@ -57,24 +59,23 @@ private class MetricKitSubscriber(
     }
 
     fun handle(payloads: List<*>) {
-        try {
+        enqueueImport {
             payloads.filterIsInstance<MXDiagnosticPayload>().forEach { payload ->
                 val timestamp = (payload.timeStampEnd.timeIntervalSince1970 * MILLIS_PER_SECOND)
                     .toLong()
-                val crashes = payload.crashDiagnostics.orEmpty()
-                crashes.filterIsInstance<MXCrashDiagnostic>().forEach { crash ->
+                payload.crashDiagnostics.orEmpty().filterIsInstance<MXCrashDiagnostic>().forEach {
+                        crash
+                    ->
                     importOnce(
                         json = jsonOf(crash.JSONRepresentation()),
                         timestampMillis = timestamp
                     )
                 }
             }
-        } catch (ignored: Exception) {
-            // Best effort: a malformed payload must not affect the app.
         }
     }
 
-    private fun importOnce(json: String, timestampMillis: Long) {
+    private suspend fun importOnce(json: String, timestampMillis: Long) {
         val seen = store
             .readState(
                 CrashStore.METRICKIT_SEEN
@@ -83,8 +84,9 @@ private class MetricKitSubscriber(
             .orEmpty()
         val key = json.hashCode().toString()
         if (key in seen) return
-        crashDiagnosticToRecord(json, timestampMillis, metadata)?.let(onImported)
-        // Marked as seen only after the record was handed over, so a failed attempt is retried.
+        val record = crashDiagnosticToRecord(json, timestampMillis, metadata) ?: return
+        if (!onImported(record)) return
+        // Seen state and persistence share the engine lock; failed writes are retried.
         store.writeState(
             CrashStore.METRICKIT_SEEN,
             (seen + key).takeLast(SEEN_LIMIT).joinToString("\n")

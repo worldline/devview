@@ -1,5 +1,6 @@
 package com.worldline.devview.crashhistory.core
 
+import kotlin.random.Random
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
@@ -27,17 +28,19 @@ private val storeJson = Json {
  * suspending is not an option.
  */
 internal class CrashStore(private val directory: Path) {
-    fun write(record: CrashRecord) {
-        writeAtomically(
-            target = child(name = recordFileName(record = record)),
-            text = storeJson.encodeToString(serializer = CrashRecord.serializer(), value = record)
-        )
-    }
+    fun write(record: CrashRecord): Boolean = writeAtomically(
+        target = child(name = recordFileName(record = record)),
+        text = storeJson.encodeToString(serializer = CrashRecord.serializer(), value = record)
+    )
 
     /** Returns every readable record, newest first. Unreadable files are deleted. */
     fun loadAll(): List<CrashRecord> = recordFiles()
         .mapNotNull { readRecord(file = it) }
-        .sortedByDescending { it.timestampMillis }
+        .sortedWith(
+            comparator = compareByDescending<CrashRecord> {
+                it.timestampMillis
+            }.thenByDescending { it.id }
+        )
 
     /** Deletes the oldest records so at most [max] remain. */
     fun prune(max: Int) {
@@ -54,9 +57,8 @@ internal class CrashStore(private val directory: Path) {
         return if (SystemFileSystem.exists(path = file)) readText(file = file) else null
     }
 
-    fun writeState(name: String, value: String) {
+    fun writeState(name: String, value: String): Boolean =
         writeAtomically(target = child(name = name), text = value)
-    }
 
     private fun child(name: String): Path = Path(base = "$directory/$name")
 
@@ -78,11 +80,22 @@ internal class CrashStore(private val directory: Path) {
         null
     }
 
-    private fun writeAtomically(target: Path, text: String) {
-        SystemFileSystem.createDirectories(path = directory)
-        val temp = child(name = target.name + TEMP_EXTENSION)
-        SystemFileSystem.sink(path = temp).buffered().use { it.writeString(string = text) }
-        SystemFileSystem.atomicMove(source = temp, destination = target)
+    private fun writeAtomically(target: Path, text: String): Boolean {
+        val temp = child(
+            name = "${target.name}.${Random.nextLong().toULong().toString(
+                radix = 16
+            )}$TEMP_EXTENSION"
+        )
+        return try {
+            SystemFileSystem.createDirectories(path = directory)
+            SystemFileSystem.sink(path = temp).buffered().use { it.writeString(string = text) }
+            SystemFileSystem.atomicMove(source = temp, destination = target)
+            true
+        } catch (ignored: Exception) {
+            false
+        } finally {
+            deleteQuietly(file = temp)
+        }
     }
 
     internal companion object {

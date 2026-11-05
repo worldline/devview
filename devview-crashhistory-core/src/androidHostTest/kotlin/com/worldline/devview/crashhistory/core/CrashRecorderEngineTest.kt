@@ -8,8 +8,13 @@ import java.io.File
 import java.nio.file.Files
 import kotlin.test.AfterTest
 import kotlin.test.Test
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.io.files.Path
 
 class CrashRecorderEngineTest {
@@ -131,6 +136,92 @@ class CrashRecorderEngineTest {
 
         engine.records.value.single().kind shouldBe CrashRecordKind.SYSTEM_REPORTED
         CrashStore(platform.storageDirectory).loadAll().single().id shouldBe "9-sys"
+    }
+
+    @Test
+    fun `clear during import does not bring records back`() = runTest {
+        val entered = CompletableDeferred<Unit>()
+        val resume = CompletableDeferred<Unit>()
+        platform.historyToImport = listOf(testRecord(id = "old"))
+        platform.beforeImport = { entered.complete(Unit); resume.await() }
+        val recorder = CrashRecorderEngine(this)
+        recorder.start(platform, maxRecords = 5, markEnabled = false)
+        entered.await()
+
+        recorder.clear()
+        resume.complete(Unit)
+        runCurrent()
+
+        recorder.records.value.shouldBeEmpty()
+        CrashStore(platform.storageDirectory).loadAll().shouldBeEmpty()
+    }
+
+    @Test
+    fun `queued load and reports are discarded by clear but later reports survive`() = runTest {
+        val store = CrashStore(platform.storageDirectory)
+        store.write(testRecord(id = "old"))
+        val recorder = CrashRecorderEngine(CoroutineScope(StandardTestDispatcher(testScheduler)))
+        recorder.start(platform, maxRecords = 5, markEnabled = false)
+        recorder.record("Error", "old", null, 1)
+        recorder.clear()
+        recorder.record("Error", "new", null, 2)
+        runCurrent()
+
+        recorder.records.value.single().message shouldBe "new"
+        store.loadAll().single().message shouldBe "new"
+    }
+
+    @Test
+    fun `delivery queued before clear is discarded but later deliveries work`() = runTest {
+        val recorder = CrashRecorderEngine(this)
+        recorder.start(platform, maxRecords = 5, markEnabled = false)
+        runCurrent()
+        platform.deliver(testRecord(id = "old"))
+        recorder.clear()
+        runCurrent()
+        recorder.records.value.shouldBeEmpty()
+
+        platform.deliver(testRecord(id = "new"))
+        runCurrent()
+        recorder.records.value.single().id shouldBe "new"
+        CrashStore(platform.storageDirectory).loadAll().single().id shouldBe "new"
+    }
+
+    @Test
+    fun `cancelled engine does not process later deliveries`() = runTest {
+        val scope = CoroutineScope(StandardTestDispatcher(testScheduler))
+        val recorder = CrashRecorderEngine(scope)
+        recorder.start(platform, maxRecords = 5, markEnabled = false)
+        runCurrent()
+        scope.cancel()
+        platform.deliver(testRecord(id = "cancelled"))
+        runCurrent()
+        recorder.records.value.shouldBeEmpty()
+        CrashStore(platform.storageDirectory).loadAll().shouldBeEmpty()
+    }
+
+    @Test
+    fun `equal timestamps retain the same record in memory and on disk`() {
+        platform.historyToImport = listOf(testRecord(id = "a"), testRecord(id = "b"))
+        engine.start(platform, maxRecords = 1, markEnabled = false)
+        engine.records.value.single().id shouldBe "b"
+        CrashStore(platform.storageDirectory).loadAll().single().id shouldBe "b"
+    }
+
+    @Test
+    fun `failed imports keep the cursor and retry on the next start`() {
+        val blocker = File(dir, "blocked").apply { writeText("x") }
+        val broken = FakeCrashPlatform(Path(blocker.absolutePath, "records"))
+        broken.historyToImport = listOf(testRecord(id = "system", timestampMillis = 10))
+        engine.start(broken, maxRecords = 5, markEnabled = false)
+        engine.records.value.shouldBeEmpty()
+        blocker.delete()
+
+        val next = CrashRecorderEngine(CoroutineScope(Dispatchers.Unconfined))
+        next.start(broken, maxRecords = 5, markEnabled = false)
+
+        next.records.value.single().id shouldBe "system"
+        CrashStore(broken.storageDirectory).readState(CrashStore.EXIT_INFO_CURSOR) shouldBe "10"
     }
 
     @Test

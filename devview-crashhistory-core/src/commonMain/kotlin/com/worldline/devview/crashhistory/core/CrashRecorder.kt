@@ -106,7 +106,7 @@ public object CrashRecorder {
         )
     }
 
-    /** Deletes the whole history. */
+    /** Clears the visible history immediately and schedules deletion from disk. */
     public fun clear() {
         engine.clear()
     }

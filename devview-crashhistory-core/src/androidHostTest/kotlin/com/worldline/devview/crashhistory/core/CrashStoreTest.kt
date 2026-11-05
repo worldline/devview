@@ -6,6 +6,9 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import java.io.File
 import java.nio.file.Files
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlinx.io.files.Path
@@ -62,6 +65,38 @@ class CrashStoreTest {
     fun `missing state and missing directory read as empty`() {
         store.readState("nope").shouldBeNull()
         store.loadAll().shouldBeEmpty()
+    }
+
+    @Test
+    fun `concurrent state writes succeed and leave no temporary files`() {
+        val executor = Executors.newFixedThreadPool(2)
+        val ready = CountDownLatch(2)
+        val go = CountDownLatch(1)
+        try {
+            val writes = (1..2).map { value ->
+                executor.submit<Boolean> {
+                    ready.countDown()
+                    go.await(5, TimeUnit.SECONDS)
+                    store.writeState("state", value.toString())
+                }
+            }
+            ready.await(5, TimeUnit.SECONDS) shouldBe true
+            go.countDown()
+            writes.forEach { it.get(5, TimeUnit.SECONDS) shouldBe true }
+            (store.readState("state")!!.toInt() in 1..2) shouldBe true
+            File(dir, "records").listFiles()!!.none { it.name.endsWith(".tmp") } shouldBe true
+        } finally {
+            go.countDown()
+            executor.shutdownNow()
+        }
+    }
+
+    @Test
+    fun `failed writes return false`() {
+        val blocker = File(dir, "blocked").apply { writeText("x") }
+        val broken = CrashStore(Path(blocker.absolutePath, "records"))
+        broken.write(testRecord()) shouldBe false
+        broken.writeState("state", "value") shouldBe false
     }
 
     @Test

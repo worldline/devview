@@ -37,20 +37,24 @@ internal class AndroidCrashPlatform(private val context: Context) : CrashPlatfor
         installChainedUncaughtHandler(onCrash = onCrash)
     }
 
-    override fun importHistory(
+    override suspend fun importHistory(
         store: CrashStore,
         existing: List<CrashRecord>,
-        onImported: (CrashRecord) -> Unit
+        onImported: suspend (CrashRecord) -> Boolean,
+        enqueueImport: (suspend () -> Unit) -> Unit,
+        withStorage: suspend (suspend () -> Unit) -> Unit
     ) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
-        importExitReasons(store = store, existing = existing, onImported = onImported)
+        withStorage {
+            importExitReasons(store = store, existing = existing, onImported = onImported)
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
-    private fun importExitReasons(
+    private suspend fun importExitReasons(
         store: CrashStore,
         existing: List<CrashRecord>,
-        onImported: (CrashRecord) -> Unit
+        onImported: suspend (CrashRecord) -> Boolean
     ) {
         val manager = context.getSystemService(ActivityManager::class.java) ?: return
         val cursor = store.readState(name = CrashStore.EXIT_INFO_CURSOR)?.toLongOrNull() ?: 0L
@@ -58,25 +62,28 @@ internal class AndroidCrashPlatform(private val context: Context) : CrashPlatfor
             .getHistoricalProcessExitReasons(context.packageName, 0, 0)
             .filter { it.timestamp > cursor }
             .sortedBy { it.timestamp }
-        exits.forEach { exit ->
-            val record = exitInfoToRecord(
-                reason = exit.reason,
-                description = exit.description,
-                timestampMillis = exit.timestamp,
-                processId = exit.pid,
-                trace = readTrace(exit = exit),
-                metadata = metadata
-            )
-            if (record != null && !isAlreadyRecorded(
-                    record = record,
-                    existing = existing
+        // Commit a timestamp only when every exit at that timestamp has been handled.
+        for ((timestamp, group) in exits.groupBy { it.timestamp }) {
+            for (exit in group) {
+                val record = exitInfoToRecord(
+                    reason = exit.reason,
+                    description = exit.description,
+                    timestampMillis = exit.timestamp,
+                    processId = exit.pid,
+                    trace = readTrace(exit = exit),
+                    metadata = metadata
+                )
+                if (record != null && !isAlreadyRecorded(record = record, existing = existing)) {
+                    if (!onImported(record)) return
+                }
+            }
+            if (!store.writeState(
+                    name = CrashStore.EXIT_INFO_CURSOR,
+                    value = timestamp.toString()
                 )
             ) {
-                onImported(record)
+                return
             }
-        }
-        exits.lastOrNull()?.let {
-            store.writeState(name = CrashStore.EXIT_INFO_CURSOR, value = it.timestamp.toString())
         }
     }
 

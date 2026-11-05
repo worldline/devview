@@ -3,24 +3,25 @@ package com.worldline.devview.crashhistory.core
 import kotlin.concurrent.atomics.AtomicBoolean
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.time.Clock
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalForInheritanceCoroutinesApi
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 private const val MAX_PENDING_REPORTS = 20
 
 /**
- * The recorder's logic, kept apart from the [CrashRecorder] singleton so tests can build isolated
- * instances with a fake [CrashPlatform] and their own [CoroutineScope].
- *
- * Lock-free by design: state lives in [MutableStateFlow]s updated with compare-and-set, because
- * the crash handler runs inside a dying process where blocking on a lock is not an option.
+ * Normal storage work is ordered by one mutex. Fatal capture stays synchronous and never waits
+ * for that mutex, because it runs in a dying process.
  */
-@OptIn(ExperimentalAtomicApi::class)
+@OptIn(ExperimentalAtomicApi::class, ExperimentalForInheritanceCoroutinesApi::class)
 internal class CrashRecorderEngine(private val scope: CoroutineScope) {
     private data class Session(
         val platform: CrashPlatform,
@@ -35,17 +36,34 @@ internal class CrashRecorderEngine(private val scope: CoroutineScope) {
         val stackTrace: String?
     )
 
+    private data class Queue(
+        val generation: Long = 0,
+        val reports: List<PendingReport> = emptyList(),
+        val records: List<CrashRecord> = emptyList()
+    )
+
     private val session = MutableStateFlow<Session?>(value = null)
-    private val pending = MutableStateFlow<List<PendingReport>>(value = emptyList())
-    private val mutableRecords = MutableStateFlow<List<CrashRecord>>(value = emptyList())
+    private val pending = MutableStateFlow(value = Queue())
     private val crashHandled = AtomicBoolean(value = false)
+    private val storageMutex = Mutex()
+    private var generation = 0L
 
-    val records: StateFlow<List<CrashRecord>> = mutableRecords.asStateFlow()
+    val records: StateFlow<List<CrashRecord>> = object : StateFlow<List<CrashRecord>> {
+        override val value: List<CrashRecord> get() = pending.value.records
+        override val replayCache: List<List<CrashRecord>> get() = listOf(element = value)
 
-    /**
-     * Installs the handlers and loads the history. Idempotent: only the first call installs;
-     * later calls only refresh the `enabled` marker when [markEnabled] is set.
-     */
+        override suspend fun collect(collector: FlowCollector<List<CrashRecord>>): Nothing {
+            var previous: List<CrashRecord>? = null
+            pending.collect { state ->
+                if (state.records != previous) {
+                    previous = state.records
+                    collector.emit(value = state.records)
+                }
+            }
+        }
+    }
+
+    /** Installs handlers once and schedules loading and marker writes off the caller's thread. */
     fun start(platform: CrashPlatform, maxRecords: Int, markEnabled: Boolean) {
         val fresh = Session(
             platform = platform,
@@ -55,19 +73,62 @@ internal class CrashRecorderEngine(private val scope: CoroutineScope) {
         val isFirstStart = session.compareAndSet(expect = null, update = fresh)
         val current = if (isFirstStart) fresh else session.value ?: return
         if (isFirstStart) platform.installUncaughtHandlers(onCrash = ::handleCrash)
+        val expected = pending.value.generation
         scope.launch {
             try {
-                if (markEnabled) {
-                    current.store.writeState(
-                        name = CrashStore.ENABLED,
-                        value = maxRecords.toString()
+                var loaded = emptyList<CrashRecord>()
+                withStorage(session = current, expected = expected) {
+                    if (markEnabled) {
+                        current.store.writeState(
+                            name = CrashStore.ENABLED,
+                            value = maxRecords.toString()
+                        )
+                    }
+                    if (isFirstStart) {
+                        loaded = current.store.loadAll()
+                        if (expected != pending.value.generation) return@withStorage
+                        publish(session = current, added = loaded, expected = expected)
+                        flushPending(session = current)
+                        current.store.prune(max = current.maxRecords)
+                    }
+                }
+                if (isFirstStart) {
+                    current.platform.importHistory(
+                        store = current.store,
+                        existing = loaded,
+                        onImported = { record ->
+                            if (generation != pending.value.generation) {
+                                false
+                            } else {
+                                persist(session = current, record = record, prune = true)
+                            }
+                        },
+                        enqueueImport = { block ->
+                            enqueueImport(
+                                session = current,
+                                block = block
+                            )
+                        },
+                        withStorage = { block ->
+                            withStorage(
+                                session = current,
+                                expected = expected,
+                                block = block
+                            )
+                        }
                     )
                 }
-                if (isFirstStart) loadAndImport(session = current)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
             } catch (ignored: Exception) {
                 // Best effort: without a readable history the recorder still captures new crashes.
             }
         }
+    }
+
+    private fun enqueueImport(session: Session, block: suspend () -> Unit) {
+        val received = pending.value.generation
+        scope.launch { withStorage(session = session, expected = received, block = block) }
     }
 
     fun record(
@@ -82,35 +143,59 @@ internal class CrashRecorderEngine(private val scope: CoroutineScope) {
             message = message,
             stackTrace = stackTrace
         )
-        pending.update { (it + report).takeLast(n = MAX_PENDING_REPORTS) }
-        // Written off the caller's thread: callers are often on the main thread.
-        session.value?.let { current -> scope.launch { flushPending(session = current) } }
-    }
-
-    fun clear() {
-        pending.value = emptyList()
-        mutableRecords.value = emptyList()
-        try {
-            session.value?.store?.clear()
-        } catch (ignored: Exception) {
-            // Best effort: leftovers are removed by the next clear or prune.
+        pending.update {
+            it.copy(
+                reports = (it.reports + report).takeLast(n = MAX_PENDING_REPORTS)
+            )
+        }
+        val expected = pending.value.generation
+        session.value?.let { current ->
+            scope.launch {
+                withStorage(
+                    session = current,
+                    expected = expected
+                ) { flushPending(session = current) }
+            }
         }
     }
 
-    private fun loadAndImport(session: Session) {
-        val loaded = session.store.loadAll()
-        mutableRecords.update { merge(current = it, added = loaded, max = session.maxRecords) }
-        flushPending(session = session)
-        session.platform.importHistory(
-            store = session.store,
-            existing = loaded,
-            onImported = { persist(session = session, record = it, prune = true) }
-        )
-        session.store.prune(max = session.maxRecords)
+    fun clear() {
+        pending.update { Queue(generation = it.generation + 1) }
+        session.value?.let { current ->
+            scope.launch { withStorage(session = current, expected = pending.value.generation) {} }
+        }
+    }
+
+    private suspend fun withStorage(session: Session, expected: Long, block: suspend () -> Unit) {
+        storageMutex.withLock {
+            val requested = pending.value.generation
+            if (generation != requested) {
+                generation = requested
+                try {
+                    session.store.clear()
+                } catch (ignored: Exception) {
+                    // Best effort: leftovers are removed by the next clear or prune.
+                }
+            }
+            if (expected == generation) {
+                try {
+                    block()
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (ignored: Exception) {
+                    // Best effort: storage failure must not affect the host app.
+                }
+            }
+        }
     }
 
     private fun flushPending(session: Session) {
-        pending.getAndUpdate { emptyList() }.forEach {
+        val queued = pending.getAndUpdate {
+            if (it.generation == generation) it.copy(reports = emptyList()) else it
+        }
+        if (queued.generation != generation) return
+        queued.reports.forEach {
+            if (generation != pending.value.generation) return
             val record = buildCrashRecord(
                 kind = CrashRecordKind.APP_REPORTED,
                 metadata = session.platform.metadata,
@@ -151,19 +236,30 @@ internal class CrashRecorderEngine(private val scope: CoroutineScope) {
         }
     }
 
-    private fun persist(session: Session, record: CrashRecord, prune: Boolean) {
-        try {
-            session.store.write(record = record)
-            if (prune) session.store.prune(max = session.maxRecords)
-            mutableRecords.update {
-                merge(
-                    current = it,
-                    added = listOf(element = record),
-                    max = session.maxRecords
-                )
+    private fun persist(session: Session, record: CrashRecord, prune: Boolean): Boolean {
+        val expected = if (prune) generation else pending.value.generation
+        if (!session.store.write(record = record)) return false
+        if (prune) {
+            if (generation != pending.value.generation) return false
+            try {
+                session.store.prune(max = session.maxRecords)
+            } catch (ignored: Exception) {
+                // A saved record is still acknowledged if retention maintenance fails.
             }
-        } catch (ignored: Exception) {
-            // A full disk must never turn a handled report into a crash of its own.
+        }
+        publish(session = session, added = listOf(element = record), expected = expected)
+        return true
+    }
+
+    private fun publish(session: Session, added: List<CrashRecord>, expected: Long) {
+        pending.update {
+            if (it.generation == expected) {
+                it.copy(
+                    records = merge(current = it.records, added = added, max = session.maxRecords)
+                )
+            } else {
+                it
+            }
         }
     }
 
@@ -171,8 +267,11 @@ internal class CrashRecorderEngine(private val scope: CoroutineScope) {
         current: List<CrashRecord>,
         added: List<CrashRecord>,
         max: Int
-    ): List<CrashRecord> =
-        (current + added).distinctBy { it.id }.sortedByDescending { it.timestampMillis }.take(
-            n = max
-        )
+    ): List<CrashRecord> = (current + added)
+        .distinctBy { it.id }
+        .sortedWith(
+            comparator = compareByDescending<CrashRecord> {
+                it.timestampMillis
+            }.thenByDescending { it.id }
+        ).take(n = max)
 }

@@ -38,12 +38,17 @@ internal interface CrashPlatform {
      * Hands records the OS kept about previous runs (Android exit reasons, iOS MetricKit) to
      * [onImported], skipping those already in [existing]. May be called from any thread and may
      * call [onImported] later (MetricKit delivers asynchronously). Implementations must advance
-     * their "already seen" state only after [onImported] returned, so a failed write is retried.
+     * their "already seen" state only after [onImported] returns true, so failed writes are retried.
+     * Initial history runs inside [withStorage]; later deliveries call [enqueueImport] before
+     * queuing any work, so the engine captures their generation and owns their coroutine. Both
+     * include reads and seen-state updates under the storage lock. [onImported] must not lock again.
      */
-    fun importHistory(
+    suspend fun importHistory(
         store: CrashStore,
         existing: List<CrashRecord>,
-        onImported: (CrashRecord) -> Unit
+        onImported: suspend (CrashRecord) -> Boolean,
+        enqueueImport: (suspend () -> Unit) -> Unit,
+        withStorage: suspend (suspend () -> Unit) -> Unit
     )
 }
 
