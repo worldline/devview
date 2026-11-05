@@ -87,7 +87,10 @@ private func deliver(_ snapshot: DevViewCrashDiagnostic, to callback: (DevViewCr
         startMillis: snapshot.periodStartMillis,
         endMillis: snapshot.periodEndMillis,
         callStackJSON: snapshot.callStackTreeJson ?? "",
-        reason: snapshot.terminationReason
+        reason: snapshot.terminationReason,
+        signal: snapshot.signal?.stringValue,
+        exceptionType: snapshot.exceptionType?.stringValue,
+        exceptionCode: snapshot.exceptionCode?.stringValue
     )
     callback(snapshot)
 }

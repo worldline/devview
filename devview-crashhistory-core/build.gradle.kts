@@ -43,6 +43,16 @@ kotlin {
     }
 }
 
+// spmForKmp 1.9.7 prepares a shared Sources directory; concurrent target builds race on clean output.
+val deviceBridgeBuild = tasks.matching {
+    it.name == "SwiftPackageConfigAppleCrashHistoryBridgeCompileSwiftPackageIosArm64"
+}
+tasks.matching {
+    it.name == "SwiftPackageConfigAppleCrashHistoryBridgeCompileSwiftPackageIosSimulatorArm64"
+}.configureEach {
+    mustRunAfter(deviceBridgeBuild)
+}
+
 tasks.withType<Test> {
     failOnNoDiscoveredTests.set(false)
 }

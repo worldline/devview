@@ -17,9 +17,15 @@ struct CrashOccurrenceIdCheck {
             crashOccurrenceId(startMillis: 1, endMillis: 23, callStackJSON: "{}", reason: "crash"),
             crashOccurrenceId(startMillis: 1, endMillis: 23, callStackJSON: first, reason: "other"),
             crashOccurrenceId(startMillis: 1, endMillis: 23, callStackJSON: first, reason: nil),
-            crashOccurrenceId(startMillis: 1, endMillis: 23, callStackJSON: first, reason: "")
+            crashOccurrenceId(startMillis: 1, endMillis: 23, callStackJSON: first, reason: ""),
+            crashOccurrenceId(startMillis: 1, endMillis: 23, callStackJSON: first, reason: "crash", signal: "6"),
+            crashOccurrenceId(startMillis: 1, endMillis: 23, callStackJSON: first, reason: "crash", signal: "11"),
+            crashOccurrenceId(startMillis: 1, endMillis: 23, callStackJSON: first, reason: "crash", exceptionType: "1"),
+            crashOccurrenceId(startMillis: 1, endMillis: 23, callStackJSON: first, reason: "crash", exceptionType: "2"),
+            crashOccurrenceId(startMillis: 1, endMillis: 23, callStackJSON: first, reason: "crash", exceptionCode: "0"),
+            crashOccurrenceId(startMillis: 1, endMillis: 23, callStackJSON: first, reason: "crash", exceptionCode: "18446744073709551615")
         ]
         precondition(Set(changes + [id]).count == changes.count + 1)
-        print("PASS: replay/key order stable; changed fields, boundaries and nil/empty distinct; lowercase SHA256 \(id)")
+        print("PASS: replay/key order stable; changed fields (including signal/Mach exception), boundaries and nil/empty distinct; lowercase SHA256 \(id)")
     }
 }
