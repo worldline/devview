@@ -1,5 +1,6 @@
 package com.worldline.devview.networkmock
 
+import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.HttpMethod
 import com.worldline.devview.networkmock.core.model.Operation
 import com.worldline.devview.networkmock.core.model.OperationDescriptor
@@ -67,11 +68,54 @@ class NetworkMockScreenSortTest {
             listOf("untagged", "admin", "users")
     }
 
+    @Test
+    fun `MOCKED_FIRST puts Mock Failure and Sequence before Network keeping order within both groups`() {
+        val mock = OperationMockState.Mock(
+            statusCode = 200,
+            mediaType = "application/json",
+            exampleName = "default"
+        )
+        val operations = listOf(
+            operation(operationId = "network-z", path = "/z"),
+            operation(operationId = "mock-z", path = "/z", currentState = mock),
+            operation(operationId = "network-a", path = "/a"),
+            operation(
+                operationId = "failure",
+                path = "/f",
+                currentState = OperationMockState.Failure(kind = FailureKind.TIMEOUT)
+            ),
+            operation(
+                operationId = "sequence",
+                path = "/s",
+                currentState = OperationMockState.Sequence(responses = listOf(mock, mock))
+            ),
+            operation(operationId = "mock-a", path = "/a", currentState = mock)
+        )
+
+        val sorted = operations.sortedByOption(sort = OperationSort.MOCKED_FIRST)
+
+        sorted.map { it.descriptor.operationId } shouldContainExactly
+            listOf("mock-z", "failure", "sequence", "mock-a", "network-z", "network-a")
+    }
+
+    @Test
+    fun `MOCKED_FIRST preserves order when all operations use Network`() {
+        val operations = listOf(
+            operation(operationId = "b", path = "/b"),
+            operation(operationId = "a", path = "/a")
+        )
+
+        val sorted = operations.sortedByOption(sort = OperationSort.MOCKED_FIRST)
+
+        sorted.map { it.descriptor.operationId } shouldContainExactly listOf("b", "a")
+    }
+
     private fun operation(
         operationId: String,
         path: String,
         method: HttpMethod = HttpMethod.Get,
-        tags: List<String> = emptyList()
+        tags: List<String> = emptyList(),
+        currentState: OperationMockState = OperationMockState.Network
     ): OperationUiModel = OperationUiModel(
         descriptor = OperationDescriptor(
             key = OperationKey(specId = "spec", operationId = operationId),
@@ -83,7 +127,7 @@ class NetworkMockScreenSortTest {
                 tags = tags
             )
         ),
-        currentState = OperationMockState.Network
+        currentState = currentState
     )
 }
 

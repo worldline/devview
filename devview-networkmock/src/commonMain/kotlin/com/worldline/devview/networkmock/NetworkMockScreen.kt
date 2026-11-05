@@ -661,7 +661,10 @@ internal enum class OperationSort(val label: String) {
     METHOD(label = "Method"),
 
     /** Sorts by an operation's first declared tag; untagged operations sort first. */
-    TAG(label = "Tag")
+    TAG(label = "Tag"),
+
+    /** Puts Mock, Failure, and Sequence states before Network, keeping spec order within each group. */
+    MOCKED_FIRST(label = "Mocked first")
 }
 
 /** Applies [sort] to [this] — see [OperationSort] for what each key does. */
@@ -669,6 +672,7 @@ internal fun List<OperationUiModel>.sortedByOption(sort: OperationSort): List<Op
     when (sort) {
         OperationSort.SPEC_ORDER -> this
         OperationSort.PATH -> sortedBy { it.descriptor.config.path }
+        OperationSort.MOCKED_FIRST -> sortedBy { it.currentState is OperationMockState.Network }
         OperationSort.METHOD -> sortedBy { operation ->
             HttpMethod.DefaultMethods
                 .indexOf(element = operation.descriptor.config.method)
