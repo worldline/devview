@@ -63,9 +63,7 @@ private class MetricKitSubscriber(
             payloads.filterIsInstance<MXDiagnosticPayload>().forEach { payload ->
                 val timestamp = (payload.timeStampEnd.timeIntervalSince1970 * MILLIS_PER_SECOND)
                     .toLong()
-                payload.crashDiagnostics.orEmpty().filterIsInstance<MXCrashDiagnostic>().forEach {
-                        crash
-                    ->
+                payload.crashDiagnostics.orEmpty().filterIsInstance<MXCrashDiagnostic>().forEach { crash ->
                     importOnce(
                         json = jsonOf(crash.JSONRepresentation()),
                         timestampMillis = timestamp

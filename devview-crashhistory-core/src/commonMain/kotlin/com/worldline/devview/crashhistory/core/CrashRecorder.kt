@@ -56,11 +56,15 @@ public object CrashRecorder {
      *
      * Called by `CrashHistory.initModule()`, so most integrators never call it directly.
      *
-     * @param maxRecords Number of records to keep.
+     * The latest call updates retention without reinstalling handlers. Zero is unsupported.
+     *
+     * @param maxRecords Positive number of records to keep.
+     * @throws IllegalArgumentException if [maxRecords] is not positive.
      */
     @Suppress("ComposableNaming")
     @Composable
     public fun install(maxRecords: Int = DEFAULT_MAX_RECORDS) {
+        require(value = maxRecords > 0) { "maxRecords must be positive" }
         val platform = rememberCrashPlatform()
         // Idempotent and cheap after the first call; handlers must be live before the first frame.
         engine.start(platform = platform, maxRecords = maxRecords, markEnabled = true)

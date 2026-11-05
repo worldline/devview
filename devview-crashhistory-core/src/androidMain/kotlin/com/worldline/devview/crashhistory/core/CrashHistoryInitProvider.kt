@@ -60,6 +60,7 @@ internal fun startIfEnabled(
         .readState(name = CrashStore.ENABLED)
         ?.trim()
         ?.toIntOrNull()
+        ?.takeIf { it > 0 }
         ?: return
     start(platform, maxRecords)
 }

@@ -9,6 +9,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
 
 class CrashHistoryModuleTest {
 
@@ -35,6 +36,13 @@ class CrashHistoryModuleTest {
     @Test
     fun `constructor keeps maxRecords`() {
         CrashHistory(maxRecords = 7).maxRecords shouldBe 7
+    }
+
+    @Test
+    fun `constructor rejects nonpositive retention`() {
+        listOf(0, -1).forEach { max ->
+            assertFailsWith<IllegalArgumentException> { CrashHistory(maxRecords = max) }
+        }
     }
 
     @Test

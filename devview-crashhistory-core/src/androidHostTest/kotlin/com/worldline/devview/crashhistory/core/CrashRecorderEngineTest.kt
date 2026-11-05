@@ -8,6 +8,7 @@ import java.io.File
 import java.nio.file.Files
 import kotlin.test.AfterTest
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +36,30 @@ class CrashRecorderEngineTest {
         engine.start(platform, maxRecords = 5, markEnabled = false)
 
         platform.installCount shouldBe 1
+    }
+
+    @Test
+    fun `latest retention prunes memory and disk without reinstalling handlers`() {
+        engine.start(platform, maxRecords = 20, markEnabled = true)
+        (1..20).forEach { engine.record("Error", "$it", null, it.toLong()) }
+
+        engine.start(platform, maxRecords = 5, markEnabled = true)
+
+        platform.installCount shouldBe 1
+        engine.records.value shouldHaveSize 5
+        val store = CrashStore(platform.storageDirectory)
+        store.loadAll() shouldBe engine.records.value
+        store.readState(CrashStore.ENABLED) shouldBe "5"
+    }
+
+    @Test
+    fun `nonpositive retention is rejected before installing handlers`() {
+        listOf(0, -1).forEach { max ->
+            assertFailsWith<IllegalArgumentException> {
+                engine.start(platform, maxRecords = max, markEnabled = false)
+            }
+        }
+        platform.installCount shouldBe 0
     }
 
     @Test

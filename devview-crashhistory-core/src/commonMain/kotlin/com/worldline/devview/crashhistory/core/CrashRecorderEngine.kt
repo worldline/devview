@@ -26,7 +26,7 @@ internal class CrashRecorderEngine(private val scope: CoroutineScope) {
     private data class Session(
         val platform: CrashPlatform,
         val store: CrashStore,
-        val maxRecords: Int
+        val maxRecords: MutableStateFlow<Int>
     )
 
     private data class PendingReport(
@@ -65,13 +65,15 @@ internal class CrashRecorderEngine(private val scope: CoroutineScope) {
 
     /** Installs handlers once and schedules loading and marker writes off the caller's thread. */
     fun start(platform: CrashPlatform, maxRecords: Int, markEnabled: Boolean) {
+        require(value = maxRecords > 0) { "maxRecords must be positive" }
         val fresh = Session(
             platform = platform,
             store = CrashStore(directory = platform.storageDirectory),
-            maxRecords = maxRecords
+            maxRecords = MutableStateFlow(value = maxRecords)
         )
         val isFirstStart = session.compareAndSet(expect = null, update = fresh)
         val current = if (isFirstStart) fresh else session.value ?: return
+        current.maxRecords.value = maxRecords
         if (isFirstStart) platform.installUncaughtHandlers(onCrash = ::handleCrash)
         val expected = pending.value.generation
         scope.launch {
@@ -81,7 +83,7 @@ internal class CrashRecorderEngine(private val scope: CoroutineScope) {
                     if (markEnabled) {
                         current.store.writeState(
                             name = CrashStore.ENABLED,
-                            value = maxRecords.toString()
+                            value = current.maxRecords.value.toString()
                         )
                     }
                     if (isFirstStart) {
@@ -89,34 +91,12 @@ internal class CrashRecorderEngine(private val scope: CoroutineScope) {
                         if (expected != pending.value.generation) return@withStorage
                         publish(session = current, added = loaded, expected = expected)
                         flushPending(session = current)
-                        current.store.prune(max = current.maxRecords)
                     }
+                    current.store.prune(max = current.maxRecords.value)
+                    publish(session = current, added = emptyList(), expected = expected)
                 }
                 if (isFirstStart) {
-                    current.platform.importHistory(
-                        store = current.store,
-                        existing = loaded,
-                        onImported = { record ->
-                            if (generation != pending.value.generation) {
-                                false
-                            } else {
-                                persist(session = current, record = record, prune = true)
-                            }
-                        },
-                        enqueueImport = { block ->
-                            enqueueImport(
-                                session = current,
-                                block = block
-                            )
-                        },
-                        withStorage = { block ->
-                            withStorage(
-                                session = current,
-                                expected = expected,
-                                block = block
-                            )
-                        }
-                    )
+                    importHistory(session = current, existing = loaded, expected = expected)
                 }
             } catch (cancelled: CancellationException) {
                 throw cancelled
@@ -124,6 +104,37 @@ internal class CrashRecorderEngine(private val scope: CoroutineScope) {
                 // Best effort: without a readable history the recorder still captures new crashes.
             }
         }
+    }
+
+    private suspend fun importHistory(
+        session: Session,
+        existing: List<CrashRecord>,
+        expected: Long
+    ) {
+        session.platform.importHistory(
+            store = session.store,
+            existing = existing,
+            onImported = { record ->
+                if (generation != pending.value.generation) {
+                    false
+                } else {
+                    persist(session = session, record = record, prune = true)
+                }
+            },
+            enqueueImport = { block ->
+                enqueueImport(
+                    session = session,
+                    block = block
+                )
+            },
+            withStorage = { block ->
+                withStorage(
+                    session = session,
+                    expected = expected,
+                    block = block
+                )
+            }
+        )
     }
 
     private fun enqueueImport(session: Session, block: suspend () -> Unit) {
@@ -242,7 +253,7 @@ internal class CrashRecorderEngine(private val scope: CoroutineScope) {
         if (prune) {
             if (generation != pending.value.generation) return false
             try {
-                session.store.prune(max = session.maxRecords)
+                session.store.prune(max = session.maxRecords.value)
             } catch (ignored: Exception) {
                 // A saved record is still acknowledged if retention maintenance fails.
             }
@@ -255,7 +266,11 @@ internal class CrashRecorderEngine(private val scope: CoroutineScope) {
         pending.update {
             if (it.generation == expected) {
                 it.copy(
-                    records = merge(current = it.records, added = added, max = session.maxRecords)
+                    records = merge(
+                        current = it.records,
+                        added = added,
+                        max = session.maxRecords.value
+                    )
                 )
             } else {
                 it

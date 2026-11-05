@@ -62,13 +62,19 @@ public sealed interface CrashHistoryDestination : NavKey {
  * Registering the module starts recording. Records are stored raw (not redacted) in app-private,
  * non-backed-up storage; sharing them is the user's decision.
  *
- * @property maxRecords Maximum number of records kept; the oldest are deleted first.
+ * @property maxRecords Positive maximum number of records kept; the oldest are deleted first.
+ * Zero is unsupported. The latest initialized module configuration wins.
+ * @throws IllegalArgumentException if [maxRecords] is not positive.
  *
  * @see Module
  * @see Section.LOGGING
  * @see CrashRecorder
  */
 public class CrashHistory(public val maxRecords: Int = CrashRecorder.DEFAULT_MAX_RECORDS) : Module {
+    init {
+        require(value = maxRecords > 0) { "maxRecords must be positive" }
+    }
+
     override val section: Section
         get() = Section.LOGGING
 

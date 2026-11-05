@@ -35,6 +35,15 @@ class InitProviderTest {
     }
 
     @Test
+    fun `nonpositive markers mean no start`() {
+        listOf("0", "-1").forEach { value ->
+            CrashStore(platform.storageDirectory).writeState(CrashStore.ENABLED, value)
+            startIfEnabled(platform) { _, max -> started += max }
+        }
+        started.shouldBeEmpty()
+    }
+
+    @Test
     fun `a corrupt marker means no start`() {
         CrashStore(platform.storageDirectory).writeState(CrashStore.ENABLED, "garbage")
 

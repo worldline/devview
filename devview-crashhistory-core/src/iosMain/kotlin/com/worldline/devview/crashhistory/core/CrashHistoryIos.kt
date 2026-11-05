@@ -26,9 +26,13 @@ public object CrashHistoryIos {
      *
      * An overload rather than a default argument, because Swift cannot see Kotlin defaults.
      *
-     * @param maxRecords Number of records to keep.
+     * The latest call updates retention. Zero is unsupported.
+     *
+     * @param maxRecords Positive number of records to keep.
+     * @throws IllegalArgumentException if [maxRecords] is not positive.
      */
     public fun start(maxRecords: Int) {
+        require(value = maxRecords > 0) { "maxRecords must be positive" }
         CrashRecorder.start(IosCrashPlatform(), maxRecords)
     }
 }
