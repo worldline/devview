@@ -517,3 +517,110 @@ BUILD FAILED in 8s
 ```
 
 Steps 2–4 had no build/install/launch failures. Benign simctl terminate messages (no previous app running) were ignored before installation/launch. Successful older-runtime smoke launch does not prove MetricKit emitted a diagnostic.
+
+## Handoff C
+
+- Date: 2026-11-05; branch `feat/crash-history`. `git pull --ff-only` fast-forwarded `660d8ed` to expected `79297e5`.
+- Read `CLAUDE.md`, the spmforkmp skill and existing `mac-verification.md` before verification.
+- Xcode: **27.0**, build **27A266a**; all checks used `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
+- Actual simulator runtime: **iOS 26.5 (26.5 - 23F77)**, iPhone 17 Pro, UDID `853013C1-FAC3-4910-A7CC-56471F29EFD2`.
+- **iOS 27 runtime path: UNVERIFIED / SKIPPED** — no iOS 27 runtime installed. No live MetricKit diagnostic delivery claimed.
+
+### Results
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Updated digest self-check | **PASS** | Replay/key-order stability and changed signal/Mach exception inputs checked; lowercase 64-character SHA256. Output below. |
+| Clean + requested parallel build, round 1 | **PASS** | BUILD SUCCESSFUL in 40s; both Swift compilation tasks executed, device before simulator. |
+| Clean + requested parallel build, round 2 | **PASS** | BUILD SUCCESSFUL in 6s; both Swift tasks appear device before simulator, but FROM-CACHE. Not counted as a second actual Swift compilation. |
+| Additional clean parallel build without build cache | **PASS** | BUILD SUCCESSFUL in 24s; both Swift tasks actually executed, device before simulator, proving a second uncached clean build. |
+| Shared-Sources race regression | **PASS** | No FileAlreadyExistsException in any of the three parallel build logs. Rounds 1 and 3 actually compiled both targets in order. |
+| Simulator tests | **PASS** | Final reports: core 12 tests; UI 4 tests; zero failures/errors/skips. Both tasks executed in the uncached round. |
+| Sample shared simulator framework link | **PASS** | BUILD SUCCESSFUL in 17s. |
+| Resolve sample packages | **PASS** | xcodebuild -resolvePackageDependencies succeeded; no package/project changes required. |
+| Xcode sample simulator build | **PASS** | ** BUILD SUCCEEDED **. |
+| Install / launch / live PID after 10 seconds | **PASS on iOS 26.5** | Bundle com.worldline.devview.DevView; PID **35974 > 0**; kill -0 succeeded after 10 seconds; simctl launchctl list confirmed same PID. |
+| iOS 27 runtime smoke check | **SKIPPED / UNVERIFIED** | Only iOS 26.5 is installed. |
+
+### Commands
+
+```sh
+export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+xcodebuild -version
+xcrun simctl list runtimes
+xcrun simctl list devices available
+
+xcrun swiftc \
+  devview-crashhistory-core/src/swift/crashHistoryBridge/CrashOccurrenceId.swift \
+  scripts/check_crash_occurrence_id.swift \
+  -o /tmp/check-crash-id && /tmp/check-crash-id
+
+# Run twice, each starting with this clean command:
+./gradlew :devview-crashhistory-core:clean
+./gradlew :devview-crashhistory-core:compileKotlinIosArm64 \
+  :devview-crashhistory-core:iosSimulatorArm64Test \
+  :devview-crashhistory:iosSimulatorArm64Test \
+  --parallel -Pandroidx.baselineprofile.skipgeneration
+
+# Extra round: second requested run used cache, so force actual Swift compilation:
+./gradlew :devview-crashhistory-core:clean
+./gradlew :devview-crashhistory-core:compileKotlinIosArm64 \
+  :devview-crashhistory-core:iosSimulatorArm64Test \
+  :devview-crashhistory:iosSimulatorArm64Test \
+  --parallel --no-build-cache -Pandroidx.baselineprofile.skipgeneration
+
+./gradlew :sample:shared:linkDebugFrameworkIosSimulatorArm64
+xcodebuild -resolvePackageDependencies -project sample/iosApp/iosApp.xcodeproj -scheme iosApp
+xcodebuild -project sample/iosApp/iosApp.xcodeproj -scheme iosApp \
+  -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
+
+SIM=853013C1-FAC3-4910-A7CC-56471F29EFD2
+APP=/Users/w112008/Library/Developer/Xcode/DerivedData/iosApp-gfbutbzsvanhntdqfhjhaynmehjo/Build/Products/Debug-iphonesimulator/DevView.app
+xcrun simctl bootstatus "$SIM" -b
+xcrun simctl install "$SIM" "$APP"
+xcrun simctl launch --terminate-running-process "$SIM" com.worldline.devview.DevView
+# Captured launch output, parsed its numeric PID, then:
+PID=35974
+test "$PID" -gt 0
+sleep 10
+kill -0 "$PID"
+xcrun simctl spawn "$SIM" launchctl list | grep "$PID"
+```
+
+### Digest and task-order evidence
+
+```text
+PASS: replay/key order stable; changed fields (including signal/Mach exception), boundaries and nil/empty distinct; lowercase SHA256 745b552cfb445f596adda1294e10bd1536a24190033132348be1329c8ad4c703
+
+Round 1, parallel1.log:
+139:> Task :devview-crashhistory-core:SwiftPackageConfigAppleCrashHistoryBridgeCompileSwiftPackageIosArm64
+142:> Task :devview-crashhistory-core:SwiftPackageConfigAppleCrashHistoryBridgeCompileSwiftPackageIosSimulatorArm64
+
+Round 2, parallel2.log:
+131:> Task :devview-crashhistory-core:SwiftPackageConfigAppleCrashHistoryBridgeCompileSwiftPackageIosArm64 FROM-CACHE
+134:> Task :devview-crashhistory-core:SwiftPackageConfigAppleCrashHistoryBridgeCompileSwiftPackageIosSimulatorArm64 FROM-CACHE
+
+Extra uncached round, parallel3-no-cache.log:
+131:> Task :devview-crashhistory-core:SwiftPackageConfigAppleCrashHistoryBridgeCompileSwiftPackageIosArm64
+134:> Task :devview-crashhistory-core:SwiftPackageConfigAppleCrashHistoryBridgeCompileSwiftPackageIosSimulatorArm64
+```
+
+The existing mustRunAfter rule serializes only the two shared-source Swift compilation tasks; Gradle remained parallel for all three verification runs. Existing signal/exception fields are passed into the occurrence-ID digest. No code changes were required.
+
+### Runtime evidence
+
+```text
+Monitoring boot status for iPhone 17 Pro (853013C1-FAC3-4910-A7CC-56471F29EFD2).
+Device already booted, nothing to do.
+
+com.worldline.devview.DevView: 35974
+PASS: PID 35974 alive after 10 seconds
+35974	0	UIKitApplication:com.worldline.devview.DevView[00cb][rb-legacy]
+```
+
+### Failure tails and commits
+
+- **Failure tails: none** — all Handoff C commands passed; there are no failed-command last-30-line tails to include.
+- Existing non-fatal BetaInteropApi/framework export/bundle-ID and Gradle deprecation warnings were left unchanged, outside scope.
+- Fix commits: **none**. Results-only gitmoji commit records this section; unrelated source, CI, package and graph files unchanged.
+- Full logs retained locally under `/tmp/devview-handoff-c/` (clean1/2/3, parallel1/2/3-no-cache, digest, framework, packages, xcode-build, launch, Xcode/runtime evidence).
