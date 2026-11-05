@@ -181,8 +181,9 @@ and public API are unchanged by this revamp.
 `contentType` contains "json" (case-insensitive), falling back to the raw body for malformed
 JSON or non-JSON content. `ResponseContentPane` uses it for display, and
 `PreviewSheetState.Compare` uses it before similarity checking and diffing. This is display-only:
-served response bodies do not change. `DiffLineRow` wraps long lines (`softWrap = true`) rather
-than applying per-row horizontal scroll; preview content scrolls vertically.
+served response bodies do not change. `DiffLineRow` keeps logical lines unwrapped (`softWrap = false`); each pane has one
+horizontal scroll around a finite-width `LazyColumn`, so all rows move together and only
+visible rows are composed.
 
 When the sheet is in `Compare` state, formatted responses are diffed:
 

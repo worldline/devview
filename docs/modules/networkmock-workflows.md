@@ -61,7 +61,7 @@ Open DevView → Network Mock. Your new operation appears in the list under its 
 1. Open DevView → Network Mock → tap your operation. The sheet opens on **Responses**.
 2. Tap a response's eye icon to open **Preview** directly, without activating the response.
 3. Use the header's **"Compare with…" dropdown** to select a second response from the same operation.
-4. Read the inline or side-by-side diff; valid JSON is pretty-printed before display and comparison. Malformed JSON and non-JSON bodies stay unchanged, and long lines wrap with vertical scrolling.
+4. Read the inline or side-by-side diff; valid JSON is pretty-printed before display and comparison. Malformed JSON and non-JSON bodies stay unchanged, and logical lines stay unwrapped with one horizontal scroll for the whole pane and lazy vertical scrolling.
 Large comparisons fall back to stacked previews rather than allocating an unbounded diff table.
 
 5. Tap Back to return to Responses. Tap a response row there only when you want to activate it.

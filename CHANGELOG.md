@@ -23,7 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - NetworkMock: valid JSON is pretty-printed before preview display and diffing, and long lines
-  wrap with vertical scrolling instead of per-line horizontal scrolling. Malformed JSON and
+  stay unwrapped with whole-pane horizontal scrolling and lazy vertical rows instead of
+  per-line scrolling or eagerly composing entire previews. Malformed JSON and
   non-JSON bodies stay unchanged; formatting does not alter served response bodies.
 
 ## [0.2.0-alpha07] - 2026-11-02
