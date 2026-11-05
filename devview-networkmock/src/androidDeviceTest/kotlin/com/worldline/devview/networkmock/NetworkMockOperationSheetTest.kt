@@ -1,13 +1,10 @@
 package com.worldline.devview.networkmock
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -103,40 +100,62 @@ class NetworkMockOperationSheetTest {
     }
 
     @Test
-    fun previewButton_isHidden_whenNothingMarked() = runComposeUiTest {
-        setPickerPage(currentState = OperationMockState.Network)
-
-        onNodeWithTag(testTag = "open_preview_button").assertIsNotDisplayed()
-    }
-
-    @Test
-    fun togglingOneResponse_showsPreviewButton_labeledWithThatResponse() = runComposeUiTest {
-        setPickerPage(currentState = OperationMockState.Network)
-
-        onNodeWithTag(testTag = "mock_item_200_application/json_default_preview_toggle").performClick()
-
-        onNodeWithText(text = "Preview 200 - default").assertIsDisplayed()
-    }
-
-    @Test
-    fun togglingTwoResponses_showsCompareButton() = runComposeUiTest {
-        setPickerPage(currentState = OperationMockState.Network)
+    fun eye_opensResponseDirectly_withoutSelectingOrMarking() = runComposeUiTest {
+        var preview: MockResponse? = null
+        var selected: MockResponse? = null
+        setPickerPage(
+            currentState = OperationMockState.Network,
+            onPreview = { preview = it },
+            onSelectResponse = { selected = it }
+        )
 
         onNodeWithTag(testTag = "mock_item_200_application/json_default_preview_toggle").performClick()
-        onNodeWithTag(testTag = "mock_item_404_application/json_default_preview_toggle").performClick()
 
-        onNodeWithText(text = "Compare 2 responses").assertIsDisplayed()
+        preview shouldBe response200
+        selected shouldBe null
+        onNodeWithTag(testTag = "open_preview_button").assertDoesNotExist()
     }
 
     @Test
-    fun tappingPreviewButton_invokesOnOpenPreview() = runComposeUiTest {
+    fun sequenceAction_opensBuilder() = runComposeUiTest {
         var opened = false
-        setPickerPage(currentState = OperationMockState.Network, onOpenPreview = { opened = true })
+        setPickerPage(currentState = OperationMockState.Network, onOpenSequence = { opened = true })
 
-        onNodeWithTag(testTag = "mock_item_200_application/json_default_preview_toggle").performClick()
-        onNodeWithTag(testTag = "open_preview_button").performClick()
+        onNodeWithTag(testTag = "sequence_build_button").performClick()
 
         opened shouldBe true
+    }
+
+    @Test
+    fun activeSequence_showsPositionAndEditAndReset() = runComposeUiTest {
+        var reset = false
+        setPickerPage(
+            currentState = OperationMockState.Sequence(
+                responses = listOf(
+                    OperationMockState.Mock(statusCode = 200, mediaType = "application/json", exampleName = "default"),
+                    OperationMockState.Mock(statusCode = 404, mediaType = "application/json", exampleName = "default")
+                ),
+                currentIndex = 1
+            ),
+            onResetSequencePosition = { reset = true }
+        )
+
+        onNodeWithText(text = "Step 2 of 2").assertIsDisplayed()
+        onNodeWithText(text = "Edit").assertIsDisplayed()
+        onNodeWithTag(testTag = "sequence_reset_button").performClick()
+        reset shouldBe true
+    }
+
+    @Test
+    fun failureRow_preservesFailureCallback() = runComposeUiTest {
+        var selected: FailureKind? = null
+        setPickerPage(currentState = OperationMockState.Network, onSelectFailure = { selected = it })
+        val kind = FailureKind.entries.first()
+        onNodeWithTag(testTag = "operation_picker_list").performScrollToNode(
+            matcher = hasTestTag(testTag = "failure_item_${kind.name}")
+        )
+        onNodeWithTag(testTag = "failure_item_${kind.name}").performClick()
+        selected shouldBe kind
     }
 
     @Test
@@ -174,13 +193,11 @@ class NetworkMockOperationSheetTest {
                         ),
                         responses = listOf(jsonVariant, xmlVariant).toPersistentList()
                     ),
-                    markedForPreview = PreviewSheetState.Hidden,
                     onSelectResponse = {},
                     onSelectFailure = {},
-                    onCommitSequence = {},
                     onResetSequencePosition = {},
-                    onTogglePreview = {},
-                    onOpenPreview = {},
+                    onPreview = {},
+                    onOpenSequence = {},
                     onClose = {}
                 )
             }
@@ -194,16 +211,13 @@ class NetworkMockOperationSheetTest {
         currentState: OperationMockState,
         onSelectResponse: (MockResponse?) -> Unit = {},
         onSelectFailure: (FailureKind) -> Unit = {},
-        onCommitSequence: (List<MockResponse>) -> Unit = {},
         onResetSequencePosition: () -> Unit = {},
-        onOpenPreview: () -> Unit = {},
+        onPreview: (MockResponse) -> Unit = {},
+        onOpenSequence: () -> Unit = {},
         onClose: () -> Unit = {}
     ) {
         setContent {
             MaterialTheme {
-                var marked: PreviewSheetState by remember {
-                    mutableStateOf(value = PreviewSheetState.Hidden)
-                }
                 OperationPickerPage(
                     content = OperationSheetState.Content(
                         operationUiModel = OperationUiModel(
@@ -220,13 +234,11 @@ class NetworkMockOperationSheetTest {
                         ),
                         responses = listOf(response200, response404).toPersistentList()
                     ),
-                    markedForPreview = marked,
                     onSelectResponse = onSelectResponse,
                     onSelectFailure = onSelectFailure,
-                    onCommitSequence = onCommitSequence,
                     onResetSequencePosition = onResetSequencePosition,
-                    onTogglePreview = { response -> marked = marked.transition(response = response) },
-                    onOpenPreview = onOpenPreview,
+                    onPreview = onPreview,
+                    onOpenSequence = onOpenSequence,
                     onClose = onClose
                 )
             }

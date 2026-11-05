@@ -6,8 +6,10 @@ import com.worldline.devview.networkmock.model.DiffLine
 import com.worldline.devview.networkmock.utils.INLINE_DIFF_THRESHOLD
 import com.worldline.devview.networkmock.utils.computeLineDiff
 import com.worldline.devview.networkmock.utils.displayContent
-import com.worldline.devview.networkmock.utils.shouldUseInlineDiff
 import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
+
+private const val MAX_DIFF_CELLS = 1_000_000L
 
 @Immutable
 internal sealed interface PreviewSheetState {
@@ -29,46 +31,32 @@ internal sealed interface PreviewSheetState {
         val second: MockResponse,
         val threshold: Float = INLINE_DIFF_THRESHOLD
     ) : HasResponse {
-        val useInlineDiff: Boolean
-            get() = shouldUseInlineDiff(
-                contentLeft = first.displayContent(),
-                contentRight = second.displayContent(),
-                threshold = threshold
-            )
-
-        val lineDiff: PersistentList<DiffLine>
-            get() = computeLineDiff(
-                contentLeft = first.displayContent(),
-                contentRight = second.displayContent()
-            )
-    }
-
-    fun transition(response: MockResponse): PreviewSheetState = when (this) {
-        is Hidden -> Single(response = response)
-        is Single -> if (response == this.response) {
-            Hidden
-        } else {
-            Compare(first = this.response, second = response)
-        }
-
-        is Compare -> when (response) {
-            first -> {
-                Single(response = second)
-            }
-
-            second -> {
-                Single(response = first)
-            }
-
-            else -> {
-                this
+        // shortcut: large comparisons use split view; upgrade to a bounded diff algorithm for huge bodies.
+        val lineDiff: PersistentList<DiffLine> by lazy {
+            val left = first.displayContent()
+            val right = second.displayContent()
+            val cells = (left.lines().size.toLong() + 1) * (right.lines().size.toLong() + 1)
+            if (cells <= MAX_DIFF_CELLS) {
+                computeLineDiff(contentLeft = left, contentRight = right)
+            } else {
+                persistentListOf()
             }
         }
-    }
 
-    fun isInPreviewMode(response: MockResponse): Boolean = when (this) {
-        is Hidden -> false
-        is Single -> response == this.response
-        is Compare -> response == first || response == second
+        val useInlineDiff: Boolean by lazy {
+            val shared = lineDiff.count { it is DiffLine.Unchanged }
+            val leftLines = lineDiff.count {
+                it is DiffLine.Unchanged ||
+                    it is DiffLine.Different && it.textLeft != null
+            }
+            val rightLines = lineDiff.count {
+                it is DiffLine.Unchanged ||
+                    it is DiffLine.Different && it.textRight != null
+            }
+            lineDiff.isNotEmpty() && shared.toFloat() / maxOf(
+                a = leftLines,
+                b = rightLines
+            ) >= threshold
+        }
     }
 }
