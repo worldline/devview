@@ -10,6 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import java.io.Reader
 import kotlinx.io.files.Path
 
 private const val STORAGE_DIRECTORY = "devview-crashhistory"
@@ -22,7 +23,7 @@ internal class AndroidCrashPlatform(private val context: Context) : CrashPlatfor
 
     override val processId: Int = Process.myPid()
 
-    override val metadata: CrashMetadata by lazy {
+    override val metadata: CrashMetadata = run {
         val info = packageInfo()
         CrashMetadata(
             platform = "android",
@@ -92,10 +93,8 @@ internal class AndroidCrashPlatform(private val context: Context) : CrashPlatfor
     @RequiresApi(Build.VERSION_CODES.R)
     private fun readTrace(exit: ApplicationExitInfo): String? = try {
         when (exit.reason) {
-            ApplicationExitInfo.REASON_ANR -> exit.traceInputStream?.bufferedReader()?.use {
-                it
-                    .readText()
-            }
+            ApplicationExitInfo.REASON_ANR ->
+                exit.traceInputStream?.bufferedReader()?.let { readCrashTrace(reader = it) }
             ApplicationExitInfo.REASON_CRASH_NATIVE ->
                 exit.traceInputStream?.use {
                     "Native tombstone available from the OS (protobuf, not shown)."
@@ -120,6 +119,18 @@ internal class AndroidCrashPlatform(private val context: Context) : CrashPlatfor
         } else {
             info.versionCode.toString()
         }
+}
+
+/** Keeps one extra character so the shared factory can mark a truncated trace. Closes [reader]. */
+internal fun readCrashTrace(reader: Reader): String = reader.use {
+    val chars = CharArray(size = CrashRecorder.MAX_STACK_TRACE_LENGTH + 1)
+    var count = 0
+    while (count < chars.size) {
+        val read = it.read(chars, count, chars.size - count)
+        if (read < 0) break
+        count += read
+    }
+    String(chars = chars, offset = 0, length = count)
 }
 
 @Composable

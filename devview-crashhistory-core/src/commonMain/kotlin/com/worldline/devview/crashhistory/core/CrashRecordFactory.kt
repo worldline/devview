@@ -21,13 +21,13 @@ internal fun buildCrashRecord(
     threadName: String? = null,
     processId: Int? = null,
     source: String? = null,
-    isCrash: Boolean = true
+    isCrash: Boolean = true,
+    id: String? = null
 ): CrashRecord {
     val shortMessage = message?.take(n = CrashRecorder.MAX_MESSAGE_LENGTH)
     val shortTrace = stackTrace?.take(n = CrashRecorder.MAX_STACK_TRACE_LENGTH)
-    val randomSuffix = Random.nextLong().toULong().toString(radix = HEX_RADIX)
     return CrashRecord(
-        id = "${processId ?: 0}-$randomSuffix",
+        id = id ?: "${processId ?: 0}-${Random.nextLong().toULong().toString(radix = HEX_RADIX)}",
         timestampMillis = timestampMillis,
         kind = kind,
         exceptionType = exceptionType,

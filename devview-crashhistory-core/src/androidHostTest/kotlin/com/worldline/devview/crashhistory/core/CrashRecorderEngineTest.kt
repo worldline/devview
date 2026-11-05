@@ -226,6 +226,16 @@ class CrashRecorderEngineTest {
     }
 
     @Test
+    fun `duplicate imported IDs do not overwrite the original record`() {
+        val original = testRecord(id = "same").copy(message = "original")
+        platform.historyToImport = listOf(original, original.copy(message = "replacement"))
+        engine.start(platform, maxRecords = 5, markEnabled = false)
+
+        engine.records.value shouldBe listOf(original)
+        CrashStore(platform.storageDirectory).loadAll() shouldBe listOf(original)
+    }
+
+    @Test
     fun `equal timestamps retain the same record in memory and on disk`() {
         platform.historyToImport = listOf(testRecord(id = "a"), testRecord(id = "b"))
         engine.start(platform, maxRecords = 1, markEnabled = false)

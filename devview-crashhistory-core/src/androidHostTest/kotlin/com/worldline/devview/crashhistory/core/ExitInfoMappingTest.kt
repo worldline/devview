@@ -50,6 +50,15 @@ class ExitInfoMappingTest {
     }
 
     @Test
+    fun `exit IDs are stable and include the reason`() {
+        val first = map(ApplicationExitInfo.REASON_ANR).shouldNotBeNull()
+        first.id shouldBe "exit-7-1000-${ApplicationExitInfo.REASON_ANR}"
+        map(ApplicationExitInfo.REASON_ANR).shouldNotBeNull().id shouldBe first.id
+        isAlreadyRecorded(first, listOf(first)) shouldBe true
+        (map(ApplicationExitInfo.REASON_CRASH).shouldNotBeNull().id == first.id) shouldBe false
+    }
+
+    @Test
     fun `the trace becomes the stack trace`() {
         map(ApplicationExitInfo.REASON_ANR, trace = "main thread blocked").shouldNotBeNull().stackTrace shouldBe
             "main thread blocked"

@@ -39,7 +39,8 @@ internal fun exitInfoToRecord(
         stackTrace = trace,
         processId = processId,
         source = "exit-info:${exitReasonName(reason = reason)}",
-        isCrash = isCrash
+        isCrash = isCrash,
+        id = "exit-$processId-$timestampMillis-$reason"
     )
 }
 
@@ -59,9 +60,10 @@ private const val DUPLICATE_WINDOW_MILLIS = 60_000L
  * process id, close in time. Android reports every Java crash again as `REASON_CRASH`.
  */
 internal fun isAlreadyRecorded(record: CrashRecord, existing: List<CrashRecord>): Boolean =
-    record.exceptionType == "Crash" &&
-        existing.any {
+    existing.any {
+        it.id == record.id ||
+            record.exceptionType == "Crash" &&
             it.kind == CrashRecordKind.UNCAUGHT_EXCEPTION &&
-                it.processId == record.processId &&
-                abs(n = it.timestampMillis - record.timestampMillis) < DUPLICATE_WINDOW_MILLIS
-        }
+            it.processId == record.processId &&
+            abs(n = it.timestampMillis - record.timestampMillis) < DUPLICATE_WINDOW_MILLIS
+    }

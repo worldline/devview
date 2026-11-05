@@ -248,10 +248,14 @@ internal class CrashRecorderEngine(private val scope: CoroutineScope) {
     }
 
     private fun persist(session: Session, record: CrashRecord, prune: Boolean): Boolean {
+        if (pending.value.records.any { it.id == record.id }) return true
         val expected = if (prune) generation else pending.value.generation
-        if (!session.store.write(record = record)) return false
+        if (!session.store.write(record = record) ||
+            prune && generation != pending.value.generation
+        ) {
+            return false
+        }
         if (prune) {
-            if (generation != pending.value.generation) return false
             try {
                 session.store.prune(max = session.maxRecords.value)
             } catch (ignored: Exception) {
