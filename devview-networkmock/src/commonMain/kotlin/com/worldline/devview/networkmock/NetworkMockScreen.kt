@@ -559,6 +559,7 @@ private fun ContentState(
                         item(key = "empty_filter_state") {
                             Text(
                                 modifier = Modifier
+                                    .animateItem()
                                     .fillMaxWidth()
                                     .padding(all = 16.dp)
                                     .testTag(tag = "networkmock_empty_filter_message"),
@@ -572,18 +573,20 @@ private fun ContentState(
                         items = filteredOperations,
                         key = { _, operation -> operation.descriptor.key.compositeKey }
                     ) { index, operation ->
-                        EndpointCard(
-                            modifier = Modifier.testTag(
-                                tag = "endpoint_card_${operation.descriptor.specId}" +
-                                    "_${operation.descriptor.operationId}"
-                            ),
-                            endpoint = operation,
-                            openEndpointDetails = {
-                                onSelectOperation(operation.descriptor.key)
+                        Column(modifier = Modifier.animateItem()) {
+                            EndpointCard(
+                                modifier = Modifier.testTag(
+                                    tag = "endpoint_card_${operation.descriptor.specId}" +
+                                        "_${operation.descriptor.operationId}"
+                                ),
+                                endpoint = operation,
+                                openEndpointDetails = {
+                                    onSelectOperation(operation.descriptor.key)
+                                }
+                            )
+                            if (index != filteredOperations.lastIndex) {
+                                HorizontalDivider()
                             }
-                        )
-                        if (index != filteredOperations.lastIndex) {
-                            HorizontalDivider()
                         }
                     }
 
