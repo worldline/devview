@@ -10,11 +10,11 @@ internal interface CrashSharer {
     /** Puts [text] on the clipboard. */
     fun copy(text: String)
 
-    /** Opens the share sheet with [text]. */
-    fun shareText(text: String)
+    /** Opens the share sheet with [text], returning false when it cannot be opened. */
+    fun shareText(text: String): Boolean
 
-    /** Writes [content] to a temporary file called [fileName] and opens the share sheet with it. */
-    fun shareFile(fileName: String, content: String)
+    /** Exports [content] using [fileName] as its name, returning false on failure. */
+    fun shareFile(fileName: String, content: String): Boolean
 }
 
 @Composable

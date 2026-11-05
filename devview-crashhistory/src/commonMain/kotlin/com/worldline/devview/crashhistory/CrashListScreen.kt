@@ -12,6 +12,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
@@ -51,6 +55,7 @@ internal fun CrashListScreen(
         return
     }
     val sharer = rememberCrashSharer()
+    var shareFailed by remember { mutableStateOf(value = false) }
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = bottomPadding),
@@ -63,10 +68,22 @@ internal fun CrashListScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .testTag(tag = "crash_export_all_button"),
                 onClick = {
-                    sharer.shareFile(fileName = EXPORT_ALL_FILE_NAME, content = records.toJson())
+                    shareFailed = !sharer.shareFile(
+                        fileName = EXPORT_ALL_FILE_NAME,
+                        content = records.toJson()
+                    )
                 }
             ) {
                 Text(text = "Export all (${records.size})")
+            }
+        }
+        if (shareFailed) {
+            item(key = "share_error") {
+                Text(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    text = "Could not export crash history",
+                    color = MaterialTheme.colorScheme.error
+                )
             }
         }
         items(items = records, key = { it.id }) { record ->

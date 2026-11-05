@@ -14,6 +14,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
@@ -54,6 +58,7 @@ internal fun CrashDetailScreen(
         return
     }
     val sharer = rememberCrashSharer()
+    var shareFailed by remember { mutableStateOf(value = false) }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -68,17 +73,20 @@ internal fun CrashDetailScreen(
             ) { Text(text = "Copy") }
             OutlinedButton(
                 modifier = Modifier.testTag(tag = "crash_share_button"),
-                onClick = { sharer.shareText(text = record.toReportText()) }
+                onClick = { shareFailed = !sharer.shareText(text = record.toReportText()) }
             ) { Text(text = "Share") }
             OutlinedButton(
                 modifier = Modifier.testTag(tag = "crash_export_button"),
                 onClick = {
-                    sharer.shareFile(
+                    shareFailed = !sharer.shareFile(
                         fileName = "devview-crash-${record.id}.json",
                         content = persistentListOf(record).toJson()
                     )
                 }
             ) { Text(text = "Export") }
+        }
+        if (shareFailed) {
+            Text(text = "Could not share crash report", color = MaterialTheme.colorScheme.error)
         }
         CrashKindChip(record = record)
         Text(

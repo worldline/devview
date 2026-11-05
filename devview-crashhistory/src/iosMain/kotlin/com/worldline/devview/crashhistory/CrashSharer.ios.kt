@@ -25,11 +25,9 @@ private object IosCrashSharer : CrashSharer {
         UIPasteboard.generalPasteboard.string = text
     }
 
-    override fun shareText(text: String) {
-        present(item = text)
-    }
+    override fun shareText(text: String): Boolean = present(item = text)
 
-    override fun shareFile(fileName: String, content: String) {
+    override fun shareFile(fileName: String, content: String): Boolean {
         val directory = NSTemporaryDirectory() + EXPORT_DIRECTORY
         val files = NSFileManager.defaultManager
         files.removeItemAtPath(path = directory, error = null)
@@ -46,16 +44,16 @@ private object IosCrashSharer : CrashSharer {
             encoding = NSUTF8StringEncoding,
             error = null
         )
-        if (written) present(item = NSURL.fileURLWithPath(path = path))
+        return written && present(item = NSURL.fileURLWithPath(path = path))
     }
 
     // shortcut: `keyWindow` is deprecated (iOS 13) but is the only window lookup that works for
     // single-scene apps without scene plumbing; replace it if multi-window support is needed.
     @Suppress("DEPRECATION")
-    private fun present(item: Any) {
+    private fun present(item: Any): Boolean {
         var top: UIViewController? = UIApplication.sharedApplication.keyWindow?.rootViewController
         while (top?.presentedViewController != null) top = top.presentedViewController
-        val presenter = top ?: return
+        val presenter = top ?: return false
         val sheet = UIActivityViewController(
             activityItems = listOf(item),
             applicationActivities = null
@@ -71,6 +69,7 @@ private object IosCrashSharer : CrashSharer {
             animated = true,
             completion = null
         )
+        return true
     }
 }
 
