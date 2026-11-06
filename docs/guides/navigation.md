@@ -43,6 +43,27 @@ entry<MyDestination.Detail> { destination ->
 }
 ```
 
+## Destination toolbars
+
+DevView renders a separate top bar inside each Navigation3 entry. Its title, actions and confirmation state move with that screen, including predictive back. Home has **Close DevView**; module screens have **Back**. A title defaults to `moduleName` unless destination metadata overrides it.
+
+Every toolbar action and menu requires a user-facing `label`. DevView uses it for the accessible name and tooltip. Action callbacks receive the displayed `NavKey`, not the destination currently at the top of an animating backstack:
+
+```kotlin
+MyDestination.Detail::class.withTitle("Details") {
+    action(label = "Refresh item", icon = Icons.Rounded.Refresh) { key ->
+        refresh((key as MyDestination.Detail).id)
+    }
+    menu(label = "Sort", icon = Icons.AutoMirrored.Rounded.Sort) {
+        item(label = "Name") { sortByName() }
+    }
+}
+```
+
+A confirmation popup invokes the same key-aware callback only after confirmation. Menu items keep their zero-argument callbacks.
+
+Registration must be side-effect-free: DevView may call `registerContent` again to pass the destination Scaffold's measured bottom inset. Initialise ViewModels and UI state inside the registered entry's composable content. Top and horizontal insets are applied by DevView; pass `bottomPadding` to your scrollable content.
+
 ## Best Practices
 - Use sealed interfaces for navigation keys
 - Keep navigation flows simple and predictable

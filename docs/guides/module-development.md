@@ -94,6 +94,12 @@ val modules = rememberModules {
 - Use descriptive names and icons for your module
 - Group related screens under a single module
 
+## Destination toolbar and insets
+
+DevView supplies each destination with its own title, a labelled Back button, and optional actions. Home has Close DevView. Actions and menus require a `label`; action callbacks receive the displayed `NavKey`. See [Navigation guide](navigation.md#destination-toolbars) for the DSL and confirmation behavior.
+
+Keep `registerContent` side-effect-free. Create ViewModels inside entry content, and forward its `bottomPadding` to scrollable screens. DevView already applies top and horizontal insets.
+
 ## Troubleshooting
 - **Module not appearing?** Ensure it is registered and implements the required interface.
 - **Navigation issues?** Check destination and serialiser definitions.

@@ -86,6 +86,7 @@ public class Console(
     override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> = persistentMapOf(
         ConsoleDestination.Main.withTitle(title = "Console") {
             action(
+                label = "Clear logs",
                 icon = Icons.Rounded.Delete,
                 popup = ModuleDestinationActionPopup(
                     title = "Clear Logs",

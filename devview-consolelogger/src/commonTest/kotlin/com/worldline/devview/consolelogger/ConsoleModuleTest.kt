@@ -52,7 +52,7 @@ class ConsoleModuleTest {
             ConsoleLog(level = LogLevel.INFO, tag = "tag", message = "message", timestamp = 1_700_000_000_000)
         )
 
-        clearAction.action()
+        clearAction.action(ConsoleDestination.Main)
 
         ConsoleLogger.hasLogs shouldBe false
     }

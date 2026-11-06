@@ -79,7 +79,7 @@ public fun KClass<out NavKey>.asDestination(): Pair<KClass<out NavKey>, Destinat
  * To also add actions, use the overload that accepts a [DestinationMetadataBuilder] block:
  * ```kotlin
  * MyDestination.Main.withTitle("My Screen") {
- *     action(icon = Icons.Rounded.Refresh) { viewModel.refresh() }
+ *     action(label = "Refresh", icon = Icons.Rounded.Refresh) { viewModel.refresh() }
  * }
  * ```
  *
@@ -116,7 +116,7 @@ public fun NavKey.withTitle(title: String): Pair<KClass<out NavKey>, Destination
  * To also add actions, use the overload that accepts a [DestinationMetadataBuilder] block:
  * ```kotlin
  * MyDestination.Detail::class.withTitle("Detail") {
- *     action(icon = Icons.Rounded.Refresh) { viewModel.refresh() }
+ *     action(label = "Refresh", icon = Icons.Rounded.Refresh) { viewModel.refresh() }
  * }
  * ```
  *
@@ -201,10 +201,10 @@ public fun NavKey.withTitle(
  * ```kotlin
  * override val destinations = persistentMapOf(
  *     MyDestination.Main.withTitle("Overview") {          // data object — instance overload
- *         action(icon = Icons.Rounded.Refresh) { viewModel.refresh() }
+ *         action(label = "Refresh", icon = Icons.Rounded.Refresh) { viewModel.refresh() }
  *     },
  *     MyDestination.Detail::class.withTitle("Detail") {  // data class — KClass overload
- *         action(icon = Icons.Rounded.Share) { viewModel.share() }
+ *         action(label = "Share", icon = Icons.Rounded.Share) { viewModel.share() }
  *     }
  * )
  * ```
@@ -248,7 +248,7 @@ public fun KClass<out NavKey>.withTitle(
  * ```kotlin
  * override val destinations = persistentMapOf(
  *     MyDestination.Main.withActions {
- *         action(icon = Icons.Rounded.Delete) { viewModel.clear() }
+ *         action(label = "Clear logs", icon = Icons.Rounded.Delete) { viewModel.clear() }
  *     }
  * )
  * ```
@@ -285,10 +285,10 @@ public fun NavKey.withActions(
  * ```kotlin
  * override val destinations = persistentMapOf(
  *     MyDestination.Main.withActions {                    // data object — instance overload
- *         action(icon = Icons.Rounded.Delete) { viewModel.clear() }
+ *         action(label = "Clear logs", icon = Icons.Rounded.Delete) { viewModel.clear() }
  *     },
  *     MyDestination.Detail::class.withActions {          // data class — KClass overload
- *         action(icon = Icons.Rounded.Share) { viewModel.share() }
+ *         action(label = "Share", icon = Icons.Rounded.Share) { viewModel.share() }
  *     }
  * )
  * ```

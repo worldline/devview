@@ -32,16 +32,15 @@ DevView (composable)
 ├── rememberNavBackStack — seeded with Home; all module destination serializers
 │   registered polymorphically via each Module.registerSerializers
 ├── AnimatedVisibility — controlled by devViewIsOpen param
-├── Scaffold + MediumTopAppBar
-│   ├── Title: resolved in order: HasTitle (framework screens) →
-│   │         DestinationMetadata.title → Module.moduleName
-│   └── Actions: DestinationMetadata.actions rendered as IconButtons;
-│               precedence per action is menuItems (DropdownMenu) → popup (AlertDialog) → action
 └── NavDisplay (Navigation3)
-    ├── entry<Home> → HomeScreen (groups modules by Section, sticky headers)
+    ├── SaveableStateHolder + ViewModelStore entry decorators
+    ├── DestinationScaffold decorator (entry-scoped top bar, popup and menu state)
+    │   ├── Title: HasTitle (framework) → DestinationMetadata.title → Module.moduleName
+    │   ├── Navigation: Close DevView on Home, Back elsewhere
+    │   └── Actions: labelled IconButtons and tooltips; callback receives the displayed NavKey
+    ├── Home → HomeScreen (groups modules by Section, sticky headers)
     │       └── ModuleItem (card per module, shape adapts by ModulePosition)
-    └── per-module entries registered via Module.registerContent(...)
-```
+    └── Per-module entries registered with measured bottom padding at render time```
 
 **`HomeScreen`** groups the module list by `Section` using `derivedStateOf`, renders sticky section headers (section name, underscores replaced with spaces), and assigns each `ModuleItem` a `ModulePosition` (SINGLE / FIRST / MIDDLE / LAST) that controls card corner rounding and whether a top divider is shown.
 
@@ -65,10 +64,10 @@ Optional overrides: `moduleName`, `icon`, `containerColor`, `contentColor`, `sub
 Use the instance extension (`MyDest.Main.withTitle(...)`) for `data object` destinations. Use the `KClass` extension (`MyDest.Detail::class.withTitle(...)`) for `data class` destinations since no instance exists at module-construction time.
 
 **Top app bar actions and ViewModels:**
-`ModuleDestinationAction.action` is a plain lambda captured at construction time. To trigger a ViewModel from an action, expose a `MutableSharedFlow` on the module and observe it where the ViewModel is in scope (e.g. with `LaunchedEffect` in the host composable).
+`ModuleDestinationAction.action` is a `(NavKey) -> Unit` lambda captured at construction time. It receives the displayed entry key, including during transitions; `label` supplies its accessible name and tooltip. To trigger a ViewModel from an action, expose a `MutableSharedFlow` on the module and observe it where the ViewModel is in scope (e.g. with `LaunchedEffect` in the host composable).
 
 **Top app bar dropdown menu actions:**
-Use `DestinationMetadataBuilder.menu(icon) { item(label) { ... } }` instead of `action(icon) { ... }` when a single icon needs to offer more than one discrete choice (e.g. "Sort by: Path / Method"). Built via `ModuleDestinationActionMenuBuilder`, stored on `ModuleDestinationAction.menuItems`. Precedence when an icon is tapped: `menuItems` (opens a `DropdownMenu`) → `popup` (opens a confirmation `AlertDialog`) → `action` (runs immediately). A `menu(...)` action's own `action` lambda defaults to a no-op and is never invoked directly — only the individual `item(...)` callbacks fire.
+Use `DestinationMetadataBuilder.menu(label, icon) { item(label) { ... } }` instead of `action(label, icon) { key -> ... }` when a single icon needs to offer more than one discrete choice (e.g. "Sort by: Path / Method"). Built via `ModuleDestinationActionMenuBuilder`, stored on `ModuleDestinationAction.menuItems`. Precedence when an icon is tapped: `menuItems` (opens a `DropdownMenu`) → `popup` (opens a confirmation `AlertDialog`) → `action` (runs immediately). A `menu(...)` action's own `action` lambda defaults to a no-op and is never invoked directly — only the individual `item(...)` callbacks fire.
 
 **`rememberModules` initialization order:**
 For any module implementing `RequiresDataStore` (from `devview-utils`), `initDataStore()` is called before `initModule()`. Each module is initialized at most once per composition (tracked via an internal `mutableSetOf`).
@@ -77,7 +76,7 @@ For any module implementing `RequiresDataStore` (from `devview-utils`), `initDat
 The Poko plugin is configured (in `build.gradle.kts`) to recognize `com/worldline/devview/core/Poko` as its trigger annotation. Apply `@Poko` to regular classes (not `data class`) in this module when you need multiplatform-compatible `equals`/`hashCode`/`toString`/`copy`.
 
 **`bottomPadding` parameter in `registerContent`:**
-Carries the `Scaffold`'s bottom inset (navigation bar height). Pass it down to any lazy list or scrollable content in the module screen so the last item is not hidden behind the system navigation bar.
+Carries the destination `Scaffold`'s measured bottom inset (navigation bar height). Registration may repeat to provide this value, so it must be side-effect-free; create ViewModels in entry content. Pass it down to any lazy list or scrollable content in the module screen so the last item is not hidden behind the system navigation bar.
 
 **Kover aggregation:**
 This module's `build.gradle.kts` pulls `kover()` coverage from all sibling feature modules (`devview-analytics`, `devview-featureflip`, `devview-networkmock`, etc.), so `:devview:koverXmlReport` produces a combined coverage report for the whole library.
