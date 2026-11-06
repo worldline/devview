@@ -57,7 +57,7 @@ class AnalyticsModuleTest {
             )
         )
 
-        clearAction.action()
+        clearAction.action(AnalyticsDestination.Main)
 
         AnalyticsLogger.hasLogs shouldBe false
     }

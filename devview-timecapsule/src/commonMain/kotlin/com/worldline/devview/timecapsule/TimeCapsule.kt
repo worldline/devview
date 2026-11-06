@@ -71,6 +71,7 @@ public object TimeCapsule : Module {
     override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> = persistentMapOf(
         TimeCapsuleDestination.Main.withTitle(title = "Time Capsule") {
             action(
+                label = "Clear history",
                 icon = Icons.Rounded.Delete,
                 popup = ModuleDestinationActionPopup(
                     title = "Clear Timeline",

@@ -37,6 +37,10 @@ class NetworkMockModuleTest {
 
         refreshAction.menuItems.shouldBeNull()
         resetAction.menuItems.shouldBeNull()
+        refreshAction.label shouldBe "Reload specs"
+        sortAction.label shouldBe "Sort"
+        resetAction.label shouldBe "Reset all to network"
+        resetAction.popup.shouldNotBeNull().title shouldBe "Reset all operations to network?"
 
         val menuItems = sortAction.menuItems.shouldNotBeNull()
         menuItems shouldHaveSize OperationSort.entries.size
@@ -49,8 +53,8 @@ class NetworkMockModuleTest {
         val mainMetadata = module.destinations[NetworkMockDestination.Main::class].shouldNotBeNull()
         val (refreshAction, sortAction, resetAction) = mainMetadata.actions
 
-        refreshAction.action()
-        resetAction.action()
+        refreshAction.action(NetworkMockDestination.Main)
+        resetAction.action(NetworkMockDestination.Main)
         sortAction.menuItems.shouldNotBeNull().forEach { it.onClick() }
     }
 }

@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   preserving spec order within each group.
 
 ### Changed
+- DevView: each destination now owns its top bar so titles and actions transition with content.
+  Home has Close DevView and module screens have Back. Toolbar actions and menus require a
+  user-facing `label` for accessibility and tooltips; action callbacks now receive the displayed
+  `NavKey`. Module registration remains unchanged and receives its entry's measured bottom inset.
+- NetworkMock: Reset all to network now asks for confirmation before clearing mocks, failures
+  and sequences.
 - NetworkMock: operation sheets now keep a fixed 65% height with Responses, Sequence, and Failure
   tabs, grouped cards, matching sticky headers, inset dividers, and failure-rate footers.
   Eye icons open previews directly; a "Compare with…" dropdown replaces marking responses and

@@ -125,6 +125,7 @@ public class Analytics(
     override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> = persistentMapOf(
         AnalyticsDestination.Main.withTitle(title = "Analytics") {
             action(
+                label = "Clear logs",
                 icon = Icons.Rounded.Delete,
                 popup = ModuleDestinationActionPopup(
                     title = "Clear Logs",

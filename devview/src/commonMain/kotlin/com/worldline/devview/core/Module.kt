@@ -258,6 +258,7 @@ public interface Module {
      * override val destinations = persistentMapOf(
      *     MyDestination.Main.withTitle("Logs") {
      *         action(
+     *             label = "Clear logs",
      *             icon = Icons.Rounded.Delete,
      *             popup = ModuleDestinationActionPopup(
      *                 title = "Clear Logs",
@@ -285,6 +286,7 @@ public interface Module {
      *         title = "My Screen",
      *         actions = persistentListOf(
      *             ModuleDestinationAction(
+     *                 label = "Clear logs",
      *                 icon = Icons.Rounded.Delete,
      *                 action = { logger.clear() }
      *             )
@@ -408,6 +410,8 @@ public interface Module {
      * ```
      *
      * ## Best Practices
+     * - Keep registration side-effect-free; DevView may repeat it to supply measured entry insets
+     * - Initialise ViewModels and UI state inside entry content, not the registration body
      * - Register an entry for every destination in [destinations]
      * - Always provide a way to navigate back (use onNavigateBack)
      * - Use type-safe destination objects instead of string routes

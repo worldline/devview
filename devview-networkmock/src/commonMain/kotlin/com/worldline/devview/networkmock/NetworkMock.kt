@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.Restore
+import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
@@ -13,6 +13,7 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
+import com.worldline.devview.core.ModuleDestinationActionPopup
 import com.worldline.devview.core.Section
 import com.worldline.devview.core.withTitle
 import com.worldline.devview.networkmock.core.NETWORK_MOCK_DATASTORE_NAME
@@ -130,15 +131,24 @@ public class NetworkMock(
     override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> =
         persistentMapOf(
             NetworkMockDestination.Main.withTitle(title = "Network Mock") {
-                action(icon = Icons.Rounded.Refresh) {
+                action(label = "Reload specs", icon = Icons.Rounded.Refresh) {
                     onReloadConfig.tryEmit(value = Unit)
                 }
-                menu(icon = Icons.AutoMirrored.Rounded.Sort) {
+                menu(label = "Sort", icon = Icons.AutoMirrored.Rounded.Sort) {
                     OperationSort.entries.forEach { sort ->
                         item(label = sort.label) { onSortSelected.tryEmit(value = sort.label) }
                     }
                 }
-                action(icon = Icons.Rounded.Restore) {
+                action(
+                    label = "Reset all to network",
+                    icon = Icons.Rounded.RestartAlt,
+                    popup = ModuleDestinationActionPopup(
+                        title = "Reset all operations to network?",
+                        subtitle = "Every mock, failure and sequence is cleared.",
+                        confirmButton = "Reset",
+                        dismissButton = "Cancel"
+                    )
+                ) {
                     onResetToNetwork.tryEmit(value = Unit)
                 }
             }
