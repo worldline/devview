@@ -104,7 +104,7 @@ internal class FeaturePreviewParameterProvider : PreviewParameterProvider<Featur
  * fun RemoteFeatureSwitchPreview(
  *     @PreviewParameter(RemoteFeaturePreviewParameterProvider::class) feature: RemoteFeature
  * ) {
- *     FeatureTriStateSwitch(
+ *     FeatureItem(
  *         feature = feature,
  *         onStateChange = { }
  *     )
@@ -113,7 +113,7 @@ internal class FeaturePreviewParameterProvider : PreviewParameterProvider<Featur
  *
  * @see Feature.RemoteFeature
  * @see com.worldline.devview.featureflip.model.FeatureState
- * @see com.worldline.devview.featureflip.components.FeatureTriStateSwitch
+ * @see com.worldline.devview.featureflip.components.FeatureItem
  */
 internal class RemoteFeaturePreviewParameterProvider : PreviewParameterProvider<RemoteFeature> {
     override val values: Sequence<RemoteFeature>
