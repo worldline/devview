@@ -51,10 +51,10 @@ class DestinationMetadataExtensionsTest {
         var secondCalls = 0
 
         val (registeredKey, metadata) = key.withTitle(title = "Analytics") {
-            action(icon = firstIcon, popup = popup) {
+            action(label = "Test action", icon = firstIcon, popup = popup) {
                 firstCalls++
             }
-            action(icon = secondIcon) {
+            action(label = "Test action", icon = secondIcon) {
                 secondCalls++
             }
         }
@@ -68,8 +68,8 @@ class DestinationMetadataExtensionsTest {
         metadata.actions[1].icon shouldBeSameInstanceAs secondIcon
         metadata.actions[1].popup.shouldBeNull()
 
-        metadata.actions[0].action()
-        metadata.actions[1].action()
+        metadata.actions[0].action(TestNavKey)
+        metadata.actions[1].action(TestNavKey)
 
         firstCalls shouldBe 1
         secondCalls shouldBe 1
@@ -80,9 +80,11 @@ class DestinationMetadataExtensionsTest {
         val key = TestNavKey::class
         val icon = Icons.Default.Check
         var calls = 0
+        var receivedKey: NavKey? = null
 
         val (registeredKey, metadata) = key.withActions {
-            action(icon = icon) {
+            action(label = "Test action", icon = icon) { destination ->
+                receivedKey = destination
                 calls++
             }
         }
@@ -93,9 +95,11 @@ class DestinationMetadataExtensionsTest {
         metadata.actions.single().icon shouldBeSameInstanceAs icon
         metadata.actions.single().popup.shouldBeNull()
 
-        metadata.actions.single().action()
+        metadata.actions.single().action(TestNavKey)
 
         calls shouldBe 1
+        receivedKey shouldBeSameInstanceAs TestNavKey
+        metadata.actions.single().label shouldBe "Test action"
     }
 
     @Test
@@ -106,7 +110,7 @@ class DestinationMetadataExtensionsTest {
         var secondCalls = 0
 
         val (registeredKey, metadata) = key.withActions {
-            menu(icon = icon) {
+            menu(label = "Test menu", icon = icon) {
                 item(label = "First") { firstCalls++ }
                 item(label = "Second") { secondCalls++ }
             }
@@ -116,6 +120,7 @@ class DestinationMetadataExtensionsTest {
         metadata.actions shouldHaveSize 1
 
         val action = metadata.actions.single()
+        action.label shouldBe "Test menu"
         action.icon shouldBeSameInstanceAs icon
         action.popup.shouldBeNull()
 
@@ -136,14 +141,14 @@ class DestinationMetadataExtensionsTest {
         val key = TestNavKey::class
 
         val (_, metadata) = key.withActions {
-            menu(icon = Icons.Default.Check) {
+            menu(label = "Test menu", icon = Icons.Default.Check) {
                 item(label = "Only") {}
             }
         }
 
         // The base `action` lambda defaults to a no-op for menu actions — it must never throw
         // and is simply ignored by DevView's rendering when menuItems is non-null.
-        metadata.actions.single().action()
+        metadata.actions.single().action(TestNavKey)
     }
 }
 

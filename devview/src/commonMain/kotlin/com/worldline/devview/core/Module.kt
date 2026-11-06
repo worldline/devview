@@ -183,11 +183,11 @@ public interface Module {
     /**
      * Background color of the icon container in the module list.
      *
-     * This creates the circular colored background behind the icon.
+     * This fills the rounded tile behind the icon.
      * Override to match your module's branding or to differentiate it visually.
      *
      * ## Default
-     * Derived from the module's [section] via [Section.containerColor].
+     * [Color.Unspecified] resolves a section hue with host-theme lightness when rendered.
      *
      * ## Custom Color Example
      * ```kotlin
@@ -195,7 +195,7 @@ public interface Module {
      * ```
      */
     public val containerColor: Color
-        get() = section.containerColor
+        get() = Color.Unspecified
 
     /**
      * Color of the icon itself within the container.
@@ -204,7 +204,8 @@ public interface Module {
      * Override to customize the icon color.
      *
      * ## Default
-     * Derived from the module's [section] via [Section.contentColor].
+     * [Color.Unspecified] resolves a contrasting section tone when rendered, or black/white
+     * against an explicitly overridden [containerColor]. Explicit colours remain unchanged.
      *
      * ## Custom Color Example
      * ```kotlin
@@ -212,7 +213,7 @@ public interface Module {
      * ```
      */
     public val contentColor: Color
-        get() = section.contentColor
+        get() = Color.Unspecified
 
     /**
      * Optional subtitle displayed below the module name in the module list.
@@ -258,6 +259,7 @@ public interface Module {
      * override val destinations = persistentMapOf(
      *     MyDestination.Main.withTitle("Logs") {
      *         action(
+     *             label = "Clear logs",
      *             icon = Icons.Rounded.Delete,
      *             popup = ModuleDestinationActionPopup(
      *                 title = "Clear Logs",
@@ -285,6 +287,7 @@ public interface Module {
      *         title = "My Screen",
      *         actions = persistentListOf(
      *             ModuleDestinationAction(
+     *                 label = "Clear logs",
      *                 icon = Icons.Rounded.Delete,
      *                 action = { logger.clear() }
      *             )
@@ -408,6 +411,8 @@ public interface Module {
      * ```
      *
      * ## Best Practices
+     * - Keep registration side-effect-free; DevView may repeat it to supply measured entry insets
+     * - Initialise ViewModels and UI state inside entry content, not the registration body
      * - Register an entry for every destination in [destinations]
      * - Always provide a way to navigate back (use onNavigateBack)
      * - Use type-safe destination objects instead of string routes
