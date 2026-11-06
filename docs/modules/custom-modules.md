@@ -15,8 +15,8 @@ interface Module {
     val moduleName: String  // defaults to class simple name
     val section: Section
     val icon: ImageVector   // defaults to section icon
-    val containerColor: Color  // defaults to section container color
-    val contentColor: Color    // defaults to section content color
+    val containerColor: Color  // Color.Unspecified, resolved when rendered
+    val contentColor: Color    // Color.Unspecified, resolved when rendered
     val subtitle: String?   // optional description text, defaults to null
     val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata>
     val entryDestination: NavKey
@@ -59,6 +59,11 @@ A DevView module consists of:
 2. **Serializers** - For type-safe navigation
 3. **Content** - Composable UI
 4. **Metadata** - Name, icon, section
+
+Use the [shared UI kit](../guides/ui-components.md) for headings, grouped rows,
+filter bars, empty states and clipboard actions. Built-ins supply readable names and subtitles;
+module icon colours default to `Color.Unspecified` and resolve from section hues and host-theme tones.
+Explicit `containerColor` / `contentColor` overrides remain supported ([theming](../guides/theming.md)).
 
 ### 1. Define Destinations
 ```kotlin

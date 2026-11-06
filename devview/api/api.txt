@@ -140,23 +140,35 @@ package com.worldline.devview.core {
   }
 
   public final class SectionKt {
+    method @InaccessibleFromKotlin public static String getDisplayName(com.worldline.devview.core.Section);
     method @InaccessibleFromKotlin public static androidx.compose.ui.graphics.vector.ImageVector getIcon(com.worldline.devview.core.Section);
-    property public static androidx.compose.ui.graphics.Color com.worldline.devview.core.Section.containerColor;
-    property public static androidx.compose.ui.graphics.Color com.worldline.devview.core.Section.contentColor;
+    property public static String com.worldline.devview.core.Section.displayName;
     property public static androidx.compose.ui.graphics.vector.ImageVector com.worldline.devview.core.Section.icon;
   }
 
 }
 
-package com.worldline.devview.internal.components {
+package com.worldline.devview.ui {
 
-  public enum ModulePosition {
-    method @InaccessibleFromKotlin public boolean getHasDivider();
-    property public boolean hasDivider;
-    enum_constant public static final com.worldline.devview.internal.components.ModulePosition FIRST;
-    enum_constant public static final com.worldline.devview.internal.components.ModulePosition LAST;
-    enum_constant public static final com.worldline.devview.internal.components.ModulePosition MIDDLE;
-    enum_constant public static final com.worldline.devview.internal.components.ModulePosition SINGLE;
+  public final class ClipboardKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static kotlin.jvm.functions.Function1<java.lang.String,kotlin.Unit> rememberCopyToClipboard();
+  }
+
+  public final class DevViewEmptyStateKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void DevViewEmptyState(androidx.compose.ui.graphics.vector.ImageVector icon, String title, String message, optional androidx.compose.ui.Modifier modifier, optional kotlin.jvm.functions.Function0<kotlin.Unit>? action);
+  }
+
+  public final class DevViewFilterBarKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void DevViewFilterBar(String query, kotlin.jvm.functions.Function1<java.lang.String,kotlin.Unit> onQueryChange, String placeholder, int activeFilterCount, boolean expanded, kotlin.jvm.functions.Function1<java.lang.Boolean,kotlin.Unit> onExpandedChange, kotlin.jvm.functions.Function0<kotlin.Unit> onClearFilters, optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding, kotlin.jvm.functions.Function0<kotlin.Unit> panel);
+  }
+
+  public final class DevViewGroupedItemKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void DevViewGroupedDivider(optional androidx.compose.ui.Modifier modifier);
+    method @KotlinOnly @androidx.compose.runtime.Composable public static androidx.compose.ui.Modifier devViewGroupedItem(androidx.compose.ui.Modifier, int index, int count);
+  }
+
+  public final class DevViewSectionHeaderKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void DevViewSectionHeader(String text, optional androidx.compose.ui.Modifier modifier);
   }
 
 }

@@ -16,7 +16,7 @@ import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.ModuleDestinationActionPopup
 import com.worldline.devview.core.Section
-import com.worldline.devview.core.withTitle
+import com.worldline.devview.core.withActions
 import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
@@ -77,6 +77,12 @@ public class Console(
     public val maxEntries: Int = ConsoleLogger.DEFAULT_MAX_ENTRIES,
     public val captureNativeConsole: Boolean = true
 ) : Module {
+    /** Name displayed on the home screen and default destination toolbar. */
+    override val moduleName: String = "Console"
+
+    /** Summary displayed on the home screen. */
+    override val subtitle: String = "App console logs"
+
     override val section: Section
         get() = Section.LOGGING
 
@@ -84,7 +90,7 @@ public class Console(
         get() = Icons.Rounded.Terminal
 
     override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> = persistentMapOf(
-        ConsoleDestination.Main.withTitle(title = "Console") {
+        ConsoleDestination.Main.withActions {
             action(
                 label = "Clear logs",
                 icon = Icons.Rounded.Delete,

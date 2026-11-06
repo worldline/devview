@@ -27,7 +27,8 @@ class ConsoleModuleTest {
 
         val mainMetadata = module.destinations[ConsoleDestination.Main::class].shouldNotBeNull()
 
-        mainMetadata.title shouldBe "Console"
+        mainMetadata.title shouldBe null
+        module.moduleName shouldBe "Console"
         mainMetadata.actions shouldHaveSize 1
 
         val clearAction = mainMetadata.actions.single()

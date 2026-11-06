@@ -3,8 +3,10 @@ package com.worldline.devview.timecapsule
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
@@ -12,7 +14,7 @@ import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.ModuleDestinationActionPopup
 import com.worldline.devview.core.Section
-import com.worldline.devview.core.withTitle
+import com.worldline.devview.core.withActions
 import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
@@ -66,10 +68,19 @@ public object TimeCapsule : Module {
         activeCapsules -= capsule
     }
 
+    /** Name displayed on the home screen and default destination toolbar. */
+    override val moduleName: String = "Time Capsule"
+
+    /** Summary displayed on the home screen. */
+    override val subtitle: String = "Screen state history"
+
+    /** Icon identifying this module on the home screen. */
+    override val icon: ImageVector = Icons.Rounded.History
+
     override val section: Section = Section.LOGGING
 
     override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> = persistentMapOf(
-        TimeCapsuleDestination.Main.withTitle(title = "Time Capsule") {
+        TimeCapsuleDestination.Main.withActions {
             action(
                 label = "Clear history",
                 icon = Icons.Rounded.Delete,

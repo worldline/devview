@@ -183,11 +183,11 @@ public interface Module {
     /**
      * Background color of the icon container in the module list.
      *
-     * This creates the circular colored background behind the icon.
+     * This fills the rounded tile behind the icon.
      * Override to match your module's branding or to differentiate it visually.
      *
      * ## Default
-     * Derived from the module's [section] via [Section.containerColor].
+     * [Color.Unspecified] resolves a section hue with host-theme lightness when rendered.
      *
      * ## Custom Color Example
      * ```kotlin
@@ -195,7 +195,7 @@ public interface Module {
      * ```
      */
     public val containerColor: Color
-        get() = section.containerColor
+        get() = Color.Unspecified
 
     /**
      * Color of the icon itself within the container.
@@ -204,7 +204,8 @@ public interface Module {
      * Override to customize the icon color.
      *
      * ## Default
-     * Derived from the module's [section] via [Section.contentColor].
+     * [Color.Unspecified] resolves a contrasting section tone when rendered, or black/white
+     * against an explicitly overridden [containerColor]. Explicit colours remain unchanged.
      *
      * ## Custom Color Example
      * ```kotlin
@@ -212,7 +213,7 @@ public interface Module {
      * ```
      */
     public val contentColor: Color
-        get() = section.contentColor
+        get() = Color.Unspecified
 
     /**
      * Optional subtitle displayed below the module name in the module list.

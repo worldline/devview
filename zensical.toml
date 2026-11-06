@@ -87,6 +87,7 @@ nav = [
     { "Module Development" = "guides/module-development.md" },
     { "Navigation" = "guides/navigation.md" },
     { "Theming" = "guides/theming.md" },
+    { "UI Components" = "guides/ui-components.md" },
     { "Best Practices" = "guides/best-practices.md" },
     { "Common Pitfalls" = "guides/common-pitfalls.md" },
   ]},
