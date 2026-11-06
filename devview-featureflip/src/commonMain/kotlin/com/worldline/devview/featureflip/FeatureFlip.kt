@@ -30,20 +30,7 @@ internal const val FEATURE_FLIP_DATASTORE_NAME = "feature_flip_datastore.prefere
  * @see FeatureFlip
  */
 public sealed interface FeatureFlipDestination : NavKey {
-    /**
-     * Main feature flip management screen destination.
-     *
-     * This destination displays the [FeatureFlipScreen] component, which shows
-     * a searchable and filterable list of all registered feature flags with
-     * controls to toggle their state.
-     *
-     * ## Navigation Example
-     * ```kotlin
-     * navController.navigate(FeatureFlipDestination.Main)
-     * ```
-     *
-     * @see FeatureFlipScreen
-     */
+    /** Searchable feature-flag management destination, rendered by the registered module. */
     @Serializable
     public data object Main : FeatureFlipDestination
 
@@ -76,12 +63,10 @@ public sealed interface FeatureFlipDestination : NavKey {
  *
  * ### Module Configuration
  * ```kotlin
- * val devView = DevView(
- *     modules = listOf(
- *         FeatureFlip,
- *         // other modules...
- *     )
- * )
+ * val modules = rememberModules {
+ *     module(FeatureFlip)
+ * }
+ * // Pass modules to DevView; registration supplies the tool content.
  * ```
  *
  * ### Defining Features
@@ -120,7 +105,6 @@ public sealed interface FeatureFlipDestination : NavKey {
  * @see Section.FEATURES
  * @see com.worldline.devview.featureflip.model.Feature
  * @see com.worldline.devview.featureflip.model.FeatureHandler
- * @see FeatureFlipScreen
  */
 public object FeatureFlip : Module, RequiresDataStore {
     override val dataStoreName: String = FEATURE_FLIP_DATASTORE_NAME

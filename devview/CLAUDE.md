@@ -14,7 +14,7 @@ The `devview` module is the core framework: it defines the `Module` interface th
 | `Module` interface | `core/Module.kt` | Contract every feature module must implement |
 | `ModuleRegistry` | `core/ModuleRegistry.kt` | Builder (not typically instantiated directly) |
 | `buildModules { }` | `core/ModuleRegistry.kt` | Non-composable DSL to assemble an `ImmutableList<Module>` |
-| `rememberModules { }` | `core/ModuleRegistry.kt` | Composable version; also calls `initDataStore()` + `initModule()` on first composition |
+| `rememberModules { }` | `core/ModuleRegistry.kt` | Composable version; once-only `initDataStore()`, ongoing `initModule()` effects |
 | `Section` enum | `core/Section.kt` | `SETTINGS`, `FEATURES`, `NETWORK`, `LOGGING`, `CUSTOM` — controls home screen grouping and default icons |
 | `DestinationMetadata` | `core/DestinationMetadata.kt` | Per-destination top bar title + action list |
 | `DestinationMetadataBuilder` | `core/DestinationMetadata.kt` | DSL receiver inside `withTitle { }` / `withActions { }` blocks |
@@ -71,7 +71,7 @@ Use the instance extension (`MyDest.Main.withTitle(...)`) for `data object` dest
 Use `DestinationMetadataBuilder.menu(label, icon) { item(label) { ... } }` instead of `action(label, icon) { key -> ... }` when a single icon needs to offer more than one discrete choice (e.g. "Sort by: Path / Method"). Built via `ModuleDestinationActionMenuBuilder`, stored on `ModuleDestinationAction.menuItems`. Precedence when an icon is tapped: `menuItems` (opens a `DropdownMenu`) → `popup` (opens a confirmation `AlertDialog`) → `action` (runs immediately). A `menu(...)` action's own `action` lambda defaults to a no-op and is never invoked directly — only the individual `item(...)` callbacks fire.
 
 **`rememberModules` initialization order:**
-For any module implementing `RequiresDataStore` (from `devview-utils`), `initDataStore()` is called before `initModule()`. Each module is initialized at most once per composition (tracked via an internal `mutableSetOf`).
+For any module implementing `RequiresDataStore` (from `devview-utils`), `initDataStore()` is called before `initModule()`. DataStore setup runs once per remembered registry. `initModule()` remains in a keyed composition group, so its keyed effects survive recomposition, cancel on removal and restart on re-entry. Never guard the entire composable invocation behind a one-shot set.
 
 **`@Poko` annotation:**
 The Poko plugin is configured (in `build.gradle.kts`) to recognize `com/worldline/devview/core/Poko` as its trigger annotation. Apply `@Poko` to regular classes (not `data class`) in this module when you need multiplatform-compatible `equals`/`hashCode`/`toString`/`copy`.

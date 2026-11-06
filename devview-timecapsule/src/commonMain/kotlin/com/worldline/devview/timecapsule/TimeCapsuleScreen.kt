@@ -40,7 +40,7 @@ import com.worldline.devview.timecapsule.components.TimeCapsuleRow
  * @see TimeCapsuleEffect
  */
 @Composable
-public fun TimeCapsuleScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 0.dp) {
+internal fun TimeCapsuleScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 0.dp) {
     val capsule = TimeCapsule.current
     val entries = capsule?.entries.orEmpty().asReversed()
     var expandedIds by remember { mutableStateOf(value = emptySet<Long>()) }

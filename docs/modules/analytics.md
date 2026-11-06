@@ -46,34 +46,31 @@ AnalyticsLogger.log(
 
 ### Using the UI
 ```kotlin
-// AnalyticsScreen is rendered automatically by DevView when Analytics() is registered.
-// Standalone screens read the logger by default. Custom sources pass logs = yourList.
-AnalyticsScreen(
-    highlightedAnalyticsLogTypes = persistentListOf(
-        AnalyticsLogCategory.Action.Click,
-        AnalyticsLogCategory.Performance.Error
-    )
+DevView(
+    devViewIsOpen = isDevViewOpen,
+    closeDevView = { isDevViewOpen = false },
+    modules = modules
 )
 ```
 
 ## Usage
 - Use `AnalyticsLogger.log()` to record events.
-- Use `AnalyticsScreen` to view logs in real time.
+- Open DevView → Analytics to inspect recorded events.
 - Integrate with your analytics backend for dual logging.
 
 ## Inspection and history
 
-Search matches tags and screens, ignoring case. Expand the pinned bottom panel for category and time filters; the toggle keeps their active count visible when collapsed. Limited time windows refresh every five seconds. Counts reflect the filtered results. Clear filters resets category and time selection; the no-results action clears search too.
+Events appear newest first. New arrivals do not automatically scroll away from the event you are inspecting; **Latest events** returns to the top. Search matches tags and screens, ignoring case. Expand the pinned bottom panel for category and time filters; the toggle keeps their active count visible when collapsed. Limited time windows refresh every five seconds. Counts reflect the filtered results. Clear filters resets category and time selection; the no-results action clears search too.
 
-Tap a row to see its full timestamp with milliseconds and timezone, event type and sorted parameters. Copy event writes that data to the system clipboard. Returning to the list preserves search, filters and scroll position. If the event has been cleared or is unavailable after restoration, the detail page shows an empty state.
+Tap a row to see its full timestamp with milliseconds and timezone, event type and sorted parameters. Copy event writes that data to the system clipboard. Returning to the list preserves search, filters and the inspected event’s scroll offset, even when events arrive while details are open. If that row is no longer available, the list starts at the top. If the event has been cleared or is unavailable after restoration, the detail page shows an empty state.
 
 `AnalyticsLogger.logs: List<AnalyticsLog>` is a read-only snapshot, observable when read in composition. Do not remember a single snapshot if you need live updates. Record through `AnalyticsLogger.log()`; direct list writes are no longer supported. Each recording gets a fresh internal UUID without changing value equality, and the logger copies the parameter map. Events are in memory only.
 
-For standalone sources, pass `AnalyticsScreen(logs = yourList, highlightedAnalyticsLogTypes = ...)` and replace lists/maps when they change. Avoid in-place mutations.
+The module owns its list and detail destinations. Integrators choose how DevView is presented, not how its internal screens are composed.
 
 ### Migration
 
-Remove `CompositionLocalProvider(LocalAnalytics provides ...)`: `LocalAnalytics` has been removed. The registered module requires no provider. Standalone custom sources use the explicit `logs` parameter. Replace mutations of `AnalyticsLogger.logs` with `AnalyticsLogger.log()`.
+Remove `CompositionLocalProvider(LocalAnalytics provides ...)`: `LocalAnalytics` has been removed. Register `Analytics()` through `rememberModules` and render `DevView`; direct screen calls are no longer supported. Replace mutations of `AnalyticsLogger.logs` with `AnalyticsLogger.log()`.
 
 ## Best Practices
 1. Use descriptive tags and include screen context.

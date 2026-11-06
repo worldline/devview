@@ -28,10 +28,13 @@ val modules = rememberModules {
 
 ## Step 3: Provide the FeatureHandler to your composable tree
 ```kotlin
-val featureHandler = rememberFeatureHandler(features)
-CompositionLocalProvider(LocalFeatureHandler provides featureHandler) {
-    // FeatureFlipScreen is rendered automatically by DevView when FeatureFlip is registered.
-    // State changes are persisted to DataStore internally.
+val handler = rememberFeatureHandler(features)
+CompositionLocalProvider(LocalFeatureHandler provides handler) {
+    DevView(
+        devViewIsOpen = isDevViewOpen,
+        closeDevView = { isDevViewOpen = false },
+        modules = modules
+    )
 }
 ```
 

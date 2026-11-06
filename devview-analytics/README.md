@@ -39,18 +39,17 @@ Search matches the event tag or screen, ignoring case. Expand the bottom filter 
 
 Tap an event to inspect its screen, full timestamp with milliseconds and timezone, type and sorted parameters. Copy event copies this information as plain text. Cleared or unavailable events show an empty state rather than resolving to a different event.
 
-## Standalone screen
+## Show DevView
 
 ```kotlin
-@Composable
-fun Events() {
-    AnalyticsScreen(
-        highlightedAnalyticsLogTypes = persistentListOf(AnalyticsLogCategory.Action.Click)
-    )
-}
+DevView(
+    devViewIsOpen = isDevViewOpen,
+    closeDevView = { isDevViewOpen = false },
+    modules = modules
+)
 ```
 
-The screen reads `AnalyticsLogger.logs` by default. For previews or a custom source, pass `logs: List<AnalyticsLog>` explicitly. Replace lists and parameter maps when updating a standalone source; do not mutate them in place. Search, filters and scroll position survive returning from details and saved-state restoration.
+Module registration owns the list and detail destinations. Search, filters and the inspected event’s position survive navigation and saved-state restoration.
 
 ## Read-only history
 
@@ -59,7 +58,7 @@ The screen reads `AnalyticsLogger.logs` by default. For previews or a custom sou
 Migration from the previous API:
 
 - Remove `CompositionLocalProvider(LocalAnalytics provides ...)`; `LocalAnalytics` has been removed.
-- Pass custom lists through `AnalyticsScreen(logs = ...)`.
+- Replace direct screen calls with `rememberModules { module(Analytics()) }` and `DevView`.
 - Replace writes to `AnalyticsLogger.logs` with `AnalyticsLogger.log()`.
 
 See [the Analytics guide](../docs/modules/analytics.md) for installation and workflow details.

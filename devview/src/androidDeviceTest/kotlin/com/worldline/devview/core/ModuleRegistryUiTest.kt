@@ -1,12 +1,15 @@
 package com.worldline.devview.core
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
@@ -34,19 +37,22 @@ class ModuleRegistryUiTest {
     }
 
     @Test
-    fun rememberModules_does_not_call_initModule_again_when_parent_recomposes() = runComposeUiTest {
+    fun rememberModules_keeps_effects_active_on_recomposition_and_disposes_on_removal() = runComposeUiTest {
         val initCalls = mutableListOf<String>()
         lateinit var builtModules: List<Module>
         lateinit var triggerRecompose: () -> Unit
+        val visible = mutableStateOf(value = true)
 
         setContent {
             val recomposeTick = remember { mutableIntStateOf(value = 0) }
             triggerRecompose = { recomposeTick.intValue++ }
             recomposeTick.intValue
 
-            builtModules = rememberModules {
-                module(TrackingModule(name = "A", initCalls = initCalls))
-                module(TrackingModule(name = "B", initCalls = initCalls))
+            if (visible.value) {
+                builtModules = rememberModules {
+                    module(TrackingModule(name = "A", initCalls = initCalls))
+                    module(TrackingModule(name = "B", initCalls = initCalls))
+                }
             }
         }
 
@@ -60,6 +66,16 @@ class ModuleRegistryUiTest {
         runOnIdle {
             builtModules.map { it.moduleName }.shouldContainExactly("A", "B")
             initCalls.shouldContainExactly("A", "B")
+            visible.value = false
+        }
+        waitForIdle()
+        runOnIdle {
+            initCalls.shouldContainExactlyInAnyOrder("A", "B", "dispose A", "dispose B")
+            visible.value = true
+        }
+        waitForIdle()
+        runOnIdle {
+            initCalls.shouldContainExactlyInAnyOrder("A", "B", "dispose A", "dispose B", "A", "B")
         }
     }
 }
@@ -86,6 +102,9 @@ private class TrackingModule(
 
     @Composable
     override fun initModule() {
-        initCalls.add(moduleName)
+        DisposableEffect(key1 = Unit) {
+            initCalls.add(moduleName)
+            onDispose { initCalls.add("dispose $moduleName") }
+        }
     }
 }

@@ -48,10 +48,6 @@ package com.worldline.devview.analytics {
     field public static final com.worldline.devview.analytics.AnalyticsLogger INSTANCE;
   }
 
-  public final class AnalyticsScreenKt {
-    method @KotlinOnly @androidx.compose.runtime.Composable public static void AnalyticsScreen(kotlinx.collections.immutable.PersistentList<com.worldline.devview.analytics.model.AnalyticsLogType> highlightedAnalyticsLogTypes, optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding, optional java.util.List<com.worldline.devview.analytics.model.AnalyticsLog> logs);
-  }
-
 }
 
 package com.worldline.devview.analytics.model {

@@ -14,6 +14,14 @@ filter bars, empty states and clipboard actions. Built-ins supply readable names
 module icon colours default to `Color.Unspecified` and resolve from section hues and host-theme tones.
 Explicit `containerColor` / `contentColor` overrides remain supported ([theming](theming.md)).
 
+## Initialization lifetime
+
+`rememberModules` calls `initDataStore()` once before composing `initModule()`. The latter
+remains in composition, so implementations should put ongoing work in keyed
+`LaunchedEffect` or `DisposableEffect`. Ordinary recomposition preserves those effects;
+module removal cancels them and re-entry starts them again. Keep one-shot writes out
+of the composable body.
+
 ## Step-by-Step: Creating a Module
 
 ### 1. Define Destinations
