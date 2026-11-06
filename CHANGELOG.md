@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   preserving spec order within each group.
 
 ### Changed
+- FeatureFlip: remote overrides use labelled Material3 Remote/Off/On segments with the remote
+  value shown separately. Local flags keep their switch; type badges are removed. Search and
+  collapsible Type/State filters expose active counts and recovery actions and retain UI state.
+  Selections persist in click order; failed saves keep the previous value and offer Retry.
+  Restored type filters remain active when the registered feature types change.
 - DevView: home icon tiles animate section hues with host-theme tones; explicit module overrides
   remain supported. Home uses sentence-case headings, readable subtitles, aligned dividers and
   a faint watermark in both themes. Built-in names are spaced and module icons are distinct.
