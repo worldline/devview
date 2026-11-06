@@ -19,7 +19,8 @@ internal class TimeCapsuleTest {
 
         val metadata = TimeCapsule.destinations[TimeCapsuleDestination.Main::class]
             .shouldNotBeNull()
-        metadata.title shouldBe "Time Capsule"
+        metadata.title shouldBe null
+        TimeCapsule.moduleName shouldBe "Time Capsule"
         metadata.actions shouldHaveSize 1
     }
 

@@ -30,7 +30,8 @@ class NetworkMockModuleTest {
         val module = module()
 
         val mainMetadata = module.destinations[NetworkMockDestination.Main::class].shouldNotBeNull()
-        mainMetadata.title shouldBe "Network Mock"
+        mainMetadata.title shouldBe null
+        module.moduleName shouldBe "Network Mock"
         mainMetadata.actions shouldHaveSize 3
 
         val (refreshAction, sortAction, resetAction) = mainMetadata.actions

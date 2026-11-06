@@ -6,7 +6,6 @@ import androidx.compose.material.icons.rounded.Extension
 import androidx.compose.material.icons.rounded.FormatListNumbered
 import androidx.compose.material.icons.rounded.NetworkCheck
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
@@ -132,34 +131,21 @@ public val Section.icon: ImageVector
         Section.CUSTOM -> Icons.Rounded.Extension
     }
 
-/**
- * Extension property providing the default container (background) color for each section.
- *
- * Returns a brand-palette color used as the background of module icon containers
- * on the DevView home screen. Modules inherit this via [Module.containerColor]
- * by default but can override it.
- *
- * @see Section
- * @see Module.containerColor
- */
-public val Section.containerColor: Color
+/** Human-readable section heading for the DevView home screen. */
+public val Section.displayName: String
     get() = when (this) {
-        Section.SETTINGS -> Color(color = 0xFF545AAE)
-        Section.FEATURES -> Color(color = 0xFF764DD0)
-        Section.NETWORK -> Color(color = 0xFF5571B2)
-        Section.LOGGING -> Color(color = 0xFF6970CA)
-        Section.CUSTOM -> Color(color = 0xFFA03CBC)
+        Section.SETTINGS -> "Settings"
+        Section.FEATURES -> "Features"
+        Section.NETWORK -> "Network"
+        Section.LOGGING -> "Logging"
+        Section.CUSTOM -> "Custom"
     }
 
-/**
- * Extension property providing the default content (foreground) color for each section.
- *
- * Returns a light tint used for the icon drawn inside the section's container.
- * Modules inherit this via [Module.contentColor] by default but can override it.
- * All sections currently share the same content color (`0xFFE8E9F7`).
- *
- * @see Section
- * @see Module.contentColor
- */
-public val Section.contentColor: Color
-    get() = Color(color = 0xFFE8E9F7)
+internal val Section.hue: Float
+    get() = when (this) {
+        Section.SETTINGS -> 235f
+        Section.FEATURES -> 265f
+        Section.NETWORK -> 215f
+        Section.LOGGING -> 175f
+        Section.CUSTOM -> 35f
+    }

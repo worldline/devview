@@ -9,6 +9,11 @@ A DevView module consists of:
 3. **Content** - Composable UI
 4. **Metadata** - Name, icon, section
 
+Use the [shared UI kit](ui-components.md) for headings, grouped rows,
+filter bars, empty states and clipboard actions. Built-ins supply readable names and subtitles;
+module icon colours default to `Color.Unspecified` and resolve from section hues and host-theme tones.
+Explicit `containerColor` / `contentColor` overrides remain supported ([theming](theming.md)).
+
 ## Step-by-Step: Creating a Module
 
 ### 1. Define Destinations

@@ -8,10 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- DevView: public UI kit in `com.worldline.devview.ui` with section headings, grouped items,
+  empty states, filter bars and a multiplatform copy callback; `Section.displayName` for headings.
 - NetworkMock: "Mocked first" sort puts Mock, Failure, and Sequence operations before Network,
   preserving spec order within each group.
 
 ### Changed
+- DevView: home icon tiles animate section hues with host-theme tones; explicit module overrides
+  remain supported. Home uses sentence-case headings, readable subtitles, aligned dividers and
+  a faint watermark in both themes. Built-in names are spaced and module icons are distinct.
 - DevView: each destination now owns its top bar so titles and actions transition with content.
   Home has Close DevView and module screens have Back. Toolbar actions and menus require a
   user-facing `label` for accessibility and tooltips; action callbacks now receive the displayed
@@ -26,6 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - DevView: added a divider below the shared top app bar; NetworkMock operation lists animate
   filter and sort changes. The mock engine, ViewModel, repositories, Ktor behavior, persistence,
   and public API are unchanged.
+
+### Removed
+- DevView: fixed `Section.containerColor` / `Section.contentColor` extensions and the public
+  `ModulePosition` enum. Module colour defaults are now `Color.Unspecified`.
 
 ### Fixed
 - NetworkMock: valid JSON is pretty-printed before preview display and diffing, and long lines

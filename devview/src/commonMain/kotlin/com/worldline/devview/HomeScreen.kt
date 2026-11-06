@@ -4,32 +4,27 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
+import com.worldline.devview.core.displayName
 import com.worldline.devview.core.previewModule
 import com.worldline.devview.internal.HasTitle
 import com.worldline.devview.internal.components.ModuleItem
-import com.worldline.devview.internal.components.ModulePosition
+import com.worldline.devview.ui.DevViewSectionHeader
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.painterResource
 
@@ -96,13 +91,8 @@ internal fun HomeScreen(
         }
     }
 
-    val watermarkAlpha = if (MaterialTheme.colorScheme.background.luminance() <
-        0.5f
-    ) {
-        0.38f
-    } else {
-        0.07f
-    }
+    // Keep the brand watermark subordinate to the controls in both themes.
+    val watermarkAlpha = 0.07f
 
     Scaffold(
         modifier = modifier
@@ -135,17 +125,9 @@ internal fun HomeScreen(
                     stickyHeader(
                         key = section
                     ) {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 16.dp + 16.dp)
-                                .padding(vertical = 8.dp)
-                                .testTag(tag = "section_header_${section.name}"),
-                            text = section.name.replace(oldChar = '_', newChar = ' '),
-                            style = MaterialTheme.typography.bodySmallEmphasized.copy(
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Medium
-                            )
+                        DevViewSectionHeader(
+                            text = section.displayName,
+                            modifier = Modifier.testTag(tag = "section_header_${section.name}")
                         )
                     }
                     itemsIndexed(
@@ -155,12 +137,8 @@ internal fun HomeScreen(
                     ) { index, module ->
                         ModuleItem(
                             module = module,
-                            position = when {
-                                modulesPerSection.size == 1 -> ModulePosition.SINGLE
-                                index == 0 -> ModulePosition.FIRST
-                                index == modulesPerSection.lastIndex -> ModulePosition.LAST
-                                else -> ModulePosition.MIDDLE
-                            },
+                            index = index,
+                            count = modulesPerSection.size,
                             openModule = openModule
                         )
                     }

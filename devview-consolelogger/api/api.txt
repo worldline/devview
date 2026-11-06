@@ -17,8 +17,10 @@ package com.worldline.devview.consolelogger {
     property public androidx.navigation3.runtime.NavKey entryDestination;
     property public androidx.compose.ui.graphics.vector.ImageVector icon;
     property public int maxEntries;
+    property public String moduleName;
     property public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<androidx.navigation3.runtime.NavKey>,kotlin.Unit> registerSerializers;
     property public com.worldline.devview.core.Section section;
+    property public String subtitle;
   }
 
   public sealed exhaustive interface ConsoleDestination extends androidx.navigation3.runtime.NavKey {

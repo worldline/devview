@@ -39,10 +39,11 @@ DevView (composable)
     │   ├── Navigation: Close DevView on Home, Back elsewhere
     │   └── Actions: labelled IconButtons and tooltips; callback receives the displayed NavKey
     ├── Home → HomeScreen (groups modules by Section, sticky headers)
-    │       └── ModuleItem (card per module, shape adapts by ModulePosition)
-    └── Per-module entries registered with measured bottom padding at render time```
+    │       └── ModuleItem (shared grouped shape, theme-toned tile and subtitle)
+    └── Per-module entries registered with measured bottom padding at render time
+```
 
-**`HomeScreen`** groups the module list by `Section` using `derivedStateOf`, renders sticky section headers (section name, underscores replaced with spaces), and assigns each `ModuleItem` a `ModulePosition` (SINGLE / FIRST / MIDDLE / LAST) that controls card corner rounding and whether a top divider is shown.
+**`HomeScreen`** groups modules by `Section` and renders sticky `Section.displayName` headings. `ModuleItem` uses the public `ui` grouped-item modifier with an index/count, aligned dividers and section hues resolved against the host theme. Explicit module colours override the resolver. Shared UI controls live in `com.worldline.devview.ui`, not a `components` package.
 
 **`HasTitle`** is an internal-only interface for framework-level NavKeys (currently only `Home`). Module destinations must NOT implement it; they declare titles via `DestinationMetadata`.
 

@@ -15,7 +15,7 @@ import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.ModuleDestinationActionPopup
 import com.worldline.devview.core.Section
-import com.worldline.devview.core.withTitle
+import com.worldline.devview.core.withActions
 import com.worldline.devview.networkmock.core.NETWORK_MOCK_DATASTORE_NAME
 import com.worldline.devview.networkmock.core.NetworkMockDataStoreDelegate
 import com.worldline.devview.networkmock.core.NetworkMockInitializer
@@ -125,12 +125,18 @@ public class NetworkMock(
         )
     }
 
+    /** Name displayed on the home screen and default destination toolbar. */
+    override val moduleName: String = "Network Mock"
+
+    /** Summary displayed on the home screen. */
+    override val subtitle: String = "Mock API responses"
+
     override val section: Section
         get() = Section.NETWORK
 
     override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> =
         persistentMapOf(
-            NetworkMockDestination.Main.withTitle(title = "Network Mock") {
+            NetworkMockDestination.Main.withActions {
                 action(label = "Reload specs", icon = Icons.Rounded.Refresh) {
                     onReloadConfig.tryEmit(value = Unit)
                 }

@@ -3,7 +3,9 @@ package com.worldline.devview.analytics
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
@@ -14,7 +16,7 @@ import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.ModuleDestinationActionPopup
 import com.worldline.devview.core.Section
-import com.worldline.devview.core.withTitle
+import com.worldline.devview.core.withActions
 import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
@@ -106,6 +108,15 @@ public class Analytics(
     public val highlightedLogType2: AnalyticsLogType? = Error,
     public val highlightedLogType3: AnalyticsLogType? = null
 ) : Module {
+    /** Name displayed on the home screen and default destination toolbar. */
+    override val moduleName: String = "Analytics"
+
+    /** Summary displayed on the home screen. */
+    override val subtitle: String = "Tracked analytics events"
+
+    /** Icon identifying this module on the home screen. */
+    override val icon: ImageVector = Icons.Rounded.Insights
+
     /**
      * The section this module belongs to in the DevView menu.
      *
@@ -123,7 +134,7 @@ public class Analytics(
      * accidental data loss.
      */
     override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> = persistentMapOf(
-        AnalyticsDestination.Main.withTitle(title = "Analytics") {
+        AnalyticsDestination.Main.withActions {
             action(
                 label = "Clear logs",
                 icon = Icons.Rounded.Delete,
