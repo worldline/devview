@@ -8,12 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Analytics: event details with string parameters, millisecond timestamps with timezone,
+  selectable text and Copy event. Standalone screens accept an explicit `logs` source.
 - DevView: public UI kit in `com.worldline.devview.ui` with section headings, grouped items,
   empty states, filter bars and a multiplatform copy callback; `Section.displayName` for headings.
 - NetworkMock: "Mocked first" sort puts Mock, Failure, and Sequence operations before Network,
   preserving spec order within each group.
 
 ### Changed
+- Analytics: compact counts reflect filtered results, rows open event details, and the shared
+  collapsible filter panel preserves search, selection and scroll state. Logger history is a
+  read-only snapshot; record through `AnalyticsLogger.log()`, which assigns a fresh internal
+  UUID and copies parameters without changing event value equality.
 - FeatureFlip: remote overrides use labelled Material3 Remote/Off/On segments with the remote
   value shown separately. Local flags keep their switch; type badges are removed. Search and
   collapsible Type/State filters expose active counts and recovery actions and retain UI state.
@@ -38,10 +44,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and public API are unchanged.
 
 ### Removed
+- Analytics: `LocalAnalytics` and direct writes to `AnalyticsLogger.logs`. The module reads its
+  logger directly; standalone custom sources pass `AnalyticsScreen(logs = yourList, ...)`.
 - DevView: fixed `Section.containerColor` / `Section.contentColor` extensions and the public
   `ModulePosition` enum. Module colour defaults are now `Color.Unspecified`.
 
 ### Fixed
+- Analytics: category/time-only searches show recoverable no-results states, and limited time
+  windows refresh every five seconds without user input. Restored details cannot resolve to a
+  different recording with identical data.
+- Sample: analytics seed events are recorded once per composition lifecycle instead of during
+  recomposition, preventing duplicates and a feedback loop when observing the logger.
 - NetworkMock: valid JSON is pretty-printed before preview display and diffing, and long lines
   stay unwrapped with whole-pane horizontal scrolling and lazy vertical rows instead of
   per-line scrolling or eagerly composing entire previews. Malformed JSON and

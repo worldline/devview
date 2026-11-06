@@ -24,6 +24,8 @@ class AnalyticsModuleTest {
 
         module.section shouldBe Section.LOGGING
         module.destinations.keys.shouldContain(AnalyticsDestination.Main::class)
+        module.destinations[AnalyticsDestination.Detail::class].shouldNotBeNull().title shouldBe "Event"
+        clearLabel(module) shouldBe "Clear logs"
 
         val mainMetadata = module.destinations[AnalyticsDestination.Main::class].shouldNotBeNull()
 
@@ -39,6 +41,9 @@ class AnalyticsModuleTest {
             dismissButton shouldBe "Cancel"
         }
     }
+
+    private fun clearLabel(module: Analytics): String =
+        module.destinations[AnalyticsDestination.Main::class].shouldNotBeNull().actions.single().label
 
     @Test
     fun `clear action removes existing logs`() {

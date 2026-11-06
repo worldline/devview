@@ -24,34 +24,34 @@
     "semantic_hash": "96d892434d78897b5973bd67507d2114"
   },
   "devview-analytics/src/androidDeviceTest/kotlin/com/worldline/devview/analytics/AnalyticsScreenTest.kt": {
-    "mtime": 1793124053.2398317,
-    "seen": 1793975308.1742854,
-    "ast_hash": "29db014a8820e87a9c6ad012f4b2b420",
-    "semantic_hash": "29db014a8820e87a9c6ad012f4b2b420"
+    "mtime": 1793982243.0354812,
+    "seen": 1793982561.1653235,
+    "ast_hash": "864b5e4e4e6c725c7ec844774295ffab",
+    "semantic_hash": ""
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/Analytics.kt": {
-    "mtime": 1793974791.580611,
-    "seen": 1793975308.1742878,
-    "ast_hash": "2ed7229255383ea42f88a35455eb880d",
+    "mtime": 1793979458.6433384,
+    "seen": 1793982561.1653252,
+    "ast_hash": "0cf55d1f9e1bfa3e484405e545d20dea",
     "semantic_hash": ""
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/AnalyticsLogger.kt": {
-    "mtime": 1793124053.2418344,
-    "seen": 1793975308.1742907,
-    "ast_hash": "bf85e684ce02c0bc0481cc485628c305",
-    "semantic_hash": "bf85e684ce02c0bc0481cc485628c305"
+    "mtime": 1793979446.1477218,
+    "seen": 1793982561.1653306,
+    "ast_hash": "f6a8114a12b0a4d72b167468a2059629",
+    "semantic_hash": ""
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/AnalyticsScreen.kt": {
-    "mtime": 1793124053.2418344,
-    "seen": 1793975308.1742933,
-    "ast_hash": "d3974a52878fc50dcc6f85fa20b169e6",
-    "semantic_hash": "d3974a52878fc50dcc6f85fa20b169e6"
+    "mtime": 1793979458.6563413,
+    "seen": 1793982561.1653323,
+    "ast_hash": "38bf8e59f13ba3a53ddf8fbb43e13f6a",
+    "semantic_hash": ""
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/components/AnalyticsLogItem.kt": {
-    "mtime": 1793124053.2418344,
-    "seen": 1793975308.174296,
-    "ast_hash": "3512bb08afc0d73f963cc8a6be9b1451",
-    "semantic_hash": "3512bb08afc0d73f963cc8a6be9b1451"
+    "mtime": 1793978379.8030727,
+    "seen": 1793982561.1653335,
+    "ast_hash": "0d43818ac209ac4b2e8b1bd56ea30e01",
+    "semantic_hash": ""
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/components/CategoryChip.kt": {
     "mtime": 1793124053.2428343,
@@ -59,23 +59,17 @@
     "ast_hash": "63c89a5e06413aebe2208075e6aca5e9",
     "semantic_hash": "63c89a5e06413aebe2208075e6aca5e9"
   },
-  "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/components/HighlightedAnalyticsLogCard.kt": {
-    "mtime": 1793124053.2428343,
-    "seen": 1793975308.1743002,
-    "ast_hash": "2acfee141adea0dd103f485be8ea4dd0",
-    "semantic_hash": "2acfee141adea0dd103f485be8ea4dd0"
-  },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/components/HighlightedAnalyticsLogsHeader.kt": {
-    "mtime": 1793124053.2428343,
-    "seen": 1793975308.1743026,
-    "ast_hash": "6abd1c6e3f0d569df66a803f666f06f9",
-    "semantic_hash": "6abd1c6e3f0d569df66a803f666f06f9"
+    "mtime": 1793979132.1395433,
+    "seen": 1793982561.1653364,
+    "ast_hash": "f923bf7d56618d436a5ebfc781881524",
+    "semantic_hash": ""
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/model/AnalyticsLog.kt": {
-    "mtime": 1793124053.243835,
-    "seen": 1793975308.1743045,
-    "ast_hash": "745ffab233e188d51af15fdd929e8e65",
-    "semantic_hash": "745ffab233e188d51af15fdd929e8e65"
+    "mtime": 1793979487.26843,
+    "seen": 1793982561.1653376,
+    "ast_hash": "40dc3e12209b9212d1876b573c289305",
+    "semantic_hash": ""
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/model/AnalyticsLogCategory.kt": {
     "mtime": 1793124053.243835,
@@ -96,10 +90,10 @@
     "semantic_hash": "0f0f2302404ba090ad75330b840d424f"
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/preview/AnalyticsLogListPreviewParameterProvider.kt": {
-    "mtime": 1793124053.2448347,
-    "seen": 1793975308.1743145,
-    "ast_hash": "066657c7e972fa6f81aafa6a558ee9cd",
-    "semantic_hash": "066657c7e972fa6f81aafa6a558ee9cd"
+    "mtime": 1793979027.6447983,
+    "seen": 1793982561.1653438,
+    "ast_hash": "5191fc4e7a945a3ce52b74f283b7fa49",
+    "semantic_hash": ""
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/preview/AnalyticsLogPreviewParameterProvider.kt": {
     "mtime": 1793124053.2448347,
@@ -108,15 +102,15 @@
     "semantic_hash": "d4131ce53fa6562278539ce90929e704"
   },
   "devview-analytics/src/commonTest/kotlin/com/worldline/devview/analytics/AnalyticsLoggerTest.kt": {
-    "mtime": 1793124053.2458348,
-    "seen": 1793975308.1743186,
-    "ast_hash": "9a602656545c25183a83a935426b9ef0",
-    "semantic_hash": "9a602656545c25183a83a935426b9ef0"
+    "mtime": 1793979102.357275,
+    "seen": 1793982561.1653478,
+    "ast_hash": "eab81265c6e72a252a56b8b9adc84fbf",
+    "semantic_hash": ""
   },
   "devview-analytics/src/commonTest/kotlin/com/worldline/devview/analytics/AnalyticsModuleTest.kt": {
-    "mtime": 1793974457.3273883,
-    "seen": 1793975308.1743202,
-    "ast_hash": "715ddf9b01dae79dc6cdd9f0c8100c87",
+    "mtime": 1793979102.3642783,
+    "seen": 1793982561.165349,
+    "ast_hash": "bfd6aae7820f0b8334e7067ce267b6a0",
     "semantic_hash": ""
   },
   "devview-analytics/src/commonTest/kotlin/com/worldline/devview/analytics/samples/AnalyticsLogSamples.kt": {
@@ -1272,10 +1266,10 @@
     "semantic_hash": ""
   },
   "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/DevViewApp.kt": {
-    "mtime": 1793948793.6234865,
-    "seen": 1793975308.1749022,
-    "ast_hash": "60b16ed8f0440617e41066f3a8cf4e4b",
-    "semantic_hash": "60b16ed8f0440617e41066f3a8cf4e4b"
+    "mtime": 1793979137.8947754,
+    "seen": 1793982561.1657038,
+    "ast_hash": "93d7a2816ac2ffdf008c0bc60870ac19",
+    "semantic_hash": ""
   },
   "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/Greeting.kt": {
     "mtime": 1793124053.675275,
@@ -1482,9 +1476,9 @@
     "semantic_hash": "cf96d090a20636202729d00ddf9bebe4"
   },
   "CHANGELOG.md": {
-    "mtime": 1793978152.5015376,
-    "seen": 1793978158.7042253,
-    "ast_hash": "0572f52def032b6be9ac8ab32bb76dba",
+    "mtime": 1793982393.4925714,
+    "seen": 1793982561.1657426,
+    "ast_hash": "ddc4a37930c17e528a0c25a42e807415",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -1500,9 +1494,9 @@
     "semantic_hash": "42e3eef21ea740b04e70995dcb42ddc3"
   },
   "config/quality/detekt/compose-config.yml": {
-    "mtime": 1793973362.1744342,
-    "seen": 1793975308.1742718,
-    "ast_hash": "ef55f1b0ee8ae00238f84e4d5b80c0c1",
+    "mtime": 1793982022.5939262,
+    "seen": 1793982561.1653156,
+    "ast_hash": "bcf5466e3f6838367e519ad50e39f576",
     "semantic_hash": ""
   },
   "config/quality/detekt/ktlint-config.yml": {
@@ -1518,16 +1512,16 @@
     "semantic_hash": "284f07505a1d515cc6347f851fa56525"
   },
   "devview-analytics/CLAUDE.md": {
-    "mtime": 1793124053.233835,
-    "seen": 1793975308.1749814,
-    "ast_hash": "879a5a05954ba4fa82bd5c6f1fc34a6f",
+    "mtime": 1793982022.5569043,
+    "seen": 1793982561.16575,
+    "ast_hash": "81faf94aabeffa7e684855433c498cbb",
     "semantic_hash": ""
   },
   "devview-analytics/README.md": {
-    "mtime": 1793124053.233835,
-    "seen": 1793975308.1749835,
-    "ast_hash": "5d1eb0d7f92a94f33c6908044e57ae5b",
-    "semantic_hash": "5d1eb0d7f92a94f33c6908044e57ae5b"
+    "mtime": 1793982022.5180058,
+    "seen": 1793982561.165751,
+    "ast_hash": "b6920986a61dee5650a11ff00452f7e5",
+    "semantic_hash": ""
   },
   "devview-analytics/api/0.1.1.txt": {
     "mtime": 1793124053.2348351,
@@ -1554,9 +1548,9 @@
     "semantic_hash": "cd49343ce3f248ab5cdaf7a000e8de8f"
   },
   "devview-analytics/api/api.txt": {
-    "mtime": 1793975243.2790074,
-    "seen": 1793975308.175012,
-    "ast_hash": "28de9af4277fd62906dc0940818c926b",
+    "mtime": 1793982135.3693297,
+    "seen": 1793982561.1657689,
+    "ast_hash": "3796a5d71dadfd3d048140c005a6ea0c",
     "semantic_hash": ""
   },
   "devview-featureflip/CLAUDE.md": {
@@ -1596,8 +1590,8 @@
     "semantic_hash": "593e5f54ff2adaec053423afff7ba71d"
   },
   "devview-featureflip/api/api.txt": {
-    "mtime": 1793975237.8192933,
-    "seen": 1793975308.175065,
+    "mtime": 1793979140.3278117,
+    "seen": 1793982561.165802,
     "ast_hash": "35e823bb04543ede03f610a3afb539c0",
     "semantic_hash": ""
   },
@@ -1860,9 +1854,9 @@
     "semantic_hash": ""
   },
   "docs/examples/analytics-tracking.md": {
-    "mtime": 1793124053.368866,
-    "seen": 1793975308.1752956,
-    "ast_hash": "830be324850526aee754d3e598d53e84",
+    "mtime": 1793982046.099214,
+    "seen": 1793982561.165918,
+    "ast_hash": "18a62e3bfd0904aade7541b8c08418cd",
     "semantic_hash": ""
   },
   "docs/examples/android.md": {
@@ -1980,9 +1974,9 @@
     "semantic_hash": ""
   },
   "docs/modules/analytics.md": {
-    "mtime": 1793124053.3758757,
-    "seen": 1793975308.1753452,
-    "ast_hash": "e4308a5c5b00d44bde2f5bb08b6f1444",
+    "mtime": 1793982243.0679977,
+    "seen": 1793982561.165947,
+    "ast_hash": "26c447b7a260c20893b3cf295b627675",
     "semantic_hash": ""
   },
   "docs/modules/custom-modules.md": {
@@ -3059,17 +3053,23 @@
     "ast_hash": "72070651418e078875096a5745075ff9",
     "semantic_hash": ""
   },
-  ".claude/skills/graphify/references/add-watch.md": {
-    "mtime": 1787585253.4120755,
-    "seen": 1788872517.5817127,
-    "ast_hash": "d59d027fe449f06aa03905a01184e779",
-    "semantic_hash": "d59d027fe449f06aa03905a01184e779"
+  "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/AnalyticsDetailScreen.kt": {
+    "mtime": 1793979487.2670715,
+    "seen": 1793982561.165327,
+    "ast_hash": "5500ba422f698f05bf1a126771657882",
+    "semantic_hash": ""
   },
-  ".claude/skills/graphify/references/update.md": {
-    "mtime": 1787585253.563904,
-    "seen": 1788872517.5817127,
-    "ast_hash": "9378bd03d56baaf78bd738ab3848f142",
-    "semantic_hash": "9378bd03d56baaf78bd738ab3848f142"
+  "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/AnalyticsFilters.kt": {
+    "mtime": 1793979446.175259,
+    "seen": 1793982561.165329,
+    "ast_hash": "b2b1ae28eb6ae17867f71ae6e57562c7",
+    "semantic_hash": ""
+  },
+  "devview-analytics/src/commonTest/kotlin/com/worldline/devview/analytics/AnalyticsFiltersTest.kt": {
+    "mtime": 1793979102.3602743,
+    "seen": 1793982561.1653464,
+    "ast_hash": "983609fc8de2bc21ca842d076f88359f",
+    "semantic_hash": ""
   },
   ".claude/skills/graphify/references/extraction-spec.md": {
     "mtime": 1787585253.4360242,
@@ -3077,29 +3077,17 @@
     "ast_hash": "42fef56a01698118f7fd722acdadea34",
     "semantic_hash": "42fef56a01698118f7fd722acdadea34"
   },
-  ".claude/skills/graphify/references/hooks.md": {
-    "mtime": 1787585253.538176,
+  ".claude/skills/graphify/references/update.md": {
+    "mtime": 1787585253.563904,
     "seen": 1788872517.5817127,
-    "ast_hash": "3f545db6ce646650bb9de588f5512a27",
-    "semantic_hash": "3f545db6ce646650bb9de588f5512a27"
+    "ast_hash": "9378bd03d56baaf78bd738ab3848f142",
+    "semantic_hash": "9378bd03d56baaf78bd738ab3848f142"
   },
-  ".claude/skills/graphify/SKILL.md": {
-    "mtime": 1787585682.280166,
+  ".claude/skills/graphify/references/add-watch.md": {
+    "mtime": 1787585253.4120755,
     "seen": 1788872517.5817127,
-    "ast_hash": "1656a8a8e4a05bbe69f32cd15de81e87",
-    "semantic_hash": "1656a8a8e4a05bbe69f32cd15de81e87"
-  },
-  ".claude/skills/graphify/references/transcribe.md": {
-    "mtime": 1787585253.5628953,
-    "seen": 1788872517.5817127,
-    "ast_hash": "67b6a5fa6c0974e18f60db9f8932fbd8",
-    "semantic_hash": "67b6a5fa6c0974e18f60db9f8932fbd8"
-  },
-  ".claude/skills/graphify/references/exports.md": {
-    "mtime": 1787585253.4323912,
-    "seen": 1788872517.5817127,
-    "ast_hash": "9da2a2152e60a22f07f05fed5158f287",
-    "semantic_hash": "9da2a2152e60a22f07f05fed5158f287"
+    "ast_hash": "d59d027fe449f06aa03905a01184e779",
+    "semantic_hash": "d59d027fe449f06aa03905a01184e779"
   },
   ".claude/skills/graphify/references/query.md": {
     "mtime": 1787585253.5598843,
@@ -3107,10 +3095,34 @@
     "ast_hash": "3c46f8ad006874260614ed8657d02307",
     "semantic_hash": "3c46f8ad006874260614ed8657d02307"
   },
+  ".claude/skills/graphify/references/transcribe.md": {
+    "mtime": 1787585253.5628953,
+    "seen": 1788872517.5817127,
+    "ast_hash": "67b6a5fa6c0974e18f60db9f8932fbd8",
+    "semantic_hash": "67b6a5fa6c0974e18f60db9f8932fbd8"
+  },
+  ".claude/skills/graphify/SKILL.md": {
+    "mtime": 1787585682.280166,
+    "seen": 1788872517.5817127,
+    "ast_hash": "1656a8a8e4a05bbe69f32cd15de81e87",
+    "semantic_hash": "1656a8a8e4a05bbe69f32cd15de81e87"
+  },
+  ".claude/skills/graphify/references/exports.md": {
+    "mtime": 1787585253.4323912,
+    "seen": 1788872517.5817127,
+    "ast_hash": "9da2a2152e60a22f07f05fed5158f287",
+    "semantic_hash": "9da2a2152e60a22f07f05fed5158f287"
+  },
   ".claude/skills/graphify/references/github-and-merge.md": {
     "mtime": 1787585253.5175588,
     "seen": 1788872517.5817127,
     "ast_hash": "cde13df085e4c492aeb7ba298a996d0d",
     "semantic_hash": "cde13df085e4c492aeb7ba298a996d0d"
+  },
+  ".claude/skills/graphify/references/hooks.md": {
+    "mtime": 1787585253.538176,
+    "seen": 1788872517.5817127,
+    "ast_hash": "3f545db6ce646650bb9de588f5512a27",
+    "semantic_hash": "3f545db6ce646650bb9de588f5512a27"
   }
 }
