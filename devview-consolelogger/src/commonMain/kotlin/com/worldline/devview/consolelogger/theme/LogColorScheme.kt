@@ -101,25 +101,25 @@ public data class LogColorScheme(
                 unselectedContent = Color(color = 0xFF262626)
             ),
             debug = LogLevelColors(
-                label = Color(color = 0xFF228181),
+                label = Color(color = 0xFF1C7474),
                 selectedContainer = Color(color = 0xFFAFE9E9),
                 selectedContent = Color(color = 0xFF0D3030),
                 unselectedContent = Color(color = 0xFF0D3030)
             ),
             info = LogLevelColors(
-                label = Color(color = 0xFF228129),
+                label = Color(color = 0xFF1D7524),
                 selectedContainer = Color(color = 0xFFB7ECBA),
                 selectedContent = Color(color = 0xFF103C13),
                 unselectedContent = Color(color = 0xFF103C13)
             ),
             warning = LogLevelColors(
-                label = Color(color = 0xFF837807),
+                label = Color(color = 0xFF716706),
                 selectedContainer = Color(color = 0xFFEFEBC2),
                 selectedContent = Color(color = 0xFF494304),
                 unselectedContent = Color(color = 0xFF494304)
             ),
             error = LogLevelColors(
-                label = Color(color = 0xFFCB4D2E),
+                label = Color(color = 0xFFBE4225),
                 selectedContainer = Color(color = 0xFFF1CAC1),
                 selectedContent = Color(color = 0xFF532013),
                 unselectedContent = Color(color = 0xFF532013)
@@ -167,13 +167,13 @@ public data class LogColorScheme(
                 unselectedContent = Color(color = 0xFFF6E856)
             ),
             error = LogLevelColors(
-                label = Color(color = 0xFFD56144),
+                label = Color(color = 0xFFDE846D),
                 selectedContainer = Color(color = 0xFFDE846D),
                 selectedContent = Color(color = 0xFF3E180E),
                 unselectedContent = Color(color = 0xFFDE846D)
             ),
             assert = LogLevelColors(
-                label = Color(color = 0xFFC84ACE),
+                label = Color(color = 0xFFDA86DF),
                 selectedContainer = Color(color = 0xFFDA86DF),
                 selectedContent = Color(color = 0xFF432145),
                 unselectedContent = Color(color = 0xFFDA86DF)

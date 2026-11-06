@@ -1,6 +1,7 @@
 package com.worldline.devview.core
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import com.worldline.devview.utils.RequiresDataStore
 import kotlinx.collections.immutable.ImmutableList
@@ -244,8 +245,10 @@ public fun rememberModules(block: ModuleRegistry.() -> Unit): ImmutableList<Modu
     val initializedModules = remember { mutableSetOf<Module>() }
 
     modules.forEach { module ->
-        if (initializedModules.add(element = module)) {
-            if (module is RequiresDataStore) module.initDataStore()
+        key(module) {
+            if (initializedModules.add(element = module) && module is RequiresDataStore) {
+                module.initDataStore()
+            }
             module.initModule()
         }
     }

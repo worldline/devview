@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
@@ -31,13 +31,17 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -61,50 +65,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Displays analytics events with compact counts and a pinned search/filter bar.
- *
- * Search, category selection, time range and panel visibility survive saved-state restoration.
- * Time-limited results refresh every five seconds. Tapping an event opens its details in place;
- * the [Analytics] module instead navigates to a dedicated destination.
- *
- * @param highlightedAnalyticsLogTypes Types whose counts appear beside the total count.
- * @param modifier Modifier applied to the screen.
- * @param bottomPadding Bottom inset supplied by the destination scaffold.
- * @param logs Events to display. Defaults to the logger’s current read-only snapshot.
- *        Read changing snapshots in composition, rather than remembering them.
+ * Module-owned analytics history; event details are separate registered destinations.
+ * Search and the inspected event anchor survive saved-state restoration and navigation.
  */
 @Composable
-public fun AnalyticsScreen(
-    highlightedAnalyticsLogTypes: PersistentList<AnalyticsLogType>,
-    modifier: Modifier = Modifier,
-    bottomPadding: Dp = 0.dp,
-    logs: List<AnalyticsLog> = AnalyticsLogger.logs
-) {
-    val stateHolder = rememberSaveableStateHolder()
-    var selectedId by rememberSaveable { mutableStateOf<String?>(value = null) }
-    val selectedLog = logs.firstOrNull { it.id == selectedId }
-    if (selectedId != null) {
-        AnalyticsDetailScreen(
-            log = selectedLog,
-            modifier = modifier,
-            bottomPadding = bottomPadding,
-            onBack = { selectedId = null }
-        )
-    } else {
-        stateHolder.SaveableStateProvider(key = "events") {
-            AnalyticsListScreen(
-                logs = logs,
-                highlightedAnalyticsLogTypes = highlightedAnalyticsLogTypes,
-                modifier = modifier,
-                bottomPadding = bottomPadding,
-                onEventClick = { selectedId = it.id }
-            )
-        }
-    }
-}
-
-@Composable
-internal fun AnalyticsListScreen(
+internal fun AnalyticsScreen(
     highlightedAnalyticsLogTypes: PersistentList<AnalyticsLogType>,
     onEventClick: (AnalyticsLog) -> Unit,
     modifier: Modifier = Modifier,
@@ -123,21 +88,52 @@ internal fun AnalyticsListScreen(
             value = Clock.System.now().toEpochMilliseconds()
         }
     }
-    val filtered = filterLogs(
+    val matching = filterLogs(
         logs = analytics,
         query = query,
         categories = selectedCategories.toSet(),
         range = range,
         now = now
     )
-    val rowKeys = eventRowKeys(logs = filtered)
+    val filtered = matching.asReversed()
+    val rowKeys = eventRowKeys(logs = matching).asReversed()
     val categories = analytics.map { it.type.category }.distinctBy { it.displayName }
     val count = selectedCategories.size + if (range == TimeRange.All) 0 else 1
     val clearFilters = {
         selectedCategories = emptyList()
         range = TimeRange.All
     }
-    val listState = rememberLazyListState()
+    var anchorKey by rememberSaveable { mutableStateOf<String?>(value = null) }
+    var anchorOffset by rememberSaveable { mutableIntStateOf(value = 0) }
+    val listState = remember {
+        val rowIndex = rowKeys.indexOf(element = anchorKey)
+        LazyListState(
+            firstVisibleItemIndex = if (rowIndex >= 0) rowIndex + 1 else 0,
+            firstVisibleItemScrollOffset =
+                if (rowIndex >= 0 || anchorKey == "highlighted_logs_header") anchorOffset else 0
+        )
+    }
+    val currentKeys by rememberUpdatedState(newValue = rowKeys)
+    val readAnchor = {
+        listState.layoutInfo.visibleItemsInfo
+            .firstOrNull {
+                it.index == listState.firstVisibleItemIndex
+            }?.let { item ->
+                (item.key as? String)
+                    ?.takeIf {
+                        currentKeys.isNotEmpty() &&
+                            (it == "highlighted_logs_header" || it in currentKeys)
+                    }?.let { it to listState.firstVisibleItemScrollOffset }
+            }
+    }
+    LaunchedEffect(key1 = listState) {
+        snapshotFlow { readAnchor() }.collect { position ->
+            if (position != null) {
+                anchorKey = position.first
+                anchorOffset = position.second
+            }
+        }
+    }
     val scope = rememberCoroutineScope()
     val summaries = buildList {
         add(element = HighlightedAnalyticsLog.Total(count = filtered.size))
@@ -160,7 +156,7 @@ internal fun AnalyticsListScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.KeyboardArrowUp,
-                        contentDescription = "Scroll to first event"
+                        contentDescription = "Latest events"
                     )
                 }
             }
@@ -258,7 +254,10 @@ internal fun AnalyticsListScreen(
         } else {
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize().padding(paddingValues = padding)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues = padding)
+                    .testTag(tag = "analytics_event_list")
             ) {
                 stickyHeader(key = "highlighted_logs_header") {
                     Surface { HighlightedAnalyticsLogsHeader(highlightedAnalyticsLogs = summaries) }
@@ -272,7 +271,23 @@ internal fun AnalyticsListScreen(
                             ).clickable(
                                 role = Role.Button,
                                 onClickLabel = "Open event details",
-                                onClick = { onEventClick(log) }
+                                onClick = {
+                                    val clickedRow = listState.layoutInfo.visibleItemsInfo
+                                        .firstOrNull { it.key == rowKeys[index] }
+                                    if (listState.firstVisibleItemIndex == 0 &&
+                                        clickedRow != null
+                                    ) {
+                                        // Anchor the inspected content, not the stationary summary header.
+                                        anchorKey = rowKeys[index]
+                                        anchorOffset = -clickedRow.offset
+                                    } else {
+                                        readAnchor()?.let { position ->
+                                            anchorKey = position.first
+                                            anchorOffset = position.second
+                                        }
+                                    }
+                                    onEventClick(log)
+                                }
                             )
                     ) {
                         AnalyticsLogItem(analyticsLog = log)
@@ -290,6 +305,10 @@ internal fun AnalyticsListScreen(
 @Composable
 private fun AnalyticsLogScreenPreview() {
     MaterialTheme {
-        AnalyticsScreen(highlightedAnalyticsLogTypes = persistentListOf(), logs = emptyList())
+        AnalyticsScreen(
+            highlightedAnalyticsLogTypes = persistentListOf(),
+            onEventClick = {},
+            logs = emptyList()
+        )
     }
 }

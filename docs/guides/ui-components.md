@@ -30,6 +30,8 @@ Column {
 `DevViewFilterBar` keeps search visible while filters are collapsed. The badge counts non-search filters;
 its toggle announces the count. State belongs to the caller: save it with `rememberSaveable` or keep it
 in an entry-scoped ViewModel. The Clear action resets panel filters; query reset is a separate caller decision.
+Set `clearFiltersEnabled = false` while a reset cannot complete, such as during preference loading,
+a pending save or a persistence error. The default is `true`; the action also requires an active filter.
 
 ```kotlin
 Scaffold(

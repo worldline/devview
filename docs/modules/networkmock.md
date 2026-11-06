@@ -39,9 +39,14 @@ val modules = rememberModules {
 ## Quick Start
 ### Using the UI
 ```kotlin
-// Add NetworkMockScreen to your Compose navigation
-NetworkMockScreen(...)
+DevView(
+    devViewIsOpen = isDevViewOpen,
+    closeDevView = { isDevViewOpen = false },
+    modules = modules
+)
 ```
+Open DevView → Network Mock. The registered module owns its screens and operation sheet;
+there is no public screen composable to add to host navigation.
 ### Using the Ktor Plugin
 ```kotlin
 // Zero-config: repositories are resolved automatically from NetworkMockInitializer

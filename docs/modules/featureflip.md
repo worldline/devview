@@ -47,10 +47,13 @@ val newCheckout = Feature.RemoteFeature(
 
 ### Using the UI
 ```kotlin
-val featureHandler = rememberFeatureHandler(features)
-CompositionLocalProvider(LocalFeatureHandler provides featureHandler) {
-    // FeatureFlipScreen is rendered automatically by DevView when FeatureFlip is registered.
-    // State changes are handled internally by the DevView UI.
+val handler = rememberFeatureHandler(features)
+CompositionLocalProvider(LocalFeatureHandler provides handler) {
+    DevView(
+        devViewIsOpen = isDevViewOpen,
+        closeDevView = { isDevViewOpen = false },
+        modules = modules
+    )
 }
 ```
 
@@ -74,7 +77,7 @@ unchanged and the screen offers **Retry** instead of crashing the host app.
 
 ## Usage
 - Use `FeatureHandler` to manage features programmatically.
-- Use `FeatureFlipScreen` for a ready-made UI.
+- Open DevView → Feature Flip to manage flags; registration owns the screen.
 - Features are persisted using DataStore.
 
 ## Best Practices

@@ -9,6 +9,10 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlin.test.AfterTest
 import kotlin.test.Test
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 
 class ConsoleModuleTest {
 
@@ -41,7 +45,7 @@ class ConsoleModuleTest {
     }
 
     @Test
-    fun `clear action removes existing logs`() {
+    fun `clear action removes existing logs`() = runTest {
         val module = Console()
 
         val clearAction = module.destinations[ConsoleDestination.Main::class]
@@ -49,13 +53,17 @@ class ConsoleModuleTest {
             .actions
             .single()
 
-        ConsoleLogger.logs.add(
+        val collector = launch { ConsoleLogger.collectInto() }
+        ConsoleLogger.log(log =
             ConsoleLog(level = LogLevel.INFO, tag = "tag", message = "message", timestamp = 1_700_000_000_000)
         )
 
+        advanceUntilIdle()
+        ConsoleLogger.hasLogs shouldBe true
         clearAction.action(ConsoleDestination.Main)
 
         ConsoleLogger.hasLogs shouldBe false
+        collector.cancelAndJoin()
     }
 
     @Test

@@ -21,13 +21,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `FeatureHandler.addFeatures(List<Feature>)` | `suspend fun` | Register additional flags at runtime (e.g. from remote config) |
 | `rememberFeatureHandler(features)` | `@Composable` | Creates and remembers a `FeatureHandler` backed by the module's DataStore |
 | `LocalFeatureHandler` | `CompositionLocal<FeatureHandler>` | Provides the handler to the composition tree |
-| `FeatureFlipScreen(modifier, bottomPadding)` | `@Composable` | Full-screen management UI; requires `LocalFeatureHandler` to be provided |
 | `FeatureFlip` | `object : Module, RequiresDataStore` | Module entry point; registered with `rememberModules` in the host app |
 | `FeatureFlipDestination.Main` | `@Serializable data object` | Only navigation destination; title "Feature Flip" |
 
 `setFeatureState` is `internal` — only the DevView UI can write flag state. External code is read-only.
 
 ## Internal Architecture
+
+`FeatureFlipScreen` is internal. Integrators register the module, provide `LocalFeatureHandler`
+and render DevView; they do not compose a separate management screen.
 
 ```
 Host app
