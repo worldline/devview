@@ -79,6 +79,13 @@ sample/                (sample Android app showing full integration)
 internal/dokka         (Dokka aggregation for published API docs)
 ```
 
+### UI integration boundary
+
+Integrators decide how to present `DevView` and register content with `rememberModules`.
+Built-in module screens are internal: registration owns their destinations, initialization,
+persistence and rendering. Do not add standalone screen adapters or public screen APIs.
+Public loggers, configuration/runtime APIs and custom-module UI kit remain available.
+
 ### Key Concepts
 
 **`Module` interface** (`devview`): Each feature module implements `Module`, declares `@Serializable` Navigation3 destination keys, and registers Compose content via `registerContent`. The `DevView` composable hosts all modules in a Navigation3 back-stack.

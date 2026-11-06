@@ -186,13 +186,7 @@ public class NetworkMock(
     // DestinationMetadataBuilder.menu action (not a single-tap action), since the shared toolbar
     // now supports an anchored dropdown of discrete choices.
     //
-    // A label String — rather than OperationSort itself — crosses this boundary because
-    // NetworkMockScreen is public API while OperationSort is deliberately internal (sort is a
-    // pure client-side composable concern, per devview-networkmock/CLAUDE.md's "Search and
-    // filters live in the composable, not the ViewModel"); a public composable can't expose an
-    // internal type in its signature. Both ends of this flow live in this module and share the
-    // same OperationSort.label values, so the label is a safe, internal-only protocol despite the
-    // public parameter type.
+    // The module-local label protocol is retained until sort moves into the filter panel.
     //
     // The menu's entries are fixed at module construction time (one per OperationSort value, in
     // declaration order) and cannot vary per spec tab; picking "Tag" when the current tab has no

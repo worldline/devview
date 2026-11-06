@@ -19,9 +19,7 @@ import com.worldline.devview.analytics.AnalyticsLogger
 import com.worldline.devview.analytics.model.AnalyticsLog
 import com.worldline.devview.analytics.model.AnalyticsLogType
 import com.worldline.devview.consolelogger.Console
-import com.worldline.devview.consolelogger.ConsoleLogger
 import com.worldline.devview.consolelogger.DevViewLogWriter
-import com.worldline.devview.consolelogger.LocalConsoleLogs
 import com.worldline.devview.consolelogger.theme.LocalLogColorScheme
 import com.worldline.devview.consolelogger.theme.LogColorScheme
 import com.worldline.devview.core.rememberModules
@@ -111,15 +109,11 @@ public fun DevViewApp() {
     // Console module, closing the gap native capture can't reach on iOS (NSLog/os_log
     // with no debugger attached). Registered once — Logger.addLogWriter is not
     // idempotent, so this must not re-run on every recomposition.
-    val consoleLogs = remember { ConsoleLogger.logs }
     LaunchedEffect(key1 = Unit) {
         Logger.addLogWriter(DevViewLogWriter)
     }
 
-    CompositionLocalProvider(
-        LocalFeatureHandler provides featureHandler,
-        LocalConsoleLogs provides consoleLogs
-    ) {
+    CompositionLocalProvider(values = arrayOf(LocalFeatureHandler provides featureHandler)) {
         val localFeatureHandler = LocalFeatureHandler.current
 
         // Observe dark mode feature state

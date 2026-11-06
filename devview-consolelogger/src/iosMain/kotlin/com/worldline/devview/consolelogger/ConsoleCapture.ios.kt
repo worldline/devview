@@ -15,9 +15,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import platform.posix.EAGAIN
+import platform.posix.EINTR
+import platform.posix.EWOULDBLOCK
+import platform.posix.F_GETFL
 import platform.posix.F_SETFL
 import platform.posix.O_NONBLOCK
 import platform.posix.STDERR_FILENO
@@ -26,6 +31,7 @@ import platform.posix._IOLBF
 import platform.posix.close
 import platform.posix.dup
 import platform.posix.dup2
+import platform.posix.errno
 import platform.posix.fcntl
 import platform.posix.pipe
 import platform.posix.read
@@ -52,62 +58,109 @@ internal actual suspend fun tailNativeConsole(): Unit = coroutineScope {
 }
 
 @OptIn(ExperimentalForeignApi::class)
-private suspend fun redirectStream(fd: Int, level: LogLevel): Unit = withContext(Dispatchers.IO) {
+internal suspend fun redirectStream(fd: Int, level: LogLevel): Unit = withContext(Dispatchers.IO) {
     val saved = dup(fd)
-    val (readFd, writeFd) = memScoped {
-        val fds = allocArray<IntVar>(2)
-        pipe(fds)
-        fds[0] to fds[1]
-    }
-
-    dup2(writeFd, fd)
-    close(writeFd)
-
-    // Non-blocking so a stalled reader (a full pipe buffer) drops writes instead of
-    // hanging every subsequent print in the app that owns this file descriptor. Dropping
-    // log lines is the correct trade for a dev tool.
-    fcntl(fd, F_SETFL, O_NONBLOCK)
-
-    if (fd == STDOUT_FILENO) {
-        // A pipe is not a tty, so libc switches stdout to 4KB full buffering and lines
-        // would arrive in bursts. Line-buffer instead so each println flushes promptly.
-        setvbuf(stdout, null, _IOLBF, 0.convert())
-    }
-
-    val buffer = ByteArray(size = READ_BUFFER_SIZE)
-    var pending = ""
+    check(value = saved >= 0) { "Console dup failed: errno=$errno" }
+    var readFd = -1
+    var writeFd = -1
+    var redirected = false
     try {
-        while (true) {
-            currentCoroutineContext().ensureActive()
-
-            val bytesRead = buffer.usePinned { pinned ->
-                read(readFd, pinned.addressOf(index = 0), buffer.size.convert())
-            }
-            if (bytesRead <= 0) break
-
-            buffer.usePinned { pinned ->
-                write(saved, pinned.addressOf(index = 0), bytesRead.convert())
-            }
-
-            pending += buffer.decodeToString(endIndex = bytesRead.toInt())
-            val lines = pending.split("\n")
-            pending = lines.last()
-            lines.dropLast(n = 1).forEach { line ->
-                if (line.isNotEmpty()) {
-                    ConsoleLogger.log(
-                        log = ConsoleLog(
-                            level = level,
-                            tag = "",
-                            message = line,
-                            timestamp = Clock.System.now().toEpochMilliseconds()
-                        )
-                    )
-                }
+        memScoped {
+            val fds = allocArray<IntVar>(2)
+            check(value = pipe(fds) == 0) { "Console pipe failed: errno=$errno" }
+            readFd = fds[0]
+            writeFd = fds[1]
+        }
+        makeNonBlocking(fd = readFd)
+        check(value = duplicateDescriptor(source = writeFd, target = fd) >= 0) {
+            "Console redirect failed: errno=$errno"
+        }
+        redirected = true
+        close(writeFd)
+        writeFd = -1
+        // A full capture pipe must not block the host app’s writers.
+        makeNonBlocking(fd = fd)
+        if (fd == STDOUT_FILENO) {
+            check(value = setvbuf(stdout, null, _IOLBF, 0.convert()) == 0) {
+                "Console stdout buffering failed: errno=$errno"
             }
         }
+        drainConsolePipe(readFd = readFd, saved = saved, level = level)
     } finally {
-        close(readFd)
-        dup2(saved, fd)
+        val restored = if (redirected) duplicateDescriptor(source = saved, target = fd) else 0
+        val restoreFailure = errno
+        if (readFd >= 0) close(readFd)
+        if (writeFd >= 0) close(writeFd)
         close(saved)
+        check(value = restored >= 0) { "Console restore failed: errno=$restoreFailure" }
     }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+private suspend fun drainConsolePipe(readFd: Int, saved: Int, level: LogLevel) {
+    val buffer = ByteArray(size = READ_BUFFER_SIZE)
+    var pending = ""
+    while (true) {
+        val bytesRead = readConsolePipe(readFd = readFd, buffer = buffer)
+        if (bytesRead == 0L) break
+        buffer.usePinned { pinned ->
+            write(saved, pinned.addressOf(index = 0), bytesRead.convert())
+        }
+        pending += buffer.decodeToString(endIndex = bytesRead.toInt())
+        val lines = pending.split("\n")
+        pending = lines.last()
+        lines.dropLast(n = 1).forEach { line ->
+            if (line.isNotEmpty()) {
+                ConsoleLogger.log(
+                    log = ConsoleLog(
+                        level = level,
+                        tag = "",
+                        message = line,
+                        timestamp = Clock.System.now().toEpochMilliseconds()
+                    )
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+private suspend fun readConsolePipe(readFd: Int, buffer: ByteArray): Long {
+    var bytesRead: Long
+    do {
+        currentCoroutineContext().ensureActive()
+        bytesRead = buffer.usePinned { pinned ->
+            read(readFd, pinned.addressOf(index = 0), buffer.size.convert())
+        }
+        if (bytesRead < 0L) {
+            val failure = errno
+            when {
+                failure == EINTR -> Unit
+                failure == EAGAIN || failure == EWOULDBLOCK -> {
+                    // Idle reads suspend so cancellation can restore both output streams.
+                    delay(timeMillis = 10L)
+                }
+                else -> error(message = "Console pipe read failed: errno=$failure")
+            }
+        }
+    } while (bytesRead < 0L)
+    return bytesRead
+}
+
+@OptIn(ExperimentalForeignApi::class)
+private fun makeNonBlocking(fd: Int) {
+    val flags = fcntl(fd, F_GETFL)
+    check(value = flags >= 0) { "Console read flags failed: errno=$errno" }
+    check(value = fcntl(fd, F_SETFL, flags or O_NONBLOCK) == 0) {
+        "Console nonblocking setup failed: errno=$errno"
+    }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+private fun duplicateDescriptor(source: Int, target: Int): Int {
+    var result: Int
+    do {
+        result = dup2(source, target)
+    } while (result < 0 && errno == EINTR)
+    return result
 }

@@ -30,6 +30,11 @@ interface Module {
 }
 ```
 
+`rememberModules` keeps `initModule()` in composition after once-only DataStore setup.
+Use keyed `LaunchedEffect` or `DisposableEffect` for ongoing work: recomposition keeps
+it alive; removing the module cancels it, and re-entry starts a new lifetime. Do not
+perform one-shot writes directly in the composable body.
+
 ### Section Enum
 ```kotlin
 enum class Section {

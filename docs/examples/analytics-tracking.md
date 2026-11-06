@@ -33,19 +33,13 @@ val modules = rememberModules {
 }
 ```
 
-## Step 3: Use AnalyticsScreen in Your Composable
+## Step 3: Show DevView
 ```kotlin
-@Composable
-fun MyApp() {
-    // AnalyticsScreen is rendered automatically when Analytics() is registered in rememberModules.
-    // To use it standalone:
-    AnalyticsScreen(
-        highlightedAnalyticsLogTypes = persistentListOf(
-            AnalyticsLogCategory.Action.Click,
-            AnalyticsLogCategory.Performance.Error
-        )
-    )
-}
+DevView(
+    devViewIsOpen = isDevViewOpen,
+    closeDevView = { isDevViewOpen = false },
+    modules = modules
+)
 ```
 
 ## Step 4: Test Analytics Tracking
@@ -54,7 +48,7 @@ fun MyApp() {
 - Use filtering and search to inspect specific events
 - Tap an event to inspect parameters and copy its full details
 
-The logger exposes read-only snapshots. Custom standalone sources pass `logs = yourList`; no CompositionLocal provider is needed. Replace lists/maps when updating custom sources. Sample events should be recorded from an effect or event handler, not directly during composition.
+The registered module reads the logger; no CompositionLocal provider is needed. Record events from an effect or event handler, not directly during composition.
 
 ## Troubleshooting
 - If events do not appear, check that you are using AnalyticsLogger.log() correctly

@@ -11,7 +11,7 @@ import kotlinx.collections.immutable.toPersistentMap
  * to this logger; consumers cannot insert or remove records through [logs]. Read [logs] inside
  * composition to observe updates, rather than remembering a returned snapshot.
  *
- * @see AnalyticsScreen
+ * @see Analytics
  * @sample com.worldline.devview.analytics.samples.AnalyticsLoggerSamples.logSample
  */
 public object AnalyticsLogger {

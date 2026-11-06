@@ -55,20 +55,14 @@ import okio.IOException
  * Changes are persisted through [FeatureHandler]; query, filters and panel visibility
  * survive saved-state restoration. Filters combine OR within a dimension and AND across dimensions.
  *
- * Provide [LocalFeatureHandler] before calling this screen:
- * ```kotlin
- * val handler = rememberFeatureHandler(features)
- * CompositionLocalProvider(LocalFeatureHandler provides handler) {
- *     FeatureFlipScreen()
- * }
- * ```
+ * Rendered by [FeatureFlip] inside DevView; the host provides [LocalFeatureHandler].
  *
  * @param modifier Modifier applied to the screen.
  * @param bottomPadding Bottom system inset supplied by DevView's destination scaffold.
  * @throws IllegalStateException if [LocalFeatureHandler] is not provided.
  */
 @Composable
-public fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 0.dp) {
+internal fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 0.dp) {
     val featureHandler = LocalFeatureHandler.current
     val features = featureHandler.features.value
 

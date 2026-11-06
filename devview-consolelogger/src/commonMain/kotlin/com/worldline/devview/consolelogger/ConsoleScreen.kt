@@ -1,45 +1,37 @@
 package com.worldline.devview.consolelogger
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowDownward
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Done
-import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.ArrowUpward
+import androidx.compose.material.icons.rounded.Terminal
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.structuralEqualityPolicy
-import androidx.compose.runtime.toMutableStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -47,239 +39,255 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import com.worldline.devview.consolelogger.components.ConsoleLogRow
+import com.worldline.devview.consolelogger.components.ConsoleNoiseFilterPanel
 import com.worldline.devview.consolelogger.model.ConsoleLog
 import com.worldline.devview.consolelogger.model.LogLevel
 import com.worldline.devview.consolelogger.preview.ConsoleLogListPreviewParameterProvider
 import com.worldline.devview.consolelogger.theme.LocalLogColorScheme
 import com.worldline.devview.consolelogger.theme.LogColorScheme
 import com.worldline.devview.consolelogger.theme.rememberLogColorScheme
+import com.worldline.devview.ui.DevViewEmptyState
+import com.worldline.devview.ui.DevViewFilterBar
+import com.worldline.devview.ui.DevViewSectionHeader
+import com.worldline.devview.utils.rememberDataStore
+import okio.IOException
 
 /**
- * Main UI component for displaying captured console logs.
- *
- * Renders a scrollable, auto-following list of console log lines colored by [LogLevel],
- * with a bottom bar providing per-level filter chips and a text filter over tag/message.
- * Scrolling up disables auto-follow; a floating action button re-enables it and jumps back
- * to the latest entry.
- *
- * ## Usage
- * ```kotlin
- * CompositionLocalProvider(LocalConsoleLogs provides ConsoleLogger.logs) {
- *     ConsoleScreen(modifier = Modifier.fillMaxSize())
- * }
- * ```
- *
- * @param modifier Modifier to be applied to the root [Scaffold].
- * @param bottomPadding Additional bottom padding applied to the bottom bar content, used to
- *        avoid overlap with system UI elements when this screen is nested inside another
- *        [Scaffold].
- *
- * @see ConsoleLogger
- * @see LocalConsoleLogs
- * @see ConsoleLog
+ * Module-owned console history with persisted noise exclusions and newest-first rows.
+ * Scrolling or expanding pauses follow mode; search and reading state are saveable.
  */
 @Composable
-public fun ConsoleScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 0.dp) {
-    val consoleLogs = LocalConsoleLogs.current
-    val logColorScheme = rememberLogColorScheme()
-
-    val selectedFilters = remember {
-        LogLevel.entries.map { it to false }.toMutableStateMap()
+internal fun ConsoleScreen(
+    dataStore: DataStore<Preferences>,
+    defaults: List<String>,
+    modifier: Modifier = Modifier,
+    bottomPadding: Dp = 0.dp,
+    logs: List<ConsoleLog> = ConsoleLogger.logs
+) {
+    val repository = remember(key1 = dataStore, key2 = defaults) {
+        ConsoleNoiseRepository(dataStore = dataStore, defaults = defaults)
     }
-
-    var filterQuery by remember { mutableStateOf(value = "") }
-
-    val filteredConsoleLogs by remember {
-        derivedStateOf(policy = structuralEqualityPolicy()) {
-            consoleLogs.filter { log ->
-                val matchesLevel =
-                    selectedFilters.values.all { !it } || selectedFilters[log.level] == true
-                val matchesQuery = filterQuery.isBlank() ||
-                    log.tag.contains(other = filterQuery, ignoreCase = true) ||
-                    log.message.contains(other = filterQuery, ignoreCase = true)
-                matchesLevel && matchesQuery
+    var overrides by remember(key1 = repository) { mutableStateOf(value = ConsoleNoiseOverrides()) }
+    var loaded by remember(key1 = repository) { mutableStateOf(value = false) }
+    var readFailed by remember(key1 = repository) { mutableStateOf(value = false) }
+    var writeFailed by remember(key1 = repository) { mutableStateOf(value = false) }
+    var pending by remember(
+        key1 = repository
+    ) { mutableStateOf(value = emptyList<ConsoleNoiseChange>()) }
+    var retry by remember(key1 = repository) { mutableIntStateOf(value = 0) }
+    LaunchedEffect(key1 = repository, key2 = retry) {
+        loaded = false
+        readFailed = false
+        try {
+            repository.overrides.collect {
+                overrides = it
+                loaded = true
+            }
+        } catch (_: IOException) {
+            readFailed = true
+        }
+    }
+    // Serialize writes; a failed edit stays first until explicitly retried.
+    LaunchedEffect(key1 = repository, key2 = pending.isNotEmpty(), key3 = retry) {
+        while (pending.isNotEmpty()) {
+            try {
+                repository.update(change = pending.first())
+                writeFailed = false
+                pending = pending.drop(n = 1)
+            } catch (_: IOException) {
+                writeFailed = true
+                break
             }
         }
     }
-
-    var enableAutoScroll by remember { mutableStateOf(value = true) }
-    val lazyColumnState = rememberLazyListState()
-
-    val nestedScrollConnection = remember {
+    val noiseControlsEnabled = loaded && !readFailed && !writeFailed && pending.isEmpty()
+    val noiseLoading = !loaded && !readFailed
+    val noiseError = when {
+        readFailed -> "Could not load noise filters. Your saved rules have not been changed."
+        writeFailed -> "Could not save noise filters. Your last saved rules are still in use."
+        else -> null
+    }
+    val onNoiseChange: (ConsoleNoiseChange) -> Unit = { pending = pending + it }
+    val onRetryNoise: () -> Unit = { retry++ }
+    val noiseOverrides = overrides
+    val colors = rememberLogColorScheme()
+    var query by rememberSaveable { mutableStateOf(value = "") }
+    var visibleLevels by rememberSaveable {
+        mutableStateOf(value = LogLevel.entries.map { it.name })
+    }
+    var panelExpanded by rememberSaveable { mutableStateOf(value = false) }
+    var expandedIds by rememberSaveable { mutableStateOf(value = emptyList<String>()) }
+    var following by rememberSaveable { mutableStateOf(value = true) }
+    val levels = LogLevel.entries.filter { it.name in visibleLevels }.toSet()
+    val excludedPatterns = noiseOverrides.enabledPatterns(defaults = defaults)
+    val matching = filterConsoleLogs(
+        logs = logs,
+        query = query,
+        levels = levels,
+        excludedPatterns = excludedPatterns
+    )
+    val filtered = matching.asReversed()
+    val keys = consoleRowKeys(logs = matching).asReversed()
+    val sourceKeys = consoleRowKeys(logs = logs).toSet()
+    LaunchedEffect(key1 = sourceKeys) {
+        expandedIds = expandedIds.filter { it in sourceKeys }
+    }
+    val hiddenCount = LogLevel.entries.size - levels.size + excludedPatterns.size
+    val clearFilters = {
+        visibleLevels = LogLevel.entries.map { it.name }
+        onNoiseChange(ConsoleNoiseChange.DisableAll)
+    }
+    val listState = rememberLazyListState()
+    val scrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (available.y != 0f && enableAutoScroll) {
-                    enableAutoScroll = false
-                }
+                if (source == NestedScrollSource.UserInput && available.y != 0f) following = false
                 return Offset.Zero
             }
         }
     }
-
-    LaunchedEffect(key1 = filteredConsoleLogs.size, key2 = enableAutoScroll) {
-        if (filteredConsoleLogs.isNotEmpty() && enableAutoScroll) {
-            lazyColumnState.animateScrollToItem(index = filteredConsoleLogs.size - 1)
+    LaunchedEffect(key1 = keys.firstOrNull(), key2 = following) {
+        if (following && filtered.isNotEmpty()) {
+            listState.scrollToItem(index = 0)
         }
     }
-
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize().imePadding(),
         floatingActionButton = {
-            AnimatedVisibility(visible = !enableAutoScroll) {
+            AnimatedVisibility(visible = !following) {
                 FloatingActionButton(
-                    modifier = Modifier.testTag(tag = "scroll_to_bottom_button"),
-                    onClick = { enableAutoScroll = true }
+                    onClick = { following = true },
+                    modifier = Modifier.testTag(tag = "console_resume_follow")
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.ArrowDownward,
-                        contentDescription = "Resume auto-scroll"
+                        imageVector = Icons.Rounded.ArrowUpward,
+                        contentDescription = "Resume following latest log"
                     )
                 }
             }
         },
         bottomBar = {
-            Surface {
-                Column {
-                    HorizontalDivider()
-                    FlowRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .animateContentSize(),
-                        horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
-                    ) {
-                        LogLevel.entries.forEach { level ->
-                            val selected = selectedFilters[level] == true
-                            val levelColors = logColorScheme[level]
-                            FilterChip(
-                                modifier = Modifier.testTag(
-                                    tag = "console_level_chip_${level.name}"
-                                ),
-                                selected = selected,
-                                onClick = { selectedFilters[level] = !selected },
-                                border = FilterChipDefaults.filterChipBorder(
-                                    enabled = true,
-                                    selected = selected,
-                                    borderColor = levelColors.label
-                                ),
-                                colors = FilterChipDefaults.filterChipColors(
-                                    labelColor = levelColors.unselectedContent,
-                                    selectedLabelColor = levelColors.selectedContent,
-                                    selectedLeadingIconColor = levelColors.selectedContent,
-                                    selectedContainerColor = levelColors.selectedContainer
-                                ),
-                                leadingIcon = {
-                                    if (selected) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Done,
-                                            contentDescription = null
-                                        )
-                                    }
-                                },
-                                label = { Text(text = level.name) }
-                            )
-                        }
-                    }
-                    HorizontalDivider()
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp)
-                                .padding(bottom = bottomPadding)
-                                .testTag(tag = "console_filter_field"),
-                            value = filterQuery,
-                            onValueChange = { filterQuery = it },
-                            placeholder = { Text(text = "Filter by tag or message...") },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Rounded.Search,
-                                    contentDescription = null
-                                )
-                            },
-                            trailingIcon = {
-                                AnimatedVisibility(visible = filterQuery.isNotEmpty()) {
-                                    IconButton(
-                                        modifier = Modifier.testTag(tag = "clear_filter_button"),
-                                        onClick = { filterQuery = "" }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Close,
-                                            contentDescription = "Clear filter"
-                                        )
-                                    }
+            DevViewFilterBar(
+                query = query,
+                onQueryChange = { query = it },
+                placeholder = "Filter by tag or message",
+                activeFilterCount = hiddenCount,
+                expanded = panelExpanded,
+                onExpandedChange = { panelExpanded = it },
+                onClearFilters = clearFilters,
+                clearFiltersEnabled = noiseControlsEnabled,
+                bottomPadding = bottomPadding,
+                modifier = Modifier.testTag(tag = "console_filter_bar")
+            ) {
+                DevViewSectionHeader(text = "Visible levels")
+                FlowRow(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+                ) {
+                    LogLevel.entries.forEach { level ->
+                        FilterChip(
+                            selected = level.name in visibleLevels,
+                            onClick = {
+                                visibleLevels = if (level.name in visibleLevels) {
+                                    visibleLevels - level.name
+                                } else {
+                                    visibleLevels + level.name
                                 }
                             },
-                            singleLine = true,
-                            shape = MaterialTheme.shapes.medium
+                            label = { Text(text = level.displayName) },
+                            leadingIcon = {
+                                Surface(
+                                    color = colors[level].label,
+                                    shape = MaterialTheme.shapes.small,
+                                    modifier = Modifier.size(size = 8.dp)
+                                ) {}
+                            },
+                            modifier = Modifier.testTag(tag = "console_level_chip_${level.name}")
                         )
                     }
                 }
+                ConsoleNoiseFilterPanel(
+                    defaults = defaults,
+                    overrides = noiseOverrides,
+                    onChange = onNoiseChange,
+                    hiddenEntries = logs.count {
+                        it.matchesConsoleNoise(
+                            patterns = excludedPatterns
+                        )
+                    },
+                    controlsEnabled = noiseControlsEnabled,
+                    loading = noiseLoading,
+                    error = noiseError,
+                    onRetry = onRetryNoise
+                )
             }
         }
-    ) { paddingValues ->
-        if (filteredConsoleLogs.isEmpty()) {
-            Text(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues = paddingValues)
-                    .padding(all = 16.dp)
-                    .testTag(tag = "console_empty_state"),
-                text = if (consoleLogs.isEmpty()) {
-                    "Console logs will appear here"
-                } else {
-                    "No logs match your filter"
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues = paddingValues)
-                    .imePadding()
-                    .nestedScroll(connection = nestedScrollConnection),
-                state = lazyColumnState,
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(space = 4.dp)
+    ) { padding ->
+        if (filtered.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(paddingValues = padding),
+                contentAlignment = Alignment.Center
             ) {
-                itemsIndexed(items = filteredConsoleLogs) { index, log ->
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag(tag = "console_log_item_$index"),
-                        fontFamily = FontFamily.Monospace,
-                        style = MaterialTheme.typography.bodySmall,
-                        text = buildAnnotatedString {
-                            withStyle(
-                                style = SpanStyle(
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            ) {
-                                append(text = "${log.formattedTimestamp} ")
-                            }
-                            withStyle(style = SpanStyle(color = logColorScheme[log.level].label)) {
-                                if (log.tag.isNotEmpty()) {
-                                    append(text = "${log.tag}: ")
+                DevViewEmptyState(
+                    icon = Icons.Rounded.Terminal,
+                    title = if (logs.isEmpty()) "No logs yet" else "No logs match your filters",
+                    message = if (logs.isEmpty()) {
+                        "Captured console output will appear here."
+                    } else {
+                        "Change your search or clear the level and noise filters."
+                    },
+                    modifier = Modifier.testTag(tag = "console_empty_state"),
+                    action = if (query.isNotEmpty() || hiddenCount > 0) {
+                        {
+                            TextButton(
+                                enabled = noiseControlsEnabled,
+                                onClick = {
+                                    query = ""
+                                    clearFilters()
                                 }
-                                append(text = log.message)
+                            ) {
+                                Text(text = "Clear search and filters")
                             }
                         }
+                    } else {
+                        null
+                    }
+                )
+            }
+        } else {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues = padding)
+                    .testTag(tag = "console_log_list")
+                    .nestedScroll(connection = scrollConnection)
+            ) {
+                itemsIndexed(items = filtered, key = { index, _ -> keys[index] }) { index, log ->
+                    ConsoleLogRow(
+                        log = log,
+                        colors = colors,
+                        expanded = keys[index] in expandedIds,
+                        onExpandedChange = {
+                            following = false
+                            expandedIds = if (keys[index] in expandedIds) {
+                                expandedIds - keys[index]
+                            } else {
+                                expandedIds + keys[index]
+                            }
+                        },
+                        modifier = Modifier.testTag(tag = "console_log_item_${log.id}")
                     )
+                    if (index != filtered.lastIndex) {
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                    }
                 }
             }
         }
@@ -289,14 +297,17 @@ public fun ConsoleScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 0.dp
 @Preview
 @Composable
 private fun ConsoleScreenPreview(
-    @PreviewParameter(ConsoleLogListPreviewParameterProvider::class) consoleLogs: List<ConsoleLog>
+    @PreviewParameter(ConsoleLogListPreviewParameterProvider::class) logs: List<ConsoleLog>
 ) {
     MaterialTheme {
         CompositionLocalProvider(
-            LocalConsoleLogs provides consoleLogs,
-            LocalLogColorScheme provides LogColorScheme.Light
+            values = arrayOf(LocalLogColorScheme provides LogColorScheme.Light)
         ) {
-            ConsoleScreen(modifier = Modifier.fillMaxSize())
+            ConsoleScreen(
+                logs = logs,
+                defaults = Console.DEFAULT_EXCLUDED_PATTERNS,
+                dataStore = rememberDataStore(dataStoreName = "console_preview.preferences_pb")
+            )
         }
     }
 }

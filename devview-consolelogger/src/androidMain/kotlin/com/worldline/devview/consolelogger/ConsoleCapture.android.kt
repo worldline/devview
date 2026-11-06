@@ -2,9 +2,12 @@ package com.worldline.devview.consolelogger
 
 import co.touchlab.kermit.Logger
 import java.io.IOException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -29,15 +32,36 @@ internal actual suspend fun tailNativeConsole(): Unit = withContext(context = Di
     }
 
     try {
+        collectLogcatProcess(process = process)
+    } finally {
+        process.destroy()
+    }
+}
+
+@Suppress("InjectDispatcher")
+internal suspend fun collectLogcatProcess(process: Process): Unit = withContext(
+    context = Dispatchers.IO
+) {
+    // Install before blocking: cancellation must terminate logcat to unblock its reader.
+    val stopOnCancellation = launch(start = CoroutineStart.UNDISPATCHED) {
+        try {
+            awaitCancellation()
+        } finally {
+            process.destroy()
+        }
+    }
+    try {
         process.inputStream.bufferedReader().useLines { lines ->
             lines.forEach { line ->
                 currentCoroutineContext().ensureActive()
                 ConsoleLogger.log(log = parseLogcatLine(line = line))
             }
         }
+    } catch (exception: IOException) {
+        currentCoroutineContext().ensureActive()
+        throw exception
     } finally {
-        // ponytail: the blocking readLine() above only observes cancellation once a line
-        // arrives or the process exits; destroy() unblocks it immediately on cancellation.
+        stopOnCancellation.cancel()
         process.destroy()
     }
 }

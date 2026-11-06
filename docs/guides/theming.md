@@ -77,6 +77,12 @@ to wire up `LocalLogColorScheme` explicitly. The fallback deliberately does not 
 system setting (e.g. a feature flag), and the theme actually in effect is the only reliable
 signal.
 
+Console rows use neutral host-theme typography and surfaces; semantic colour is limited
+to severity badges and filter dots. Both built-in palettes have label-contrast tests of
+at least 4.5:1 against their reference surfaces. Custom colours and host surfaces still
+need their own contrast checks. Warning labels are darker in light mode; light debug/error
+and dark error/assert labels have also been adjusted.
+
 ## Network Mock Status Colors
 
 Like the Console Logger's `LogColorScheme`, the Network Mock module's per-status-family colors
