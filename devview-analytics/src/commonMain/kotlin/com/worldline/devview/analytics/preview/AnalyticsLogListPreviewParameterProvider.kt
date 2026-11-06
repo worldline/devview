@@ -19,9 +19,7 @@ import kotlin.time.Clock
  * fun ScreenPreview(
  *     @PreviewParameter(AnalyticsLogListPreviewParameterProvider::class) logs: List<AnalyticsLog>
  * ) {
- *     CompositionLocalProvider(LocalAnalytics provides logs) {
- *         AnalyticsScreen()
- *     }
+ *     AnalyticsScreen(highlightedAnalyticsLogTypes = persistentListOf(), logs = logs)
  * }
  * ```
  *
