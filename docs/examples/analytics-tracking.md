@@ -19,7 +19,8 @@ AnalyticsLogger.log(
         tag = "button_click",
         screenClass = "HomeScreen",
         timestamp = System.currentTimeMillis(),
-        type = AnalyticsLogCategory.Action.Click
+        type = AnalyticsLogCategory.Action.Click,
+        params = mapOf("source" to "home")
     )
 )
 ```
@@ -38,14 +39,12 @@ val modules = rememberModules {
 fun MyApp() {
     // AnalyticsScreen is rendered automatically when Analytics() is registered in rememberModules.
     // To use it standalone:
-    CompositionLocalProvider(LocalAnalytics provides AnalyticsLogger.logs) {
-        AnalyticsScreen(
-            highlightedAnalyticsLogTypes = persistentListOf(
-                AnalyticsLogCategory.Action.Click,
-                AnalyticsLogCategory.Performance.Error
-            )
+    AnalyticsScreen(
+        highlightedAnalyticsLogTypes = persistentListOf(
+            AnalyticsLogCategory.Action.Click,
+            AnalyticsLogCategory.Performance.Error
         )
-    }
+    )
 }
 ```
 
@@ -53,6 +52,9 @@ fun MyApp() {
 - Open DevView and navigate to the Analytics module
 - Trigger events in your app and observe them in real time
 - Use filtering and search to inspect specific events
+- Tap an event to inspect parameters and copy its full details
+
+The logger exposes read-only snapshots. Custom standalone sources pass `logs = yourList`; no CompositionLocal provider is needed. Replace lists/maps when updating custom sources. Sample events should be recorded from an effect or event handler, not directly during composition.
 
 ## Troubleshooting
 - If events do not appear, check that you are using AnalyticsLogger.log() correctly

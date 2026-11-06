@@ -17,6 +17,7 @@ import com.worldline.devview.core.Module
 import com.worldline.devview.core.ModuleDestinationActionPopup
 import com.worldline.devview.core.Section
 import com.worldline.devview.core.withActions
+import com.worldline.devview.core.withTitle
 import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
@@ -51,9 +52,9 @@ public sealed interface AnalyticsDestination : NavKey {
     @Serializable
     public data object Main : AnalyticsDestination
 
-    // Add more destinations as needed, for example:
-    // @Serializable
-    // public data class Detail(val analyticsId: String) : AnalyticsDestination
+    /** Event details. [id] is the occurrence UUID; unavailable events remain unavailable after restart. */
+    @Serializable
+    public data class Detail(val id: String) : AnalyticsDestination
 }
 
 /**
@@ -147,7 +148,8 @@ public class Analytics(
             ) {
                 AnalyticsLogger.clear()
             }
-        }
+        },
+        AnalyticsDestination.Detail::class.withTitle(title = "Event")
     )
 
     override val entryDestination: NavKey = AnalyticsDestination.Main
@@ -162,6 +164,10 @@ public class Analytics(
             subclass(
                 subclass = AnalyticsDestination.Main::class,
                 serializer = AnalyticsDestination.Main.serializer()
+            )
+            subclass(
+                subclass = AnalyticsDestination.Detail::class,
+                serializer = AnalyticsDestination.Detail.serializer()
             )
         }
 
@@ -180,7 +186,8 @@ public class Analytics(
         bottomPadding: Dp
     ) {
         entry<AnalyticsDestination.Main> {
-            AnalyticsScreen(
+            AnalyticsListScreen(
+                onEventClick = { event -> onNavigate(AnalyticsDestination.Detail(id = event.id)) },
                 modifier = Modifier
                     .fillMaxSize(),
                 highlightedAnalyticsLogTypes = listOfNotNull(
@@ -188,6 +195,12 @@ public class Analytics(
                     highlightedLogType2,
                     highlightedLogType3
                 ).toPersistentList(),
+                bottomPadding = bottomPadding
+            )
+        }
+        entry<AnalyticsDestination.Detail> { destination ->
+            AnalyticsDetailScreen(
+                log = AnalyticsLogger.logs.firstOrNull { it.id == destination.id },
                 bottomPadding = bottomPadding
             )
         }
