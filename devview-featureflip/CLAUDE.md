@@ -40,19 +40,17 @@ Host app
 
 FeatureFlipScreen
   ├─ reads featureHandler.features  (internal @Composable property → getFeatures() Flow)
-  ├─ derives filteredFeatures via derivedStateOf (search + FeatureFilter chips)
+  ├─ derives filteredFeatures from search + FeatureFilter chips
   └─ per item → FeatureItem
        ├─ LocalFeature  → Switch  (checked ↔ LOCAL_ON / LOCAL_OFF)
-       └─ RemoteFeature → FeatureTriStateSwitch
-            └─ custom SingleChoiceSegmentedButtonRow iterating FeatureState.entries by ordinal
-               segment 0 = REMOTE (cloud icon), 1 = LOCAL_OFF (cancel), 2 = LOCAL_ON (check)
-               active segment color: primary if effectively ON, error if effectively OFF
+       └─ RemoteFeature → Material3 SingleChoiceSegmentedButtonRow
+            labels Remote / Off / On, paired host-theme colours
+            supporting text shows the remote value
+  └─ DevViewFilterBar: pinned search, collapsible Type/State groups and active count
+       query, selected filter names and expanded state use rememberSaveable
 ```
 
-State changes in the UI are dispatched on `Dispatchers.IO`:
-```kotlin
-coroutineScope.launch { featureHandler.setFeatureState(feature.name, state) }
-```
+State-change requests enter one remembered channel, consumed in click order by a `LaunchedEffect`. DataStore owns I/O dispatching. An `IOException` keeps the persisted selection and shows a Retry action; cancellation and invalid requests still propagate. Restored type filters remain active when the registered feature types change.
 
 `rememberFeatureHandler` obtains the DataStore via `FeatureFlip.dataStoreDelegate.get()`. DataStore initialisation (platform-specific file path) is handled by `devview-utils`; this module has no `androidMain`/`iosMain` source sets and no `expect`/`actual` declarations.
 
@@ -93,9 +91,9 @@ featureHandler.isFeatureEnabledFlow("dark_mode").collect { … }
 ## Non-Obvious Conventions
 
 - **`FeatureState` ordinals are load-bearing.** They are persisted as raw integers in DataStore (`REMOTE=0`, `LOCAL_OFF=1`, `LOCAL_ON=2`). Reordering the enum entries is a breaking data migration.
-- **`FeatureTriStateSwitch` segment order mirrors the enum ordinal order.** The `selectedIndex` is derived directly from `feature.state.ordinal`. Keep enum and UI in sync.
+- **Segment order mirrors the enum order.** Selection compares FeatureState values, not a separate index. Keep the persisted ordinals unchanged.
 - **`FeatureFilter` is adaptive.** If all registered features are the same type (all `RemoteFeature` or all `LocalFeature`), the LOCAL/REMOTE filter chips are hidden; only ON/OFF chips appear.
 - **Filter chips use OR within a dimension, AND across dimensions.** Selecting LOCAL+REMOTE shows all features; selecting LOCAL+ON shows only enabled local features.
 - **`Poko` annotation** is applied via `com.worldline.devview.core.Poko` (project-local alias), not the default `@Poko`. The `Feature` sealed class members use standard `data class`, so `Poko` affects other model classes in the wider project.
 - **`FeatureHandler.featureRegistry` keyed by `Feature` instance.** Lookups for reads/writes use `firstOrNull { it.key.name == featureName }` — feature `name` is the stable identity; the `Feature` object itself (including `isEnabled`/`state`) changes as DataStore emits updates.
-- **`SegmentedButtonContentMeasurePolicy`** is a hand-rolled copy of Material3 internal logic, required because M3 does not expose icon-only segmented buttons with per-segment container colors.
+- **Use Material3 segmented controls directly.** No copied measure policy or custom selected-colour logic remains.

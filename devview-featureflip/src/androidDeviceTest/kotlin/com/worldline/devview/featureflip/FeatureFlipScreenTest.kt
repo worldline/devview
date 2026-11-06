@@ -1,12 +1,20 @@
 package com.worldline.devview.featureflip
 
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.runtime.mutableStateOf
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.compose.ui.test.StateRestorationTester
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.worldline.devview.featureflip.model.Feature
@@ -15,204 +23,231 @@ import com.worldline.devview.featureflip.model.FeatureState
 import com.worldline.devview.featureflip.model.LocalFeatureHandler
 import com.worldline.devview.test.FakePreferencesDataStore
 import com.worldline.devview.test.waitUntilTagCount
+import kotlinx.coroutines.CompletableDeferred
+import okio.IOException
 import org.junit.Test
+import kotlin.test.assertEquals
 
 class FeatureFlipScreenTest {
-
     @Test
-    fun featureFlipScreen_renders_features_and_filters_by_query() = runComposeUiTest {
+    fun search_filters_features_and_clearing_restores_them() = runComposeUiTest {
         val handler = FeatureHandler(
             dataStore = FakePreferencesDataStore(),
             initialFeatures = listOf(
-                Feature.LocalFeature("dark_mode", "Dark mode", false),
-                Feature.RemoteFeature("new_checkout", "Checkout v2", false, FeatureState.REMOTE)
+                Feature.LocalFeature(name = "dark_mode", description = "Dark mode", isEnabled = false),
+                Feature.RemoteFeature(name = "checkout", description = null, defaultRemoteValue = true, state = FeatureState.REMOTE)
             )
         )
-
         setContent {
-            CompositionLocalProvider(LocalFeatureHandler provides handler) {
-                FeatureFlipScreen()
-            }
+            CompositionLocalProvider(value = LocalFeatureHandler provides handler) { FeatureFlipScreen() }
         }
-
-        // Wait for lazy item enter animations before asserting visibility.
-        waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 1)
-        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
-
-        // Filter by entering "dark" in the search field
-        onNodeWithTag(testTag = "feature_filter_field").performTextInput("dark")
-
-        // After filtering, only dark_mode should be visible
-        waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 1)
-        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 0)
-
-        // Clear the filter by clicking the clear button
-        onNodeWithTag(testTag = "clear_feature_filter_button").performClick()
-
-        // After clearing, new_checkout should be visible again
-        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
+        waitUntilTagCount(tag = "feature_item_checkout", expectedCount = 1)
+        onNodeWithText(text = "Filter features").performTextInput(text = "dark")
+        waitUntilTagCount(tag = "feature_item_checkout", expectedCount = 0)
+        onNodeWithTag(testTag = "feature_item_dark_mode").assertIsDisplayed()
+        onNodeWithText(text = "Filter features").performTextClearance()
+        waitUntilTagCount(tag = "feature_item_checkout", expectedCount = 1)
     }
 
     @Test
-    fun featureFlipScreen_remote_chip_filters_out_local_features() = runComposeUiTest {
+    fun type_filters_use_or_and_expose_count_when_collapsed() = runComposeUiTest {
         val handler = FeatureHandler(
             dataStore = FakePreferencesDataStore(),
             initialFeatures = listOf(
-                Feature.LocalFeature("dark_mode", null, false),
-                Feature.RemoteFeature("new_checkout", null, true, FeatureState.REMOTE)
+                Feature.LocalFeature(name = "dark_mode", description = null, isEnabled = false),
+                Feature.RemoteFeature(name = "checkout", description = null, defaultRemoteValue = true, state = FeatureState.REMOTE)
             )
         )
-
         setContent {
-            CompositionLocalProvider(LocalFeatureHandler provides handler) {
-                FeatureFlipScreen()
-            }
+            CompositionLocalProvider(value = LocalFeatureHandler provides handler) { FeatureFlipScreen() }
         }
-
-        // Click the Remote filter chip
-        onNodeWithTag(testTag = "feature_filter_chip_REMOTE").performClick()
-
-        // After filtering to Remote only, only new_checkout should be visible
-        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
+        onNodeWithTag(testTag = "feature_filter_chip_REMOTE").assertDoesNotExist()
+        onNodeWithContentDescription(label = "Show filters, 0 active").performClick()
+        onNodeWithText(text = "Clear filters").assertIsNotEnabled()
+        onNodeWithTag(testTag = "feature_filter_chip_REMOTE").performClick().assertIsSelected()
         waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 0)
+        onNodeWithTag(testTag = "feature_filter_chip_LOCAL").performClick()
+        waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 1)
+        waitUntilTagCount(tag = "feature_item_checkout", expectedCount = 1)
+        onNodeWithContentDescription(label = "Hide filters, 2 active").performClick()
+        onNodeWithContentDescription(label = "Show filters, 2 active").assertIsDisplayed().performClick()
+        onNodeWithText(text = "Clear filters").performClick().assertIsNotEnabled()
+        onNodeWithContentDescription(label = "Hide filters, 0 active").assertIsDisplayed()
     }
 
     @Test
-    fun featureFlipScreen_state_changes_are_reflected_in_filters() = runComposeUiTest {
+    fun override_changes_effective_state_and_filter_empty_state_is_recoverable() = runComposeUiTest {
         val handler = FeatureHandler(
             dataStore = FakePreferencesDataStore(),
             initialFeatures = listOf(
-                Feature.RemoteFeature(
-                    name = "new_checkout",
-                    description = null,
-                    defaultRemoteValue = false,
-                    state = FeatureState.REMOTE
+                Feature.RemoteFeature(name = "checkout", description = null, defaultRemoteValue = false, state = FeatureState.REMOTE)
+            )
+        )
+        setContent {
+            CompositionLocalProvider(value = LocalFeatureHandler provides handler) { FeatureFlipScreen() }
+        }
+        onNodeWithContentDescription(label = "Show filters, 0 active").performClick()
+        onNodeWithTag(testTag = "feature_filter_chip_LOCAL").assertDoesNotExist()
+        onNodeWithTag(testTag = "feature_filter_chip_OFF").performClick()
+        waitUntilTagCount(tag = "feature_item_checkout", expectedCount = 1)
+        onNodeWithContentDescription(label = "checkout: On").performClick()
+        waitUntilTagCount(tag = "feature_item_checkout", expectedCount = 0)
+        onNodeWithText(text = "No features match your filters").assertIsDisplayed()
+        onNodeWithText(text = "Clear search and filters").performClick()
+        waitUntilTagCount(tag = "feature_item_checkout", expectedCount = 1)
+        onNodeWithContentDescription(label = "checkout: On").assertIsSelected()
+        onNodeWithText(text = "Remote value: off").assertIsDisplayed()
+    }
+
+    @Test
+    fun search_filters_and_panel_survive_saved_state_restoration() = runComposeUiTest {
+        val handler = FeatureHandler(
+            dataStore = FakePreferencesDataStore(),
+            initialFeatures = listOf(
+                Feature.LocalFeature(name = "dark_mode", description = null, isEnabled = false),
+                Feature.RemoteFeature(name = "checkout", description = null, defaultRemoteValue = true, state = FeatureState.REMOTE)
+            )
+        )
+        val restoration = StateRestorationTester(this)
+        restoration.setContent {
+            CompositionLocalProvider(value = LocalFeatureHandler provides handler) { FeatureFlipScreen() }
+        }
+        onNodeWithText(text = "Filter features").performTextInput(text = "check")
+        onNodeWithContentDescription(label = "Show filters, 0 active").performClick()
+        waitUntilTagCount(tag = "feature_filter_chip_REMOTE", expectedCount = 1)
+        onNodeWithTag(testTag = "feature_filter_chip_REMOTE").performScrollTo().performClick()
+        restoration.emulateSaveAndRestore()
+        onNodeWithText(text = "Filter features").assertTextEquals("Filter features", "check")
+        onNodeWithContentDescription(label = "Hide filters, 1 active").assertIsDisplayed()
+        onNodeWithTag(testTag = "feature_filter_chip_REMOTE").assertIsSelected()
+        waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 0)
+        waitUntilTagCount(tag = "feature_item_checkout", expectedCount = 1)
+        onNodeWithContentDescription(label = "Hide filters, 1 active").performClick()
+        restoration.emulateSaveAndRestore()
+        onNodeWithContentDescription(label = "Show filters, 1 active").assertIsDisplayed()
+    }
+
+    @Test
+    fun restored_type_filter_survives_a_changed_registry() = runComposeUiTest {
+        val local = Feature.LocalFeature(name = "local", description = null, isEnabled = false)
+        val handler = mutableStateOf(
+            value = FeatureHandler(
+                dataStore = FakePreferencesDataStore(),
+                initialFeatures = listOf(
+                    local,
+                    Feature.RemoteFeature(name = "remote", description = null, defaultRemoteValue = true, state = FeatureState.REMOTE)
                 )
             )
         )
-
-        setContent {
-            CompositionLocalProvider(LocalFeatureHandler provides handler) {
-                FeatureFlipScreen()
-            }
+        val restoration = StateRestorationTester(this)
+        restoration.setContent {
+            CompositionLocalProvider(value = LocalFeatureHandler provides handler.value) { FeatureFlipScreen() }
         }
-
-        // Click the OFF filter chip to show only disabled features
-        onNodeWithTag(testTag = "feature_filter_chip_OFF").performClick()
-        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
-
-        onNodeWithContentDescription(label = "LOCAL_ON").performClick()
-
-        // After changing state, feature should be filtered out since it no longer matches OFF filter
-        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 0)
-    }
-
-    @Test
-    fun featureFlipScreen_type_badges_are_displayed() = runComposeUiTest {
-        val handler = FeatureHandler(
-            dataStore = FakePreferencesDataStore(),
-            initialFeatures = listOf(
-                Feature.LocalFeature("dark_mode", null, false),
-                Feature.RemoteFeature("new_checkout", null, true, FeatureState.REMOTE)
-            )
-        )
-
-        setContent {
-            CompositionLocalProvider(LocalFeatureHandler provides handler) {
-                FeatureFlipScreen()
-            }
-        }
-
-        waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 1)
-        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
-
-        onNodeWithTag(testTag = "feature_type_dark_mode").assertIsDisplayed()
-        onNodeWithTag(testTag = "feature_type_new_checkout").assertIsDisplayed()
-    }
-
-    @Test
-    fun featureFlipScreen_selecting_local_and_remote_chips_shows_all_features() = runComposeUiTest {
-        val handler = FeatureHandler(
-            dataStore = FakePreferencesDataStore(),
-            initialFeatures = listOf(
-                Feature.LocalFeature("dark_mode", null, false),
-                Feature.RemoteFeature("new_checkout", null, true, FeatureState.REMOTE)
-            )
-        )
-
-        setContent {
-            CompositionLocalProvider(LocalFeatureHandler provides handler) {
-                FeatureFlipScreen()
-            }
-        }
-
-        onNodeWithTag(testTag = "feature_filter_chip_LOCAL").performClick()
+        onNodeWithContentDescription(label = "Show filters, 0 active").performClick()
         onNodeWithTag(testTag = "feature_filter_chip_REMOTE").performClick()
-
-        waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 1)
-        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
+        runOnIdle {
+            handler.value = FeatureHandler(dataStore = FakePreferencesDataStore(), initialFeatures = listOf(local))
+        }
+        restoration.emulateSaveAndRestore()
+        onNodeWithContentDescription(label = "Hide filters, 1 active").assertIsDisplayed()
+        onNodeWithTag(testTag = "feature_filter_chip_REMOTE").assertIsSelected()
+        onNodeWithText(text = "No features match your filters").assertIsDisplayed()
+        onNodeWithTag(testTag = "feature_item_local").assertDoesNotExist()
+        onNodeWithText(text = "Clear search and filters").performClick()
+        waitUntilTagCount(tag = "feature_item_local", expectedCount = 1)
     }
 
     @Test
-    fun featureFlipScreen_clear_filter_icon_visibility_and_behavior() = runComposeUiTest {
-        val handler = FeatureHandler(
-            dataStore = FakePreferencesDataStore(),
-            initialFeatures = listOf(
-                Feature.LocalFeature("dark_mode", null, false),
-                Feature.RemoteFeature("new_checkout", null, true, FeatureState.REMOTE)
-            )
-        )
-
-        setContent {
-            CompositionLocalProvider(LocalFeatureHandler provides handler) {
-                FeatureFlipScreen()
+    fun write_failure_keeps_selection_and_retry_persists_it() = runComposeUiTest {
+        var fail = true
+        val store = FakePreferencesDataStore()
+        val failingStore = object : DataStore<Preferences> by store {
+            override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
+                if (fail) throw IOException("Disk full")
+                return store.updateData(transform = transform)
             }
         }
-
-        waitForIdle()
-
-        // Initially, clear button should not be visible (no text input)
-        onAllNodesWithTag(testTag = "clear_feature_filter_button").assertCountEquals(0)
-
-        // Type in filter field
-        onNodeWithTag(testTag = "feature_filter_field").performTextInput("dark")
-        
-        // Clear button should now be visible
-        onAllNodesWithTag(testTag = "clear_feature_filter_button").assertCountEquals(1)
-
-        // Click the clear button
-        onNodeWithTag(testTag = "clear_feature_filter_button").performClick()
-
-        // Wait for AnimatedVisibility animation to finish
-        waitForIdle()
-
-        // After clearing, button should be gone again
-        onAllNodesWithTag(testTag = "clear_feature_filter_button").assertCountEquals(0)
-        
-        // Both features should be visible again
-        waitUntilTagCount(tag = "feature_item_dark_mode", expectedCount = 1)
-        waitUntilTagCount(tag = "feature_item_new_checkout", expectedCount = 1)
+        val handler = FeatureHandler(
+            dataStore = failingStore,
+            initialFeatures = listOf(
+                Feature.RemoteFeature(name = "checkout", description = null, defaultRemoteValue = false, state = FeatureState.REMOTE)
+            )
+        )
+        setContent {
+            CompositionLocalProvider(value = LocalFeatureHandler provides handler) { FeatureFlipScreen() }
+        }
+        onNodeWithContentDescription(label = "checkout: On").performClick()
+        onNodeWithText(text = "Could not save checkout. The previous value is unchanged.").assertIsDisplayed()
+        onNodeWithContentDescription(label = "checkout: Remote").assertIsSelected()
+        runOnIdle { fail = false }
+        onNodeWithText(text = "Retry").performClick()
+        onNodeWithContentDescription(label = "checkout: On").assertIsSelected()
+        onNodeWithText(text = "Could not save checkout. The previous value is unchanged.").assertDoesNotExist()
     }
 
     @Test
-    fun multipleFeaturesOfDifferentTypesAllRender() = runComposeUiTest {
+    fun selections_persist_in_click_order_when_the_first_write_waits() = runComposeUiTest {
+        val entered = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        var writes = 0
+        val store = FakePreferencesDataStore()
+        val delayedStore = object : DataStore<Preferences> by store {
+            override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
+                writes++
+                if (writes == 1) {
+                    entered.complete(value = Unit)
+                    release.await()
+                }
+                return store.updateData(transform = transform)
+            }
+        }
+        val handler = FeatureHandler(
+            dataStore = delayedStore,
+            initialFeatures = listOf(
+                Feature.RemoteFeature(name = "checkout", description = null, defaultRemoteValue = false, state = FeatureState.REMOTE)
+            )
+        )
+        setContent {
+            CompositionLocalProvider(value = LocalFeatureHandler provides handler) { FeatureFlipScreen() }
+        }
+        onNodeWithContentDescription(label = "checkout: Off").performClick()
+        waitUntil { entered.isCompleted }
+        onNodeWithContentDescription(label = "checkout: On").performClick()
+        runOnIdle { assertEquals(expected = 1, actual = writes) }
+        release.complete(value = Unit)
+        onNodeWithContentDescription(label = "checkout: On").assertIsSelected()
+        runOnIdle { assertEquals(expected = 2, actual = writes) }
+    }
+
+    @Test
+    fun unregistered_features_show_guidance_without_recovery_button() = runComposeUiTest {
+        val handler = FeatureHandler(dataStore = FakePreferencesDataStore(), initialFeatures = emptyList())
+        setContent {
+            CompositionLocalProvider(value = LocalFeatureHandler provides handler) { FeatureFlipScreen() }
+        }
+        onNodeWithText(text = "No features registered").assertIsDisplayed()
+        onNodeWithText(text = "Register flags with FeatureHandler.").assertIsDisplayed()
+        onNodeWithText(text = "Clear search and filters").assertDoesNotExist()
+    }
+
+    @Test
+    fun type_and_state_filters_combine_with_and() = runComposeUiTest {
         val handler = FeatureHandler(
             dataStore = FakePreferencesDataStore(),
             initialFeatures = listOf(
-                Feature.LocalFeature(name = "feature_local_a", description = null, isEnabled = false),
-                Feature.LocalFeature(name = "feature_local_b", description = null, isEnabled = true),
-                Feature.RemoteFeature(name = "feature_remote_a", description = null, defaultRemoteValue = true, state = FeatureState.REMOTE),
+                Feature.LocalFeature(name = "local_off", description = null, isEnabled = false),
+                Feature.LocalFeature(name = "local_on", description = null, isEnabled = true),
+                Feature.RemoteFeature(name = "remote_on", description = null, defaultRemoteValue = true, state = FeatureState.REMOTE)
             )
         )
-
         setContent {
-            CompositionLocalProvider(LocalFeatureHandler provides handler) {
-                FeatureFlipScreen()
-            }
+            CompositionLocalProvider(value = LocalFeatureHandler provides handler) { FeatureFlipScreen() }
         }
-
-        waitUntilTagCount(tag = "feature_item_feature_local_a", expectedCount = 1)
-        waitUntilTagCount(tag = "feature_item_feature_local_b", expectedCount = 1)
-        waitUntilTagCount(tag = "feature_item_feature_remote_a", expectedCount = 1)
+        onNodeWithContentDescription(label = "Show filters, 0 active").performClick()
+        onNodeWithTag(testTag = "feature_filter_chip_LOCAL").performClick()
+        onNodeWithTag(testTag = "feature_filter_chip_ON").performClick()
+        waitUntilTagCount(tag = "feature_item_local_off", expectedCount = 0)
+        waitUntilTagCount(tag = "feature_item_remote_on", expectedCount = 0)
+        onNodeWithTag(testTag = "feature_item_local_on").assertIsDisplayed()
     }
 }
