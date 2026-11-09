@@ -1,6 +1,8 @@
 package com.worldline.devview.timecapsule
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.test.StateRestorationTester
@@ -22,6 +24,21 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Test
 
 class TimeCapsuleScreenTest {
+    @Test
+    fun live_expansion_state_is_bounded_by_retained_history_without_saving() = runComposeUiTest {
+        val retained = mutableStateOf(value = setOf(1L, 2L))
+        lateinit var expansion: MutableState<List<Long>>
+        setContent {
+            val state = rememberExpandedEntryIds(recordingId = "recording", retainedIds = retained.value)
+            SideEffect { expansion = state }
+        }
+        runOnIdle { expansion.value = listOf(1L, 2L) }
+        runOnIdle { retained.value = setOf(2L, 3L) }
+        runOnIdle { expansion.value shouldBe listOf(2L) }
+        runOnIdle { retained.value = emptySet() }
+        runOnIdle { expansion.value shouldBe emptyList() }
+    }
+
     @Test
     fun current_entry_has_no_restore_but_earlier_entries_restore_the_owner() = runComposeUiTest {
         val owner = FakeOwner()
@@ -128,6 +145,56 @@ class TimeCapsuleScreenTest {
         } finally {
             TimeCapsule.unregister(capsule = first)
             TimeCapsule.unregister(capsule = second)
+        }
+    }
+
+    @Test
+    fun eviction_and_clear_do_not_restore_expansion_for_discarded_entries() = runComposeUiTest {
+        val capsule = ScreenCapsule(owner = FakeOwner(), label = { "Counter(count=$it)" }, maxEntries = 2)
+            .apply { record(state = 1); record(state = 2) }
+        TimeCapsule.register(capsule = capsule)
+        try {
+            val restoration = StateRestorationTester(this)
+            restoration.setContent { MaterialTheme { TimeCapsuleScreen() } }
+            onNodeWithTag("time_capsule_expand_1").performClick()
+            runOnIdle { capsule.record(state = 3) }
+            restoration.emulateSaveAndRestore()
+            onNodeWithText("Counter(count=2)").assertIsDisplayed()
+            onNodeWithTag("time_capsule_expand_2").performClick()
+            runOnIdle { capsule.record(state = 4) }
+            onNodeWithTag("time_capsule_expand_1").assertDoesNotExist()
+            restoration.emulateSaveAndRestore()
+            onNodeWithText("Counter(count=3)").assertIsDisplayed()
+            runOnIdle { capsule.clear(); capsule.record(state = 5) }
+            restoration.emulateSaveAndRestore()
+            onNodeWithContentDescription("Collapse").assertDoesNotExist()
+            onNodeWithTag("time_capsule_row_4").assertIsDisplayed()
+        } finally {
+            TimeCapsule.unregister(capsule = capsule)
+        }
+    }
+
+    @Test
+    fun returning_after_hidden_eviction_keeps_only_still_retained_expansion() = runComposeUiTest {
+        val capsule = ScreenCapsule(owner = FakeOwner(), label = { "Counter(count=$it)" }, maxEntries = 2)
+            .apply { record(state = 1); record(state = 2) }
+        val showScreen = mutableStateOf(value = true)
+        TimeCapsule.register(capsule = capsule)
+        try {
+            setContent {
+                val holder = rememberSaveableStateHolder()
+                if (showScreen.value) {
+                    holder.SaveableStateProvider(key = "timeline") { MaterialTheme { TimeCapsuleScreen() } }
+                }
+            }
+            onNodeWithTag("time_capsule_expand_1").performClick()
+            runOnIdle { showScreen.value = false }
+            runOnIdle { capsule.record(state = 3); showScreen.value = true }
+            onNodeWithTag("time_capsule_expand_0").assertDoesNotExist()
+            onNodeWithText("Counter(count=2)").assertIsDisplayed()
+            onNodeWithText("Counter(count=3)").assertDoesNotExist()
+        } finally {
+            TimeCapsule.unregister(capsule = capsule)
         }
     }
 
