@@ -22,14 +22,16 @@ The main screen shows a global mock toggle at the top, followed by a scrollable 
 
 ### Operation sheet
 
-Tapping an endpoint opens a wrap-content sheet. Short operations do not reserve a fixed screen fraction; longer choices scroll within the available height. The header shows the operation name, method, wrapping path and current persisted state.
+Tapping an endpoint opens a wrap-content sheet. The header shows the operation name, method and wrapping path. A compact summary below it identifies the persisted configuration; it does not imply mocking is enabled globally. Controls stay above the scrolling choices when there is enough height. In a short viewport, the controls scroll too so choices remain reachable. Focusing response search brings matching choices into view above the keyboard, including when a failure-rate note separates the search field from the choices.
 
-- **Single-choice picker**: Network, response variants grouped by status family, and Simulate failure share one radio-selection group. Network uses the actual backend. The leading radio indicates the current choice; media types distinguish otherwise identical variants. Generated bodies have a quiet "Generated" label.
-- **Response details**: a labelled trailing chevron opens that variant without activating it. The sheet finishes closing before navigation begins.
-- **Failures**: Timeout and Connection refused sit below the response groups. The configured failure-rate footnote is read-only; edit the spec to change it.
-- **Sequences**: Build sequence or Edit sequence opens the builder. For an active sequence, Reset position atomically resets the latest persisted sequence to step 1, preserving its response list. A successful reset returns to the list.
+- **Configured behaviour**: Actual network, Single response, Simulated failure or a sequence summary. A sequence shows its next step and coloured response, with **Edit** and **Restart** alongside the heading when they fit. Long names and media types wrap; narrow layouts put actions on another row. The last step repeats. An unavailable next step is labelled unavailable rather than showing an invalid position.
+- **Use actual network**: a direct radio choice bypasses this operation's mock. Selecting it replaces any saved response, failure or sequence.
+- **Responses / Failures**: browsing tabs do not change configuration. Response variants retain status-family grouping and the list's semantic colour badges. **Search responses** matches status code, name, example or media type without changing the saved choice. A radio marks only a selected standalone response, not the next response of a sequence. Media types distinguish otherwise identical variants; generated bodies have a quiet "Generated" label.
+- **Details**: the labelled trailing button opens that variant without activating it. The sheet finishes closing before navigation begins.
+- **Failures**: Timeout and Connection refused appear in the Failures tab, using the same choice-row spacing and semantic badges. The read-only spec failure rate affects mocked responses and sequences, not actual network or explicit failures; edit the spec to change it.
+- **Sequences**: **Build sequence** or **Edit** opens the full-screen builder. **Restart** atomically resets the latest persisted sequence to step 1, preserving its response list. A successful restart returns to the list.
 
-Selecting Network, a response or a failure saves the choice before closing the sheet. There are no Responses/Sequence/Failure tabs or nested preview pages.
+Selecting actual network, a response or a failure saves the choice before closing the sheet. Browsing and inspection have no apply step and do not replace the configuration.
 
 ### Response detail
 
