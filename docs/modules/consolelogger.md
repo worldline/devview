@@ -59,6 +59,12 @@ val modules = rememberModules {
 Set `captureNativeConsole = false` to disable the native tail and only show entries logged
 manually via `ConsoleLogger.log()` or `DevViewLogWriter`.
 
+### Module identity
+
+`Console()` supplies its built-in `name`, `subtitle` and `icon` for Home. Registration owns
+its internal screen and capture lifetime. See the [theming guide](../guides/theming.md) for
+shared appearance and custom-module identity.
+
 ### `ConsoleLogger`
 
 The log sink, in the same shape as `AnalyticsLogger`:
@@ -78,7 +84,10 @@ UUID, separate from value equality. `LocalConsoleLogs` has been removed.
 
 Console content is internal and supplied by module registration. Render `DevView` and open
 Console; do not call its screen directly. Search, levels, expanded rows and follow mode
-survive saved-state restoration. Eviction and Clear prune expansion; filtering does not.
+survive saved-state restoration. Paused inspection restores the retained row and its pixel
+offset after saved noise rules load, even when logs arrive while Console is closed. If the
+anchor has been evicted or filtered out, it starts at the newest matching row but remains
+paused until you choose Resume. Eviction and Clear prune expansion; filtering does not.
 Capacity must be between 1 and `Int.MAX_VALUE - 1`; `Int.MAX_VALUE` would create an
 unlimited channel and is rejected.
 

@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.Terminal
@@ -30,8 +30,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -144,7 +147,43 @@ internal fun ConsoleScreen(
         visibleLevels = LogLevel.entries.map { it.name }
         onNoiseChange(ConsoleNoiseChange.DisableAll)
     }
-    val listState = rememberLazyListState()
+    var anchorKey by rememberSaveable { mutableStateOf<String?>(value = null) }
+    var anchorOffset by rememberSaveable { mutableIntStateOf(value = 0) }
+    var restoreAnchor by remember { mutableStateOf(value = !following && anchorKey != null) }
+    val listState = remember { LazyListState() }
+    val currentKeys by rememberUpdatedState(newValue = keys)
+    // Defaults can hide the saved row until persisted noise rules arrive.
+    LaunchedEffect(key1 = loaded && !readFailed, key2 = keys) {
+        if (restoreAnchor && loaded && !readFailed) {
+            val index = keys.indexOf(element = anchorKey)
+            listState.scrollToItem(
+                index = if (index >= 0) index else 0,
+                scrollOffset = if (index >= 0) anchorOffset else 0
+            )
+            withFrameNanos { }
+            restoreAnchor = false
+        }
+    }
+    LaunchedEffect(key1 = listState) {
+        snapshotFlow {
+            if (restoreAnchor || !loaded || readFailed) {
+                null
+            } else {
+                listState.layoutInfo.visibleItemsInfo
+                    .firstOrNull { it.index == listState.firstVisibleItemIndex }
+                    ?.let { item ->
+                        (item.key as? String)
+                            ?.takeIf { it in currentKeys }
+                            ?.let { it to listState.firstVisibleItemScrollOffset }
+                    }
+            }
+        }.collect { position ->
+            if (position != null) {
+                anchorKey = position.first
+                anchorOffset = position.second
+            }
+        }
+    }
     val scrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
@@ -163,7 +202,10 @@ internal fun ConsoleScreen(
         floatingActionButton = {
             AnimatedVisibility(visible = !following) {
                 FloatingActionButton(
-                    onClick = { following = true },
+                    onClick = {
+                        restoreAnchor = false
+                        following = true
+                    },
                     modifier = Modifier.testTag(tag = "console_resume_follow")
                 ) {
                     Icon(
