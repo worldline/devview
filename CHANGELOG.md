@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   preserving spec order within each group.
 
 ### Changed
+- Sample: labelled Compose, TimeCapsule and Network sections use one primary Open DevView
+  action, spaced secondary controls, scrollable inset-safe content and a monospace result card.
+  Counter controls have explicit accessible names, and section titles expose heading semantics.
 - NetworkMock: the shared search/filter bar includes per-API-group Sort, State, Version, Method,
   and Tag selections with saved UI state and an active count. Clear filters keeps search;
   empty results offer Clear search and filters. Network is quiet text, and dark status chips
@@ -79,6 +82,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ModulePosition` enum. Module colour defaults are now `Color.Unspecified`.
 
 ### Fixed
+- Sample: Android status/navigation icon appearance follows the Dark Mode flag, including
+  the navigation-bar background on API 26–28. Sample analytics seed once per composition
+  instead of on every recomposition; cancelled requests are not displayed as errors.
 - Console: severity label contrast in both palettes, recoverable empty results when all
   levels are hidden, and following new entries at full history capacity. Reconfiguration
   preserves pending entries within the new limit and trims history immediately; Clear
