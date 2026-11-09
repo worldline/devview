@@ -6,6 +6,7 @@ import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Terminal
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
@@ -23,8 +24,12 @@ import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.retryWhen
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
+import okio.IOException
 
 /**
  * Navigation destinations for the Console module.
@@ -50,7 +55,7 @@ public sealed interface ConsoleDestination : NavKey {
  * - Bounded, drop-oldest history (default 1000 entries) so a logcat firehose can't OOM the
  *   host app
  * - Per-[com.worldline.devview.consolelogger.model.LogLevel] filter chips and a text filter
- * - Case-insensitive noise exclusions with device-persisted additions, removals and enabled states
+ * - Noise exclusions applied before buffering, with device-persisted rules and enabled states
  * - Optional [DevViewLogWriter] for routing Kermit-based logging into the same view
  *
  * ## Integration
@@ -81,7 +86,7 @@ public class Console(
     defaultExcludedPatterns: List<String> = DEFAULT_EXCLUDED_PATTERNS
 ) : Module,
     RequiresDataStore {
-    /** Normalized host defaults; device edits affect visibility, never captured history. */
+    /** Normalized defaults for incoming noise admission; device edits apply to future entries. */
     public val defaultExcludedPatterns: List<String> = normalizeConsolePatterns(
         patterns = defaultExcludedPatterns
     )
@@ -159,8 +164,24 @@ public class Console(
 
     @Composable
     override fun initModule() {
-        LaunchedEffect(key1 = maxEntries, key2 = captureNativeConsole) {
-            ConsoleLogger.collectInto(maxEntries = maxEntries) {
+        val dataStore = dataStoreDelegate.get()
+        val patterns = remember(key1 = dataStore, key2 = defaultExcludedPatterns) {
+            ConsoleNoiseRepository(
+                dataStore = dataStore,
+                defaults = defaultExcludedPatterns
+            ).overrides
+                .map { it.enabledPatterns(defaults = defaultExcludedPatterns) }
+                .retryWhen { cause, _ ->
+                    if (cause is IOException) {
+                        delay(timeMillis = 1_000)
+                        true
+                    } else {
+                        false
+                    }
+                }
+        }
+        LaunchedEffect(key1 = maxEntries, key2 = captureNativeConsole, key3 = patterns) {
+            ConsoleLogger.collectInto(maxEntries = maxEntries, excludedPatterns = patterns) {
                 if (captureNativeConsole) {
                     @Suppress("TooGenericExceptionCaught")
                     try {

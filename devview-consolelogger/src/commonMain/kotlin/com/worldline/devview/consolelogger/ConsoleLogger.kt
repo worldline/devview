@@ -2,11 +2,14 @@ package com.worldline.devview.consolelogger
 
 import androidx.compose.runtime.mutableStateListOf
 import com.worldline.devview.consolelogger.model.ConsoleLog
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -29,21 +32,23 @@ public object ConsoleLogger {
     private val collectorMutex = Mutex()
     private var maxEntries: Int = DEFAULT_MAX_ENTRIES
     private var generation: Long = 0
+    private var excludedPatterns: List<String> = emptyList()
     private var channel = newChannel(capacity = DEFAULT_MAX_ENTRIES)
 
     /**
      * Records an entry with a fresh internal occurrence ID, even when submitted repeatedly.
      *
-     * Safe from any thread. If the pending queue is full, its oldest entry is dropped.
+     * Safe from any thread. Enabled noise exclusions discard matching entries before
+     * buffering; disabling a rule cannot recover them. If the pending queue is full, its
+     * oldest accepted entry is dropped.
      *
      * @param log The console entry to record.
      */
     public fun log(log: ConsoleLog) {
-        val recorded = log.copy()
         lock.withLock {
-            channel.trySend(
-                element = QueuedLog(log = recorded, generation = generation)
-            )
+            if (!log.matchesConsoleNoise(patterns = excludedPatterns)) {
+                channel.trySend(element = QueuedLog(log = log.copy(), generation = generation))
+            }
         }
     }
 
@@ -75,12 +80,42 @@ public object ConsoleLogger {
         }
     }
 
-    /** Owns configuration, native capture and draining until both child jobs finish cancelling. */
-    internal suspend fun collectInto(maxEntries: Int? = null, capture: suspend () -> Unit = {}) {
+    /** Updates admission without deleting history already retained under earlier rules. */
+    internal fun setExcludedPatterns(patterns: List<String>) {
+        val normalized = normalizeConsolePatterns(patterns = patterns)
+        lock.withLock {
+            if (excludedPatterns == normalized) return@withLock
+            excludedPatterns = normalized
+            val pending = mutableListOf<QueuedLog>()
+            while (true) {
+                val entry = channel.tryReceive().getOrNull() ?: break
+                if (!entry.log.matchesConsoleNoise(
+                        patterns = normalized
+                    )
+                ) {
+                    pending.add(element = entry)
+                }
+            }
+            pending.forEach { channel.trySend(element = it) }
+        }
+    }
+
+    /** Owns configuration, noise admission, native capture and draining for one collector lifetime. */
+    internal suspend fun collectInto(
+        maxEntries: Int? = null,
+        excludedPatterns: Flow<List<String>>? = null,
+        capture: suspend () -> Unit = {}
+    ) {
         collectorMutex.withLock {
+            if (excludedPatterns != null) setExcludedPatterns(patterns = excludedPatterns.first())
             if (maxEntries != null) configure(maxEntries = maxEntries)
             val source = lock.withLock { channel }
             coroutineScope {
+                if (excludedPatterns != null) {
+                    launch(start = CoroutineStart.UNDISPATCHED) {
+                        excludedPatterns.collect { setExcludedPatterns(patterns = it) }
+                    }
+                }
                 launch { capture() }
                 for (first in source) {
                     currentCoroutineContext().ensureActive()
@@ -98,7 +133,10 @@ public object ConsoleLogger {
     private fun appendBounded(entry: QueuedLog) {
         lock.withLock {
             // Clear can run after receive but before this append.
-            if (entry.generation == generation) {
+            if (entry.generation == generation && !entry.log.matchesConsoleNoise(
+                    patterns = excludedPatterns
+                )
+            ) {
                 if (consoleLogs.size >= maxEntries) consoleLogs.removeAt(index = 0)
                 consoleLogs.add(element = entry.log)
             }
