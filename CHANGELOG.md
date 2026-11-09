@@ -89,6 +89,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ModulePosition` enum. Module colour defaults are now `Color.Unspecified`.
 
 ### Fixed
+- FeatureFlip: failed saves retain independent per-feature retries. Newer choices supersede
+  older failures for the same flag, and stale Retry callbacks cannot overwrite them.
 - NetworkMock: superseded response-load failures retry the latest selection without real-network
   fallback.
 - NetworkMock: long errors keep recovery actions visible, wide Unicode preview lines remain

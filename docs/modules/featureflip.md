@@ -57,6 +57,12 @@ CompositionLocalProvider(LocalFeatureHandler provides handler) {
 }
 ```
 
+## Module identity
+
+`FeatureFlip()` supplies its built-in `name`, `subtitle` and `icon` for Home. Register the module
+and provide `LocalFeatureHandler`; its screen is internal. See the [theming guide](../guides/theming.md)
+for shared appearance and custom-module identity.
+
 ## Controls and filters
 
 Local flags use a named on/off switch. Remote flags use Material3 segmented buttons
@@ -73,7 +79,9 @@ search and filters. Search, chip choices and panel visibility survive saved-stat
 restoration, including type filters when the registered flags change. Flag values continue to persist in DataStore.
 
 Changes are saved in click order. If a save fails, the persisted selection stays
-unchanged and the screen offers **Retry** instead of crashing the host app.
+unchanged and the screen offers **Retry** for that feature instead of crashing the host app.
+Changing another feature does not discard the failed feature’s retry. A newer choice for
+the same feature supersedes its older failed choice; a stale Retry cannot overwrite it.
 
 ## Usage
 - Use `FeatureHandler` to manage features programmatically.

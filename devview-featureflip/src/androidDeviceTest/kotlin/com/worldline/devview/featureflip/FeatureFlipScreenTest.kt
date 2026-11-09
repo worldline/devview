@@ -4,6 +4,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.StateRestorationTester
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.assertIsDisplayed
@@ -217,6 +218,103 @@ class FeatureFlipScreenTest {
         release.complete(value = Unit)
         onNodeWithContentDescription(label = "checkout: On").assertIsSelected()
         runOnIdle { assertEquals(expected = 2, actual = writes) }
+    }
+
+    @Test
+    fun another_feature_success_does_not_clear_the_failed_feature_retry() = runComposeUiTest {
+        var writes = 0
+        val store = FakePreferencesDataStore()
+        val failingStore = object : DataStore<Preferences> by store {
+            override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
+                if (++writes == 1) throw IOException("Disk full")
+                return store.updateData(transform = transform)
+            }
+        }
+        val handler = FeatureHandler(
+            dataStore = failingStore,
+            initialFeatures = listOf("first", "second").map {
+                Feature.RemoteFeature(name = it, description = null, defaultRemoteValue = false, state = FeatureState.REMOTE)
+            }
+        )
+        setContent { CompositionLocalProvider(LocalFeatureHandler provides handler) { FeatureFlipScreen() } }
+        onNodeWithContentDescription("first: On").performClick()
+        onNodeWithText("Could not save first. The previous value is unchanged.").assertIsDisplayed()
+        onNodeWithContentDescription("second: On").performClick().assertIsSelected()
+        onNodeWithText("Could not save first. The previous value is unchanged.").assertIsDisplayed()
+        onNodeWithText("Retry").performClick()
+        onNodeWithContentDescription("first: On").assertIsSelected()
+        runOnIdle { assertEquals(expected = 3, actual = writes) }
+    }
+
+    @Test
+    fun independent_failures_keep_the_other_retry_when_a_new_choice_dismisses_one() = runComposeUiTest {
+        var writes = 0
+        val store = FakePreferencesDataStore()
+        val failingStore = object : DataStore<Preferences> by store {
+            override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
+                if (++writes <= 2) throw IOException("Disk full")
+                return store.updateData(transform = transform)
+            }
+        }
+        val handler = FeatureHandler(
+            dataStore = failingStore,
+            initialFeatures = listOf("first", "second").map {
+                Feature.RemoteFeature(name = it, description = null, defaultRemoteValue = false, state = FeatureState.REMOTE)
+            }
+        )
+        setContent { CompositionLocalProvider(LocalFeatureHandler provides handler) { FeatureFlipScreen() } }
+        onNodeWithContentDescription("first: On").performClick()
+        onNodeWithText("Could not save first. The previous value is unchanged.").assertIsDisplayed()
+        onNodeWithContentDescription("second: On").performClick()
+        onNodeWithText("Could not save second. The previous value is unchanged.").assertIsDisplayed()
+        assertEquals(expected = 2, actual = onAllNodesWithText("Retry").fetchSemanticsNodes().size)
+        onNodeWithContentDescription("first: Off").performClick().assertIsSelected()
+        onNodeWithText("Could not save first. The previous value is unchanged.").assertDoesNotExist()
+        onNodeWithContentDescription("first: Off").assertIsSelected()
+        onNodeWithText("Retry").performClick()
+        onNodeWithContentDescription("second: On").assertIsSelected()
+        runOnIdle { assertEquals(expected = 4, actual = writes) }
+    }
+
+    @Test
+    fun an_older_suspended_failure_does_not_offer_retry_after_a_newer_same_feature_choice() = runComposeUiTest {
+        val entered = CompletableDeferred<Unit>()
+        val failOlder = CompletableDeferred<Unit>()
+        val newerEntered = CompletableDeferred<Unit>()
+        val releaseNewer = CompletableDeferred<Unit>()
+        var writes = 0
+        val store = FakePreferencesDataStore()
+        val delayedStore = object : DataStore<Preferences> by store {
+            override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
+                if (++writes == 1) {
+                    entered.complete(Unit)
+                    failOlder.await()
+                    throw IOException("Disk full")
+                }
+                if (writes == 3) {
+                    newerEntered.complete(Unit)
+                    releaseNewer.await()
+                }
+                return store.updateData(transform = transform)
+            }
+        }
+        val handler = FeatureHandler(
+            dataStore = delayedStore,
+            initialFeatures = listOf(
+                Feature.RemoteFeature(name = "checkout", description = null, defaultRemoteValue = false, state = FeatureState.REMOTE)
+            )
+        )
+        setContent { CompositionLocalProvider(LocalFeatureHandler provides handler) { FeatureFlipScreen() } }
+        onNodeWithContentDescription("checkout: On").performClick()
+        waitUntil { entered.isCompleted }
+        onNodeWithContentDescription("checkout: Off").performClick()
+        onNodeWithContentDescription("checkout: On").performClick()
+        failOlder.complete(Unit)
+        waitUntil { newerEntered.isCompleted }
+        onNodeWithText("Retry").assertDoesNotExist()
+        releaseNewer.complete(Unit)
+        onNodeWithContentDescription("checkout: On").assertIsSelected()
+        runOnIdle { assertEquals(expected = 3, actual = writes) }
     }
 
     @Test

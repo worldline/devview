@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.listSaver
@@ -68,18 +69,33 @@ internal fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp 
 
     val changes = remember(
         key1 = featureHandler
-    ) { Channel<Pair<String, FeatureState>>(capacity = Channel.UNLIMITED) }
-    var failedChange by remember(
-        key1 = featureHandler
-    ) { mutableStateOf<Pair<String, FeatureState>?>(value = null) }
+    ) { Channel<FeatureChange>(capacity = Channel.UNLIMITED) }
+    val latestChanges = remember(key1 = featureHandler) { mutableMapOf<String, FeatureChange>() }
+    var failedChanges by remember(key1 = featureHandler) {
+        mutableStateOf(value = emptyMap<String, FeatureChange>())
+    }
+    val submitChange: (String, FeatureState) -> Unit = { name, state ->
+        val revision = latestChanges[name]?.revision ?: 0L
+        check(value = revision < Long.MAX_VALUE) { "Feature change revisions exhausted" }
+        val change = FeatureChange(name = name, state = state, revision = revision + 1)
+        latestChanges[name] = change
+        failedChanges = failedChanges - name
+        changes.trySend(element = change)
+    }
     // One consumer preserves click order even when a DataStore write suspends.
     LaunchedEffect(key1 = changes) {
-        for ((name, state) in changes) {
+        for (change in changes) {
             try {
-                featureHandler.setFeatureState(featureName = name, state = state)
-                failedChange = null
+                featureHandler.setFeatureState(featureName = change.name, state = change.state)
+                if (latestChanges[change.name] ==
+                    change
+                ) {
+                    failedChanges = failedChanges - change.name
+                }
             } catch (_: IOException) {
-                failedChange = name to state
+                if (latestChanges[change.name] == change) {
+                    failedChanges = failedChanges + (change.name to change)
+                }
             }
         }
     }
@@ -174,20 +190,24 @@ internal fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp 
         }
     ) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues = paddingValues)) {
-            failedChange?.let { (name, state) ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Could not save $name. The previous value is unchanged.",
-                        modifier = Modifier.weight(weight = 1f),
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    TextButton(onClick = {
-                        failedChange = null
-                        changes.trySend(element = name to state)
-                    }) { Text(text = "Retry") }
+            failedChanges.forEach { (name, change) ->
+                key(name) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Could not save $name. The previous value is unchanged.",
+                            modifier = Modifier.weight(weight = 1f),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        TextButton(onClick = {
+                            if (failedChanges[name] == change && latestChanges[name] == change) {
+                                failedChanges = failedChanges - name
+                                changes.trySend(element = change)
+                            }
+                        }) { Text(text = "Retry") }
+                    }
                 }
             }
             if (filteredFeatures.isEmpty()) {
@@ -238,8 +258,7 @@ internal fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp 
                             FeatureItem(
                                 feature = feature,
                                 onStateChange = { state ->
-                                    failedChange = null
-                                    changes.trySend(element = feature.name to state)
+                                    submitChange(feature.name, state)
                                 }
                             )
                             if (index != filteredFeatures.lastIndex) {
@@ -252,6 +271,8 @@ internal fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp 
         }
     }
 }
+
+private data class FeatureChange(val name: String, val state: FeatureState, val revision: Long)
 
 private enum class FeatureFilter(val label: String) {
     LOCAL("Local"),
