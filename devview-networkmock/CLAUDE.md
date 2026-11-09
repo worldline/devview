@@ -25,7 +25,7 @@ rememberModules {
 DevView with the registered module, not a separate network screen. `NetworkMockOperationSheet`,
 `MockResponsePreviewPage`, and every component in `components/` are also `internal`.
 
-**Public ViewModel**: `NetworkMockViewModel` (constructed by `NetworkMock.registerContent` via the `viewModel { }` factory, scoped to the navigation entry). Owns both the operation list (`uiState`) and the operation sheet (`sheetState`, `openOperation()`, `closeSheet()`) — there is no separate ViewModel per screen since there's no separate screen.
+**Internal ViewModel**: `NetworkMockViewModel` (constructed by `NetworkMock.registerContent` via the `viewModel { }` factory, scoped to the navigation entry). Owns both the operation list (`uiState`) and the operation sheet (`sheetState`, `openOperation()`, `closeSheet()`) — there is no separate ViewModel per screen since there's no separate screen.
 
 **Public UI states**: `NetworkMockUiState` (Loading / Error / Empty / Content) for the operation list, and `OperationSheetState` (Hidden / Loading / Error / Content) for the operation sheet.
 
@@ -70,8 +70,8 @@ ViewModel handles every operation, not one ViewModel per opened operation).
 The navigation-owned `NetworkMockViewModel` keeps an internal `NetworkMockListState` in
 `SavedStateHandle` as a JSON string. Selected spec ID, panel visibility, and each spec’s
 query, mock states, version, methods, tags, and sort survive navigation and recreation.
-The existing public two-repository constructor remains available without navigation-owned
-saved state. Filtering stays client-side through pure `filterOperations`; it does not
+Tests can construct the internal ViewModel with two repositories and default saved state;
+integrators use module registration, not a standalone ViewModel. Filtering stays client-side through pure `filterOperations`; it does not
 change persisted mock settings or add fields to public `NetworkMockUiState`.
 
 ### Shared bounded filter panel
