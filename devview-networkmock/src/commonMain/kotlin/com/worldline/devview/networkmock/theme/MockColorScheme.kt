@@ -130,36 +130,36 @@ public data class MockColorScheme(
          */
         public val Dark: MockColorScheme = MockColorScheme(
             informational = StatusColors(
-                container = Color(color = 0xFF70BAD9),
-                content = Color(color = 0xFF184559)
+                container = Color(color = 0xFF184559),
+                content = Color(color = 0xFFB7DCEC)
             ),
             successful = StatusColors(
-                container = Color(color = 0xFF70D976),
-                content = Color(color = 0xFF103C13)
+                container = Color(color = 0xFF103C13),
+                content = Color(color = 0xFFB7ECBA)
             ),
             redirection = StatusColors(
-                container = Color(color = 0xFFE39C5B),
-                content = Color(color = 0xFF603610)
+                container = Color(color = 0xFF603610),
+                content = Color(color = 0xFFF0CAA7)
             ),
             clientError = StatusColors(
-                container = Color(color = 0xFFD97070),
-                content = Color(color = 0xFF500C0C)
+                container = Color(color = 0xFF500C0C),
+                content = Color(color = 0xFFECB7B7)
             ),
             serverError = StatusColors(
-                container = Color(color = 0xFFD970CD),
-                content = Color(color = 0xFF45123F)
+                container = Color(color = 0xFF45123F),
+                content = Color(color = 0xFFECB7E6)
             ),
             unknown = StatusColors(
-                container = Color(color = 0xFFA4A4A4),
-                content = Color(color = 0xFF3D3D3D)
+                container = Color(color = 0xFF3D3D3D),
+                content = Color(color = 0xFFD1D1D1)
             ),
             network = StatusColors(
-                container = Color(color = 0xFF6290DD),
-                content = Color(color = 0xFF0D1F3A)
+                container = Color(color = 0xFF0D1F3A),
+                content = Color(color = 0xFFABC4ED)
             ),
             failure = StatusColors(
-                container = Color(color = 0xFFE6B84D),
-                content = Color(color = 0xFF4D3300)
+                container = Color(color = 0xFF4D3300),
+                content = Color(color = 0xFFF6D186)
             )
         )
     }

@@ -38,9 +38,13 @@ class ModelUtilsTest {
         val specs = ApiSpecUiModel.fake(amount = 3)
 
         specs shouldHaveSize 3
-        specs[0].specId shouldBe "spec"
-        specs[0].name shouldBe "Spec"
+        specs[0].specId shouldBe "spec1"
+        specs[0].name shouldBe "Spec1"
         specs[0].operations shouldHaveSize 7
+        specs.map { it.specId }.toSet() shouldHaveSize specs.size
+        specs.forEach { spec ->
+            spec.operations.forEach { it.descriptor.specId shouldBe spec.specId }
+        }
     }
 
     @Test

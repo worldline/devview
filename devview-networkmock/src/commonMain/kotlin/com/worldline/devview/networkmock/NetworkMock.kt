@@ -2,12 +2,12 @@ package com.worldline.devview.networkmock
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
@@ -140,11 +140,6 @@ public class NetworkMock(
                 action(label = "Reload specs", icon = Icons.Rounded.Refresh) {
                     onReloadConfig.tryEmit(value = Unit)
                 }
-                menu(label = "Sort", icon = Icons.AutoMirrored.Rounded.Sort) {
-                    OperationSort.entries.forEach { sort ->
-                        item(label = sort.label) { onSortSelected.tryEmit(value = sort.label) }
-                    }
-                }
                 action(
                     label = "Reset all to network",
                     icon = Icons.Rounded.RestartAlt,
@@ -180,23 +175,6 @@ public class NetworkMock(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
-    // Emits the OperationSort.label of the entry tapped in the toolbar's "Sort" dropdown menu.
-    // Collected by NetworkMockScreen to set the sort order for the currently visible spec tab
-    // directly — unlike onResetToNetwork and onReloadConfig, this is a
-    // DestinationMetadataBuilder.menu action (not a single-tap action), since the shared toolbar
-    // now supports an anchored dropdown of discrete choices.
-    //
-    // The module-local label protocol is retained until sort moves into the filter panel.
-    //
-    // The menu's entries are fixed at module construction time (one per OperationSort value, in
-    // declaration order) and cannot vary per spec tab; picking "Tag" when the current tab has no
-    // tagged operations is a harmless no-op — sortedByOption sorts by each operation's absent
-    // first tag (empty string for all), so the list order doesn't change.
-    private val onSortSelected = MutableSharedFlow<String>(
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
         onNavigate: (NavKey) -> Unit,
@@ -209,13 +187,13 @@ public class NetworkMock(
                 viewModel = viewModel {
                     NetworkMockViewModel(
                         configRepository = NetworkMockInitializer.requireConfigRepository(),
-                        stateRepository = NetworkMockInitializer.requireStateRepository()
+                        stateRepository = NetworkMockInitializer.requireStateRepository(),
+                        savedStateHandle = createSavedStateHandle()
                     )
                 },
                 bottomPadding = bottomPadding,
                 resetToNetworkSharedFlow = onResetToNetwork,
-                reloadConfigSharedFlow = onReloadConfig,
-                sortSharedFlow = onSortSelected
+                reloadConfigSharedFlow = onReloadConfig
             )
         }
     }
