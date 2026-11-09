@@ -174,9 +174,6 @@ docs/markdown.md
 # Python
 __pycache__/
 
-# Graphify
-graphify-out/cost.json
-graphify-out/.graphify_python
-graphify-out/.graphify_root
-# graphify-out/cache/ is optional: commit for speed, skip to keep repo small
+# Graphify (generated locally, not committed)
+/graphify-out/
 .claude/settings.json.graphify-bak
