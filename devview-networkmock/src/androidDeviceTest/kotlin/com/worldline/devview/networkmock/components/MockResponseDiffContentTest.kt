@@ -125,6 +125,26 @@ class MockResponseDiffContentTest {
     }
 
     @Test
+    fun shorter_wide_unicode_lines_are_not_clipped_and_their_end_is_reachable() = runComposeUiTest {
+        val narrow = "i".repeat(32)
+        val wide = "界🙂".repeat(10)
+        val body = List(size = 5_000) { if (it == 4_999) wide else narrow }.joinToString("\n")
+        setPreview { SplitDiffContent(first = response(body), second = null) }
+        assertTrue(wide.length < narrow.length)
+        onNodeWithTag("preview_first_pane_rows").performScrollToIndex(index = 4_999)
+        assertSingleLine(text = wide)
+        val wideLayout = mutableListOf<TextLayoutResult>()
+        val narrowLayout = mutableListOf<TextLayoutResult>()
+        onNodeWithText(wide).performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(wideLayout) }
+        onAllNodesWithText(narrow)[0].performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(narrowLayout) }
+        assertTrue(wideLayout.single().getLineRight(0) > narrowLayout.single().getLineRight(0))
+        onNodeWithTag("preview_first_pane").performSemanticsAction(SemanticsActions.ScrollBy) { it(100_000f, 0f) }
+        val viewport = onNodeWithTag("preview_first_pane").getUnclippedBoundsInRoot()
+        val line = onNodeWithText(wide).getUnclippedBoundsInRoot()
+        assertTrue(line.right <= viewport.right + 1.dp, "The widest rendered line must remain horizontally reachable")
+    }
+
+    @Test
     fun singlePane_preservesJsonPrettyPrinting() = runComposeUiTest {
         setPreview {
             SplitDiffContent(

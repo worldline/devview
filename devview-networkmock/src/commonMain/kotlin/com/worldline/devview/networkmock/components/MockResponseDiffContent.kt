@@ -355,17 +355,18 @@ private fun ScrollableLinePane(
     modifier: Modifier = Modifier,
     row: @Composable (Int) -> Unit
 ) {
-    val longestLine = remember(key1 = lines) { lines.maxByOrNull { it.length }.orEmpty() }
     val textMeasurer = rememberTextMeasurer()
     val textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace)
-    val textWidth = remember(key1 = longestLine, key2 = textMeasurer, key3 = textStyle) {
-        textMeasurer
-            .measure(
-                text = longestLine,
-                style = textStyle,
-                softWrap = false,
-                maxLines = 1
-            ).size.width
+    val textWidth = remember(key1 = lines, key2 = textMeasurer, key3 = textStyle) {
+        lines.maxOfOrNull { line ->
+            textMeasurer
+                .measure(
+                    text = line,
+                    style = textStyle,
+                    softWrap = false,
+                    maxLines = 1
+                ).size.width
+        } ?: 0
     }
     val contentWidth = with(LocalDensity.current) { textWidth.toDp() } + gutterWidth + 16.dp
 

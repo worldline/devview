@@ -4,6 +4,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.input.InputMode
@@ -27,6 +28,8 @@ import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.viewmodel.asState
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
+import kotlin.test.assertSame
+import kotlin.test.assertNotSame
 
 class ResponseDetailScreenTest {
 
@@ -44,6 +47,38 @@ class ResponseDetailScreenTest {
         displayName = "404 - not-found",
         content = "{\"error\":\"not found\"}"
     )
+
+    @Test
+    fun comparison_cache_survives_unrelated_recompositions_and_invalidates_changed_bodies() = runComposeUiTest {
+        val progress = mutableStateOf(value = 0)
+        val primary = mutableStateOf(value = response200)
+        val compared = mutableStateOf<MockResponse?>(value = response404)
+        lateinit var observed: PreviewSheetState.HasResponse
+        setContent {
+            val preview = rememberResponsePreview(primary = primary.value, second = compared.value)
+            val tick = progress.value
+            SideEffect { observed = preview; check(tick >= 0) }
+        }
+        val initial = observed as PreviewSheetState.Compare
+        val diff = initial.lineDiff
+        runOnIdle { progress.value++ }
+        runOnIdle {
+            assertSame(initial, observed)
+            assertSame(diff, (observed as PreviewSheetState.Compare).lineDiff)
+            primary.value = response200.copy(content = "{\"ok\":false}")
+        }
+        lateinit var changedPrimary: PreviewSheetState.HasResponse
+        runOnIdle {
+            changedPrimary = observed
+            assertNotSame(initial, changedPrimary)
+            compared.value = response404.copy(content = "{\"error\":\"updated\"}")
+        }
+        runOnIdle {
+            assertNotSame(changedPrimary, observed)
+            compared.value = null
+        }
+        runOnIdle { check(observed is PreviewSheetState.Single) }
+    }
 
     @Test
     fun single_showsOneResponseChip() = runComposeUiTest {
