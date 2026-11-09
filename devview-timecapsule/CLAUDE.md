@@ -67,7 +67,7 @@ registry is a list instead: the outgoing capsule is removed from wherever it sit
   `LaunchedEffect` and recorded as a new entry. This is intentional — a restore is a state
   transition — but it does mean repeated restores grow the timeline. Marked with a
   `ponytail:` comment in `ScreenCapsule.kt`.
-- **No CompositionLocal.** Unlike `devview-analytics`'s `LocalAnalytics`, `TimeCapsule`'s
+- **No CompositionLocal.** `TimeCapsule`'s
   registry is read directly from the object inside `TimeCapsuleScreen`. There's exactly
   one consumer (the module's own screen) and no host-app use case for reading the registry
   elsewhere, so the extra indirection isn't justified here.
@@ -84,6 +84,9 @@ registry is a list instead: the outgoing capsule is removed from wherever it sit
   showing itself verbatim, unchanged from the original behavior. Expanding a row reveals the
   full label below a divider, with the changed values highlighted — this is also the only way
   to read a label that's been truncated at two lines.
+- **Timeline controls.** Only earlier entries offer Restore. Expand uses the standard 48dp
+  IconButton target; expanded entry IDs survive screen recreation and reset when the active
+  capsule changes. Empty history uses the shared `DevViewEmptyState`.
 - **Header subtitle defaults to the owner's class name.** `TimeCapsuleEffect`'s `subtitle`
   parameter is shown as "Recording {subtitle}" above the timeline, so a tester can confirm
   which screen they're looking at. Defaulting to `owner::class.simpleName` (rather than

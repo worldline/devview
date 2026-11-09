@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   preserving spec order within each group.
 
 ### Changed
+- TimeCapsule: only earlier entries offer Restore, expand controls have standard 48dp targets,
+  expansion survives screen recreation during the same recording, and empty history uses the
+  shared guidance component. The existing timeline rail and change highlighting are preserved.
 - Console: compact severity/time/tag rows expand to selectable multiline messages with
   horizontal scrolling and Copy log. Search and collapsible level filters retain UI state;
   the badge counts hidden levels and enabled noise rules. Newest-first rows follow the latest matching entry’s start
