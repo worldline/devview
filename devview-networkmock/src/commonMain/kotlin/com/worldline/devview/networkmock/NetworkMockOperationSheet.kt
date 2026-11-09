@@ -1,36 +1,27 @@
 package com.worldline.devview.networkmock
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
+import androidx.compose.material3.ModalBottomSheetProperties
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,16 +30,9 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import androidx.navigationevent.NavigationEventInfo
-import androidx.navigationevent.compose.NavigationEventHandler
-import androidx.navigationevent.compose.rememberNavigationEventState
 import com.worldline.devview.networkmock.components.ErrorState
 import com.worldline.devview.networkmock.components.FailureItem
 import com.worldline.devview.networkmock.components.LoadingState
@@ -59,323 +43,290 @@ import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.networkmock.core.model.StatusCodeFamily
 import com.worldline.devview.networkmock.model.OperationUiModel
-import com.worldline.devview.networkmock.preview.OperationUiModelPreviewParameterProvider
-import com.worldline.devview.networkmock.utils.badgeContainerColor
-import com.worldline.devview.networkmock.utils.badgeContentColor
-import com.worldline.devview.networkmock.utils.fake
+import com.worldline.devview.networkmock.viewmodel.MutationOutcome
+import com.worldline.devview.networkmock.viewmodel.MutationTicket
+import com.worldline.devview.networkmock.viewmodel.NetworkMockMutationCoordinator
 import com.worldline.devview.networkmock.viewmodel.OperationSheetState
-import kotlinx.collections.immutable.toPersistentList
+import com.worldline.devview.ui.DevViewGroupedDivider
+import com.worldline.devview.ui.DevViewSectionHeader
+import com.worldline.devview.ui.devViewGroupedItem
 import kotlinx.coroutines.launch
 
-private enum class SheetPage { Responses, Sequence, Failure, Preview }
-
-/**
- * A fixed-height operation sheet with Responses, Sequence, and Failure tabs and a preview page.
- * Selecting a response or failure, or saving a sequence, activates it and closes the sheet.
- * The eye opens a response directly; Back from preview or sequence returns to Responses.
- *
- * @param sheetState The current [OperationSheetState] from the ViewModel.
- * @param onDismissRequest Called when the sheet should close.
- * @param onSelectResponse Called with the tapped response, or null for no mock.
- * @param onSelectFailure Called with the tapped failure kind.
- * @param onCommitSequence Called with the ordered responses when Save Sequence is tapped.
- * @param onResetSequencePosition Called when Reset is tapped for an active sequence.
- * @param modifier [Modifier] applied to the [ModalBottomSheet].
- */
+/** Quick choices stay in the sheet; inspection and sequence editing are separate destinations. */
 @Composable
 internal fun NetworkMockOperationSheet(
     sheetState: OperationSheetState,
+    mutations: NetworkMockMutationCoordinator,
+    selection: MutationTicket?,
+    onSelectionComplete: (Long) -> Unit,
+    onTransitionChange: (Boolean) -> Unit,
+    canCompleteSelection: (Long) -> Boolean,
     onDismissRequest: () -> Unit,
     onSelectResponse: (MockResponse?) -> Unit,
     onSelectFailure: (FailureKind) -> Unit,
-    onCommitSequence: (List<MockResponse>) -> Unit,
+    onOpenResponse: (MockResponse) -> Unit,
+    onBuildSequence: () -> Unit,
     onResetSequencePosition: () -> Unit,
+    onReload: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val modalSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val mutationState by mutations.state.collectAsState()
+    val outcome = selection?.outcome?.collectAsState()?.value
+    var transitioning by remember { mutableStateOf(value = false) }
+    val sheet = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+        confirmValueChange = { it != SheetValue.Hidden || mutations.interactionsEnabled }
+    )
     val scope = rememberCoroutineScope()
-    val currentOnDismissRequest by rememberUpdatedState(newValue = onDismissRequest)
-    val onClose: () -> Unit = {
-        scope
-            .launch {
-                modalSheetState.hide()
-            }.invokeOnCompletion {
-                if (!modalSheetState.isVisible) currentOnDismissRequest()
-            }
-    }
-    val operationKey = (sheetState as? OperationSheetState.Content)
-        ?.operationUiModel
-        ?.descriptor
-        ?.key
-    var page by remember(key1 = operationKey) { mutableStateOf(value = SheetPage.Responses) }
-    var previewState: PreviewSheetState by remember(key1 = operationKey) {
-        mutableStateOf(value = PreviewSheetState.Hidden)
-    }
+    val currentDismiss by rememberUpdatedState(newValue = onDismissRequest)
+    val currentComplete by rememberUpdatedState(newValue = onSelectionComplete)
+    val currentCanComplete by rememberUpdatedState(newValue = canCompleteSelection)
+    val currentTransition by rememberUpdatedState(newValue = onTransitionChange)
+    DisposableEffect(key1 = Unit) { onDispose { currentTransition(false) } }
 
+    fun setTransition(inProgress: Boolean) {
+        transitioning = inProgress
+        currentTransition(inProgress)
+    }
+    val enabled = mutations.interactionsEnabled && !transitioning
+
+    fun closeThen(action: () -> Unit) {
+        if (!mutations.interactionsEnabled || transitioning) return
+        setTransition(inProgress = true)
+        scope.launch {
+            try {
+                sheet.hide()
+                if (!sheet.isVisible && mutations.interactionsEnabled) {
+                    currentDismiss()
+                    setTransition(inProgress = false)
+                    action()
+                }
+            } finally {
+                setTransition(inProgress = false)
+            }
+        }
+    }
+    LaunchedEffect(key1 = selection?.id, key2 = outcome, key3 = mutationState.busy) {
+        val completed = selection ?: return@LaunchedEffect
+        if (outcome != MutationOutcome.Succeeded || mutationState.busy) return@LaunchedEffect
+        if (!currentCanComplete(completed.id)) return@LaunchedEffect
+        setTransition(inProgress = true)
+        try {
+            sheet.hide()
+            if (!sheet.isVisible && currentCanComplete(completed.id)) {
+                currentComplete(completed.id)
+            }
+        } finally {
+            setTransition(inProgress = false)
+        }
+    }
     ModalBottomSheet(
-        onDismissRequest = onDismissRequest,
-        sheetState = modalSheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        modifier = modifier
+        modifier = modifier,
+        sheetState = sheet,
+        sheetGesturesEnabled = enabled,
+        properties = ModalBottomSheetProperties(
+            shouldDismissOnBackPress = enabled,
+            shouldDismissOnClickOutside = enabled
+        ),
+        onDismissRequest = {
+            if (mutations.interactionsEnabled &&
+                !transitioning
+            ) {
+                currentDismiss()
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
-        NavigationEventHandler(
-            state = rememberNavigationEventState(currentInfo = NavigationEventInfo.None),
-            isForwardEnabled = false,
-            isBackEnabled = page != SheetPage.Responses,
-            onBackCompleted = { page = SheetPage.Responses }
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(fraction = 0.65f)
-                .testTag(tag = "operation_sheet_content")
-        ) {
+        Column(modifier = Modifier.fillMaxWidth().testTag(tag = "operation_sheet_content")) {
+            MutationStatus(
+                state = mutationState,
+                onRetry = mutations::retryFailed,
+                onCancel = mutations::cancelFailed
+            )
             when (sheetState) {
                 OperationSheetState.Hidden -> Unit
-                OperationSheetState.Loading -> LoadingState()
-                is OperationSheetState.Error -> ErrorState(message = sheetState.message)
-                is OperationSheetState.Content -> Column(modifier = Modifier.fillMaxSize()) {
-                    OperationPickerHeader(endpoint = sheetState.operationUiModel, onClose = onClose)
-                    val tabs = listOf(SheetPage.Responses, SheetPage.Sequence, SheetPage.Failure)
-                    PrimaryTabRow(
-                        selectedTabIndex = tabs
-                            .indexOf(
-                                element = page
-                            ).coerceAtLeast(minimumValue = 0),
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                    ) {
-                        tabs.forEach { tab ->
-                            Tab(
-                                modifier = Modifier.testTag(
-                                    tag = "operation_sheet_tab_${tab.name.lowercase()}"
-                                ),
-                                selected =
-                                    page == tab ||
-                                        page == SheetPage.Preview && tab == SheetPage.Responses,
-                                onClick = { page = tab },
-                                text = { Text(text = tab.name) }
-                            )
-                        }
+                OperationSheetState.Loading -> LoadingState(
+                    modifier = Modifier.padding(all = 24.dp)
+                )
+                is OperationSheetState.Error -> {
+                    ErrorState(
+                        message = sheetState.message,
+                        modifier = Modifier.padding(all = 24.dp)
+                    )
+                    Row {
+                        TextButton(
+                            enabled = enabled,
+                            onClick = onReload
+                        ) { Text(text = "Retry loading") }
+                        TextButton(
+                            enabled = enabled,
+                            onClick = { closeThen {} }
+                        ) { Text(text = "Close") }
                     }
-                    AnimatedContent(
-                        modifier = Modifier.fillMaxWidth().weight(weight = 1f),
-                        targetState = page,
-                        transitionSpec = {
-                            if (targetState.ordinal > initialState.ordinal) {
-                                slideInHorizontally(
-                                    animationSpec = tween()
-                                ) { it } + fadeIn() togetherWith
-                                    slideOutHorizontally(
-                                        animationSpec = tween()
-                                    ) { -it } + fadeOut()
-                            } else {
-                                slideInHorizontally(
-                                    animationSpec = tween()
-                                ) { -it } + fadeIn() togetherWith
-                                    slideOutHorizontally(animationSpec = tween()) { it } + fadeOut()
+                }
+                is OperationSheetState.Content -> {
+                    OperationPickerHeader(
+                        endpoint = sheetState.operationUiModel,
+                        enabled = enabled,
+                        onClose = { closeThen {} }
+                    )
+                    OperationPickerPage(
+                        modifier = Modifier.weight(weight = 1f, fill = false),
+                        content = sheetState,
+                        enabled = enabled,
+                        onSelectResponse = {
+                            if (mutations.interactionsEnabled && !transitioning) {
+                                onSelectResponse(
+                                    it
+                                )
                             }
                         },
-                        label = "operationSheetPage"
-                    ) { currentPage ->
-                        when (currentPage) {
-                            SheetPage.Responses -> OperationPickerPage(
-                                content = sheetState,
-                                onSelectResponse = { response ->
-                                    onSelectResponse(response)
-                                    onClose()
-                                },
-                                onPreview = { response ->
-                                    previewState = PreviewSheetState.Single(response = response)
-                                    page = SheetPage.Preview
-                                }
-                            )
-                            SheetPage.Preview -> {
-                                val preview = previewState as? PreviewSheetState.HasResponse
-                                if (preview != null) {
-                                    val first = when (preview) {
-                                        is PreviewSheetState.Single -> preview.response
-                                        is PreviewSheetState.Compare -> preview.first
-                                    }
-                                    MockResponsePreviewPage(
-                                        previewSheetState = preview,
-                                        otherResponses = sheetState.responses.filter {
-                                            it != first
-                                        },
-                                        onCompareWith = { response ->
-                                            previewState = PreviewSheetState.Compare(
-                                                first = first,
-                                                second = response
-                                            )
-                                        },
-                                        onBack = { page = SheetPage.Responses }
-                                    )
-                                }
+                        onSelectFailure = {
+                            if (mutations.interactionsEnabled && !transitioning) onSelectFailure(it)
+                        },
+                        onPreview = { response -> closeThen { onOpenResponse(response) } },
+                        onBuildSequence = { closeThen(action = onBuildSequence) },
+                        onResetSequencePosition = {
+                            if (mutations.interactionsEnabled &&
+                                !transitioning
+                            ) {
+                                onResetSequencePosition()
                             }
-                            SheetPage.Failure -> OperationFailurePage(
-                                content = sheetState,
-                                onSelectFailure = { kind ->
-                                    onSelectFailure(kind)
-                                    onClose()
-                                }
-                            )
-                            SheetPage.Sequence -> SequenceBuilderPage(
-                                content = sheetState,
-                                onBack = { page = SheetPage.Responses },
-                                showHeader = false,
-                                onResetSequencePosition = onResetSequencePosition,
-                                onCommitSequence = { responses ->
-                                    onCommitSequence(responses)
-                                    onClose()
-                                }
-                            )
                         }
-                    }
+                    )
                 }
             }
         }
     }
 }
 
-/**
- * The Responses tab: grouped network/status choices and direct eye previews.
- * Kept internal so device tests can exercise callbacks without modal chrome or page animations.
- */
 @Composable
 internal fun OperationPickerPage(
     content: OperationSheetState.Content,
     onSelectResponse: (MockResponse?) -> Unit,
     onPreview: (MockResponse) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    onSelectFailure: (FailureKind) -> Unit = {},
+    onBuildSequence: () -> Unit = {},
+    onResetSequencePosition: () -> Unit = {}
 ) {
-    val endpoint = content.operationUiModel
-    val groupedResponses = content.responses.groupBy {
-        StatusCodeFamily.fromStatusCode(statusCode = it.statusCode)
+    val current = content.operationUiModel.currentState
+    val grouped = content.responses.groupBy {
+        StatusCodeFamily.fromStatusCode(
+            statusCode = it.statusCode
+        )
     }
-    val hasMultipleMediaTypes = content.responses
+    val showMediaTypes = content.responses
         .map { it.mediaType }
         .distinct()
         .size > 1
-    val selectedState = endpoint.currentState as? OperationMockState.Mock
-
-    Column(modifier = modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(
-                    weight = 1f
-                ).testTag(tag = "operation_picker_list")
-        ) {
-            stickyHeader(key = "header_network") { PickerGroupHeader(text = "NO MOCK") }
-            item(key = "network_item") {
-                NetworkItem(
-                    modifier = Modifier
-                        .animateItem()
-                        .padding(horizontal = 16.dp)
-                        .groupedCard(index = 0, count = 1)
-                        .padding(horizontal = 16.dp)
-                        .testTag(tag = "operation_sheet_network_item"),
-                    selected = endpoint.currentState == OperationMockState.Network,
-                    onClick = { onSelectResponse(null) }
-                )
-            }
-            groupedResponses.forEach { (family, responses) ->
-                stickyHeader(key = "header_${family.name.lowercase()}") {
-                    PickerGroupHeader(text = "${family.displayName} mocks".uppercase())
-                }
-                responses.forEachIndexed { index, response ->
-                    val itemKey = "mock_item_${response.statusCode}_${response.mediaType}_${response.exampleName}"
-                    item(key = itemKey) {
-                        Column(
-                            modifier = Modifier
-                                .animateItem()
-                                .padding(horizontal = 16.dp)
-                                .groupedCard(index = index, count = responses.size)
-                        ) {
-                            MockItem(
-                                modifier = Modifier
-                                    .padding(
-                                        horizontal = 16.dp
-                                    ).testTag(tag = itemKey),
-                                mockResponse = response,
-                                secondaryLabel = response.mediaType.takeIf {
-                                    hasMultipleMediaTypes &&
-                                        it.isNotBlank()
-                                },
-                                selected = selectedState?.let {
-                                    it.statusCode == response.statusCode &&
-                                        it.mediaType == response.mediaType &&
-                                        it.exampleName == response.exampleName
-                                } == true,
-                                onClick = { onSelectResponse(response) },
-                                onPreview = { onPreview(response) },
-                                previewToggleTestTag = "${itemKey}_preview_toggle"
+    LazyColumn(
+        modifier = modifier.fillMaxWidth().selectableGroup().testTag(tag = "operation_picker_list")
+    ) {
+        item(key = "header_network") { DevViewSectionHeader(text = "No mock") }
+        item(key = "network_item") {
+            NetworkItem(
+                modifier = Modifier
+                    .padding(
+                        horizontal = 16.dp
+                    ).devViewGroupedItem(index = 0, count = 1)
+                    .testTag(tag = "operation_sheet_network_item"),
+                selected = current == OperationMockState.Network,
+                enabled = enabled,
+                onClick = { onSelectResponse(null) }
+            )
+        }
+        grouped.forEach { (family, responses) ->
+            item(
+                key = "header_${family.name}"
+            ) { DevViewSectionHeader(text = "${family.displayName} mocks") }
+            responses.forEachIndexed { index, response ->
+                val itemKey = "mock_item_${response.statusCode}_${response.mediaType}_${response.exampleName}"
+                item(key = itemKey) {
+                    Column(
+                        modifier = Modifier
+                            .padding(
+                                horizontal = 16.dp
+                            ).devViewGroupedItem(index = index, count = responses.size)
+                    ) {
+                        MockItem(
+                            modifier = Modifier.testTag(tag = itemKey),
+                            mockResponse = response,
+                            secondaryLabel = response.mediaType.takeIf { showMediaTypes },
+                            selected = (current as? OperationMockState.Mock)?.let {
+                                it.statusCode == response.statusCode &&
+                                    it.mediaType == response.mediaType &&
+                                    it.exampleName == response.exampleName
+                            } == true,
+                            enabled = enabled,
+                            onClick = { onSelectResponse(response) },
+                            onPreview = { onPreview(response) },
+                            previewToggleTestTag = "${itemKey}_preview_toggle"
+                        )
+                        if (index != responses.lastIndex) {
+                            DevViewGroupedDivider(
+                                modifier = Modifier.padding(start = 64.dp)
                             )
-                            if (index != responses.lastIndex) {
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(start = 64.dp, end = 16.dp)
-                                )
-                            }
                         }
                     }
                 }
             }
         }
-    }
-}
-
-/** The Failure tab: grouped transport failures and the read-only spec failure rate. */
-@Composable
-internal fun OperationFailurePage(
-    content: OperationSheetState.Content,
-    onSelectFailure: (FailureKind) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val selectedFailureKind = (content.operationUiModel.currentState as? OperationMockState.Failure)
-        ?.kind
-    val failureRate = content.operationUiModel.descriptor.config.failureRate
-    LazyColumn(modifier = modifier.fillMaxSize().testTag(tag = "operation_failure_list")) {
-        stickyHeader(
-            key = "header_simulate_failure"
-        ) { PickerGroupHeader(text = "SIMULATE FAILURE") }
+        item(key = "header_failure") { DevViewSectionHeader(text = "Simulate failure") }
         FailureKind.entries.forEachIndexed { index, kind ->
             item(key = "failure_item_${kind.name}") {
                 Column(
                     modifier = Modifier
-                        .animateItem()
-                        .padding(horizontal = 16.dp)
-                        .groupedCard(index = index, count = FailureKind.entries.size)
+                        .padding(
+                            horizontal = 16.dp
+                        ).devViewGroupedItem(index = index, count = FailureKind.entries.size)
                 ) {
                     FailureItem(
-                        modifier = Modifier
-                            .padding(
-                                horizontal = 16.dp
-                            ).testTag(tag = "failure_item_${kind.name}"),
+                        modifier = Modifier.testTag(tag = "failure_item_${kind.name}"),
                         kind = kind,
-                        selected = selectedFailureKind == kind,
+                        selected = (current as? OperationMockState.Failure)?.kind == kind,
+                        enabled = enabled,
                         onClick = { onSelectFailure(kind) }
                     )
                     if (index != FailureKind.entries.lastIndex) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(start = 64.dp, end = 16.dp)
-                        )
+                        DevViewGroupedDivider(modifier = Modifier.padding(start = 64.dp))
                     }
                 }
             }
         }
+        val failureRate = content.operationUiModel.descriptor.config.failureRate
         if (failureRate != null) {
             item(key = "failure_rate") {
                 Text(
-                    modifier = Modifier
-                        .animateItem()
-                        .padding(
-                            horizontal = 32.dp,
-                            vertical = 8.dp
-                        ).testTag(tag = "operation_sheet_failure_rate"),
-                    text = "Also configured to fail ${(failureRate * 100).toInt()}% " +
-                        "of mocked requests on its own (x-devview.failureRate)",
+                    text =
+                        "The spec also applies a ${(failureRate * 100).toInt()}% random failure rate " +
+                            "to mock responses.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
+            }
+        }
+        item(key = "sequence_footer") {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                TextButton(
+                    enabled = enabled,
+                    onClick = onBuildSequence,
+                    modifier = Modifier.testTag(tag = "build_sequence")
+                ) {
+                    Text(
+                        text = if (current is OperationMockState.Sequence) "Edit sequence" else "Build sequence…"
+                    )
+                }
+                if (current is OperationMockState.Sequence) {
+                    TextButton(
+                        enabled = enabled,
+                        onClick = onResetSequencePosition,
+                        modifier = Modifier.testTag(tag = "reset_sequence_position")
+                    ) { Text(text = "Reset position") }
+                }
             }
         }
     }
@@ -384,100 +335,37 @@ internal fun OperationFailurePage(
 @Composable
 private fun OperationPickerHeader(
     endpoint: OperationUiModel,
-    onClose: () -> Unit,
-    modifier: Modifier = Modifier
+    enabled: Boolean,
+    onClose: () -> Unit
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
-        Column(
-            modifier = Modifier.weight(weight = 1f)
-        ) {
+        Column(modifier = Modifier.weight(weight = 1f)) {
             Text(
                 text = endpoint.descriptor.config.name,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                style = MaterialTheme.typography.titleMedium
             )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-                verticalAlignment = Alignment.Top
-            ) {
-                Box(
-                    modifier = Modifier
-                        .background(
-                            color = endpoint.descriptor.config.method.badgeContainerColor,
-                            shape = RoundedCornerShape(size = 4.dp)
-                        ).padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = endpoint.descriptor.config.method.value,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = endpoint.descriptor.config.method.badgeContentColor,
-                        fontFamily = FontFamily.Monospace
-                    )
-                }
-                Text(
-                    text = endpoint.descriptor.config.path,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontFamily = FontFamily.Monospace
-                )
-            }
+            Text(
+                text = "${endpoint.descriptor.config.method.value} ${endpoint.descriptor.config.path}",
+                style = MaterialTheme.typography.bodySmall,
+                fontFamily = FontFamily.Monospace
+            )
+            Text(
+                text = "Current: ${endpoint.currentState.displayName}",
+                modifier = Modifier.testTag(tag = "operation_sheet_current_state"),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
         IconButton(
-            modifier = Modifier.testTag(tag = "operation_sheet_close_button"),
-            onClick = onClose
+            enabled = enabled,
+            onClick = onClose,
+            modifier = Modifier.testTag(tag = "operation_sheet_close_button")
         ) {
-            Icon(imageVector = Icons.Rounded.Close, contentDescription = "Close")
-        }
-    }
-}
-
-@Composable
-private fun PickerGroupHeader(text: String) {
-    Text(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.surfaceContainerLow
-            ).padding(horizontal = 32.dp, vertical = 8.dp),
-        text = text,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-    )
-}
-
-@Composable
-private fun Modifier.groupedCard(index: Int, count: Int): Modifier {
-    val shape = RoundedCornerShape(
-        topStart = if (index == 0) 12.dp else 0.dp,
-        topEnd = if (index == 0) 12.dp else 0.dp,
-        bottomStart = if (index == count - 1) 12.dp else 0.dp,
-        bottomEnd = if (index == count - 1) 12.dp else 0.dp
-    )
-    return clip(shape = shape).background(color = MaterialTheme.colorScheme.surfaceContainerHighest)
-}
-
-@Preview(locale = "en")
-@Composable
-private fun NetworkMockOperationSheetPickerPreview(
-    @PreviewParameter(OperationUiModelPreviewParameterProvider::class) endpoint: OperationUiModel
-) {
-    MaterialTheme {
-        Surface(color = MaterialTheme.colorScheme.surfaceContainerLow) {
-            OperationPickerPage(
-                content = OperationSheetState.Content(
-                    operationUiModel = endpoint,
-                    responses = MockResponse.fake(amount = 6).toPersistentList()
-                ),
-                onSelectResponse = {},
-                onPreview = {}
-            )
+            Icon(imageVector = Icons.Rounded.Close, contentDescription = "Close operation")
         }
     }
 }

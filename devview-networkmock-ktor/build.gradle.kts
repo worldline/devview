@@ -22,6 +22,12 @@ kotlin {
             }
         }
 
+        androidHostTest {
+            dependencies {
+                implementation(projects.devviewTest)
+                implementation(libs.androidx.datastore.preferences.core)
+            }
+        }
     }
 }
 

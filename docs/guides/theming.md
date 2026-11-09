@@ -123,6 +123,15 @@ cue to wire up `LocalMockColorScheme` explicitly. As with the console, the fallb
 does not use `isSystemInDarkTheme()`, since DevView's theme may be driven by something other
 than the system setting.
 
+### Response comparison colours
+
+`MockResponseDiffColors()` selects light or deep-dark lavender and bisque pairs from the
+ambient `MaterialTheme.colorScheme.surface` luminance, independently of the system theme.
+Left and right sides keep their colour identity in both palettes. The default container/label
+pairs meet 4.5:1 text contrast; callers can override each colour independently and should
+check contrast against their own surfaces. Both inline and split comparisons share these
+colours.
+
 ## Customising Typography
 Use your app's typography settings in custom modules:
 ```kotlin

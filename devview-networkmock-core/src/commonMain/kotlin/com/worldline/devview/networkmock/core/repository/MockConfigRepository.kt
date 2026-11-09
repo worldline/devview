@@ -9,6 +9,7 @@ import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.openapi.OpenApiParser
 import com.worldline.devview.networkmock.core.openapi.ResolvedResponse
 import com.worldline.devview.networkmock.core.openapi.ResponseContent
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
@@ -95,6 +96,8 @@ public class MockConfigRepository(
                     config.specs.joinToString { "${it.id} (${it.operations.size} operations)" }
             }
             Result.success(value = config)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: IllegalStateException) {
             logger.w(throwable = e) { "Failed to load configuration" }
             Result.failure(exception = e)
@@ -256,6 +259,8 @@ public class MockConfigRepository(
             headers = resolved.headers,
             isSynthesized = resolved.content is ResponseContent.Synthesized
         )
+    } catch (e: CancellationException) {
+        throw e
     } catch (@Suppress("SwallowedException") e: IllegalStateException) {
         null
     }

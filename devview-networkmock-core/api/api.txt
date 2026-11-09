@@ -147,6 +147,13 @@ package com.worldline.devview.networkmock.core.model {
     property public java.util.Map<java.lang.String,com.worldline.devview.networkmock.core.model.OperationMockState> operationStates;
   }
 
+  public final class NetworkMockStateSnapshot {
+    method @InaccessibleFromKotlin public long getRevision();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.model.NetworkMockState getState();
+    property public long revision;
+    property public com.worldline.devview.networkmock.core.model.NetworkMockState state;
+  }
+
   @androidx.compose.runtime.Immutable @kotlinx.serialization.Serializable public final class Operation {
     ctor @KotlinOnly public Operation(String operationId, String name, String path, com.worldline.devview.networkmock.core.model.HttpMethod method, optional java.util.Map<java.lang.String,java.lang.String>? queryParameters, optional Long? delayMs, optional String? version, optional Double? failureRate, optional com.worldline.devview.networkmock.core.model.RequestBodyMatch? requestBodyMatch, optional java.util.List<java.lang.String> tags);
     method public String component1();
@@ -315,10 +322,13 @@ package com.worldline.devview.networkmock.core.repository {
 
   public final class MockStateRepository {
     ctor public MockStateRepository(androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> dataStore);
+    method public suspend Object? compareAndAdvanceSequence(com.worldline.devview.networkmock.core.model.OperationKey key, long expectedRevision, com.worldline.devview.networkmock.core.model.OperationMockState.Sequence expectedSequence, kotlin.coroutines.Continuation<? super java.lang.Boolean>);
     method public suspend Object? getState(kotlin.coroutines.Continuation<? super com.worldline.devview.networkmock.core.model.NetworkMockState>);
+    method public suspend Object? getStateSnapshot(kotlin.coroutines.Continuation<? super com.worldline.devview.networkmock.core.model.NetworkMockStateSnapshot>);
     method public kotlinx.coroutines.flow.Flow<com.worldline.devview.networkmock.core.model.NetworkMockState> observeState();
     method public void registerOperations(java.util.List<com.worldline.devview.networkmock.core.model.OperationKey> operations);
     method public suspend Object? resetKnownOperationsToNetwork(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+    method public suspend Object? resetOperationSequencePosition(com.worldline.devview.networkmock.core.model.OperationKey key, kotlin.coroutines.Continuation<? super kotlin.Unit>);
     method public suspend Object? setAllOperationStates(java.util.Map<com.worldline.devview.networkmock.core.model.OperationKey,? extends com.worldline.devview.networkmock.core.model.OperationMockState> states, kotlin.coroutines.Continuation<? super kotlin.Unit>);
     method public suspend Object? setGlobalMockingEnabled(boolean enabled, kotlin.coroutines.Continuation<? super kotlin.Unit>);
     method public suspend Object? setOperationMockState(com.worldline.devview.networkmock.core.model.OperationKey key, com.worldline.devview.networkmock.core.model.OperationMockState state, kotlin.coroutines.Continuation<? super kotlin.Unit>);

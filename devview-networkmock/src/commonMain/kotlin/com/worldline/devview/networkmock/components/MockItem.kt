@@ -1,58 +1,31 @@
 package com.worldline.devview.networkmock.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.OperationMockState
-import com.worldline.devview.networkmock.preview.MockResponsePreviewParameterProvider
-import com.worldline.devview.networkmock.utils.containerColor
-import com.worldline.devview.networkmock.utils.containerColorForStatusCode
-import com.worldline.devview.networkmock.utils.contentColor
-import com.worldline.devview.networkmock.utils.contentColorForStatusCode
-import com.worldline.devview.networkmock.utils.fake
-import com.worldline.devview.networkmock.utils.icon
-import com.worldline.devview.networkmock.utils.iconForStatusCode
-import com.worldline.devview.utils.preview.BooleanPreviewParameterProvider
 
-/**
- * A single selectable response variant row in the operation picker sheet.
- *
- * @param mockResponse The response variant this row represents. A "Generated" badge is shown
- *   when [MockResponse.isSynthesized] is `true` — see
- *   `com.worldline.devview.networkmock.core.openapi.SchemaSynthesizer`.
- * @param onClick Called when the row itself is tapped — activates this response and closes the sheet
- * @param onPreview Called by the eye to open a preview; null hides the eye in sequence building
- * @param selected Whether this response is the operation's currently active mock
- * @param previewToggleTestTag Test tag for the trailing preview button. Callers rendering
- * more than one [MockItem] must pass a tag unique per response — the default is shared.
- */
+/** Response choice with a separate, labelled details action. Builders use plain add rows. */
 @Composable
 internal fun MockItem(
     mockResponse: MockResponse,
@@ -61,114 +34,95 @@ internal fun MockItem(
     selected: Boolean = false,
     previewToggleTestTag: String = "mock_item_preview_toggle",
     secondaryLabel: String? = null,
-    onPreview: (() -> Unit)? = null
+    onPreview: (() -> Unit)? = null,
+    enabled: Boolean = true,
+    selectionControl: Boolean = true
 ) {
     MockItemContent(
-        modifier = modifier,
-        icon = iconForStatusCode(statusCode = mockResponse.statusCode),
-        contentColor = contentColorForStatusCode(statusCode = mockResponse.statusCode),
-        containerColor = containerColorForStatusCode(statusCode = mockResponse.statusCode),
         label = mockResponse.displayName,
         secondaryLabel = secondaryLabel,
         isSynthesized = mockResponse.isSynthesized,
         selected = selected,
         onClick = onClick,
         onPreview = onPreview,
-        previewToggleTestTag = previewToggleTestTag
+        previewToggleTestTag = previewToggleTestTag,
+        enabled = enabled,
+        selectionControl = selectionControl,
+        modifier = modifier
     )
 }
 
-/** The "no mock" row — routes the operation to the actual network. Has nothing to preview. */
+/** Routes the operation to the actual network. */
 @Composable
 internal fun NetworkItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    selected: Boolean = false
+    selected: Boolean = false,
+    enabled: Boolean = true
 ) {
-    val state = OperationMockState.Network
     MockItemContent(
-        modifier = modifier,
-        icon = state.icon,
-        contentColor = state.contentColor,
-        containerColor = state.containerColor,
-        label = state.displayName,
+        label = OperationMockState.Network.displayName,
+        secondaryLabel = "Use the actual network",
         selected = selected,
         onClick = onClick,
-        onPreview = null,
-        previewToggleTestTag = "mock_item_preview_toggle"
+        enabled = enabled,
+        modifier = modifier
     )
 }
 
-/**
- * A selectable row simulating a deterministic network failure — see
- * [com.worldline.devview.networkmock.core.model.OperationMockState.Failure]. Has nothing to
- * preview, same as [NetworkItem].
- */
+/** Selects a deterministic transport failure. */
 @Composable
 internal fun FailureItem(
     kind: FailureKind,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    selected: Boolean = false
+    selected: Boolean = false,
+    enabled: Boolean = true
 ) {
-    val state = OperationMockState.Failure(kind = kind)
     MockItemContent(
-        modifier = modifier,
-        icon = state.icon,
-        contentColor = state.contentColor,
-        containerColor = state.containerColor,
-        label = state.displayName,
+        label = OperationMockState.Failure(kind = kind).displayName,
         selected = selected,
         onClick = onClick,
-        onPreview = null,
-        previewToggleTestTag = "mock_item_preview_toggle"
+        enabled = enabled,
+        modifier = modifier
     )
 }
 
 @Composable
 private fun MockItemContent(
-    icon: ImageVector,
-    contentColor: Color,
-    containerColor: Color,
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
-    onPreview: (() -> Unit)?,
-    previewToggleTestTag: String,
+    enabled: Boolean,
     modifier: Modifier = Modifier,
+    onPreview: (() -> Unit)? = null,
+    previewToggleTestTag: String = "mock_item_preview_toggle",
     secondaryLabel: String? = null,
-    isSynthesized: Boolean = false
+    isSynthesized: Boolean = false,
+    selectionControl: Boolean = true
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                enabled = true,
-                onClick = onClick
-            ).then(
-                other = modifier
-                    .minimumInteractiveComponentSize()
-            ),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(space = 16.dp)
-    ) {
-        Icon(
-            modifier = Modifier
-                .padding(vertical = 4.dp)
-                .clip(shape = MaterialTheme.shapes.small)
-                .background(color = containerColor)
-                .padding(all = 4.dp),
-            imageVector = icon,
-            contentDescription = null,
-            tint = contentColor
+    val interaction = if (selectionControl) {
+        Modifier.selectable(
+            selected = selected,
+            enabled = enabled,
+            role = Role.RadioButton,
+            onClick = onClick
         )
-        Column(
-            modifier = Modifier.weight(weight = 1f)
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyLargeEmphasized
-            )
+    } else {
+        Modifier.clickable(enabled = enabled, onClick = onClick)
+    }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .then(other = interaction)
+            .minimumInteractiveComponentSize()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+    ) {
+        if (selectionControl) RadioButton(selected = selected, onClick = null, enabled = enabled)
+        Column(modifier = Modifier.weight(weight = 1f)) {
+            Text(text = label, style = MaterialTheme.typography.bodyLarge)
             if (!secondaryLabel.isNullOrBlank()) {
                 Text(
                     text = secondaryLabel,
@@ -176,116 +130,21 @@ private fun MockItemContent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }
-        if (isSynthesized) {
-            Box(
-                modifier = Modifier
-                    .background(
-                        color = MaterialTheme.colorScheme.tertiaryContainer,
-                        shape = RoundedCornerShape(size = 4.dp)
-                    ).padding(horizontal = 6.dp, vertical = 2.dp)
-            ) {
-                Text(
-                    text = "Generated",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
+            if (isSynthesized) {
+                Text(text = "Generated", style = MaterialTheme.typography.labelSmall)
             }
-        }
-        if (selected) {
-            Icon(
-                imageVector = Icons.Rounded.Check,
-                contentDescription = null
-            )
         }
         if (onPreview != null) {
             IconButton(
                 modifier = Modifier.testTag(tag = previewToggleTestTag),
+                enabled = enabled,
                 onClick = onPreview
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Visibility,
-                    contentDescription = "Preview response"
+                    imageVector = Icons.Rounded.ChevronRight,
+                    contentDescription = "Open $label details"
                 )
             }
-        }
-    }
-}
-
-@Preview(locale = "en")
-@Composable
-private fun MockItemPreview(
-    @PreviewParameter(MockResponsePreviewParameterProvider::class) mockResponse: MockResponse
-) {
-    MaterialTheme {
-        Surface {
-            MockItem(
-                mockResponse = mockResponse,
-                onClick = {},
-                onPreview = {}
-            )
-        }
-    }
-}
-
-@Preview(locale = "en")
-@Composable
-private fun NetworkItemPreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) selected: Boolean
-) {
-    MaterialTheme {
-        Surface {
-            NetworkItem(
-                selected = selected,
-                onClick = {}
-            )
-        }
-    }
-}
-
-@Preview(locale = "en")
-@Composable
-private fun FailureItemPreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) selected: Boolean
-) {
-    MaterialTheme {
-        Surface {
-            FailureItem(
-                kind = FailureKind.TIMEOUT,
-                selected = selected,
-                onClick = {}
-            )
-        }
-    }
-}
-
-@Preview(locale = "en")
-@Composable
-private fun MockItemSelectedPreview(
-    @PreviewParameter(BooleanPreviewParameterProvider::class) selected: Boolean
-) {
-    MaterialTheme {
-        Surface {
-            MockItem(
-                mockResponse = MockResponse.fake().first(),
-                selected = selected,
-                onClick = {},
-                onPreview = {}
-            )
-        }
-    }
-}
-
-@Preview(locale = "en")
-@Composable
-private fun MockItemSynthesizedPreview() {
-    MaterialTheme {
-        Surface {
-            MockItem(
-                mockResponse = MockResponse.fake().first().copy(isSynthesized = true),
-                onClick = {},
-                onPreview = {}
-            )
         }
     }
 }

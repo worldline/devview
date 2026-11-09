@@ -50,14 +50,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `NavKey`. Module registration remains unchanged and receives its entry's measured bottom inset.
 - NetworkMock: Reset all to network now asks for confirmation before clearing mocks, failures
   and sequences.
-- NetworkMock: operation sheets now keep a fixed 65% height with Responses, Sequence, and Failure
-  tabs, grouped cards, matching sticky headers, inset dividers, and failure-rate footers.
-  Eye icons open previews directly; a "Compare with…" dropdown replaces marking responses and
-  the bottom Preview/Compare button. The Sequence tab supports numbered removable steps,
-  editing seeded from the active sequence, and resetting its position.
+- NetworkMock: operation sheets wrap their content and use one radio-choice list for Network,
+  status-grouped responses and forced failures. Labelled chevrons open full-screen response
+  details with Compare, selectable content, Copy body and Use/In use. A full-screen sequence
+  builder uses stable step identities, Move up/down and Remove, preserves unresolved drafts,
+  and requires at least two steps. Saving or resetting position returns to the operation list.
+- NetworkMock: one retained module session serializes accepted writes. Failed saves retain
+  the selection/draft and offer Retry or Cancel while conflicting actions stay disabled.
+  Overlay hiding and host configuration changes retain the session and entry drafts; filtering
+  out a displayed module returns Home and discards its entry draft, not its registered session.
+- NetworkMock core/Ktor: additive state revisions prevent stale sequence writes across
+  repository instances. Concurrent requests consume steps in commit order and keep the final
+  step selected; retries apply probability and configured delay at most once per request.
+  An unavailable selected mock or state-persistence failure now fails without real-network
+  fallback. Cancellation propagates without consuming an uncommitted sequence step.
 - DevView: added a divider below the shared top app bar; NetworkMock operation lists animate
-  filter and sort changes. The mock engine, repositories, Ktor behavior, persisted mock settings,
-  and public API are unchanged by these list and preview changes.
+  filter and sort changes. Navigation guards consult pending mutations at action time.
 
 ### Removed
 - **Breaking** DevView: built-in `AnalyticsScreen`, `ConsoleScreen`, `FeatureFlipScreen`,

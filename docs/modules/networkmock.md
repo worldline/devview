@@ -45,8 +45,14 @@ DevView(
     modules = modules
 )
 ```
-Open DevView → Network Mock. The registered module owns its screens and operation sheet;
-there is no public screen composable to add to host navigation.
+Open DevView → Network Mock. Tap an operation for quick radio choices, open a response
+with its labelled chevron for details/Compare/Copy body, or open the full-screen sequence
+builder. The registered module owns these destinations and its operation sheet; there is
+no public screen composable to add to host navigation.
+
+Selected mocks that are unavailable fail the request without real-network fallback. Missing
+or invalid configuration and unmatched requests still pass through. See the
+[Ktor behaviour](networkmock-ktor.md) and [UI workflows](networkmock-workflows.md) for details.
 ### Using the Ktor Plugin
 ```kotlin
 // Zero-config: repositories are resolved automatically from NetworkMockInitializer
