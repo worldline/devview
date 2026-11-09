@@ -180,23 +180,6 @@ package com.worldline.devview.networkmock.viewmodel {
     field public static final com.worldline.devview.networkmock.viewmodel.NetworkMockUiState.Loading INSTANCE;
   }
 
-  public final class NetworkMockViewModel extends androidx.lifecycle.ViewModel {
-    ctor public NetworkMockViewModel(com.worldline.devview.networkmock.core.repository.MockConfigRepository configRepository, com.worldline.devview.networkmock.core.repository.MockStateRepository stateRepository);
-    method public void closeSheet();
-    method @InaccessibleFromKotlin public kotlinx.coroutines.flow.StateFlow<com.worldline.devview.networkmock.viewmodel.OperationSheetState> getSheetState();
-    method @InaccessibleFromKotlin public kotlinx.coroutines.flow.StateFlow<com.worldline.devview.networkmock.viewmodel.NetworkMockUiState> getUiState();
-    method public void openOperation(com.worldline.devview.networkmock.core.model.OperationKey key);
-    method public void reloadConfiguration();
-    method public void resetAllToNetwork();
-    method public void resetOperationSequencePosition(com.worldline.devview.networkmock.core.model.OperationKey key);
-    method public void setGlobalMockingEnabled(boolean enabled);
-    method public void setOperationFailureState(com.worldline.devview.networkmock.core.model.OperationKey key, com.worldline.devview.networkmock.core.model.FailureKind kind);
-    method public void setOperationMockState(com.worldline.devview.networkmock.core.model.OperationKey key, com.worldline.devview.networkmock.core.model.MockResponse? response);
-    method public void setOperationSequenceState(com.worldline.devview.networkmock.core.model.OperationKey key, java.util.List<com.worldline.devview.networkmock.core.model.MockResponse> responses);
-    property public kotlinx.coroutines.flow.StateFlow<com.worldline.devview.networkmock.viewmodel.OperationSheetState> sheetState;
-    property public kotlinx.coroutines.flow.StateFlow<com.worldline.devview.networkmock.viewmodel.NetworkMockUiState> uiState;
-  }
-
   @androidx.compose.runtime.Immutable public sealed exhaustive interface OperationSheetState {
   }
 

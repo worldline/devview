@@ -10,7 +10,7 @@ import io.kotest.core.spec.style.FunSpec
  *
  * Conventions:
  *  - `ViewModel` subclasses live in a `viewmodel` package
- *  - `ViewModel` subclasses are public API or internal implementation details
+ *  - `ViewModel` subclasses are internal implementation details
  */
 class ViewModelTest :
     FunSpec(body = {
@@ -26,13 +26,14 @@ class ViewModelTest :
                 }
         }
 
-        test(name = "ViewModel subclasses are public or internal") {
+        test(name = "Built-in ViewModels are internal") {
             Konsist
                 .scopeFromProject()
                 .classes()
                 .withNameEndingWith("ViewModel")
-                .assertTrue(additionalMessage = "ViewModel subclasses must be public or internal") { clazz ->
-                    clazz.hasPublicOrDefaultModifier || clazz.hasInternalModifier
+                .filterNot { it.packagee?.hasNameStartingWith("com.worldline.devview.sample") ?: false }
+                .assertTrue(additionalMessage = "Built-in ViewModels belong to module registration") { clazz ->
+                    clazz.hasInternalModifier
                 }
         }
     })

@@ -76,6 +76,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   filter and sort changes. Navigation guards consult pending mutations at action time.
 
 ### Removed
+- **Breaking** NetworkMock: `NetworkMockViewModel` is internal, matching the built-in screen
+  boundary. Use module registration for UI and the core repositories for runtime configuration.
 - **Breaking** DevView: built-in `AnalyticsScreen`, `ConsoleScreen`, `FeatureFlipScreen`,
   `NetworkMockScreen` and `TimeCapsuleScreen` are internal. Register modules through
   `rememberModules` and render `DevView`; module registration owns all tool content.
