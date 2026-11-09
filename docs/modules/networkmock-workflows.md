@@ -54,12 +54,12 @@ Open DevView → Network Mock. Your new operation appears in the list under its 
 1. Open DevView → Network Mock → tap your operation.
 2. Tap a 4xx or 5xx response variant to activate it.
 3. The state chip turns red/orange. The Ktor plugin now returns that response for matching requests.
-4. After testing, tap **Network** or use the "Reset to Network" toolbar action to restore pass-through.
+4. After testing, select **Use actual network** in the operation sheet, or confirm the **Reset all to network** toolbar action to restore every operation to pass-through.
 
 ## Previewing and comparing responses
 
 1. Open DevView → Network Mock and tap an operation.
-2. Tap a response's **Open details** chevron. The quick-choice sheet closes before the full-screen response opens; no mock is activated.
+2. Tap a response's **Details** button. The quick-choice sheet closes before the full-screen response opens; no mock is activated. The Responses tab's search can narrow by status code, name, example or media type.
 3. Use **Compare with** to select another variant. The control is hidden when no other variant exists.
 4. Inspect selectable, pretty-printed JSON or unchanged non-JSON text. Logical lines stay unwrapped; each pane scrolls horizontally and creates only visible vertical rows. Large comparisons use stacked previews instead of an unbounded diff table.
 5. **Copy body** copies the original response body. **Use this response** saves and returns to the list; **In use** is disabled for an already-selected response. Back returns to the list without reopening the sheet.
@@ -131,8 +131,8 @@ paths:
 **Deterministically** — every request to the operation fails the same way until you change it:
 
 1. Open DevView → Network Mock → tap your operation.
-2. In **Simulate failure**, tap Timeout or Connection refused.
-3. After the save succeeds, the sheet closes and the state chip reflects the failure. Select **Network** or a response to stop simulating it.
+2. Open the **Failures** tab and tap Timeout or Connection refused. Browsing the tab alone changes nothing.
+3. After the save succeeds, the sheet closes and the state chip reflects the failure. Select **Use actual network** or a response to stop simulating it.
 
 **Probabilistically** — a percentage of requests fail on their own, the rest behave normally:
 
@@ -145,8 +145,9 @@ paths:
 ```
 
 This only rolls for requests that would otherwise be mocked — an operation left on `Network`
-passthrough is never affected. If the operation sheet shows a configured failure rate below the failure group,
-that's this field — it's read-only in the UI; edit the spec to change it. See
+passthrough is never affected. The operation sheet's read-only failure-rate note describes
+this field; edit the spec to change it. Explicit Timeout and Connection refused choices do
+not roll this probability. See
 [Simulating failures](networkmock-core.md#simulating-failures) for the exact exception each
 failure kind throws.
 
@@ -160,7 +161,7 @@ For repeated calls whose response changes over time, such as order status or upl
 4. **Save sequence (n)** becomes available at two steps. Save persists the complete draft, resets its position to step 1, and returns to the list.
 5. **Cancel** or Back returns to the list without applying edits.
 
-An active sequence shows its current position in the operation sheet. **Edit sequence** seeds a draft from its saved steps; **Reset position** resets the latest persisted sequence to step 1 without replacing its response list. A successful reset returns to the list. Missing draft variants freeze editing and saving until Reload resolves them; the draft stays intact.
+A configured sequence shows **Sequence · next n/total** and the next response in the operation sheet. That response is not selected as a standalone radio choice. **Edit** seeds a draft from the saved steps; **Restart** resets the latest persisted sequence to step 1 without replacing its response list. A successful restart returns to the list. Missing draft variants freeze editing and saving until Reload resolves them; the draft stays intact.
 
 The final step repeats instead of looping. Selecting Network, a single response or a failure replaces the sequence. Concurrent requests consume steps in successful DataStore commit order. A request retries against newer state if another request or UI action wins first, without rerolling its configured probability or applying its mock delay twice.
 

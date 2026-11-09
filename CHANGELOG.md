@@ -53,11 +53,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `NavKey`. Module registration remains unchanged and receives its entry's measured bottom inset.
 - NetworkMock: Reset all to network now asks for confirmation before clearing mocks, failures
   and sequences.
-- NetworkMock: operation sheets wrap their content and use one radio-choice list for Network,
-  status-grouped responses and forced failures. Labelled chevrons open full-screen response
-  details with Compare, selectable content, Copy body and Use/In use. A full-screen sequence
-  builder uses stable step identities, Move up/down and Remove, preserves unresolved drafts,
-  and requires at least two steps. Saving or resetting position returns to the operation list.
+- NetworkMock: operation sheets pair a compact configuration summary with direct actual-network
+  selection, Responses/Failures browsing tabs and response search. Status badges match the list;
+  labelled Details buttons inspect without selecting. Sequence next-step, Edit and Restart
+  controls share a compact header that wraps at narrow widths. Controls scroll when necessary
+  to keep choices reachable. Full-screen response details provide Compare, selectable content,
+  Copy body and Use/In use. The sequence builder uses stable step identities, Move up/down and
+  Remove, preserves unresolved drafts and requires at least two steps. Saving or restarting
+  position returns to the operation list.
 - NetworkMock: one retained module session serializes accepted writes. Failed saves retain
   the selection/draft and offer Retry or Cancel while conflicting actions stay disabled.
   Overlay hiding and host configuration changes retain the session and entry drafts; filtering
