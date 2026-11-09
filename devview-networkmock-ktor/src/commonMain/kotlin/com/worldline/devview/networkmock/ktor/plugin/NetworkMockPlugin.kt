@@ -272,10 +272,22 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Exception) {
+                        val latest = stateRepository.getStateSnapshot()
+                        if (latest.revision != snapshot.revision) {
+                            snapshot = latest
+                            continue
+                        }
                         logger.w(
                             throwable = e
                         ) { "$method $path -> ERROR (could not load selected mock response)" }
                         throw e
+                    }
+                    if (call == null) {
+                        val latest = stateRepository.getStateSnapshot()
+                        if (latest.revision != snapshot.revision) {
+                            snapshot = latest
+                            continue
+                        }
                     }
                     checkNotNull(value = call) {
                         "Selected mock response ${mockMatch.key.compositeKey} " +
@@ -354,8 +366,8 @@ private fun simulatedFailure(kind: FailureKind, requestData: HttpRequestData): T
  * it, applying [delayMs] after loading the response. Shared by [OperationMockState.Mock] and
  * [OperationMockState.Sequence] branches, which differ only in where the pair comes from.
  *
- * @return The call to return, or `null` if the variant isn't declared in the spec (caller falls
- *   back to the real network).
+ * @return The call to return, or `null` if the variant is unavailable. The caller revalidates
+ *   the selection and fails closed if the unavailable variant is still selected.
  */
 @Suppress("DocumentationOverPrivateFunction")
 private suspend fun buildMockCall(
