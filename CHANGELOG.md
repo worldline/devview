@@ -30,9 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   horizontal scrolling and Copy log. Search and collapsible level filters retain UI state;
   the badge counts hidden levels and enabled noise rules. Newest-first rows follow the latest matching entry’s start
   at the top; paused arrivals keep the inspected row in place.
-  History is a read-only snapshot. Noise exclusions match tag/message substrings without
-  dropping captured entries. Host defaults merge with device-persisted additions, removals
-  and enabled states; Clear filters disables rules and Reset restores current host defaults.
+  History is a read-only snapshot. Enabled noise exclusions discard tag/message matches
+  before buffering so excluded bursts cannot evict useful logs. Disabling a rule admits only
+  future matches; previously retained history is not deleted. Host defaults merge with
+  device-persisted additions, removals and enabled states; Clear filters disables rules and
+  Reset restores current host defaults. Native capture waits for saved rules to load.
 - DevView: module initialization effects remain in composition after once-only DataStore
   setup, survive recomposition, cancel on removal and restart on re-entry.
 - Analytics: compact counts reflect filtered results, rows open event details, and the shared

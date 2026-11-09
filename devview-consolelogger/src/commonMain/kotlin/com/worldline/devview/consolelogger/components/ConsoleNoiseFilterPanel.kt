@@ -51,7 +51,13 @@ internal fun ConsoleNoiseFilterPanel(
         verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
         Text(
-            text = "$hiddenEntries retained entries hidden. Matches tag or message, ignoring case.",
+            text = "Enabled rules discard incoming matches before buffering. " +
+                "Turning a rule off only admits future entries.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = "$hiddenEntries earlier entries hidden. Matches tag or message, ignoring case.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
