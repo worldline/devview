@@ -59,7 +59,7 @@ CompositionLocalProvider(LocalFeatureHandler provides handler) {
 
 ## Module identity
 
-`FeatureFlip()` supplies its built-in `name`, `subtitle` and `icon` for Home. Register the module
+`FeatureFlip` supplies its built-in `moduleName`, `subtitle` and `icon` for Home. Register the module
 and provide `LocalFeatureHandler`; its screen is internal. See the [theming guide](../guides/theming.md)
 for shared appearance and custom-module identity.
 

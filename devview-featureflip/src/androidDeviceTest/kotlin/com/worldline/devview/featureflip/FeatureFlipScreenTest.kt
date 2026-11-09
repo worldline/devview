@@ -1,6 +1,20 @@
 package com.worldline.devview.featureflip
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.test.filter
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onChildren
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -315,6 +329,47 @@ class FeatureFlipScreenTest {
         releaseNewer.complete(Unit)
         onNodeWithContentDescription("checkout: On").assertIsSelected()
         runOnIdle { assertEquals(expected = 3, actual = writes) }
+    }
+
+    @Test
+    fun many_failed_saves_keep_flags_retries_and_filtered_empty_recovery_reachable() = runComposeUiTest {
+        var writes = 0
+        val store = FakePreferencesDataStore()
+        val failingStore = object : DataStore<Preferences> by store {
+            override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
+                if (++writes <= 12) throw IOException("Disk full")
+                return store.updateData(transform = transform)
+            }
+        }
+        val names = (1..12).map { "flag$it" }
+        val handler = FeatureHandler(
+            dataStore = failingStore,
+            initialFeatures = names.map {
+                Feature.RemoteFeature(name = it, description = null, defaultRemoteValue = false, state = FeatureState.REMOTE)
+            }
+        )
+        setContent {
+            MaterialTheme {
+                Box(modifier = Modifier.size(width = 400.dp, height = 320.dp).consumeWindowInsets(WindowInsets.ime)) {
+                    CompositionLocalProvider(LocalFeatureHandler provides handler) { FeatureFlipScreen() }
+                }
+            }
+        }
+        names.forEach { name ->
+            onNodeWithTag("feature_list").performScrollToNode(hasTestTag("feature_item_$name"))
+            onNodeWithContentDescription("$name: On").performClick()
+            waitUntil { writes >= names.indexOf(name) + 1 }
+        }
+        onNodeWithText("Filter features").assertIsDisplayed().performTextInput("no matching flag")
+        onNodeWithTag("feature_list").performScrollToNode(hasText("Clear search and filters"))
+        onNodeWithText("Clear search and filters").performScrollTo().assertIsDisplayed().performClick()
+        onNodeWithTag("feature_list").performScrollToNode(hasTestTag("feature_failure_flag12"))
+        onNodeWithTag("feature_failure_flag12").onChildren().filter(hasText("Retry")).onFirst().performClick()
+        onNodeWithTag("feature_list").performScrollToNode(hasTestTag("feature_item_flag12"))
+        onNodeWithContentDescription("flag12: On").assertIsDisplayed().assertIsSelected()
+        onNodeWithTag("feature_list").performScrollToNode(hasTestTag("feature_failure_flag1"))
+        onNodeWithTag("feature_failure_flag1").assertIsDisplayed()
+        runOnIdle { assertEquals(expected = 13, actual = writes) }
     }
 
     @Test

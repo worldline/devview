@@ -4,7 +4,7 @@
 
 Inventory snapshot: 2026-11-09, across PRs #157, #159, #160, #161, #163, #164, #165 and #166. Twelve inline Greptile comments contained findings; seven review bodies were empty. Two findings were already addressed in the stack. The owner approved changes for the remaining ten before implementation.
 
-This follow-up is based on PR G, commit `df34c02`. It does not rewrite the earlier PRs or automatically resolve their review threads. New comments after the inventory snapshot are outside this record.
+This follow-up is based on PR G, commit `df34c02`. It does not rewrite the earlier PRs or automatically resolve their review threads. Three later comments on #167 are covered in the addendum below; other comments after the inventory snapshot are outside this record.
 
 Confirmed behaviour:
 
@@ -19,7 +19,7 @@ Confirmed behaviour:
 | [#157: large previews create every row](https://github.com/worldline/devview/pull/157#discussion_r4483583191) | Already addressed | Finite-width lazy response panes were introduced earlier in `35c0740`. Existing 5,000-line preview tests remain in the passing NetworkMock device suite. No second lazy-list rewrite. |
 | [#159: tab changes erase sequences](https://github.com/worldline/devview/pull/159#discussion_r4493794216) | Already addressed | Sequence editing is a navigation-owned full-screen destination with a saved draft, not a disposable animated sheet tab. Existing draft restoration and Cancel tests pass. Cancel still discards unapplied edits. |
 | [#159: wide characters clipped](https://github.com/worldline/devview/pull/159#discussion_r4493794224) | Implemented | `devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/components/MockResponseDiffContent.kt` measures every logical line's rendered width, retaining lazy vertical rows. A 5,000-line test places shorter-but-wider CJK/emoji text offscreen, verifies it is actually wider, and checks horizontal reach without visual overflow. |
-| [#159: module pages miss API updates](https://github.com/worldline/devview/pull/159#discussion_r4493794230) | Implemented | Analytics, Console and FeatureFlip pages explicitly document current `name`, `subtitle` and `icon` identity properties and internal registered UI. The theming guide explains the boundary; historical `moduleName` wording is not copied back into the current API. |
+| [#159: module pages miss API updates](https://github.com/worldline/devview/pull/159#discussion_r4493794230) | Implemented | Analytics, Console and FeatureFlip pages document `moduleName`, `subtitle` and `icon` identity properties and internal registered UI. The theming guide explains the boundary; the #167 addendum corrects the initially mistaken `name` wording. |
 | [#160: failed saves lose Retry](https://github.com/worldline/devview/pull/160#discussion_r4494051286) | Implemented | `devview-featureflip/src/commonMain/kotlin/com/worldline/devview/featureflip/FeatureFlipScreen.kt` retains failures per feature, with keyed recovery rows and per-intent revisions. Device tests cover independent retries, a newer choice dismissing only its own failure, and a suspended On/Off/On write sequence. |
 | [#161: main setup example fails](https://github.com/worldline/devview/pull/161#discussion_r4494965834) | Implemented | `README.md` no longer uses removed `LocalAnalytics`; registration supplies analytics UI without a standalone provider. Existing event category names were checked against source. |
 | [#163: restoration shows another log](https://github.com/worldline/devview/pull/163#discussion_r4496507785) | Implemented | `devview-consolelogger/src/commonMain/kotlin/com/worldline/devview/consolelogger/ConsoleScreen.kt` saves the paused anchor key and offset and resolves them only after authoritative noise preferences load. Device tests cover arrivals while disposed, delayed preferences, and a missing anchor with a newer excluded row. |
@@ -70,3 +70,23 @@ The existing sheet direction and ENERGY 1 / RHYTHM 2 / MOTION 1 are unchanged. R
 The owner previously deferred spoken TalkBack and further 200% font verification. iOS runtime, exhaustive keyboard/reduced-motion checks, all breakpoints and arbitrary host theme overrides remain unverified. Device assertions are evidence for the tested layouts, not independent pixel approval for every state.
 
 PR G's observed Actions failure was a GitHub internal server error before jobs executed. The owner chose to wait, so no workflow edits, permission bypasses or reruns were made. Local validation does not establish remote CI success.
+
+## Approved #167 addendum
+
+The owner approved all three later findings and the related identity-documentation corrections:
+
+- FeatureFlip failure rows and flags now share one lazy scrolling list, with separate key namespaces. Search remains pinned and retries retain their per-feature intent checks. The new 12-failure regression checks flag access, filtered-empty recovery and an independent retry in a 400 × 320 dp available viewport.
+- Response panes measure rendered widths in cancellable batches of at most 32 lines per frame, prioritizing visible rows. This removes the synchronous full-body measurement from initial composition without substituting character-count estimates. Three controlled-frame host tests cover yielding, viewport priority, completion, cancellation and empty input; a device regression checks width reset after replacing a wide body.
+- The FeatureFlip example now uses the object `FeatureFlip`, not `FeatureFlip()`. Four identity paragraphs use the actual `moduleName` property.
+
+Validation: all 15 FeatureFlip device tests and all 121 NetworkMock device tests passed; the focused three width-measurement host tests passed. The first NetworkMock run had 22 missing-Compose-hierarchy failures; the affected class and then the full module passed without source changes. Their original cause remains unconfirmed.
+
+The small FeatureFlip fixture initially consumed the full window keyboard inset, leaving zero-height content. It now treats its fixed size as the already-available viewport. The owner checked the full-size sample with the keyboard open and reported it looked normal; production IME padding is unchanged.
+
+Scoped delivery checks:
+
+- R-03 / R-26 / R-27 PASS for the changed paths: device tests exercise reachable failure retries, flags, filtered-empty recovery, wide-body horizontal reach and replacement-width reset.
+- R-31 PASS: scrolling keeps recovery reachable; frame batching avoids an eager width scan while retaining exact rendered-width bounds. Existing palette, typography and ENERGY 1 / RHYTHM 2 / MOTION 1 are unchanged; no assets or unrelated design were added.
+- R-35 PASS for this follow-up's build and automated interaction checks, not an exhaustive manual click-through or accessibility certificate. The original qualified audit worksheet remains authoritative.
+
+No further broad validation was added after the owner's request to finish efficiently. Opening latency, iOS runtime and the previously deferred accessibility checks were not measured. One exceptionally long line can still exceed a frame budget. The local `graphify update .` was attempted but refused to overwrite its graph because saved semantic content was missing; no forced overwrite or semantic rebuild was performed.

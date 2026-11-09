@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsActions
@@ -142,6 +143,20 @@ class MockResponseDiffContentTest {
         val viewport = onNodeWithTag("preview_first_pane").getUnclippedBoundsInRoot()
         val line = onNodeWithText(wide).getUnclippedBoundsInRoot()
         assertTrue(line.right <= viewport.right + 1.dp, "The widest rendered line must remain horizontally reachable")
+    }
+
+    @Test
+    fun replacing_a_wide_body_resets_width_and_horizontal_scroll() = runComposeUiTest {
+        val body = mutableStateOf(value = List(size = 100) { firstLine }.joinToString("\n"))
+        setPreview { SplitDiffContent(first = response(body.value), second = null) }
+        onNodeWithTag("preview_first_pane").performSemanticsAction(SemanticsActions.ScrollBy) { it(100_000f, 0f) }
+        runOnIdle { body.value = "short replacement" }
+        onNodeWithText("short replacement").assertIsDisplayed()
+        assertSingleLine(text = "short replacement")
+        val viewport = onNodeWithTag("preview_first_pane").getUnclippedBoundsInRoot()
+        val row = onNodeWithTag("preview_first_pane_rows").getUnclippedBoundsInRoot()
+        (row.right - row.left) shouldBe (viewport.right - viewport.left)
+        row.left shouldBe viewport.left
     }
 
     @Test

@@ -27,7 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.listSaver
@@ -189,81 +188,91 @@ internal fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp 
             }
         }
     ) { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues = paddingValues)) {
-            failedChanges.forEach { (name, change) ->
-                key(name) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Could not save $name. The previous value is unchanged.",
-                            modifier = Modifier.weight(weight = 1f),
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        TextButton(onClick = {
-                            if (failedChanges[name] == change && latestChanges[name] == change) {
-                                failedChanges = failedChanges - name
-                                changes.trySend(element = change)
-                            }
-                        }) { Text(text = "Retry") }
-                    }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    paddingValues = paddingValues
+                ).testTag(tag = "feature_list")
+        ) {
+            items(
+                items = failedChanges.entries.toList(),
+                key = { "failure:${it.key}" },
+                contentType = { "failure" }
+            ) { (name, change) ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            horizontal = 16.dp
+                        ).testTag(tag = "feature_failure_$name"),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Could not save $name. The previous value is unchanged.",
+                        modifier = Modifier.weight(weight = 1f),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    TextButton(onClick = {
+                        if (failedChanges[name] == change && latestChanges[name] == change) {
+                            failedChanges = failedChanges - name
+                            changes.trySend(element = change)
+                        }
+                    }) { Text(text = "Retry") }
                 }
             }
             if (filteredFeatures.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    DevViewEmptyState(
-                        icon = Icons.Rounded.Lightbulb,
-                        title = if (features.isEmpty()) {
-                            "No features registered"
-                        } else {
-                            "No features match your filters"
-                        },
-                        message = if (features.isEmpty()) {
-                            "Register flags with FeatureHandler."
-                        } else {
-                            "Change your search or clear the filters."
-                        },
-                        action = if (features.isNotEmpty()) {
-                            {
-                                TextButton(onClick = {
-                                    query = ""
-                                    selectedFilters = emptyList()
-                                }) {
-                                    Text(text = "Clear search and filters")
+                item(key = "empty", contentType = "empty") {
+                    Box(
+                        modifier = Modifier.fillParentMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        DevViewEmptyState(
+                            icon = Icons.Rounded.Lightbulb,
+                            title = if (features.isEmpty()) {
+                                "No features registered"
+                            } else {
+                                "No features match your filters"
+                            },
+                            message = if (features.isEmpty()) {
+                                "Register flags with FeatureHandler."
+                            } else {
+                                "Change your search or clear the filters."
+                            },
+                            action = if (features.isNotEmpty()) {
+                                {
+                                    TextButton(onClick = {
+                                        query = ""
+                                        selectedFilters = emptyList()
+                                    }) {
+                                        Text(text = "Clear search and filters")
+                                    }
                                 }
+                            } else {
+                                null
                             }
-                        } else {
-                            null
-                        }
-                    )
+                        )
+                    }
                 }
             } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    itemsIndexed(
-                        items = filteredFeatures,
-                        key = { _, feature -> feature.name },
-                        contentType = { _, feature -> feature::class.simpleName }
-                    ) { index, feature ->
-                        Column(
-                            modifier = Modifier.animateItem().testTag(
-                                tag = "feature_item_${feature.name}"
-                            )
-                        ) {
-                            FeatureItem(
-                                feature = feature,
-                                onStateChange = { state ->
-                                    submitChange(feature.name, state)
-                                }
-                            )
-                            if (index != filteredFeatures.lastIndex) {
-                                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                itemsIndexed(
+                    items = filteredFeatures,
+                    key = { _, feature -> "feature:${feature.name}" },
+                    contentType = { _, feature -> feature::class.simpleName }
+                ) { index, feature ->
+                    Column(
+                        modifier = Modifier.animateItem().testTag(
+                            tag = "feature_item_${feature.name}"
+                        )
+                    ) {
+                        FeatureItem(
+                            feature = feature,
+                            onStateChange = { state ->
+                                submitChange(feature.name, state)
                             }
+                        )
+                        if (index != filteredFeatures.lastIndex) {
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                         }
                     }
                 }
