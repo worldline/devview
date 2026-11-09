@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshotFlow
 import kotlin.reflect.KProperty1
 import kotlin.time.Clock
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.collectLatest
 
 /** A single recorded state, labelled and timestamped at the moment it was captured. */
@@ -35,6 +37,9 @@ internal class ScreenCapsule<S : Any>(
             "TimeCapsule text field property names must be unique."
         }
     }
+
+    @OptIn(ExperimentalUuidApi::class)
+    val recordingId: String = Uuid.random().toString()
 
     private val recordedEntries = mutableStateListOf<Recorded<S>>()
     private var nextId = 0L

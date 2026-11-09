@@ -124,9 +124,11 @@ With this wired up, incrementing the counter records a new entry on every change
 DevView → Time Capsule shows a "Recording CounterViewModel" header, then the history
 newest-first: `CounterState`'s default `toString()`-shaped label lets each row show a
 change summary (`count 3 → 4`) instead of the full state, expandable to see the rest.
-Tapping **Restore** on any entry calls `restoreState` with that entry's value, and the
-running screen reflects it immediately. Navigating away from `CounterScreen` and back
-starts a fresh, empty history.
+Tapping **Restore** on an earlier entry calls `restoreState` with that entry's value, and
+the running screen reflects it immediately. The current entry has no redundant restore action.
+Expansion survives recreation of the DevView screen while the same recording remains active;
+a new recording resets expansion along with the history. Navigating away from `CounterScreen`
+and back starts a fresh history.
 
 ## State-based text fields
 
