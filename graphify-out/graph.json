@@ -33282,7 +33282,7 @@
       "label": "AndroidPlatform",
       "file_type": "code",
       "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
-      "source_location": "L7",
+      "source_location": "L15",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -33292,8 +33292,36 @@
       "label": "getPlatform()",
       "file_type": "code",
       "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
-      "source_location": "L11",
+      "source_location": "L19",
       "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android_systembarsappearance",
+      "label": "SystemBarsAppearance()",
+      "file_type": "code",
+      "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
+      "source_location": "L21",
+      "_callable": true,
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "getInsetsController",
+            "receiver_type": "WindowCompat",
+            "lang": "kotlin",
+            "line": "L35",
+            "file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt"
+          }
+        ]
+      },
+      "_origin": "ast"
+    },
+    {
+      "id": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android_kt_composable",
+      "label": "Composable",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
       "_origin": "ast"
     },
     {
@@ -33309,22 +33337,57 @@
       "label": "App()",
       "file_type": "code",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L31",
+      "source_location": "L44",
       "_callable": true,
       "metadata": {
         "unresolved_calls": [
           {
+            "callee": "safeContentPadding",
+            "receiver_type": "Modifier",
+            "lang": "kotlin",
+            "line": "L56",
+            "file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt"
+          },
+          {
             "callee": "spacedBy",
             "receiver_type": "Arrangement",
             "lang": "kotlin",
-            "line": "L47",
+            "line": "L62",
+            "file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt"
+          },
+          {
+            "callee": "widthIn",
+            "receiver_type": "Modifier",
+            "lang": "kotlin",
+            "line": "L69",
+            "file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt"
+          },
+          {
+            "callee": "semantics",
+            "receiver_type": "Modifier",
+            "lang": "kotlin",
+            "line": "L74",
+            "file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt"
+          },
+          {
+            "callee": "sizeIn",
+            "receiver_type": "Modifier",
+            "lang": "kotlin",
+            "line": "L88",
             "file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt"
           },
           {
             "callee": "fillMaxWidth",
             "receiver_type": "Modifier",
             "lang": "kotlin",
-            "line": "L55",
+            "line": "L111",
+            "file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt"
+          },
+          {
+            "callee": "padding",
+            "receiver_type": "Modifier",
+            "lang": "kotlin",
+            "line": "L167",
             "file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt"
           }
         ]
@@ -33360,7 +33423,7 @@
       "label": "CounterScreen()",
       "file_type": "code",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L28",
+      "source_location": "L31",
       "_callable": true,
       "metadata": {
         "unresolved_calls": [
@@ -33368,7 +33431,21 @@
             "callee": "spacedBy",
             "receiver_type": "Arrangement",
             "lang": "kotlin",
-            "line": "L42",
+            "line": "L45",
+            "file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt"
+          },
+          {
+            "callee": "semantics",
+            "receiver_type": "Modifier",
+            "lang": "kotlin",
+            "line": "L57",
+            "file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt"
+          },
+          {
+            "callee": "fillMaxWidth",
+            "receiver_type": "Modifier",
+            "lang": "kotlin",
+            "line": "L67",
             "file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt"
           }
         ]
@@ -33432,7 +33509,7 @@
       "label": "AppFeatures",
       "file_type": "code",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/DevViewApp.kt",
-      "source_location": "L219",
+      "source_location": "L221",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -33442,7 +33519,7 @@
       "label": "DARK_MODE",
       "file_type": "code",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/DevViewApp.kt",
-      "source_location": "L220",
+      "source_location": "L222",
       "_origin": "ast"
     },
     {
@@ -33485,7 +33562,7 @@
       "label": "Platform",
       "file_type": "code",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/Platform.kt",
-      "source_location": "L3",
+      "source_location": "L5",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -33495,8 +33572,25 @@
       "label": "getPlatform()",
       "file_type": "code",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/Platform.kt",
-      "source_location": "L7",
+      "source_location": "L9",
       "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_platform_systembarsappearance",
+      "label": "SystemBarsAppearance()",
+      "file_type": "code",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/Platform.kt",
+      "source_location": "L11",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_platform_kt_composable",
+      "label": "Composable",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
       "_origin": "ast"
     },
     {
@@ -33774,7 +33868,7 @@
       "label": "IOSPlatform",
       "file_type": "code",
       "source_file": "sample/shared/src/iosMain/kotlin/com/worldline/devview/sample/Platform.ios.kt",
-      "source_location": "L7",
+      "source_location": "L8",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -33784,8 +33878,25 @@
       "label": "getPlatform()",
       "file_type": "code",
       "source_file": "sample/shared/src/iosMain/kotlin/com/worldline/devview/sample/Platform.ios.kt",
-      "source_location": "L12",
+      "source_location": "L13",
       "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "sample_shared_src_iosmain_kotlin_com_worldline_devview_sample_platform_ios_systembarsappearance",
+      "label": "SystemBarsAppearance()",
+      "file_type": "code",
+      "source_file": "sample/shared/src/iosMain/kotlin/com/worldline/devview/sample/Platform.ios.kt",
+      "source_location": "L15",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "sample_shared_src_iosmain_kotlin_com_worldline_devview_sample_platform_ios_kt_composable",
+      "label": "Composable",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
       "_origin": "ast"
     },
     {
@@ -55783,6 +55894,62 @@
     {
       "id": "rememberviewmodelstoreprovider",
       "label": "rememberviewmodelstoreprovider",
+      "file_type": "concept",
+      "type": "external",
+      "external": true,
+      "source_file": ""
+    },
+    {
+      "id": "activity",
+      "label": "activity",
+      "file_type": "concept",
+      "type": "external",
+      "external": true,
+      "source_file": ""
+    },
+    {
+      "id": "contextwrapper",
+      "label": "contextwrapper",
+      "file_type": "concept",
+      "type": "external",
+      "external": true,
+      "source_file": ""
+    },
+    {
+      "id": "toargb",
+      "label": "toargb",
+      "file_type": "concept",
+      "type": "external",
+      "external": true,
+      "source_file": ""
+    },
+    {
+      "id": "localview",
+      "label": "localview",
+      "file_type": "concept",
+      "type": "external",
+      "external": true,
+      "source_file": ""
+    },
+    {
+      "id": "windowcompat",
+      "label": "windowcompat",
+      "file_type": "concept",
+      "type": "external",
+      "external": true,
+      "source_file": ""
+    },
+    {
+      "id": "filledtonalbutton",
+      "label": "filledtonalbutton",
+      "file_type": "concept",
+      "type": "external",
+      "external": true,
+      "source_file": ""
+    },
+    {
+      "id": "outlinedcard",
+      "label": "outlinedcard",
       "file_type": "concept",
       "type": "external",
       "external": true,
@@ -161785,7 +161952,7 @@
     },
     {
       "source": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android",
-      "target": "github_workflows_build",
+      "target": "activity",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -161793,7 +161960,119 @@
       "source_location": "L5",
       "weight": 1.0,
       "metadata": {
+        "target_fqn": "android.app.Activity"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android",
+      "target": "contextwrapper",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
+      "source_location": "L6",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "android.content.ContextWrapper"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android",
+      "target": "github_workflows_build",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
+      "source_location": "L7",
+      "weight": 1.0,
+      "metadata": {
         "target_fqn": "android.os.Build"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android",
+      "target": "materialtheme",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
+      "source_location": "L8",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.material3.MaterialTheme"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android",
+      "target": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android_kt_composable",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
+      "source_location": "L9",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.runtime.Composable"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android",
+      "target": "sideeffect",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
+      "source_location": "L10",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.runtime.SideEffect"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android",
+      "target": "toargb",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
+      "source_location": "L11",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.ui.graphics.toArgb"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android",
+      "target": "localview",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
+      "source_location": "L12",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.ui.platform.LocalView"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android",
+      "target": "windowcompat",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
+      "source_location": "L13",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.core.view.WindowCompat"
       },
       "_origin": "ast"
     },
@@ -161803,7 +162082,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
-      "source_location": "L7",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -161813,7 +162092,7 @@
       "relation": "implements",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
-      "source_location": "L7",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -161823,7 +162102,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
-      "source_location": "L11",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -161833,9 +162112,30 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
-      "source_location": "L11",
+      "source_location": "L19",
       "weight": 1.0,
       "context": "return_type",
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android",
+      "target": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android_systembarsappearance",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android_systembarsappearance",
+      "target": "sample_shared_src_androidmain_kotlin_com_worldline_devview_sample_platform_android_kt_composable",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
+      "source_location": "L21",
+      "weight": 1.0,
+      "context": "attribute",
       "_origin": "ast"
     },
     {
@@ -161845,7 +162145,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/androidMain/kotlin/com/worldline/devview/sample/Platform.android.kt",
-      "source_location": "L11",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -161879,26 +162179,12 @@
     },
     {
       "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
-      "target": "background",
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L5",
-      "weight": 1.0,
-      "metadata": {
-        "target_fqn": "androidx.compose.foundation.background"
-      },
-      "_origin": "ast"
-    },
-    {
-      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
       "target": "arrangement",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L6",
+      "source_location": "L5",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.foundation.layout.Arrangement"
@@ -161912,7 +162198,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L7",
+      "source_location": "L6",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.foundation.layout.Column"
@@ -161921,15 +162207,15 @@
     },
     {
       "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
-      "target": "row",
+      "target": "flowrow",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L8",
+      "source_location": "L7",
       "weight": 1.0,
       "metadata": {
-        "target_fqn": "androidx.compose.foundation.layout.Row"
+        "target_fqn": "androidx.compose.foundation.layout.FlowRow"
       },
       "_origin": "ast"
     },
@@ -161940,7 +162226,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L9",
+      "source_location": "L8",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.foundation.layout.fillMaxSize"
@@ -161954,10 +162240,38 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L10",
+      "source_location": "L9",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.foundation.layout.fillMaxWidth"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
+      "target": "imepadding",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
+      "source_location": "L10",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.foundation.layout.imePadding"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
+      "target": "padding",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
+      "source_location": "L11",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.foundation.layout.padding"
       },
       "_origin": "ast"
     },
@@ -161968,10 +162282,66 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.foundation.layout.safeContentPadding"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
+      "target": "sizein",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
+      "source_location": "L13",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.foundation.layout.sizeIn"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
+      "target": "widthin",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
+      "source_location": "L14",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.foundation.layout.widthIn"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
+      "target": "rememberscrollstate",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
+      "source_location": "L15",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.foundation.rememberScrollState"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
+      "target": "verticalscroll",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
+      "source_location": "L16",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.foundation.verticalScroll"
       },
       "_origin": "ast"
     },
@@ -161982,10 +162352,24 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L12",
+      "source_location": "L17",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.material3.Button"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
+      "target": "filledtonalbutton",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
+      "source_location": "L18",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.material3.FilledTonalButton"
       },
       "_origin": "ast"
     },
@@ -161996,10 +162380,52 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L13",
+      "source_location": "L19",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.material3.MaterialTheme"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
+      "target": "outlinedbutton",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
+      "source_location": "L20",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.material3.OutlinedButton"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
+      "target": "outlinedcard",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
+      "source_location": "L21",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.material3.OutlinedCard"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
+      "target": "surface",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
+      "source_location": "L22",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.material3.Surface"
       },
       "_origin": "ast"
     },
@@ -162010,7 +162436,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L14",
+      "source_location": "L23",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.material3.Text"
@@ -162024,7 +162450,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L15",
+      "source_location": "L24",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.runtime.Composable"
@@ -162038,7 +162464,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L16",
+      "source_location": "L25",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.runtime.getValue"
@@ -162052,7 +162478,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L17",
+      "source_location": "L26",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.runtime.mutableStateOf"
@@ -162066,7 +162492,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L18",
+      "source_location": "L27",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.runtime.remember"
@@ -162080,7 +162506,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L19",
+      "source_location": "L28",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.runtime.rememberCoroutineScope"
@@ -162094,7 +162520,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L20",
+      "source_location": "L29",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.runtime.setValue"
@@ -162108,7 +162534,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L21",
+      "source_location": "L30",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.ui.Alignment"
@@ -162122,10 +162548,52 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L22",
+      "source_location": "L31",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.ui.Modifier"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
+      "target": "heading",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
+      "source_location": "L32",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.ui.semantics.heading"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
+      "target": "semantics",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
+      "source_location": "L33",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.ui.semantics.semantics"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
+      "target": "fontfamily",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
+      "source_location": "L34",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.ui.text.font.FontFamily"
       },
       "_origin": "ast"
     },
@@ -162136,7 +162604,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L23",
+      "source_location": "L35",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.ui.unit.dp"
@@ -162150,7 +162618,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L24",
+      "source_location": "L36",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "com.worldline.devview.sample.network.SampleApi"
@@ -162164,7 +162632,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L25",
+      "source_location": "L37",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "com.worldline.devview.sample.network.rememberHttpClientWithMocking"
@@ -162178,7 +162646,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L26",
+      "source_location": "L38",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "devview_root.sample.shared.generated.resources.Res"
@@ -162192,10 +162660,24 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L27",
+      "source_location": "L39",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "devview_root.sample.shared.generated.resources.compose_multiplatform"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app",
+      "target": "cancellationexception",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
+      "source_location": "L40",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "kotlinx.coroutines.CancellationException"
       },
       "_origin": "ast"
     },
@@ -162206,7 +162688,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L28",
+      "source_location": "L41",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "kotlinx.coroutines.launch"
@@ -162220,7 +162702,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L29",
+      "source_location": "L42",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "org.jetbrains.compose.resources.painterResource"
@@ -162233,7 +162715,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L31",
+      "source_location": "L44",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -162243,7 +162725,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L31",
+      "source_location": "L44",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast"
@@ -162254,7 +162736,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L31",
+      "source_location": "L44",
       "weight": 1.0,
       "context": "attribute",
       "_origin": "ast"
@@ -162289,7 +162771,7 @@
     },
     {
       "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_counterscreen",
-      "target": "row",
+      "target": "flowrow",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -162297,13 +162779,13 @@
       "source_location": "L5",
       "weight": 1.0,
       "metadata": {
-        "target_fqn": "androidx.compose.foundation.layout.Row"
+        "target_fqn": "androidx.compose.foundation.layout.FlowRow"
       },
       "_origin": "ast"
     },
     {
       "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_counterscreen",
-      "target": "button",
+      "target": "fillmaxwidth",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -162311,7 +162793,21 @@
       "source_location": "L6",
       "weight": 1.0,
       "metadata": {
-        "target_fqn": "androidx.compose.material3.Button"
+        "target_fqn": "androidx.compose.foundation.layout.fillMaxWidth"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_counterscreen",
+      "target": "filledtonalbutton",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
+      "source_location": "L7",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.material3.FilledTonalButton"
       },
       "_origin": "ast"
     },
@@ -162322,7 +162818,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L7",
+      "source_location": "L8",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.material3.OutlinedTextField"
@@ -162336,7 +162832,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L8",
+      "source_location": "L9",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.material3.Text"
@@ -162350,7 +162846,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L9",
+      "source_location": "L10",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.runtime.Composable"
@@ -162364,7 +162860,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L10",
+      "source_location": "L11",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.runtime.getValue"
@@ -162378,7 +162874,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.runtime.remember"
@@ -162392,7 +162888,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.ui.Alignment"
@@ -162406,10 +162902,38 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L13",
+      "source_location": "L14",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.ui.Modifier"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_counterscreen",
+      "target": "contentdescription",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
+      "source_location": "L15",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.ui.semantics.contentDescription"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_counterscreen",
+      "target": "semantics",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
+      "source_location": "L16",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.ui.semantics.semantics"
       },
       "_origin": "ast"
     },
@@ -162420,7 +162944,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L14",
+      "source_location": "L17",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.compose.ui.unit.dp"
@@ -162434,7 +162958,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L15",
+      "source_location": "L18",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "androidx.lifecycle.compose.collectAsStateWithLifecycle"
@@ -162448,7 +162972,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L16",
+      "source_location": "L19",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "com.worldline.devview.sample.viewmodel.CounterState"
@@ -162462,7 +162986,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L17",
+      "source_location": "L20",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "com.worldline.devview.sample.viewmodel.CounterViewModel"
@@ -162476,7 +163000,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L18",
+      "source_location": "L21",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "com.worldline.devview.timecapsule.TimeCapsuleEffect"
@@ -162489,7 +163013,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L28",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -162499,7 +163023,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L28",
+      "source_location": "L31",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast"
@@ -162510,7 +163034,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L28",
+      "source_location": "L31",
       "weight": 1.0,
       "context": "attribute",
       "_origin": "ast"
@@ -162990,7 +163514,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/DevViewApp.kt",
-      "source_location": "L219",
+      "source_location": "L221",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -163000,7 +163524,7 @@
       "relation": "case_of",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/DevViewApp.kt",
-      "source_location": "L220",
+      "source_location": "L222",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -163026,11 +163550,25 @@
     },
     {
       "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_platform",
+      "target": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_platform_kt_composable",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/Platform.kt",
+      "source_location": "L3",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.runtime.Composable"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_platform",
       "target": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_platform_platform",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/Platform.kt",
-      "source_location": "L3",
+      "source_location": "L5",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -163040,7 +163578,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/Platform.kt",
-      "source_location": "L7",
+      "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -163050,9 +163588,30 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/Platform.kt",
-      "source_location": "L7",
+      "source_location": "L9",
       "weight": 1.0,
       "context": "return_type",
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_platform",
+      "target": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_platform_systembarsappearance",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/Platform.kt",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_platform_systembarsappearance",
+      "target": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_platform_kt_composable",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/Platform.kt",
+      "source_location": "L11",
+      "weight": 1.0,
+      "context": "attribute",
       "_origin": "ast"
     },
     {
@@ -163819,12 +164378,26 @@
     },
     {
       "source": "sample_shared_src_iosmain_kotlin_com_worldline_devview_sample_platform_ios",
-      "target": "uidevice",
+      "target": "sample_shared_src_iosmain_kotlin_com_worldline_devview_sample_platform_ios_kt_composable",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/iosMain/kotlin/com/worldline/devview/sample/Platform.ios.kt",
       "source_location": "L5",
+      "weight": 1.0,
+      "metadata": {
+        "target_fqn": "androidx.compose.runtime.Composable"
+      },
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_iosmain_kotlin_com_worldline_devview_sample_platform_ios",
+      "target": "uidevice",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/iosMain/kotlin/com/worldline/devview/sample/Platform.ios.kt",
+      "source_location": "L6",
       "weight": 1.0,
       "metadata": {
         "target_fqn": "platform.UIKit.UIDevice"
@@ -163837,7 +164410,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/iosMain/kotlin/com/worldline/devview/sample/Platform.ios.kt",
-      "source_location": "L7",
+      "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -163847,7 +164420,7 @@
       "relation": "implements",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/iosMain/kotlin/com/worldline/devview/sample/Platform.ios.kt",
-      "source_location": "L7",
+      "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -163857,7 +164430,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/iosMain/kotlin/com/worldline/devview/sample/Platform.ios.kt",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -163867,9 +164440,30 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/iosMain/kotlin/com/worldline/devview/sample/Platform.ios.kt",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 1.0,
       "context": "return_type",
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_iosmain_kotlin_com_worldline_devview_sample_platform_ios",
+      "target": "sample_shared_src_iosmain_kotlin_com_worldline_devview_sample_platform_ios_systembarsappearance",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/iosMain/kotlin/com/worldline/devview/sample/Platform.ios.kt",
+      "source_location": "L15",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_iosmain_kotlin_com_worldline_devview_sample_platform_ios_systembarsappearance",
+      "target": "sample_shared_src_iosmain_kotlin_com_worldline_devview_sample_platform_ios_kt_composable",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "sample/shared/src/iosMain/kotlin/com/worldline/devview/sample/Platform.ios.kt",
+      "source_location": "L15",
+      "weight": 1.0,
+      "context": "attribute",
       "_origin": "ast"
     },
     {
@@ -163879,7 +164473,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "sample/shared/src/iosMain/kotlin/com/worldline/devview/sample/Platform.ios.kt",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -173104,7 +173698,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L38",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -173116,7 +173710,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L39",
+      "source_location": "L52",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -173128,7 +173722,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.85,
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L53",
+      "source_location": "L81",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -173140,7 +173734,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.85,
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/App.kt",
-      "source_location": "L79",
+      "source_location": "L111",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -173152,7 +173746,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L30",
+      "source_location": "L33",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -173164,7 +173758,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/CounterScreen.kt",
-      "source_location": "L33",
+      "source_location": "L36",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -173242,13 +173836,25 @@
     },
     {
       "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_devviewapp_devviewapp",
+      "target": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_platform_systembarsappearance",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/DevViewApp.kt",
+      "source_location": "L191",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_devviewapp_devviewapp",
       "target": "sample_shared_src_commonmain_kotlin_com_worldline_devview_sample_app_app",
       "relation": "calls",
       "context": "call",
       "confidence": "INFERRED",
       "confidence_score": 0.85,
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/DevViewApp.kt",
-      "source_location": "L203",
+      "source_location": "L205",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -173260,7 +173866,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/DevViewApp.kt",
-      "source_location": "L206",
+      "source_location": "L208",
       "weight": 1.0,
       "_origin": "ast"
     },
