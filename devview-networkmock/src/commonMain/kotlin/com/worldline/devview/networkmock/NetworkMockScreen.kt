@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,17 +50,19 @@ import com.worldline.devview.networkmock.components.ErrorState
 import com.worldline.devview.networkmock.components.GlobalMockToggle
 import com.worldline.devview.networkmock.components.LoadingState
 import com.worldline.devview.networkmock.core.model.HttpMethod
+import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.networkmock.model.ApiSpecUiModel
 import com.worldline.devview.networkmock.preview.NetworkMockUiStatePreviewParameterProvider
+import com.worldline.devview.networkmock.viewmodel.NetworkMockSessionViewModel
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
 import com.worldline.devview.networkmock.viewmodel.OperationSheetState
 import com.worldline.devview.ui.DevViewEmptyState
 import com.worldline.devview.ui.DevViewFilterBar
 import com.worldline.devview.ui.DevViewSectionHeader
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 /**
@@ -72,53 +75,75 @@ import kotlinx.coroutines.launch
  * - Reset all mocks to use actual network
  * - Reload the configured OpenAPI specs from disk, picking up edits without an app restart
  *
- * @param resetToNetworkSharedFlow Shared flow emitted by [NetworkMock] when the user triggers
- *   the "Reset to Network" toolbar action. Collected here to call [NetworkMockViewModel.resetAllToNetwork].
- * @param reloadConfigSharedFlow Shared flow emitted by [NetworkMock] when the user triggers the
- *   "Reload Config" toolbar action. Collected here to call [NetworkMockViewModel.reloadConfiguration],
- *   picking up edits to a spec file without restarting the app.
- * @param viewModel The [NetworkMockViewModel] instance. Constructed and provided by
- *   [NetworkMock.registerContent] via the `viewModel { }` factory so that it is scoped to the
- *   navigation entry. Also owns the operation sheet's state — see [NetworkMockViewModel.sheetState].
+ * @param session Retained module session owning accepted writes and toolbar reload requests.
+ * @param viewModel Entry-owned list, filters and quick-choice sheet state.
+ * @param onOpenResponse Opens registered response details after the picker has closed.
+ * @param onBuildSequence Opens the registered sequence builder after the picker has closed.
  * @param modifier Optional modifier for the screen.
  * @param bottomPadding Bottom inset padding provided by the DevView [androidx.compose.material3.Scaffold].
  *   Applied to the operation list so the last item is not obscured by system navigation bars.
  */
 @Composable
 internal fun NetworkMockScreen(
-    resetToNetworkSharedFlow: SharedFlow<Unit>,
-    reloadConfigSharedFlow: SharedFlow<Unit>,
+    session: NetworkMockSessionViewModel,
     viewModel: NetworkMockViewModel,
+    onOpenResponse: (OperationKey, MockResponse) -> Unit,
+    onBuildSequence: (OperationKey) -> Unit,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val sheetState by viewModel.sheetState.collectAsStateWithLifecycle()
     val listState by viewModel.listState.collectAsStateWithLifecycle()
+    val mutation by session.mutations.state.collectAsState()
+    val selection by viewModel.selection.collectAsState()
 
-    LaunchedEffect(key1 = Unit) {
-        resetToNetworkSharedFlow.collect {
-            viewModel.resetAllToNetwork()
+    LaunchedEffect(key1 = session, key2 = viewModel) {
+        combine(
+            flow = session.reloadGeneration,
+            flow2 = session.mutations.state
+        ) { generation, mutation ->
+            generation to mutation.busy
+        }.collect { (generation, busy) ->
+            if (!busy) viewModel.consumeReload(generation = generation)
         }
     }
 
-    LaunchedEffect(key1 = Unit) {
-        reloadConfigSharedFlow.collect {
-            viewModel.reloadConfiguration()
+    Column(modifier = modifier.fillMaxSize()) {
+        if (sheetState == OperationSheetState.Hidden) {
+            MutationStatus(
+                state = mutation,
+                onRetry = session.mutations::retryFailed,
+                onCancel = session.mutations::cancelFailed
+            )
         }
+        NetworkMockScreenContent(
+            uiState = uiState,
+            onGlobalToggle = {
+                if (session.mutations.interactionsEnabled) {
+                    viewModel
+                        .setGlobalMockingEnabled(
+                            enabled = it
+                        )
+                }
+            },
+            onSelectOperation = {
+                if (session.mutations.interactionsEnabled) {
+                    viewModel
+                        .openOperation(
+                            key = it
+                        )
+                }
+            },
+            listState = listState,
+            onSpecSelect = viewModel::selectSpec,
+            onFiltersExpandedChange = viewModel::setFiltersExpanded,
+            onFiltersChange = viewModel::updateFilters,
+            interactionsEnabled = !mutation.busy,
+            modifier = Modifier.weight(weight = 1f),
+            bottomPadding = bottomPadding
+        )
     }
-
-    NetworkMockScreenContent(
-        uiState = uiState,
-        onGlobalToggle = viewModel::setGlobalMockingEnabled,
-        onSelectOperation = viewModel::openOperation,
-        listState = listState,
-        onSpecSelect = viewModel::selectSpec,
-        onFiltersExpandedChange = viewModel::setFiltersExpanded,
-        onFiltersChange = viewModel::updateFilters,
-        modifier = modifier,
-        bottomPadding = bottomPadding
-    )
 
     if (sheetState != OperationSheetState.Hidden) {
         val openKey = (sheetState as? OperationSheetState.Content)
@@ -127,6 +152,11 @@ internal fun NetworkMockScreen(
             ?.key
         NetworkMockOperationSheet(
             sheetState = sheetState,
+            mutations = session.mutations,
+            selection = selection,
+            onSelectionComplete = { viewModel.acknowledgeSelection(ticketId = it) },
+            onTransitionChange = { session.sheetTransitionInProgress = it },
+            canCompleteSelection = viewModel::canAcknowledgeSelection,
             onDismissRequest = viewModel::closeSheet,
             onSelectResponse = { response ->
                 if (openKey != null) {
@@ -138,11 +168,9 @@ internal fun NetworkMockScreen(
                     viewModel.setOperationFailureState(key = openKey, kind = kind)
                 }
             },
-            onCommitSequence = { responses ->
-                if (openKey != null) {
-                    viewModel.setOperationSequenceState(key = openKey, responses = responses)
-                }
-            },
+            onOpenResponse = { response -> if (openKey != null) onOpenResponse(openKey, response) },
+            onBuildSequence = { if (openKey != null) onBuildSequence(openKey) },
+            onReload = viewModel::reloadOpenOperation,
             onResetSequencePosition = {
                 if (openKey != null) {
                     viewModel.resetOperationSequencePosition(key = openKey)
@@ -162,7 +190,8 @@ internal fun NetworkMockScreenContent(
     onFiltersExpandedChange: (Boolean) -> Unit,
     onFiltersChange: (String, OperationFilters) -> Unit,
     modifier: Modifier = Modifier,
-    bottomPadding: Dp = 0.dp
+    bottomPadding: Dp = 0.dp,
+    interactionsEnabled: Boolean = true
 ) {
     when (uiState) {
         is NetworkMockUiState.Loading -> LoadingState(modifier = modifier)
@@ -176,6 +205,7 @@ internal fun NetworkMockScreenContent(
             onFiltersChange = onFiltersChange,
             onGlobalToggle = onGlobalToggle,
             onSelectOperation = onSelectOperation,
+            interactionsEnabled = interactionsEnabled,
             modifier = modifier,
             bottomPadding = bottomPadding
         )
@@ -191,6 +221,7 @@ private fun ContentState(
     onFiltersChange: (String, OperationFilters) -> Unit,
     onGlobalToggle: (Boolean) -> Unit,
     onSelectOperation: (OperationKey) -> Unit,
+    interactionsEnabled: Boolean,
     bottomPadding: Dp,
     modifier: Modifier = Modifier
 ) {
@@ -270,7 +301,8 @@ private fun ContentState(
                 enabled = uiState.globalMockingEnabled,
                 mockedCount = mockedOperations,
                 totalCount = totalOperations,
-                onToggle = onGlobalToggle
+                onToggle = onGlobalToggle,
+                interactionsEnabled = interactionsEnabled
             )
             HorizontalDivider()
             PrimaryScrollableTabRow(selectedTabIndex = currentPage, edgePadding = 0.dp) {
@@ -343,6 +375,7 @@ private fun ContentState(
                                             operation.descriptor.operationId
                                 ),
                                 endpoint = operation,
+                                enabled = interactionsEnabled,
                                 openEndpointDetails = {
                                     onSelectOperation(
                                         operation.descriptor.key

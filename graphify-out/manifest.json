@@ -264,15 +264,15 @@
     "semantic_hash": "b01d40cc9b45673b3df07e1c4deb8f9f"
   },
   "devview-networkmock-core/src/commonMain/kotlin/com/worldline/devview/networkmock/core/repository/MockConfigRepository.kt": {
-    "mtime": 1793124053.2868323,
-    "seen": 1793975308.1744518,
-    "ast_hash": "1335d6d447249a6b500ed063f8590be7",
+    "mtime": 1794227049.7395039,
+    "seen": 1794234464.997719,
+    "ast_hash": "c4c7810748b595498a28fafc6d8827b3",
     "semantic_hash": ""
   },
   "devview-networkmock-core/src/commonMain/kotlin/com/worldline/devview/networkmock/core/repository/MockStateRepository.kt": {
-    "mtime": 1793124053.2868323,
-    "seen": 1793975308.1744535,
-    "ast_hash": "d119ee0d98b6fd9777e88d6bd5c6ba60",
+    "mtime": 1794231899.1880229,
+    "seen": 1794234464.9977212,
+    "ast_hash": "a68b4f950e46eb932faaa2fe759ad3c1",
     "semantic_hash": ""
   },
   "devview-networkmock-core/src/commonMain/kotlin/com/worldline/devview/networkmock/core/repository/RequestMatcher.kt": {
@@ -324,10 +324,10 @@
     "semantic_hash": ""
   },
   "devview-networkmock-ktor/build.gradle.kts": {
-    "mtime": 1793124053.295864,
-    "seen": 1793975308.1744814,
-    "ast_hash": "7f2641f0ae05f0c492f3f0d3370de07e",
-    "semantic_hash": "7f2641f0ae05f0c492f3f0d3370de07e"
+    "mtime": 1794226897.5323737,
+    "seen": 1794234464.9977448,
+    "ast_hash": "94d79708b81b690939fcce2c4d10c774",
+    "semantic_hash": ""
   },
   "devview-networkmock-ktor/src/androidHostTest/kotlin/com/worldline/devview/networkmock/ktor/fixtures/KtorPluginTestData.kt": {
     "mtime": 1793124053.2978659,
@@ -336,9 +336,9 @@
     "semantic_hash": ""
   },
   "devview-networkmock-ktor/src/androidHostTest/kotlin/com/worldline/devview/networkmock/ktor/plugin/NetworkMockPluginTest.kt": {
-    "mtime": 1793124053.298864,
-    "seen": 1793975308.174486,
-    "ast_hash": "964bf11f082d683933606693b7904a37",
+    "mtime": 1794227284.3190124,
+    "seen": 1794234464.9977489,
+    "ast_hash": "e708f03d4a2f23caf275f1d3ff356343",
     "semantic_hash": ""
   },
   "devview-networkmock-ktor/src/commonMain/kotlin/com/worldline/devview/networkmock/ktor/plugin/NetworkMockConfig.kt": {
@@ -348,15 +348,15 @@
     "semantic_hash": ""
   },
   "devview-networkmock-ktor/src/commonMain/kotlin/com/worldline/devview/networkmock/ktor/plugin/NetworkMockPlugin.kt": {
-    "mtime": 1793124053.30086,
-    "seen": 1793975308.17449,
-    "ast_hash": "6d4e1e565aa45eb20dc64a2f986fb36d",
+    "mtime": 1794231654.3892262,
+    "seen": 1794234464.9977517,
+    "ast_hash": "7b255b5e3238e2e5502de16ef8fdfde6",
     "semantic_hash": ""
   },
   "devview-networkmock/build.gradle.kts": {
-    "mtime": 1793948793.6097436,
-    "seen": 1793975308.1744916,
-    "ast_hash": "f1aac8e2e8ca69156cc6da7ef4bf9722",
+    "mtime": 1794229031.5004275,
+    "seen": 1794234464.9977536,
+    "ast_hash": "e6ebb5e64049907beeedcf50e1f228a0",
     "semantic_hash": ""
   },
   "devview-networkmock/src/androidDeviceTest/kotlin/com/worldline/devview/networkmock/NetworkMockScreenTest.kt": {
@@ -402,21 +402,21 @@
     "semantic_hash": ""
   },
   "devview-networkmock/src/androidHostTest/kotlin/com/worldline/devview/networkmock/viewmodel/NetworkMockViewModelTest.kt": {
-    "mtime": 1794224366.069459,
-    "seen": 1794225235.4382646,
-    "ast_hash": "d591c24c1f35bf28b045bf43a6d36127",
+    "mtime": 1794230747.641307,
+    "seen": 1794234464.9977984,
+    "ast_hash": "4ce53af8fa34cd76a0f885e5c4f0112d",
     "semantic_hash": ""
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/NetworkMock.kt": {
-    "mtime": 1794222493.816581,
-    "seen": 1794224176.5823617,
-    "ast_hash": "e88e64b3979324bc9942496db74f4d6b",
+    "mtime": 1794231899.1895308,
+    "seen": 1794234464.9978032,
+    "ast_hash": "1d9d7c7f4b824323566b92009f2538f6",
     "semantic_hash": ""
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/NetworkMockScreen.kt": {
-    "mtime": 1794224962.8570244,
-    "seen": 1794225235.43827,
-    "ast_hash": "0baf1c7a81d7911008f027d94dcca5c6",
+    "mtime": 1794232184.4853122,
+    "seen": 1794234464.9978068,
+    "ast_hash": "3e1b7771a9838e21ac970efba6ac24db",
     "semantic_hash": ""
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/PreviewSheetState.kt": {
@@ -432,9 +432,9 @@
     "semantic_hash": ""
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/components/EndpointCard.kt": {
-    "mtime": 1793124053.3148599,
-    "seen": 1793975308.1745377,
-    "ast_hash": "dfc0d79220bd1e3ecd7d0f533dfbefef",
+    "mtime": 1794228602.2408445,
+    "seen": 1794234464.997823,
+    "ast_hash": "29c498086950b24db552d0830dfe68ba",
     "semantic_hash": ""
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/components/EndpointStateChip.kt": {
@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/components/GlobalMockToggle.kt": {
-    "mtime": 1793124053.31586,
-    "seen": 1793975308.1745434,
-    "ast_hash": "2131554f335a553eaf3ae368502a758b",
+    "mtime": 1794228602.2241294,
+    "seen": 1794234464.997828,
+    "ast_hash": "9719fbf92ed2ebb4d9a1857e32a970bf",
     "semantic_hash": ""
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/components/LoadingState.kt": {
@@ -462,21 +462,21 @@
     "semantic_hash": "00df9010bece4c9f7b2cf7abab199c15"
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/components/MockItem.kt": {
-    "mtime": 1793948793.6145754,
-    "seen": 1793975308.1745472,
-    "ast_hash": "5b578dfe4d3896bc9885d2ea6787f9db",
+    "mtime": 1794230986.453168,
+    "seen": 1794234464.997831,
+    "ast_hash": "8b06f81351f592bc6e060d7f266061cd",
     "semantic_hash": ""
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/components/MockResponseDiffColors.kt": {
-    "mtime": 1793124053.31686,
-    "seen": 1793975308.174549,
-    "ast_hash": "aa3fd2e16eda11a24a4470efc277519d",
-    "semantic_hash": "aa3fd2e16eda11a24a4470efc277519d"
+    "mtime": 1794231808.6728585,
+    "seen": 1794234464.9978328,
+    "ast_hash": "2d8349ec4d2a0a71ccfc5bcf42414506",
+    "semantic_hash": ""
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/components/MockResponseDiffContent.kt": {
-    "mtime": 1793948793.6155748,
-    "seen": 1793975308.174551,
-    "ast_hash": "14258fc24c419f7ea30e0a64e276930f",
+    "mtime": 1794228635.6583002,
+    "seen": 1794234464.997834,
+    "ast_hash": "d0efa8c115b800e40e9b26d7ddadfa2f",
     "semantic_hash": ""
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/model/DiffLine.kt": {
@@ -522,9 +522,9 @@
     "semantic_hash": ""
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/viewmodel/NetworkMockViewModel.kt": {
-    "mtime": 1794224293.2353456,
-    "seen": 1794225235.4383023,
-    "ast_hash": "3c26e3b212a57635da13ff3bece28dc2",
+    "mtime": 1794232207.4753706,
+    "seen": 1794234464.9978611,
+    "ast_hash": "4c53e39c75235ef75a0172baef1aa897",
     "semantic_hash": ""
   },
   "devview-networkmock/src/commonTest/kotlin/com/worldline/devview/networkmock/PreviewSheetStateTest.kt": {
@@ -564,10 +564,10 @@
     "semantic_hash": "20d7e1ef084f7e5ab78825081f1ef709"
   },
   "devview-test/src/commonMain/kotlin/com/worldline/devview/test/FakePreferencesDataStore.kt": {
-    "mtime": 1793124053.3278594,
-    "seen": 1793975308.1745987,
-    "ast_hash": "9dc15c0aefb26482ec11f80ba39d41b6",
-    "semantic_hash": "9dc15c0aefb26482ec11f80ba39d41b6"
+    "mtime": 1794225878.8434565,
+    "seen": 1794234464.997885,
+    "ast_hash": "c6e4180d80c376e42c25a4c96961390a",
+    "semantic_hash": ""
   },
   "devview-test/src/commonMain/kotlin/com/worldline/devview/test/FlowAssertions.kt": {
     "mtime": 1793124053.3278594,
@@ -738,9 +738,9 @@
     "semantic_hash": ""
   },
   "devview/src/commonMain/kotlin/com/worldline/devview/DevView.kt": {
-    "mtime": 1793973732.6732595,
-    "seen": 1793975308.174669,
-    "ast_hash": "48e27ba67e05fc25b1b8b78a198c2b37",
+    "mtime": 1794231654.225283,
+    "seen": 1794234464.9979663,
+    "ast_hash": "b151659f26746349e177fac7ea523939",
     "semantic_hash": ""
   },
   "devview/src/commonMain/kotlin/com/worldline/devview/HomeScreen.kt": {
@@ -780,9 +780,9 @@
     "semantic_hash": "26735cb475ef48f319813f7cb0298336"
   },
   "devview/src/commonMain/kotlin/com/worldline/devview/core/ModuleRegistry.kt": {
-    "mtime": 1793983593.424186,
-    "seen": 1793984974.897954,
-    "ast_hash": "662815c51d3e7cda013bb64e7a7f1bc5",
+    "mtime": 1794231798.211921,
+    "seen": 1794234464.997986,
+    "ast_hash": "07960e54ee829fc63ac5c75107071bda",
     "semantic_hash": ""
   },
   "devview/src/commonMain/kotlin/com/worldline/devview/core/Poko.kt": {
@@ -1008,10 +1008,10 @@
     "semantic_hash": "2405401b8b836487963eeebec749dae0"
   },
   "konsist/src/test/kotlin/com/worldline/devview/konsist/ViewModelTest.kt": {
-    "mtime": 1793124053.6442606,
-    "seen": 1793975308.174801,
-    "ast_hash": "f8c3def13a288edfd0900c843dda6219",
-    "semantic_hash": "f8c3def13a288edfd0900c843dda6219"
+    "mtime": 1794231419.271168,
+    "seen": 1794234464.9980688,
+    "ast_hash": "e4d99f34dcc85ce2a34968798c8584ce",
+    "semantic_hash": ""
   },
   "renovate.json": {
     "mtime": 1793124053.6442606,
@@ -1476,9 +1476,9 @@
     "semantic_hash": "cf96d090a20636202729d00ddf9bebe4"
   },
   "CHANGELOG.md": {
-    "mtime": 1794223087.4041643,
-    "seen": 1794224176.5825875,
-    "ast_hash": "116ab94b8948e11b6e3f2269498bd9ad",
+    "mtime": 1794230692.4714255,
+    "seen": 1794234464.9982164,
+    "ast_hash": "a7b4a6d9dc9157f270a1c459ad79f640",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -1626,9 +1626,9 @@
     "semantic_hash": ""
   },
   "devview-networkmock-core/api/api.txt": {
-    "mtime": 1793625785.9203184,
-    "seen": 1793975308.1751046,
-    "ast_hash": "86a60bde0c10e5a62348688c779aaba0",
+    "mtime": 1794232738.483362,
+    "seen": 1794234464.9983263,
+    "ast_hash": "9f96ef7f65fdec324093ec32098f70d1",
     "semantic_hash": ""
   },
   "devview-networkmock-ktor/CLAUDE.md": {
@@ -1662,8 +1662,8 @@
     "semantic_hash": "24218c75e6c0c176f401bcd73139ceb9"
   },
   "devview-networkmock-ktor/api/api.txt": {
-    "mtime": 1793625786.0508554,
-    "seen": 1793975308.1751368,
+    "mtime": 1794232740.0886962,
+    "seen": 1794234464.9983501,
     "ast_hash": "881f3a92368d46ff5c413317ef54b9d9",
     "semantic_hash": ""
   },
@@ -1698,9 +1698,9 @@
     "semantic_hash": ""
   },
   "devview-networkmock/api/api.txt": {
-    "mtime": 1793989865.4142704,
-    "seen": 1793990447.739239,
-    "ast_hash": "34bdd4d2be0baa73a6f8eca896e83829",
+    "mtime": 1794232768.830603,
+    "seen": 1794234464.998375,
+    "ast_hash": "8e821ef2dad16b44057a660158a6a18b",
     "semantic_hash": ""
   },
   "devview-test/CLAUDE.md": {
@@ -1800,237 +1800,237 @@
     "semantic_hash": "92cc0829f68d67982c67daa1da3688bd"
   },
   "devview/api/api.txt": {
-    "mtime": 1793990114.3973768,
-    "seen": 1793990447.7393181,
+    "mtime": 1794232740.9204905,
+    "seen": 1794234464.998449,
     "ast_hash": "204c668bc418714292de2100320090ba",
     "semantic_hash": ""
   },
   "docs/assets/branding/README.md": {
-    "mtime": 1793124053.3638656,
-    "seen": 1793975308.1752791,
-    "ast_hash": "0dca2092c1c3dcee0f7c48b0f337f429",
+    "mtime": 1794232905.0199285,
+    "seen": 1794234464.998451,
+    "ast_hash": "7fe4a0957d009a250c8e33d4551c0ba6",
     "semantic_hash": ""
   },
   "docs/contributing/code-of-conduct.md": {
-    "mtime": 1793124053.3658655,
-    "seen": 1793975308.1752808,
-    "ast_hash": "f24b881b7b3ff3765f699a02d041b437",
+    "mtime": 1794232905.112622,
+    "seen": 1794234464.9984527,
+    "ast_hash": "9aa1769b27c93e2fdad6d5dd2b5a321b",
     "semantic_hash": ""
   },
   "docs/contributing/code-style.md": {
-    "mtime": 1793124053.3668659,
-    "seen": 1793975308.175283,
-    "ast_hash": "6275703c22444565dfcc8d59504a76e6",
+    "mtime": 1794232905.1577947,
+    "seen": 1794234464.998454,
+    "ast_hash": "af3be533869cfd1c151b88ba0610592b",
     "semantic_hash": ""
   },
   "docs/contributing/development.md": {
-    "mtime": 1793124053.3668659,
-    "seen": 1793975308.175285,
-    "ast_hash": "52a72a9b5c2e963119c5e768ec906622",
+    "mtime": 1794232905.2037027,
+    "seen": 1794234464.9984553,
+    "ast_hash": "2ff9e81a0612430ed7c6372e30f77310",
     "semantic_hash": ""
   },
   "docs/contributing/index.md": {
-    "mtime": 1793124053.3668659,
-    "seen": 1793975308.175287,
-    "ast_hash": "2a92601dce757ac3bd567e25e212dc01",
+    "mtime": 1794232905.2489097,
+    "seen": 1794234464.9984572,
+    "ast_hash": "2775d7bb9b4cf7b277012969ee9bb4ac",
     "semantic_hash": ""
   },
   "docs/contributing/publishing.md": {
-    "mtime": 1793124053.3678663,
-    "seen": 1793975308.1752892,
-    "ast_hash": "f3655e9150fdcce84e02cf49e918f663",
+    "mtime": 1794232905.2924075,
+    "seen": 1794234464.9984581,
+    "ast_hash": "5724c7b7755c1524cecd5803fc18bac8",
     "semantic_hash": ""
   },
   "docs/contributing/pull-requests.md": {
-    "mtime": 1793124053.3678663,
-    "seen": 1793975308.175291,
-    "ast_hash": "fa5555031a36f3c247f39f6ab5099582",
+    "mtime": 1794232905.3512964,
+    "seen": 1794234464.9984593,
+    "ast_hash": "5fde222ac4b2f348e2c9457fc8a5e8f8",
     "semantic_hash": ""
   },
   "docs/examples/advanced-examples.md": {
-    "mtime": 1793124053.3678663,
-    "seen": 1793975308.1752937,
-    "ast_hash": "162429b0f5f6028c3c6a79ee4008b4fb",
+    "mtime": 1794232905.397431,
+    "seen": 1794234464.9984615,
+    "ast_hash": "50281048df74119b2548d7c0539aad06",
     "semantic_hash": ""
   },
   "docs/examples/analytics-tracking.md": {
-    "mtime": 1793989568.8231213,
-    "seen": 1793990447.7393348,
-    "ast_hash": "1ce93a10f14692ed1c007391768db3c8",
+    "mtime": 1794232905.4447033,
+    "seen": 1794234464.9984632,
+    "ast_hash": "19dc6520fa6ec01173bac2c072a47514",
     "semantic_hash": ""
   },
   "docs/examples/android.md": {
-    "mtime": 1793124053.368866,
-    "seen": 1793975308.1752977,
-    "ast_hash": "37b215d97a1e6a9a7a423019efbbec14",
+    "mtime": 1794232905.490386,
+    "seen": 1794234464.9984648,
+    "ast_hash": "915b4116bec2d65b916d85edd99f2257",
     "semantic_hash": ""
   },
   "docs/examples/feature-flags.md": {
-    "mtime": 1793989651.0824497,
-    "seen": 1793990447.739339,
-    "ast_hash": "0c65fbcb4e1f0dc2d9e65f09dfd8c496",
+    "mtime": 1794232905.5553129,
+    "seen": 1794234464.9984658,
+    "ast_hash": "00606163aa5b962ca7c60dcca502cb10",
     "semantic_hash": ""
   },
   "docs/examples/index.md": {
-    "mtime": 1793124053.369866,
-    "seen": 1793975308.175302,
-    "ast_hash": "95c16b2c5b34ba3975be5599e931f5bf",
+    "mtime": 1794232905.6030838,
+    "seen": 1794234464.9984677,
+    "ast_hash": "aa9b533bb5a5d349f18a20275cd0d97c",
     "semantic_hash": ""
   },
   "docs/examples/ios.md": {
-    "mtime": 1793124053.369866,
-    "seen": 1793975308.1753042,
-    "ast_hash": "4c9310b9b4f67be606d0bca74a647c31",
+    "mtime": 1794232905.649311,
+    "seen": 1794234464.9984689,
+    "ast_hash": "7613b27ee861ca29d4eb09272f0b46b0",
     "semantic_hash": ""
   },
   "docs/getting-started/configuration.md": {
-    "mtime": 1793124053.369866,
-    "seen": 1793975308.1753063,
-    "ast_hash": "824871e8d02cf82e8d5083ede1670e09",
+    "mtime": 1794232905.6945417,
+    "seen": 1794234464.99847,
+    "ast_hash": "86fc805fdb39cd03c3607e74456c2f44",
     "semantic_hash": ""
   },
   "docs/getting-started/index.md": {
-    "mtime": 1793124053.369866,
-    "seen": 1793975308.1753082,
-    "ast_hash": "f956a05c2f0672ce0bc2e5df78d5fcd9",
+    "mtime": 1794232905.7419662,
+    "seen": 1794234464.9984722,
+    "ast_hash": "5113b20b80ecff78012a5cbcda84c787",
     "semantic_hash": ""
   },
   "docs/getting-started/installation.md": {
-    "mtime": 1793124053.3708663,
-    "seen": 1793975308.1753106,
-    "ast_hash": "da7ea2640a6233a8b596c6dcee4ea08f",
-    "semantic_hash": "da7ea2640a6233a8b596c6dcee4ea08f"
+    "mtime": 1794233080.1188364,
+    "seen": 1794234464.9984736,
+    "ast_hash": "1623b79c680c1d1e70f2055414d52fa4",
+    "semantic_hash": ""
   },
   "docs/getting-started/prerequisites.md": {
-    "mtime": 1793124053.3708663,
-    "seen": 1793975308.1753128,
-    "ast_hash": "31d6a82ec5cc542cbcfa8c1e612989b7",
+    "mtime": 1794232905.8370812,
+    "seen": 1794234464.998475,
+    "ast_hash": "110e1ebc18c3e18bfbb222a1fea0db43",
     "semantic_hash": ""
   },
   "docs/getting-started/quick-start.md": {
-    "mtime": 1793124053.3708663,
-    "seen": 1793975308.175315,
-    "ast_hash": "e6520626243ea7a5647f259ea26b3eb1",
+    "mtime": 1794232905.8770847,
+    "seen": 1794234464.9984765,
+    "ast_hash": "086fb2ec8a425df97eaa54637bd8a098",
     "semantic_hash": ""
   },
   "docs/getting-started/troubleshooting-faq.md": {
-    "mtime": 1793124053.3718655,
-    "seen": 1793975308.175317,
-    "ast_hash": "5a1c3c1e3c98825747c79f2a50b155e9",
+    "mtime": 1794232905.9205966,
+    "seen": 1794234464.9984782,
+    "ast_hash": "4191cd4420f88fb652ef138ea483440f",
     "semantic_hash": ""
   },
   "docs/guides/best-practices.md": {
-    "mtime": 1793124053.3718655,
-    "seen": 1793975308.175319,
-    "ast_hash": "dd079086961978f1d698cc57b7adca9a",
+    "mtime": 1794232905.9669194,
+    "seen": 1794234464.9984803,
+    "ast_hash": "2fc9e44e507b1688696cfbe95d56f256",
     "semantic_hash": ""
   },
   "docs/guides/common-pitfalls.md": {
-    "mtime": 1793124053.372876,
-    "seen": 1793975308.175321,
-    "ast_hash": "3ce4961a2770c5bab27b4e289382dc74",
+    "mtime": 1794232906.0109909,
+    "seen": 1794234464.9984822,
+    "ast_hash": "f857ec320d6c653082d8f2f2a602ecb8",
     "semantic_hash": ""
   },
   "docs/guides/index.md": {
-    "mtime": 1793124053.372876,
-    "seen": 1793975308.1753235,
-    "ast_hash": "eba8c755e411d6634814b86aacc9ab78",
+    "mtime": 1794232906.0576556,
+    "seen": 1794234464.9984877,
+    "ast_hash": "e963b2f4878d9176c2dc2d8450293f8c",
     "semantic_hash": ""
   },
   "docs/guides/integration-guide.md": {
-    "mtime": 1793124053.372876,
-    "seen": 1793975308.1753254,
-    "ast_hash": "40768bbc4ec4d002e678bccedf390449",
+    "mtime": 1794232906.104199,
+    "seen": 1794234464.998489,
+    "ast_hash": "1b2a4323ae350365ee8508e1ce0ec265",
     "semantic_hash": ""
   },
   "docs/guides/module-development.md": {
-    "mtime": 1793984377.6448314,
-    "seen": 1793984974.8983095,
-    "ast_hash": "31c0f75f6850afea3deb038bf26a3ee0",
+    "mtime": 1794232906.1975408,
+    "seen": 1794234464.998493,
+    "ast_hash": "b0eb250217e8518aab66d8019b920fd0",
     "semantic_hash": ""
   },
   "docs/guides/navigation.md": {
-    "mtime": 1793972970.9658673,
-    "seen": 1793975308.1753328,
-    "ast_hash": "3ea3728b195a5c9973f1d9b0cf31022f",
+    "mtime": 1794232906.244021,
+    "seen": 1794234464.9984949,
+    "ast_hash": "c16b456f8d579cdd09f58ad141f58bdc",
     "semantic_hash": ""
   },
   "docs/guides/theming.md": {
-    "mtime": 1794223087.4001646,
-    "seen": 1794224176.582758,
-    "ast_hash": "ecba5a897c71d439601760efb7a2d63b",
+    "mtime": 1794232906.2842262,
+    "seen": 1794234464.9984968,
+    "ast_hash": "1f1bdbdb0a1324a2ef3499e560ed5be7",
     "semantic_hash": ""
   },
   "docs/index.md": {
-    "mtime": 1793625797.5491407,
-    "seen": 1793975308.17534,
+    "mtime": 1794232906.455266,
+    "seen": 1794234464.9985003,
     "ast_hash": "c09005b7ab9fb5f5649dd516c24326ed",
     "semantic_hash": ""
   },
   "docs/license.md": {
-    "mtime": 1793124053.3748755,
-    "seen": 1793975308.1753423,
-    "ast_hash": "e89e20a3df78d2791449b1cf01a3167e",
+    "mtime": 1794232906.596925,
+    "seen": 1794234464.9985023,
+    "ast_hash": "152d0bd86ad2d9376fbd2768409f0473",
     "semantic_hash": ""
   },
   "docs/modules/analytics.md": {
-    "mtime": 1793989553.8632865,
-    "seen": 1793990447.7393806,
-    "ast_hash": "3aca1502350ea257e0559cc96667515b",
+    "mtime": 1794232906.704839,
+    "seen": 1794234464.9985044,
+    "ast_hash": "3e1885aa0d14dcf2d9721ed43cfcf525",
     "semantic_hash": ""
   },
   "docs/modules/custom-modules.md": {
-    "mtime": 1793984377.6408255,
-    "seen": 1793984974.898321,
-    "ast_hash": "97067b1cde7324afee0271144b055aba",
+    "mtime": 1794232906.9145882,
+    "seen": 1794234464.9985082,
+    "ast_hash": "4df01163db5f434939dc9331c36eb13f",
     "semantic_hash": ""
   },
   "docs/modules/featureflip.md": {
-    "mtime": 1793989651.0684478,
-    "seen": 1793990447.7393863,
-    "ast_hash": "27aa6fa9bf5d4c7846555e769d608417",
+    "mtime": 1794232907.0146396,
+    "seen": 1794234464.99851,
+    "ast_hash": "06cb827f7c0e63addf4eba60624d1997",
     "semantic_hash": ""
   },
   "docs/modules/index.md": {
-    "mtime": 1793948793.6193967,
-    "seen": 1793975308.1753566,
-    "ast_hash": "b8a041d864224b5198fea27e9d6a54e7",
+    "mtime": 1794232907.125284,
+    "seen": 1794234464.9985116,
+    "ast_hash": "9267d8cbecb2255ca2af486065bbf07d",
     "semantic_hash": ""
   },
   "docs/modules/networkmock-core.md": {
-    "mtime": 1793124053.3768756,
-    "seen": 1793975308.1753588,
-    "ast_hash": "4c0eae495e762abbcb3696e711a47fe1",
+    "mtime": 1794232907.2570453,
+    "seen": 1794234464.998513,
+    "ast_hash": "36f8a83907cad20fd09e411b127dd78b",
     "semantic_hash": ""
   },
   "docs/modules/networkmock-ktor.md": {
-    "mtime": 1793124053.3778758,
-    "seen": 1793975308.175361,
-    "ast_hash": "a450e0147e3d708232ebcef94a904a7c",
+    "mtime": 1794232907.3677332,
+    "seen": 1794234464.9985144,
+    "ast_hash": "79a1cd72fd80aeb8ca1d643ff30d7c06",
     "semantic_hash": ""
   },
   "docs/modules/networkmock-ui.md": {
-    "mtime": 1794223087.3866582,
-    "seen": 1794224176.5827706,
-    "ast_hash": "1ec72e3bd2b8031ace12c0611bc46057",
+    "mtime": 1794233031.9779913,
+    "seen": 1794234464.9985163,
+    "ast_hash": "e7f820e848311dd2d882104cb9d404aa",
     "semantic_hash": ""
   },
   "docs/modules/networkmock-workflows.md": {
-    "mtime": 1793948793.6193967,
-    "seen": 1793975308.1753654,
-    "ast_hash": "4954c15b920858a4756acaf9951906ba",
+    "mtime": 1794232907.5886748,
+    "seen": 1794234464.9985175,
+    "ast_hash": "24e469e19da30e4edaf2f3dd3f86c0f2",
     "semantic_hash": ""
   },
   "docs/modules/networkmock.md": {
-    "mtime": 1793989651.1134465,
-    "seen": 1793990447.7393975,
-    "ast_hash": "f487155cf164c8cc9701bceef3c08e6f",
+    "mtime": 1794232907.6958604,
+    "seen": 1794234464.9985187,
+    "ast_hash": "bdf864ec78046530e42e340a01898cb6",
     "semantic_hash": ""
   },
   "docs/modules/timecapsule.md": {
-    "mtime": 1794220186.3912911,
-    "seen": 1794220984.8611844,
-    "ast_hash": "b7bedee1e874e60de18545aaf9aa3876",
+    "mtime": 1794232907.8034546,
+    "seen": 1794234464.9985204,
+    "ast_hash": "c2f39bebc951f0af8c12d8ec8c02450b",
     "semantic_hash": ""
   },
   "konsist/CLAUDE.md": {
@@ -2292,9 +2292,9 @@
     "semantic_hash": "92cc0829f68d67982c67daa1da3688bd"
   },
   "docs/guides/migrating-to-openapi.md": {
-    "mtime": 1793124053.3738759,
-    "seen": 1793975308.1753278,
-    "ast_hash": "11b62a4cc53bd1ecc3cddd22f78a2b7a",
+    "mtime": 1794232906.1522985,
+    "seen": 1794234464.9984906,
+    "ast_hash": "6112ad532a4c0204ee076903660346bd",
     "semantic_hash": ""
   },
   "devview-consolelogger/build.gradle.kts": {
@@ -2442,9 +2442,9 @@
     "semantic_hash": ""
   },
   "docs/modules/consolelogger.md": {
-    "mtime": 1793991592.1655648,
-    "seen": 1793991656.4499493,
-    "ast_hash": "6568b02cca8a1cd4904388cd2636177f",
+    "mtime": 1794232906.813272,
+    "seen": 1794234464.998506,
+    "ast_hash": "e5ff0c7fc6df314a46d362ba21d06c54",
     "semantic_hash": ""
   },
   "pip-requirements.txt": {
@@ -2477,16 +2477,10 @@
     "ast_hash": "d45bfdd49b1a2dbd1fc4fc9475615bf8",
     "semantic_hash": ""
   },
-  "devview-networkmock/src/androidDeviceTest/kotlin/com/worldline/devview/networkmock/MockResponsePreviewPageTest.kt": {
-    "mtime": 1793948793.6097436,
-    "seen": 1793975308.1744936,
-    "ast_hash": "a8de26f77cb1244e0364b0d79dbf063a",
-    "semantic_hash": ""
-  },
   "devview-networkmock/src/androidDeviceTest/kotlin/com/worldline/devview/networkmock/NetworkMockOperationSheetTest.kt": {
-    "mtime": 1793948793.6111324,
-    "seen": 1793975308.1744955,
-    "ast_hash": "7d671232bbcef6a2b1568cec69db66f2",
+    "mtime": 1794231717.8140705,
+    "seen": 1794234464.997755,
+    "ast_hash": "dd79ea8cf762532d659ca8c63173a8d6",
     "semantic_hash": ""
   },
   "devview-networkmock/src/androidDeviceTest/kotlin/com/worldline/devview/networkmock/theme/MockColorSchemeResolutionTest.kt": {
@@ -2501,16 +2495,10 @@
     "ast_hash": "a2fe18062e97ddc04514d7f9767c366f",
     "semantic_hash": ""
   },
-  "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/MockResponsePreviewPage.kt": {
-    "mtime": 1793948793.6125684,
-    "seen": 1793975308.1745234,
-    "ast_hash": "613a9fbb569180a252c48e37e5614be8",
-    "semantic_hash": ""
-  },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/NetworkMockOperationSheet.kt": {
-    "mtime": 1793948793.6125684,
-    "seen": 1793975308.1745276,
-    "ast_hash": "ad30c946681ed2c9a38c0ffd71ad78cf",
+    "mtime": 1794232184.4833145,
+    "seen": 1794234464.997805,
+    "ast_hash": "3c946598caeb4562dd5587a96ea1f98d",
     "semantic_hash": ""
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/theme/LocalMockColorScheme.kt": {
@@ -2771,22 +2759,10 @@
     "ast_hash": "0f06c41a37f5c016edfba077b3dbe8e4",
     "semantic_hash": ""
   },
-  "devview-networkmock/src/androidDeviceTest/kotlin/com/worldline/devview/networkmock/SequenceBuilderPageTest.kt": {
-    "mtime": 1793948793.6111324,
-    "seen": 1793975308.1744998,
-    "ast_hash": "999f6d8bcc3a40228372a5dd346cc77d",
-    "semantic_hash": ""
-  },
   "devview-networkmock/src/androidDeviceTest/kotlin/com/worldline/devview/networkmock/components/MockResponseDiffContentTest.kt": {
     "mtime": 1793948793.6111324,
     "seen": 1793975308.1745083,
     "ast_hash": "a1633f6ba32c928c4ad45a813d5d5aba",
-    "semantic_hash": ""
-  },
-  "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/SequenceBuilderPage.kt": {
-    "mtime": 1793948793.6145754,
-    "seen": 1793975308.1745334,
-    "ast_hash": "c0e5538e180e0baf3a2ea2aa0a8ad205",
     "semantic_hash": ""
   },
   "devview-timecapsule/src/commonMain/kotlin/com/worldline/devview/timecapsule/TextFieldSnapshot.kt": {
@@ -2814,9 +2790,9 @@
     "semantic_hash": ""
   },
   "devview/src/commonMain/kotlin/com/worldline/devview/internal/DestinationScaffold.kt": {
-    "mtime": 1793973732.6742594,
-    "seen": 1793975308.1746905,
-    "ast_hash": "8be4636b4ea19e13e295c463aa74980c",
+    "mtime": 1794230974.1214888,
+    "seen": 1794234464.9979906,
+    "ast_hash": "6b94cfceea2e228812341c0ba785a045",
     "semantic_hash": ""
   },
   "devview/src/commonMain/kotlin/com/worldline/devview/internal/SectionColors.kt": {
@@ -3042,8 +3018,8 @@
     "semantic_hash": ""
   },
   "docs/guides/ui-components.md": {
-    "mtime": 1793990063.6388998,
-    "seen": 1793990447.7393737,
+    "mtime": 1794232906.3297904,
+    "seen": 1794234464.9984982,
     "ast_hash": "bcf0be1a0334e1c4267dc72a56b9a422",
     "semantic_hash": ""
   },
@@ -3143,60 +3119,6 @@
     "ast_hash": "438f76ec1138d160707ddec11d19bd32",
     "semantic_hash": ""
   },
-  ".claude/skills/graphify/references/exports.md": {
-    "mtime": 1787585253.4323912,
-    "seen": 1788872517.5817127,
-    "ast_hash": "9da2a2152e60a22f07f05fed5158f287",
-    "semantic_hash": "9da2a2152e60a22f07f05fed5158f287"
-  },
-  ".claude/skills/graphify/references/transcribe.md": {
-    "mtime": 1787585253.5628953,
-    "seen": 1788872517.5817127,
-    "ast_hash": "67b6a5fa6c0974e18f60db9f8932fbd8",
-    "semantic_hash": "67b6a5fa6c0974e18f60db9f8932fbd8"
-  },
-  ".claude/skills/graphify/references/query.md": {
-    "mtime": 1787585253.5598843,
-    "seen": 1788872517.5817127,
-    "ast_hash": "3c46f8ad006874260614ed8657d02307",
-    "semantic_hash": "3c46f8ad006874260614ed8657d02307"
-  },
-  ".claude/skills/graphify/SKILL.md": {
-    "mtime": 1787585682.280166,
-    "seen": 1788872517.5817127,
-    "ast_hash": "1656a8a8e4a05bbe69f32cd15de81e87",
-    "semantic_hash": "1656a8a8e4a05bbe69f32cd15de81e87"
-  },
-  ".claude/skills/graphify/references/update.md": {
-    "mtime": 1787585253.563904,
-    "seen": 1788872517.5817127,
-    "ast_hash": "9378bd03d56baaf78bd738ab3848f142",
-    "semantic_hash": "9378bd03d56baaf78bd738ab3848f142"
-  },
-  ".claude/skills/graphify/references/add-watch.md": {
-    "mtime": 1787585253.4120755,
-    "seen": 1788872517.5817127,
-    "ast_hash": "d59d027fe449f06aa03905a01184e779",
-    "semantic_hash": "d59d027fe449f06aa03905a01184e779"
-  },
-  ".claude/skills/graphify/references/extraction-spec.md": {
-    "mtime": 1787585253.4360242,
-    "seen": 1788872517.5817127,
-    "ast_hash": "42fef56a01698118f7fd722acdadea34",
-    "semantic_hash": "42fef56a01698118f7fd722acdadea34"
-  },
-  ".claude/skills/graphify/references/github-and-merge.md": {
-    "mtime": 1787585253.5175588,
-    "seen": 1788872517.5817127,
-    "ast_hash": "cde13df085e4c492aeb7ba298a996d0d",
-    "semantic_hash": "cde13df085e4c492aeb7ba298a996d0d"
-  },
-  ".claude/skills/graphify/references/hooks.md": {
-    "mtime": 1787585253.538176,
-    "seen": 1788872517.5817127,
-    "ast_hash": "3f545db6ce646650bb9de588f5512a27",
-    "semantic_hash": "3f545db6ce646650bb9de588f5512a27"
-  },
   "devview-timecapsule/src/androidDeviceTest/kotlin/com/worldline/devview/timecapsule/TimeCapsuleScreenTest.kt": {
     "mtime": 1794220701.50867,
     "seen": 1794220984.8606696,
@@ -3208,5 +3130,155 @@
     "seen": 1794224176.5823655,
     "ast_hash": "5e923cf7dee1a5c8d78b1991709f5cf5",
     "semantic_hash": ""
+  },
+  "devview-networkmock-core/src/commonMain/kotlin/com/worldline/devview/networkmock/core/model/NetworkMockStateSnapshot.kt": {
+    "mtime": 1794231899.1880229,
+    "seen": 1794234464.9977074,
+    "ast_hash": "f18dcbfb2044c23ef0714324f30f70bc",
+    "semantic_hash": ""
+  },
+  "devview-networkmock-core/src/commonTest/kotlin/com/worldline/devview/networkmock/core/repository/MockStateRepositoryCoordinationTest.kt": {
+    "mtime": 1794226214.710172,
+    "seen": 1794234464.9977393,
+    "ast_hash": "1c279037ddac656915677aedf9b9db6b",
+    "semantic_hash": ""
+  },
+  "devview-networkmock-ktor/src/androidHostTest/kotlin/com/worldline/devview/networkmock/ktor/plugin/NetworkMockPluginCoordinationTest.kt": {
+    "mtime": 1794227426.163386,
+    "seen": 1794234464.9977477,
+    "ast_hash": "dcd131e2393e84daf2daa34f05781201",
+    "semantic_hash": ""
+  },
+  "devview-networkmock/src/androidDeviceTest/kotlin/com/worldline/devview/networkmock/ResponseDetailScreenTest.kt": {
+    "mtime": 1794234416.3712697,
+    "seen": 1794234464.9977593,
+    "ast_hash": "e1355b7273fcc86988cce8da9eb1f838",
+    "semantic_hash": ""
+  },
+  "devview-networkmock/src/androidDeviceTest/kotlin/com/worldline/devview/networkmock/SequenceBuilderScreenTest.kt": {
+    "mtime": 1794229346.9004166,
+    "seen": 1794234464.997761,
+    "ast_hash": "e2f8b8a95203ab3350156d41a5e6fd9e",
+    "semantic_hash": ""
+  },
+  "devview-networkmock/src/androidHostTest/kotlin/com/worldline/devview/networkmock/viewmodel/NetworkMockMutationCoordinatorTest.kt": {
+    "mtime": 1794228852.6963964,
+    "seen": 1794234464.9977965,
+    "ast_hash": "f51a63ac23ea1bf8d546796e657634b1",
+    "semantic_hash": ""
+  },
+  "devview-networkmock/src/androidHostTest/kotlin/com/worldline/devview/networkmock/viewmodel/OperationDetailViewModelTest.kt": {
+    "mtime": 1794229003.2313936,
+    "seen": 1794234464.9977999,
+    "ast_hash": "347cc8198781f833e6d60b66538153ad",
+    "semantic_hash": ""
+  },
+  "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/MutationStatus.kt": {
+    "mtime": 1794230986.4389079,
+    "seen": 1794234464.9978018,
+    "ast_hash": "6191bbb702cc59890d01791aab0b97c6",
+    "semantic_hash": ""
+  },
+  "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/ResponseDetailScreen.kt": {
+    "mtime": 1794232184.486313,
+    "seen": 1794234464.997812,
+    "ast_hash": "da1754cea1f781a57919ccf2dd1c900f",
+    "semantic_hash": ""
+  },
+  "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/SequenceBuilderScreen.kt": {
+    "mtime": 1794232184.4878204,
+    "seen": 1794234464.9978194,
+    "ast_hash": "447d2e0afed003e939cdda7254049a1e",
+    "semantic_hash": ""
+  },
+  "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/viewmodel/NetworkMockMutationCoordinator.kt": {
+    "mtime": 1794232184.4893284,
+    "seen": 1794234464.9978585,
+    "ast_hash": "a62e207fd657ba38916cbc472a83774a",
+    "semantic_hash": ""
+  },
+  "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/viewmodel/NetworkMockSessionViewModel.kt": {
+    "mtime": 1794231899.2230933,
+    "seen": 1794234464.99786,
+    "ast_hash": "78067dfe54451ca85e66b96dded90926",
+    "semantic_hash": ""
+  },
+  "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/viewmodel/OperationDetailViewModel.kt": {
+    "mtime": 1794232207.453782,
+    "seen": 1794234464.9978626,
+    "ast_hash": "adfdda49a0a09792b3af5d4c4dd77569",
+    "semantic_hash": ""
+  },
+  "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/viewmodel/OperationDetailsLoader.kt": {
+    "mtime": 1794230986.462986,
+    "seen": 1794234464.997864,
+    "ast_hash": "885a7c70048e960451132f70a1995eef",
+    "semantic_hash": ""
+  },
+  "devview-networkmock/src/commonTest/kotlin/com/worldline/devview/networkmock/components/MockResponseDiffColorsTest.kt": {
+    "mtime": 1794233974.4680252,
+    "seen": 1794234464.9978716,
+    "ast_hash": "5c8372b499930723e97143a574eda3e3",
+    "semantic_hash": ""
+  },
+  "devview/src/androidDeviceTest/kotlin/com/worldline/devview/ModuleRetentionTest.kt": {
+    "mtime": 1794232562.8423886,
+    "seen": 1794234464.9979546,
+    "ast_hash": "58012b1f0fbc733cfac6647408b4d53c",
+    "semantic_hash": ""
+  },
+  ".claude/skills/graphify/references/exports.md": {
+    "mtime": 1787585253.4323912,
+    "seen": 1788872517.5817127,
+    "ast_hash": "9da2a2152e60a22f07f05fed5158f287",
+    "semantic_hash": "9da2a2152e60a22f07f05fed5158f287"
+  },
+  ".claude/skills/graphify/references/extraction-spec.md": {
+    "mtime": 1787585253.4360242,
+    "seen": 1788872517.5817127,
+    "ast_hash": "42fef56a01698118f7fd722acdadea34",
+    "semantic_hash": "42fef56a01698118f7fd722acdadea34"
+  },
+  ".claude/skills/graphify/references/query.md": {
+    "mtime": 1787585253.5598843,
+    "seen": 1788872517.5817127,
+    "ast_hash": "3c46f8ad006874260614ed8657d02307",
+    "semantic_hash": "3c46f8ad006874260614ed8657d02307"
+  },
+  ".claude/skills/graphify/references/github-and-merge.md": {
+    "mtime": 1787585253.5175588,
+    "seen": 1788872517.5817127,
+    "ast_hash": "cde13df085e4c492aeb7ba298a996d0d",
+    "semantic_hash": "cde13df085e4c492aeb7ba298a996d0d"
+  },
+  ".claude/skills/graphify/references/add-watch.md": {
+    "mtime": 1787585253.4120755,
+    "seen": 1788872517.5817127,
+    "ast_hash": "d59d027fe449f06aa03905a01184e779",
+    "semantic_hash": "d59d027fe449f06aa03905a01184e779"
+  },
+  ".claude/skills/graphify/references/update.md": {
+    "mtime": 1787585253.563904,
+    "seen": 1788872517.5817127,
+    "ast_hash": "9378bd03d56baaf78bd738ab3848f142",
+    "semantic_hash": "9378bd03d56baaf78bd738ab3848f142"
+  },
+  ".claude/skills/graphify/SKILL.md": {
+    "mtime": 1787585682.280166,
+    "seen": 1788872517.5817127,
+    "ast_hash": "1656a8a8e4a05bbe69f32cd15de81e87",
+    "semantic_hash": "1656a8a8e4a05bbe69f32cd15de81e87"
+  },
+  ".claude/skills/graphify/references/transcribe.md": {
+    "mtime": 1787585253.5628953,
+    "seen": 1788872517.5817127,
+    "ast_hash": "67b6a5fa6c0974e18f60db9f8932fbd8",
+    "semantic_hash": "67b6a5fa6c0974e18f60db9f8932fbd8"
+  },
+  ".claude/skills/graphify/references/hooks.md": {
+    "mtime": 1787585253.538176,
+    "seen": 1788872517.5817127,
+    "ast_hash": "3f545db6ce646650bb9de588f5512a27",
+    "semantic_hash": "3f545db6ce646650bb9de588f5512a27"
   }
 }

@@ -2,7 +2,6 @@ package com.worldline.devview.networkmock.ktor.plugin
 
 import co.touchlab.kermit.Logger
 import com.worldline.devview.networkmock.core.model.FailureKind
-import com.worldline.devview.networkmock.core.model.NetworkMockState
 import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.networkmock.core.repository.MockConfigRepository
@@ -31,10 +30,10 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.InternalAPI
 import kotlin.coroutines.CoroutineContext
 import kotlin.text.get
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.ensureActive
 import kotlinx.io.IOException
 
 private val logger = Logger.withTag(tag = "DevViewNetworkMock")
@@ -129,15 +128,16 @@ public data class NetworkMockPluginConfig(internal val config: NetworkMockConfig
  * ```
  *
  * ## Error Handling
- * The plugin fails gracefully — if configuration cannot be loaded, a response
- * file is missing, or any exception occurs while loading a declared mock, it falls back to the
- * actual network and logs the reason. The one deliberate exception: a simulated failure (a
- * `Failure` state, or a `failureRate` roll) throws intentionally, mirroring what a real network
- * failure looks like to the app — that's the point, not an error to recover from.
+ * Missing/invalid configuration and unmatched requests pass through to the actual network.
+ * Once a mock is selected, an unavailable variant or response-read error fails the request
+ * without sending a real request or consuming a sequence step. State read/write failures
+ * and coroutine cancellation propagate. Simulated failures intentionally throw to the caller.
  *
- * ## Thread Safety
- * The plugin is thread-safe. Multiple requests can be intercepted concurrently
- * without issues. State reads are atomic through DataStore.
+ * ## Concurrent Requests
+ * Each request reads fresh state. Sequence consumption atomically validates the state revision
+ * and selected step before committing, so concurrent consumers advance in commit order.
+ * A superseded prepared response is discarded and retried against current state, with at most
+ * one probability roll and one configured delay per HTTP request. The final step remains selected.
  *
  * @see NetworkMockConfig
  * @see com.worldline.devview.networkmock.core.repository.MockConfigRepository
@@ -154,20 +154,15 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
             return NetworkMockPluginConfig(config = config)
         }
 
-        @Suppress("LongMethod", "ThrowsCount")
+        @OptIn(InternalAPI::class)
+        // A rejected snapshot must restart selection without reapplying delay or probability.
+        @Suppress("LongMethod", "ThrowsCount", "LoopWithTooManyJumpStatements")
         override fun install(plugin: NetworkMockPluginConfig, scope: HttpClient) {
             val mockRepository = plugin.config.resolvedMockRepository()
             val stateRepository = plugin.config.resolvedStateRepository()
             val random = plugin.config.random
 
             logger.d { "NetworkMock plugin installed" }
-
-            val cachedState = MutableStateFlow<NetworkMockState?>(value = null)
-            scope.launch {
-                stateRepository.observeState().collect { state ->
-                    cachedState.value = state
-                }
-            }
 
             scope.plugin(plugin = HttpSend).intercept { requestBuilder ->
                 val request = requestBuilder.build()
@@ -179,153 +174,135 @@ public val NetworkMockPlugin: HttpClientPlugin<NetworkMockConfig, NetworkMockPlu
                     .associate { (key, values) -> key to values }
                 val requestBodyText = extractRequestBodyText(content = request.body)
 
-                val currentState = cachedState.value ?: stateRepository.getState()
-
-                if (!currentState.globalMockingEnabled) {
+                var snapshot = stateRepository.getStateSnapshot()
+                if (!snapshot.state.globalMockingEnabled) {
                     logger.d { "$method $path -> NETWORK (global mocking disabled)" }
                     return@intercept execute(requestBuilder = requestBuilder)
                 }
 
-                val mockMatch = mockRepository.findMatchingMock(
-                    host = host,
-                    path = path,
-                    method = method,
-                    queryParameters = queryParameters,
-                    requestBody = requestBodyText
-                )
-
+                @Suppress("TooGenericExceptionCaught")
+                val mockMatch = try {
+                    mockRepository.findMatchingMock(
+                        host = host,
+                        path = path,
+                        method = method,
+                        queryParameters = queryParameters,
+                        requestBody = requestBodyText
+                    )
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    logger.w(
+                        throwable = e
+                    ) { "$method $path -> NETWORK (error loading configuration)" }
+                    return@intercept execute(requestBuilder = requestBuilder)
+                }
                 if (mockMatch == null) {
                     logger.d { "$method $path -> NETWORK (no operation match)" }
                     return@intercept execute(requestBuilder = requestBuilder)
                 }
 
-                val endpointState = currentState.getOperationState(key = mockMatch.key)
-
-                if (endpointState == null) {
-                    logger.d {
-                        "$method $path -> NETWORK (${mockMatch.key.compositeKey} has no configured state)"
+                snapshot = stateRepository.getStateSnapshot()
+                var failureChecked = false
+                var shouldFail = false
+                var delayApplied = false
+                var acceptedCall: HttpClientCall? = null
+                while (acceptedCall == null) {
+                    currentCoroutineContext().ensureActive()
+                    if (!snapshot.state.globalMockingEnabled) {
+                        logger.d { "$method $path -> NETWORK (global mocking disabled)" }
+                        return@intercept execute(requestBuilder = requestBuilder)
                     }
-                    return@intercept execute(requestBuilder = requestBuilder)
-                }
-
-                when (endpointState) {
-                    is OperationMockState.Network -> {
-                        logger.d { "$method $path -> NETWORK (operation set to pass-through)" }
-                        execute(requestBuilder = requestBuilder)
-                    }
-                    is OperationMockState.Failure -> {
-                        logger.d { "$method $path -> FAILURE (${endpointState.kind}, forced)" }
-                        throw simulatedFailure(kind = endpointState.kind, requestData = request)
-                    }
-                    is OperationMockState.Mock -> {
-                        val failureRate = mockMatch.config.failureRate
-                        if (failureRate != null && random.nextDouble() < failureRate) {
-                            logger.d {
-                                "$method $path -> FAILURE (probabilistic, rate=$failureRate)"
-                            }
-                            throw simulatedFailure(
-                                kind = FailureKind.CONNECTION_REFUSED,
-                                requestData = request
-                            )
-                        }
-
-                        @Suppress("TooGenericExceptionCaught")
-                        try {
-                            val call = buildMockCall(
-                                mockRepository = mockRepository,
-                                client = scope,
-                                request = request,
-                                key = mockMatch.key,
-                                statusCode = endpointState.statusCode,
-                                mediaType = endpointState.mediaType,
-                                exampleName = endpointState.exampleName,
-                                delayMs = mockMatch.delayMs
-                            )
-
-                            if (call == null) {
-                                logger.w {
-                                    "$method $path -> NETWORK (declared mock " +
-                                        "${endpointState.statusCode}/${endpointState.mediaType}/" +
-                                        "${endpointState.exampleName} not found)"
-                                }
-                                return@intercept execute(requestBuilder = requestBuilder)
-                            }
-
-                            logger.d {
-                                "$method $path -> MOCK ${endpointState.statusCode}/" +
-                                    "${endpointState.mediaType}/${endpointState.exampleName}"
-                            }
-                            call
-                        } catch (e: Exception) {
-                            logger.w(
-                                throwable = e
-                            ) { "$method $path -> NETWORK (error loading mock response)" }
-                            execute(requestBuilder = requestBuilder)
-                        }
-                    }
-                    is OperationMockState.Sequence -> {
-                        val step = endpointState.currentResponse
-                        if (step == null) {
-                            logger.w { "$method $path -> NETWORK (sequence has no declared steps)" }
+                    val operationState = snapshot.state.getOperationState(key = mockMatch.key)
+                    val step = when (operationState) {
+                        null, OperationMockState.Network -> {
+                            logger.d { "$method $path -> NETWORK (operation set to pass-through)" }
                             return@intercept execute(requestBuilder = requestBuilder)
                         }
-
-                        val failureRate = mockMatch.config.failureRate
-                        if (failureRate != null && random.nextDouble() < failureRate) {
-                            logger.d {
-                                "$method $path -> FAILURE (probabilistic, rate=$failureRate)"
+                        is OperationMockState.Failure -> {
+                            val latest = stateRepository.getStateSnapshot()
+                            if (latest.revision != snapshot.revision) {
+                                snapshot = latest
+                                continue
                             }
+                            logger.d { "$method $path -> FAILURE (${operationState.kind}, forced)" }
                             throw simulatedFailure(
-                                kind = FailureKind.CONNECTION_REFUSED,
+                                kind = operationState.kind,
                                 requestData = request
                             )
                         }
-
-                        @Suppress("TooGenericExceptionCaught")
-                        try {
-                            val call = buildMockCall(
-                                mockRepository = mockRepository,
-                                client = scope,
-                                request = request,
-                                key = mockMatch.key,
-                                statusCode = step.statusCode,
-                                mediaType = step.mediaType,
-                                exampleName = step.exampleName,
-                                delayMs = mockMatch.delayMs
-                            )
-
-                            if (call == null) {
-                                logger.w {
-                                    "$method $path -> NETWORK (declared sequence step " +
-                                        "${step.statusCode}/${step.mediaType}/${step.exampleName} not found)"
-                                }
-                                return@intercept execute(requestBuilder = requestBuilder)
-                            }
-
-                            // Advance and persist before returning - sticks on the last index
-                            // once exhausted rather than looping back to the start.
-                            val nextIndex = (endpointState.currentIndex + 1)
-                                .coerceAtMost(maximumValue = endpointState.responses.lastIndex)
-                            if (nextIndex != endpointState.currentIndex) {
-                                stateRepository.setOperationMockState(
-                                    key = mockMatch.key,
-                                    state = endpointState.copy(currentIndex = nextIndex)
-                                )
-                            }
-
-                            logger.d {
-                                "$method $path -> MOCK ${step.statusCode}/${step.exampleName} " +
-                                    "(sequence ${endpointState.currentIndex + 1}/${endpointState.responses.size})"
-                            }
-                            call
-                        } catch (e: Exception) {
-                            logger.w(
-                                throwable = e
-                            ) { "$method $path -> NETWORK (error loading sequence step)" }
-                            execute(requestBuilder = requestBuilder)
-                        }
+                        is OperationMockState.Mock -> operationState
+                        is OperationMockState.Sequence -> operationState.currentResponse
                     }
+                    if (step == null) {
+                        logger.w { "$method $path -> NETWORK (sequence has no current response)" }
+                        return@intercept execute(requestBuilder = requestBuilder)
+                    }
+
+                    if (!failureChecked) {
+                        failureChecked = true
+                        val failureRate = mockMatch.config.failureRate
+                        shouldFail = failureRate != null && random.nextDouble() < failureRate
+                    }
+                    if (shouldFail) {
+                        val latest = stateRepository.getStateSnapshot()
+                        if (latest.revision != snapshot.revision) {
+                            snapshot = latest
+                            continue
+                        }
+                        logger.d { "$method $path -> FAILURE (probabilistic)" }
+                        throw simulatedFailure(
+                            kind = FailureKind.CONNECTION_REFUSED,
+                            requestData = request
+                        )
+                    }
+
+                    @Suppress("TooGenericExceptionCaught")
+                    val call = try {
+                        buildMockCall(
+                            mockRepository = mockRepository,
+                            client = scope,
+                            request = request,
+                            key = mockMatch.key,
+                            statusCode = step.statusCode,
+                            mediaType = step.mediaType,
+                            exampleName = step.exampleName,
+                            delayMs = if (delayApplied) null else mockMatch.delayMs
+                        )
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        logger.w(
+                            throwable = e
+                        ) { "$method $path -> ERROR (could not load selected mock response)" }
+                        throw e
+                    }
+                    checkNotNull(value = call) {
+                        "Selected mock response ${mockMatch.key.compositeKey} " +
+                            "${step.statusCode}/${step.mediaType}/${step.exampleName} is unavailable"
+                    }
+                    delayApplied = true
+                    currentCoroutineContext().ensureActive()
+                    val accepted = if (operationState is OperationMockState.Sequence) {
+                        stateRepository.compareAndAdvanceSequence(
+                            key = mockMatch.key,
+                            expectedRevision = snapshot.revision,
+                            expectedSequence = operationState
+                        )
+                    } else {
+                        stateRepository.getStateSnapshot().revision == snapshot.revision
+                    }
+                    if (!accepted) {
+                        call.response.rawContent.cancel(cause = null)
+                        snapshot = stateRepository.getStateSnapshot()
+                        continue
+                    }
+                    logger.d {
+                        "$method $path -> MOCK ${step.statusCode}/${step.mediaType}/${step.exampleName}"
+                    }
+                    acceptedCall = call
                 }
+                acceptedCall
             }
         }
     }
@@ -374,7 +351,7 @@ private fun simulatedFailure(kind: FailureKind, requestData: HttpRequestData): T
 
 /**
  * Loads the declared `(statusCode, exampleName)` variant and builds a mock [HttpClientCall] for
- * it, applying [delayMs] first — shared by the [OperationMockState.Mock] and
+ * it, applying [delayMs] after loading the response. Shared by [OperationMockState.Mock] and
  * [OperationMockState.Sequence] branches, which differ only in where the pair comes from.
  *
  * @return The call to return, or `null` if the variant isn't declared in the spec (caller falls

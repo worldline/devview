@@ -37,7 +37,8 @@ internal fun GlobalMockToggle(
     mockedCount: Int,
     totalCount: Int,
     onToggle: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    interactionsEnabled: Boolean = true
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -62,6 +63,7 @@ internal fun GlobalMockToggle(
         Switch(
             modifier = Modifier.testTag(tag = "global_mock_toggle_switch"),
             checked = enabled,
+            enabled = interactionsEnabled,
             onCheckedChange = onToggle
         )
     }

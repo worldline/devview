@@ -6,7 +6,12 @@ import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.model.OperationMockState
 import com.worldline.devview.networkmock.core.repository.MockConfigRepository
 import com.worldline.devview.networkmock.core.repository.MockStateRepository
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.worldline.devview.networkmock.ktor.fixtures.KtorPluginTestData
+import com.worldline.devview.test.FakePreferencesDataStore
 import io.kotest.matchers.shouldBe
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -23,18 +28,15 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.OutgoingContent
 import io.ktor.http.headersOf
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.mockk
 import io.ktor.serialization.kotlinx.json.json
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.io.IOException
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 class NetworkMockPluginTest {
 
@@ -447,8 +449,8 @@ class NetworkMockPluginTest {
                 exampleName = "default"
             )
         )
-        val stateRepository = mutableStateRepositoryMock(
-            initial = NetworkMockState(
+        val stateRepository = stateRepositoryMock(
+            state = NetworkMockState(
                 globalMockingEnabled = true,
                 operationStates = mapOf(
                     "example-getUser" to OperationMockState.Sequence(responses = steps)
@@ -475,8 +477,8 @@ class NetworkMockPluginTest {
     @Test
     fun probabilisticFailure_appliesToSequenceStatesToo() = runTest {
         val resources = flakySpecResources(failureRate = 1.0)
-        val stateRepository = mutableStateRepositoryMock(
-            initial = NetworkMockState(
+        val stateRepository = stateRepositoryMock(
+            state = NetworkMockState(
                 globalMockingEnabled = true,
                 operationStates = mapOf(
                     "example-getUser" to OperationMockState.Sequence(
@@ -500,23 +502,6 @@ class NetworkMockPluginTest {
 
         assertFailsWith<IOException> {
             client.get(urlString = "https://staging.api.example.com/api/users/42")
-        }
-    }
-
-    /**
-     * Unlike [stateRepositoryMock], writes actually mutate the backing state, so a test can
-     * make more than one request and observe the plugin's own advance-and-persist write.
-     */
-    private fun mutableStateRepositoryMock(initial: NetworkMockState): MockStateRepository {
-        val stateFlow = MutableStateFlow(initial)
-        return mockk<MockStateRepository>(relaxed = true) {
-            coEvery { getState() } answers { stateFlow.value }
-            every { observeState() } returns stateFlow
-            coEvery { setOperationMockState(key = any(), state = any()) } answers {
-                val key = firstArg<OperationKey>()
-                val newState = secondArg<OperationMockState>()
-                stateFlow.value = stateFlow.value.withOperationState(key = key, state = newState)
-            }
         }
     }
 
@@ -1078,7 +1063,7 @@ class NetworkMockPluginTest {
     // region Error / fallback behaviour
 
     @Test
-    fun requestFallsBackToNetwork_whenResponseFileIsMissing() = runTest {
+    fun requestFailsWithoutNetwork_whenResponseFileIsMissing() = runTest {
         val resourcesWithoutResponseFile = KtorPluginTestData.responseResources
             .filterKeys { key -> key != "files/networkmocks/responses/getUser-200.json" }
 
@@ -1098,12 +1083,9 @@ class NetworkMockPluginTest {
             stateRepository = stateRepositoryMock(state = state)
         )
 
-        // Plugin catches the load failure and falls back to network
-        val response: HttpResponse = client.get(
-            urlString = "https://staging.api.example.com/api/users/42"
-        )
-
-        response.body<String>() shouldBe """{"source":"network"}"""
+        assertFailsWith<IllegalStateException> {
+            client.get(urlString = "https://staging.api.example.com/api/users/42")
+        }
     }
 
     @Test
@@ -1155,7 +1137,7 @@ class NetworkMockPluginTest {
     }
 
     @Test
-    fun requestFallsBackToNetwork_whenSelectedExampleIsNotDeclared() = runTest {
+    fun requestFailsWithoutNetwork_whenSelectedExampleIsNotDeclared() = runTest {
         val state = NetworkMockState(
             globalMockingEnabled = true,
             operationStates = mapOf(
@@ -1172,12 +1154,9 @@ class NetworkMockPluginTest {
             stateRepository = stateRepositoryMock(state = state)
         )
 
-        // The (statusCode, exampleName) pair isn't declared in the spec — falls back to network.
-        val response: HttpResponse = client.get(
-            urlString = "https://staging.api.example.com/api/users/42"
-        )
-
-        response.body<String>() shouldBe """{"source":"network"}"""
+        assertFailsWith<IllegalStateException> {
+            client.get(urlString = "https://staging.api.example.com/api/users/42")
+        }
     }
 
     // endregion
@@ -1221,16 +1200,19 @@ class NetworkMockPluginTest {
         resourceLoader = KtorPluginTestData.resourceLoader(resources = resources)
     )
 
-    /**
-     * Creates a MockK mock of [MockStateRepository] whose [MockStateRepository.getState]
-     * returns [state] and whose [MockStateRepository.observeState] emits it.
-     * All write operations are stubbed to do nothing.
-     */
     private fun stateRepositoryMock(
         state: NetworkMockState = NetworkMockState()
-    ): MockStateRepository = mockk<MockStateRepository>(relaxed = true) {
-        coEvery { getState() } returns state
-        every { observeState() } returns flowOf(state)
+    ): MockStateRepository = runBlocking {
+        val store = FakePreferencesDataStore()
+        store.edit { preferences ->
+            preferences[intPreferencesKey(name = "network_mock_schema_version")] = 2
+            preferences[booleanPreferencesKey(name = "network_mock_global_enabled")] = state.globalMockingEnabled
+            state.operationStates.forEach { (key, value) ->
+                preferences[stringPreferencesKey(name = "network_mock_operation_$key")] =
+                    Json.encodeToString<OperationMockState>(value = value)
+            }
+        }
+        MockStateRepository(dataStore = store)
     }
 
     // endregion

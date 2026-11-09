@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.createSavedStateHandle
@@ -20,14 +21,15 @@ import com.worldline.devview.networkmock.core.NETWORK_MOCK_DATASTORE_NAME
 import com.worldline.devview.networkmock.core.NetworkMockDataStoreDelegate
 import com.worldline.devview.networkmock.core.NetworkMockInitializer
 import com.worldline.devview.networkmock.core.NetworkMockResourceLoader
+import com.worldline.devview.networkmock.core.model.OperationKey
+import com.worldline.devview.networkmock.viewmodel.NetworkMockSessionViewModel
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
+import com.worldline.devview.networkmock.viewmodel.OperationDetailViewModel
 import com.worldline.devview.utils.DataStoreDelegate
 import com.worldline.devview.utils.RequiresDataStore
 import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import org.jetbrains.compose.resources.MissingResourceException
@@ -35,27 +37,49 @@ import org.jetbrains.compose.resources.MissingResourceException
 /**
  * Navigation destinations for the NetworkMock module.
  *
- * There is only one destination — picking a mock response happens in
- * [NetworkMockOperationSheet], a bottom sheet over this same screen, rather than a second
- * navigation destination.
+ * The operation list owns the quick-choice sheet. Inspecting a response or editing a sequence
+ * closes that sheet and opens a full-screen destination. Back and successful saves return to the list.
  */
 public sealed interface NetworkMockDestination : NavKey {
     /**
-     * The (only) network mock screen: the operation list, plus the operation sheet when one
-     * is open.
+     * The operation list and its quick-choice sheet.
      */
     @Serializable
     public data object Main : NetworkMockDestination
+
+    /**
+     * Inspects one response variant, with comparison, copying and activation controls.
+     *
+     * @property operation The operation containing the response.
+     * @property statusCode The response's HTTP status code.
+     * @property mediaType The response's declared media type.
+     * @property exampleName The response's example identifier.
+     */
+    @Serializable
+    public data class ResponseDetail(
+        val operation: OperationKey,
+        val statusCode: Int,
+        val mediaType: String,
+        val exampleName: String
+    ) : NetworkMockDestination
+
+    /**
+     * Edits an ordered response sequence, retaining its draft while the overlay is hidden.
+     *
+     * @property operation The operation whose sequence is being edited.
+     */
+    @Serializable
+    public data class SequenceBuilder(val operation: OperationKey) : NetworkMockDestination
 }
 
 /**
- * NetworkMock module — manages network request/response mocking for development and testing.
+ * NetworkMock module for network request/response mocking during development and testing.
  *
  * Implements [RequiresDataStore] so that [com.worldline.devview.core.rememberModules]
  * automatically initialises the shared [NetworkMockDataStoreDelegate] before
  * [initModule] is called.
  *
- * The [dataStoreDelegate] points to [NetworkMockDataStoreDelegate] — the
+ * The [dataStoreDelegate] points to [NetworkMockDataStoreDelegate], the
  * process-level singleton declared in `devview-networkmock-core`. This ensures
  * that both this UI module and `devview-networkmock-ktor` share exactly one
  * DataStore instance without depending on each other.
@@ -65,6 +89,11 @@ public sealed interface NetworkMockDestination : NavKey {
  * [MockStateRepository][com.worldline.devview.networkmock.core.repository.MockStateRepository] and
  * [MockConfigRepository][com.worldline.devview.networkmock.core.repository.MockConfigRepository]
  * once for the lifetime of the process.
+ *
+ * A separate module-owned session serializes accepted UI writes and retains pending recovery
+ * through overlay hiding and host configuration changes. Deliberate registration removal ends
+ * that session. Filtering this module out of DevView returns Home and discards its entry drafts,
+ * but does not end the session while its registration remains composed.
  *
  * ## Usage
  * ```kotlin
@@ -95,7 +124,7 @@ public class NetworkMock(
     override val dataStoreName: String = NETWORK_MOCK_DATASTORE_NAME
 
     /**
-     * Points to [NetworkMockDataStoreDelegate] — the process-level singleton in
+     * Points to [NetworkMockDataStoreDelegate], the process-level singleton in
      * `devview-networkmock-core`. Both this module and `devview-networkmock-ktor`
      * reference the same delegate, guaranteeing a single DataStore instance.
      */
@@ -123,6 +152,17 @@ public class NetworkMock(
                 }
             }
         )
+        val retainedSession = viewModel {
+            NetworkMockSessionViewModel(
+                stateRepository = NetworkMockInitializer.requireStateRepository()
+            )
+        }
+        session = retainedSession
+        DisposableEffect(key1 = retainedSession) {
+            onDispose {
+                if (session === retainedSession) session = null
+            }
+        }
     }
 
     /** Name displayed on the home screen and default destination toolbar. */
@@ -138,7 +178,7 @@ public class NetworkMock(
         persistentMapOf(
             NetworkMockDestination.Main.withActions {
                 action(label = "Reload specs", icon = Icons.Rounded.Refresh) {
-                    onReloadConfig.tryEmit(value = Unit)
+                    session?.requestReload()
                 }
                 action(
                     label = "Reset all to network",
@@ -150,9 +190,13 @@ public class NetworkMock(
                         dismissButton = "Cancel"
                     )
                 ) {
-                    onResetToNetwork.tryEmit(value = Unit)
+                    session?.resetAll()
                 }
-            }
+            },
+            NetworkMockDestination.ResponseDetail::class to DestinationMetadata(title = "Response"),
+            NetworkMockDestination.SequenceBuilder::class to DestinationMetadata(
+                title = "Build sequence"
+            )
         )
 
     override val entryDestination: NavKey = NetworkMockDestination.Main
@@ -163,24 +207,36 @@ public class NetworkMock(
                 subclass = NetworkMockDestination.Main::class,
                 serializer = NetworkMockDestination.Main.serializer()
             )
+            subclass(
+                subclass = NetworkMockDestination.ResponseDetail::class,
+                serializer = NetworkMockDestination.ResponseDetail.serializer()
+            )
+            subclass(
+                subclass = NetworkMockDestination.SequenceBuilder::class,
+                serializer = NetworkMockDestination.SequenceBuilder.serializer()
+            )
         }
 
-    private val onResetToNetwork = MutableSharedFlow<Unit>(
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
+    private var session: NetworkMockSessionViewModel? = null
 
-    private val onReloadConfig = MutableSharedFlow<Unit>(
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-
+    // Register each owned destination explicitly so its lifecycle and metadata remain visible.
+    @Suppress("LongMethod")
     override fun EntryProviderScope<NavKey>.registerContent(
         onNavigateBack: () -> Unit,
         onNavigate: (NavKey) -> Unit,
         bottomPadding: Dp
     ) {
-        entry<NetworkMockDestination.Main> {
+        entry<NetworkMockDestination.Main>(
+            metadata = mapOf(
+                pairs = arrayOf(
+                    "com.worldline.devview.internal.interactionsEnabled" to
+                        { session?.interactionsEnabled == true }
+                )
+            )
+        ) {
+            val retainedSession = checkNotNull(value = session) {
+                "Register NetworkMock with rememberModules before displaying DevView"
+            }
             NetworkMockScreen(
                 modifier = Modifier
                     .fillMaxSize(),
@@ -188,12 +244,78 @@ public class NetworkMock(
                     NetworkMockViewModel(
                         configRepository = NetworkMockInitializer.requireConfigRepository(),
                         stateRepository = NetworkMockInitializer.requireStateRepository(),
-                        savedStateHandle = createSavedStateHandle()
+                        savedStateHandle = createSavedStateHandle(),
+                        sharedMutations = retainedSession.mutations
                     )
                 },
                 bottomPadding = bottomPadding,
-                resetToNetworkSharedFlow = onResetToNetwork,
-                reloadConfigSharedFlow = onReloadConfig
+                session = retainedSession,
+                onOpenResponse = { operation, response ->
+                    onNavigate(
+                        NetworkMockDestination.ResponseDetail(
+                            operation = operation,
+                            statusCode = response.statusCode,
+                            mediaType = response.mediaType,
+                            exampleName = response.exampleName
+                        )
+                    )
+                },
+                onBuildSequence = { operation ->
+                    onNavigate(
+                        NetworkMockDestination.SequenceBuilder(operation = operation)
+                    )
+                }
+            )
+        }
+        entry<NetworkMockDestination.ResponseDetail>(
+            metadata = mapOf(
+                pairs = arrayOf(
+                    "com.worldline.devview.internal.interactionsEnabled" to
+                        { session?.interactionsEnabled == true }
+                )
+            )
+        ) { destination ->
+            val retainedSession = checkNotNull(value = session) {
+                "Register NetworkMock with rememberModules before displaying DevView"
+            }
+            ResponseDetailScreen(
+                destination = destination,
+                viewModel = viewModel {
+                    OperationDetailViewModel(
+                        operation = destination.operation,
+                        configRepository = NetworkMockInitializer.requireConfigRepository(),
+                        stateRepository = NetworkMockInitializer.requireStateRepository(),
+                        savedStateHandle = createSavedStateHandle(),
+                        mutations = retainedSession.mutations
+                    )
+                },
+                onBack = onNavigateBack,
+                bottomPadding = bottomPadding
+            )
+        }
+        entry<NetworkMockDestination.SequenceBuilder>(
+            metadata = mapOf(
+                pairs = arrayOf(
+                    "com.worldline.devview.internal.interactionsEnabled" to
+                        { session?.interactionsEnabled == true }
+                )
+            )
+        ) { destination ->
+            val retainedSession = checkNotNull(value = session) {
+                "Register NetworkMock with rememberModules before displaying DevView"
+            }
+            SequenceBuilderScreen(
+                viewModel = viewModel {
+                    OperationDetailViewModel(
+                        operation = destination.operation,
+                        configRepository = NetworkMockInitializer.requireConfigRepository(),
+                        stateRepository = NetworkMockInitializer.requireStateRepository(),
+                        savedStateHandle = createSavedStateHandle(),
+                        mutations = retainedSession.mutations
+                    )
+                },
+                onBack = onNavigateBack,
+                bottomPadding = bottomPadding
             )
         }
     }

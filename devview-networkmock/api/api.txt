@@ -28,6 +28,31 @@ package com.worldline.devview.networkmock {
     field public static final com.worldline.devview.networkmock.NetworkMockDestination.Main INSTANCE;
   }
 
+  @kotlinx.serialization.Serializable public static final class NetworkMockDestination.ResponseDetail implements com.worldline.devview.networkmock.NetworkMockDestination {
+    ctor public NetworkMockDestination.ResponseDetail(com.worldline.devview.networkmock.core.model.OperationKey operation, int statusCode, String mediaType, String exampleName);
+    method public com.worldline.devview.networkmock.core.model.OperationKey component1();
+    method public int component2();
+    method public String component3();
+    method public String component4();
+    method public com.worldline.devview.networkmock.NetworkMockDestination.ResponseDetail copy(optional com.worldline.devview.networkmock.core.model.OperationKey operation, optional int statusCode, optional String mediaType, optional String exampleName);
+    method @InaccessibleFromKotlin public String getExampleName();
+    method @InaccessibleFromKotlin public String getMediaType();
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.model.OperationKey getOperation();
+    method @InaccessibleFromKotlin public int getStatusCode();
+    property public String exampleName;
+    property public String mediaType;
+    property public com.worldline.devview.networkmock.core.model.OperationKey operation;
+    property public int statusCode;
+  }
+
+  @kotlinx.serialization.Serializable public static final class NetworkMockDestination.SequenceBuilder implements com.worldline.devview.networkmock.NetworkMockDestination {
+    ctor public NetworkMockDestination.SequenceBuilder(com.worldline.devview.networkmock.core.model.OperationKey operation);
+    method public com.worldline.devview.networkmock.core.model.OperationKey component1();
+    method public com.worldline.devview.networkmock.NetworkMockDestination.SequenceBuilder copy(optional com.worldline.devview.networkmock.core.model.OperationKey operation);
+    method @InaccessibleFromKotlin public com.worldline.devview.networkmock.core.model.OperationKey getOperation();
+    property public com.worldline.devview.networkmock.core.model.OperationKey operation;
+  }
+
 }
 
 package com.worldline.devview.networkmock.model {
