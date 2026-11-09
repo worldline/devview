@@ -89,6 +89,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ModulePosition` enum. Module colour defaults are now `Color.Unspecified`.
 
 ### Fixed
+- Docs: analytics integration no longer uses the removed `LocalAnalytics` provider, and module
+  identity documentation covers built-in names, subtitles and icons.
 - TimeCapsule: eviction and Clear prune saved expansion IDs during the same recording.
 - Console: paused inspection restores its row and pixel offset after saved noise rules load;
   a missing anchor falls back to the newest matching row without resuming follow mode.
