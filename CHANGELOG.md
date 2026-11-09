@@ -89,6 +89,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ModulePosition` enum. Module colour defaults are now `Color.Unspecified`.
 
 ### Fixed
+- TimeCapsule: eviction and Clear prune saved expansion IDs during the same recording.
 - Console: paused inspection restores its row and pixel offset after saved noise rules load;
   a missing anchor falls back to the newest matching row without resuming follow mode.
 - FeatureFlip: failed saves retain independent per-feature retries. Newer choices supersede
