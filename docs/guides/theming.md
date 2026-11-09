@@ -39,6 +39,10 @@ Section headings use `displayName` and the host primary colour. Home tile contai
 colours animate when their resolved values change; the surrounding host theme is not animated.
 
 Layout, filter bars and empty states are shared across modules through the [UI kit](ui-components.md).
+Built-in modules supply their own `name`, `subtitle` and `icon` for Home; they are not screen
+adapters. Custom modules define these identity properties through `Module`. Registered
+built-in screens and ViewModels stay internal; public loggers and runtime configuration
+remain usable without exposing their UI lifecycle.
 
 ## Console Log Level Colors
 

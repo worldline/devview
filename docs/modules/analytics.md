@@ -53,6 +53,12 @@ DevView(
 )
 ```
 
+## Module identity
+
+`Analytics()` supplies its built-in `name`, `subtitle` and `icon`. These describe its Home tile;
+registration owns the internal list and detail screens. Use the [theming guide](../guides/theming.md)
+for shared appearance and custom-module identity.
+
 ## Usage
 - Use `AnalyticsLogger.log()` to record events.
 - Open DevView → Analytics to inspect recorded events.
