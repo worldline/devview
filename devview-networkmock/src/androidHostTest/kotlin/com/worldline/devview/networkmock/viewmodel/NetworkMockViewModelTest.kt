@@ -1,5 +1,9 @@
 package com.worldline.devview.networkmock.viewmodel
 
+import androidx.lifecycle.SavedStateHandle
+import com.worldline.devview.networkmock.MockStateFilter
+import com.worldline.devview.networkmock.OperationFilters
+import com.worldline.devview.networkmock.OperationSort
 import com.worldline.devview.networkmock.core.NetworkMockResourceLoader
 import com.worldline.devview.networkmock.core.model.ApiSpec
 import com.worldline.devview.networkmock.core.model.HttpMethod
@@ -440,6 +444,71 @@ class NetworkMockViewModelTest : ViewModelTest() {
             mediaType = "application/json",
             exampleName = "default"
         )
+    }
+
+    @Test
+    fun listState_restoresAllFiltersAndSelectedApiGroup() = runTest {
+        val handle = SavedStateHandle()
+        val configRepository = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val stateRepository = createStateRepositoryMock(MutableStateFlow(NetworkMockState()))
+        val viewModel = NetworkMockViewModel(configRepository, stateRepository, handle)
+        val filters = OperationFilters(
+            query = "USER",
+            states = setOf(MockStateFilter.MOCKED),
+            version = "v2",
+            methods = setOf("GET", "POST"),
+            tags = setOf("Users"),
+            sort = OperationSort.MOCKED_FIRST
+        )
+        viewModel.updateFilters(specId = "user-api", filters = filters)
+        viewModel.updateFilters(specId = "catalog-api", filters = OperationFilters(query = "product"))
+        viewModel.selectSpec(specId = "catalog-api")
+        viewModel.setFiltersExpanded(expanded = true)
+
+        val restoredHandle = SavedStateHandle(
+            initialState = mapOf("networkmock_list" to handle.get<String>(key = "networkmock_list"))
+        )
+        val restored = NetworkMockViewModel(configRepository, stateRepository, restoredHandle)
+        restored.listState.value shouldBe viewModel.listState.value
+        restored.listState.value.filters["user-api"] shouldBe filters
+        restored.listState.value.selectedSpecId shouldBe "catalog-api"
+        restored.listState.value.expanded shouldBe true
+        filters.activeCount shouldBe 6
+    }
+
+    @Test
+    fun clearingFilters_preservesQueryWithoutChangingAnotherApiGroup() = runTest {
+        val configRepository = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val stateRepository = createStateRepositoryMock(MutableStateFlow(NetworkMockState()))
+        val viewModel = NetworkMockViewModel(configRepository, stateRepository)
+        viewModel.updateFilters(
+            specId = "user-api",
+            filters = OperationFilters(query = "user", version = "v1", sort = OperationSort.METHOD)
+        )
+        viewModel.updateFilters(
+            specId = "catalog-api",
+            filters = OperationFilters(query = "product", tags = setOf("Catalog"))
+        )
+        viewModel.updateFilters(specId = "user-api", filters = OperationFilters(query = "user"))
+
+        viewModel.listState.value.filters["user-api"] shouldBe OperationFilters(query = "user")
+        viewModel.listState.value.filters["catalog-api"] shouldBe OperationFilters(query = "product", tags = setOf("Catalog"))
+    }
+
+    @Test
+    fun selectingApiGroupAndExpandingFilters_preservesAnUncollectedFilterEdit() = runTest {
+        val configRepository = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val stateRepository = createStateRepositoryMock(MutableStateFlow(NetworkMockState()))
+        val viewModel = NetworkMockViewModel(configRepository, stateRepository)
+        val filters = OperationFilters(query = "just edited", tags = setOf("Users"))
+
+        viewModel.updateFilters(specId = "user-api", filters = filters)
+        viewModel.selectSpec(specId = "catalog-api")
+        viewModel.setFiltersExpanded(expanded = true)
+
+        viewModel.listState.value.filters["user-api"] shouldBe filters
+        viewModel.listState.value.selectedSpecId shouldBe "catalog-api"
+        viewModel.listState.value.expanded shouldBe true
     }
 
     private fun createConfigRepositoryMock(

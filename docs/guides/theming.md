@@ -90,6 +90,10 @@ Like the Console Logger's `LogColorScheme`, the Network Mock module's per-status
 **not** derived from `MaterialTheme.colorScheme` — a mocked 2xx response needs to read as
 "success" regardless of your app's brand colors. `MockColorScheme.Light`
 and `MockColorScheme.Dark` are two complete, hand-tuned palettes chosen for contrast in each theme.
+Dark status chips use deep containers and light labels. All eight container/label pairs in
+both built-in palettes have tests for at least 4.5:1 text contrast; custom overrides need
+their own checks. Network pass-through rows use quiet host-theme text instead of a colored
+chip, while HTTP method badges keep their host-theme roles.
 
 Provide the palette where you already configure your app's `MaterialTheme`, so it switches
 alongside your light/dark theme:

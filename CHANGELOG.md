@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   preserving spec order within each group.
 
 ### Changed
+- NetworkMock: the shared search/filter bar includes per-API-group Sort, State, Version, Method,
+  and Tag selections with saved UI state and an active count. Clear filters keeps search;
+  empty results offer Clear search and filters. Network is quiet text, and dark status chips
+  use deep containers with light labels; both built-in palettes pass 4.5:1 label contrast tests.
 - TimeCapsule: only earlier entries offer Restore, expand controls have standard 48dp targets,
   expansion survives screen recreation during the same recording, and empty history uses the
   shared guidance component. The existing timeline rail and change highlighting are preserved.
@@ -52,8 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the bottom Preview/Compare button. The Sequence tab supports numbered removable steps,
   editing seeded from the active sequence, and resetting its position.
 - DevView: added a divider below the shared top app bar; NetworkMock operation lists animate
-  filter and sort changes. The mock engine, ViewModel, repositories, Ktor behavior, persistence,
-  and public API are unchanged.
+  filter and sort changes. The mock engine, repositories, Ktor behavior, persisted mock settings,
+  and public API are unchanged by these list and preview changes.
 
 ### Removed
 - **Breaking** DevView: built-in `AnalyticsScreen`, `ConsoleScreen`, `FeatureFlipScreen`,

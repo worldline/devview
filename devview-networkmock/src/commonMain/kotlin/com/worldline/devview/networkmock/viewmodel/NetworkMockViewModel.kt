@@ -1,8 +1,11 @@
 package com.worldline.devview.networkmock.viewmodel
 
 import androidx.compose.runtime.Immutable
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.worldline.devview.networkmock.NetworkMockListState
+import com.worldline.devview.networkmock.OperationFilters
 import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.MockConfiguration
 import com.worldline.devview.networkmock.core.model.MockResponse
@@ -18,9 +21,11 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
 private const val WHILE_SUBSCRIBED_TIMEOUT_MS = 5000L
 
@@ -41,10 +46,45 @@ private const val WHILE_SUBSCRIBED_TIMEOUT_MS = 5000L
  * @property configRepository Repository for loading mock configuration
  * @property stateRepository Repository for managing persisted state
  */
-public class NetworkMockViewModel(
+@Suppress("TooManyFunctions")
+public class NetworkMockViewModel internal constructor(
     private val configRepository: MockConfigRepository,
-    private val stateRepository: MockStateRepository
+    private val stateRepository: MockStateRepository,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    /** Creates a ViewModel without navigation-owned saved state. */
+    public constructor(
+        configRepository: MockConfigRepository,
+        stateRepository: MockStateRepository
+    ) : this(configRepository, stateRepository, SavedStateHandle())
+
+    private val privateListState = MutableStateFlow(
+        value = savedStateHandle
+            .get<String>(key = "networkmock_list")
+            ?.let { Json.decodeFromString<NetworkMockListState>(string = it) }
+            ?: NetworkMockListState()
+    )
+    internal val listState: StateFlow<NetworkMockListState> = privateListState.asStateFlow()
+
+    private fun updateListState(state: NetworkMockListState) {
+        savedStateHandle["networkmock_list"] = Json.encodeToString(value = state)
+        privateListState.value = state
+    }
+
+    internal fun selectSpec(specId: String) {
+        updateListState(state = listState.value.copy(selectedSpecId = specId))
+    }
+
+    internal fun setFiltersExpanded(expanded: Boolean) {
+        updateListState(state = listState.value.copy(expanded = expanded))
+    }
+
+    internal fun updateFilters(specId: String, filters: OperationFilters) {
+        updateListState(
+            state = listState.value.copy(filters = listState.value.filters + (specId to filters))
+        )
+    }
+
     private val privateConfiguration = MutableStateFlow<MockConfiguration?>(value = null)
     private val privateLoadingState = MutableStateFlow<LoadingState>(value = LoadingState.Loading)
 
