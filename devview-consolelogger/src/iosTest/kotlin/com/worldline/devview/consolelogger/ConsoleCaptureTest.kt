@@ -40,12 +40,13 @@ class ConsoleCaptureTest {
         val target = dup(output)
         try {
             assertTrue(actual = target >= 0)
-            val originalFlags = fcntl(target, F_GETFL)
-            assertTrue(actual = originalFlags >= 0 && originalFlags and O_NONBLOCK == 0)
             val inputFlags = fcntl(input, F_GETFL)
             assertTrue(actual = inputFlags >= 0)
             assertEquals(expected = 0, actual = fcntl(input, F_SETFL, inputFlags or O_NONBLOCK))
             repeat(times = 2) {
+                // Darwin can add a write-history flag after the preceding sentinel write.
+                val originalFlags = fcntl(target, F_GETFL)
+                assertTrue(actual = originalFlags >= 0 && originalFlags and O_NONBLOCK == 0)
                 val capture = launch { redirectStream(fd = target, level = LogLevel.INFO) }
                 try {
                     withTimeout(timeMillis = 5_000) {
