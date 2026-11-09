@@ -87,6 +87,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ModulePosition` enum. Module colour defaults are now `Color.Unspecified`.
 
 ### Fixed
+- NetworkMock: superseded response-load failures retry the latest selection without real-network
+  fallback.
 - NetworkMock: long errors keep recovery actions visible, wide Unicode preview lines remain
   horizontally reachable, and response comparisons retain their diff cache across recompositions.
 - Sample: Android status/navigation icon appearance follows the Dark Mode flag, including

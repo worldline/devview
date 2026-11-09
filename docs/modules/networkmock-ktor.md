@@ -48,7 +48,7 @@ For every outgoing request, the plugin:
 
 Concurrent sequence requests consume steps in successful commit order. The final step repeats but still requires validation. A failed commit returns neither the mock nor a real-network fallback, and a reset cannot be overwritten by a stale prepared response.
 
-**Selected mocks fail without network fallback.** An undeclared variant, missing resource or resource-loading exception fails the request and is logged; it does not send a real GET, POST or other request, and does not consume the sequence. State-read errors also propagate. Coroutine cancellation propagates without being treated as a mock-load fallback. Missing configuration and unmatched operations retain pass-through behaviour, so this is not a general network-isolation guarantee.
+**Selected mocks fail without network fallback.** If loading a superseded selection fails or returns no response, the request retries the latest operation state before reporting that stale error. An undeclared variant, missing resource or resource-loading exception for the still-current selection fails the request and is logged; it does not send a real GET, POST or other request, and does not consume the sequence. State-read errors also propagate. Coroutine cancellation propagates without being treated as a mock-load fallback. Missing configuration and unmatched operations retain pass-through behaviour, so this is not a general network-isolation guarantee.
 
 Simulated failures deliberately throw the same categories of exception as a real engine; see [Simulating failures](networkmock-core.md#simulating-failures).
 
