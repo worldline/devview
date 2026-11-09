@@ -61,7 +61,7 @@ manually via `ConsoleLogger.log()` or `DevViewLogWriter`.
 
 ### Module identity
 
-`Console()` supplies its built-in `name`, `subtitle` and `icon` for Home. Registration owns
+`Console()` supplies its built-in `moduleName`, `subtitle` and `icon` for Home. Registration owns
 its internal screen and capture lifetime. See the [theming guide](../guides/theming.md) for
 shared appearance and custom-module identity.
 

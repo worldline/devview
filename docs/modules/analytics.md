@@ -55,7 +55,7 @@ DevView(
 
 ## Module identity
 
-`Analytics()` supplies its built-in `name`, `subtitle` and `icon`. These describe its Home tile;
+`Analytics()` supplies its built-in `moduleName`, `subtitle` and `icon`. These describe its Home tile;
 registration owns the internal list and detail screens. Use the [theming guide](../guides/theming.md)
 for shared appearance and custom-module identity.
 
