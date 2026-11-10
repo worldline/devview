@@ -23,6 +23,7 @@ plugins {
     alias(libs.plugins.mokkery) apply false
     alias(libs.plugins.poko) apply false
     alias(libs.plugins.room) apply false
+    alias(libs.plugins.spmforkmp) apply false
 }
 
 tasks.register("detektFull") {

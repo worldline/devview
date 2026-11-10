@@ -26,6 +26,7 @@ import com.worldline.devview.consolelogger.LocalConsoleLogs
 import com.worldline.devview.consolelogger.theme.LocalLogColorScheme
 import com.worldline.devview.consolelogger.theme.LogColorScheme
 import com.worldline.devview.core.rememberModules
+import com.worldline.devview.crashhistory.CrashHistory
 import com.worldline.devview.featureflip.FeatureFlip
 import com.worldline.devview.featureflip.model.Feature
 import com.worldline.devview.featureflip.model.FeatureState
@@ -43,6 +44,7 @@ import kotlin.time.Clock
  * It sets up:
  * - Feature flags (FeatureFlip module)
  * - Analytics logging (Analytics module)
+ * - Local crash history (CrashHistory module)
  * - State history recording and restore (TimeCapsule module)
  * - Network mocking (NetworkMock module)
  * - Theme management
@@ -55,6 +57,7 @@ public fun DevViewApp() {
         module(module = FeatureFlip)
         module(module = Analytics())
         module(module = Console())
+        module(module = CrashHistory())
         module(module = TimeCapsule)
         module(
             module = NetworkMock(

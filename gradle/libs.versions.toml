@@ -4,6 +4,7 @@ androidTools = "32.4.1"
 androidx-activity-compose = "1.13.0"
 androidx-biometric = "1.4.0-alpha02"
 androidx-compose-bom = "2026.09.00"
+androidx-core = "1.19.1"
 androidx-datastore = "1.2.1"
 androidx-lifecycle = "2.11.0"
 androidx-metrics = "1.0.0"
@@ -29,6 +30,7 @@ maven-publish = "0.37.0"
 metalava = "0.5.1"
 mockk = "1.14.11"
 mrmans0n-detekt-compose-rules = "0.6.8"
+spmForKmp = "1.9.7"
 turbine = "1.2.1"
 
 # Kotlin only dependencies
@@ -59,6 +61,7 @@ androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = 
 androidx-compose-ui-test-junit4-android = { module = "androidx.compose.ui:ui-test-junit4-android" }
 androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+androidx-core = { module = "androidx.core:core", version.ref = "androidx-core" }
 androidx-datastore-core-okio = { group = "androidx.datastore", name = "datastore-core-okio", version.ref = "androidx-datastore" }
 androidx-datastore-preferences-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "androidx-datastore" }
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
@@ -169,6 +172,7 @@ metalava = { id = "me.tylerbwong.gradle.metalava", version.ref = "metalava" }
 mokkery = { id = "dev.mokkery", version.ref = "mokkery" }
 poko = { id = "dev.drewhamilton.poko", version.ref = "poko" }
 room = { id = "androidx.room", version.ref = "androidx-room" }
+spmforkmp = { id = "io.github.frankois944.spmForKmp", version.ref = "spmForKmp" }
 
 # Plugins defined by this project
 convention-android-application = { id = "convention.android.application", version = "unspecified" }

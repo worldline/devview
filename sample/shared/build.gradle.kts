@@ -20,6 +20,8 @@ kotlin {
             isStatic = true
 
             export(projects.sample.network)
+            // Lets the Swift app call CrashHistoryIos.shared.start().
+            export(projects.devviewCrashhistoryCore)
         }
     }
     
@@ -44,11 +46,13 @@ kotlin {
             implementation(projects.devviewFeatureflip)
             implementation(projects.devviewAnalytics)
             implementation(projects.devviewConsolelogger)
+            implementation(projects.devviewCrashhistory)
             implementation(projects.devviewTimecapsule)
             implementation(projects.devviewNetworkmock)
             implementation(projects.devviewUtils)
 
             api(projects.sample.network)
+            api(projects.devviewCrashhistoryCore)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

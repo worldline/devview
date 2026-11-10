@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.worldline.devview.crashhistory.core.CrashRecorder
 import com.worldline.devview.sample.network.SampleApi
 import com.worldline.devview.sample.network.rememberHttpClientWithMocking
 import devview_root.sample.shared.generated.resources.Res
@@ -122,6 +123,25 @@ public fun App(openDevView: (Boolean) -> Unit, modifier: Modifier = Modifier) {
             }
         ) {
             Text(text = "Test Network Mock (Get User)")
+        }
+
+        // Demonstrates CrashHistory: the first button kills the app, the second only records.
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Button(onClick = { error(message = "DevView sample crash") }) {
+                Text(text = "Crash app")
+            }
+            Button(
+                onClick = {
+                    CrashRecorder.record(
+                        throwable = IllegalStateException("DevView sample handled error")
+                    )
+                }
+            ) {
+                Text(text = "Report caught exception")
+            }
         }
 
         Text(text = ktorDocs)

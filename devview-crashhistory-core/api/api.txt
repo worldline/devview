@@ -1,0 +1,99 @@
+// Signature format: 4.0
+package com.worldline.devview.crashhistory.core {
+
+  public final class CrashHistoryIos {
+    method public void start();
+    method public void start(int maxRecords);
+    field public static final com.worldline.devview.crashhistory.core.CrashHistoryIos INSTANCE;
+  }
+
+  @kotlinx.serialization.Serializable public final class CrashMetadata {
+    ctor public CrashMetadata(String platform, String osVersion, String deviceModel, String appVersion, String buildNumber);
+    method public String component1();
+    method public String component2();
+    method public String component3();
+    method public String component4();
+    method public String component5();
+    method public com.worldline.devview.crashhistory.core.CrashMetadata copy(optional String platform, optional String osVersion, optional String deviceModel, optional String appVersion, optional String buildNumber);
+    method @InaccessibleFromKotlin public String getAppVersion();
+    method @InaccessibleFromKotlin public String getBuildNumber();
+    method @InaccessibleFromKotlin public String getDeviceModel();
+    method @InaccessibleFromKotlin public String getOsVersion();
+    method @InaccessibleFromKotlin public String getPlatform();
+    property public String appVersion;
+    property public String buildNumber;
+    property public String deviceModel;
+    property public String osVersion;
+    property public String platform;
+  }
+
+  @kotlinx.serialization.Serializable public final class CrashRecord {
+    ctor public CrashRecord(String id, long timestampMillis, com.worldline.devview.crashhistory.core.CrashRecordKind kind, optional String? exceptionType, optional String? message, optional String? stackTrace, optional String? threadName, optional Integer? processId, optional String? source, optional boolean isCrash, com.worldline.devview.crashhistory.core.CrashMetadata metadata, optional boolean truncated);
+    method public String component1();
+    method public boolean component10();
+    method public com.worldline.devview.crashhistory.core.CrashMetadata component11();
+    method public boolean component12();
+    method public long component2();
+    method public com.worldline.devview.crashhistory.core.CrashRecordKind component3();
+    method public String? component4();
+    method public String? component5();
+    method public String? component6();
+    method public String? component7();
+    method public Integer? component8();
+    method public String? component9();
+    method public com.worldline.devview.crashhistory.core.CrashRecord copy(optional String id, optional long timestampMillis, optional com.worldline.devview.crashhistory.core.CrashRecordKind kind, optional String? exceptionType, optional String? message, optional String? stackTrace, optional String? threadName, optional Integer? processId, optional String? source, optional boolean isCrash, optional com.worldline.devview.crashhistory.core.CrashMetadata metadata, optional boolean truncated);
+    method @InaccessibleFromKotlin public String? getExceptionType();
+    method @InaccessibleFromKotlin public String getId();
+    method @InaccessibleFromKotlin public com.worldline.devview.crashhistory.core.CrashRecordKind getKind();
+    method @InaccessibleFromKotlin public String? getMessage();
+    method @InaccessibleFromKotlin public com.worldline.devview.crashhistory.core.CrashMetadata getMetadata();
+    method @InaccessibleFromKotlin public Integer? getProcessId();
+    method @InaccessibleFromKotlin public String? getSource();
+    method @InaccessibleFromKotlin public String? getStackTrace();
+    method @InaccessibleFromKotlin public String? getThreadName();
+    method @InaccessibleFromKotlin public long getTimestampMillis();
+    method @InaccessibleFromKotlin public boolean getTruncated();
+    method @InaccessibleFromKotlin public boolean isCrash();
+    property public String? exceptionType;
+    property public String id;
+    property public boolean isCrash;
+    property public com.worldline.devview.crashhistory.core.CrashRecordKind kind;
+    property public String? message;
+    property public com.worldline.devview.crashhistory.core.CrashMetadata metadata;
+    property public Integer? processId;
+    property public String? source;
+    property public String? stackTrace;
+    property public String? threadName;
+    property public long timestampMillis;
+    property public boolean truncated;
+  }
+
+  @kotlinx.serialization.Serializable public enum CrashRecordKind {
+    enum_constant public static final com.worldline.devview.crashhistory.core.CrashRecordKind APP_REPORTED;
+    enum_constant public static final com.worldline.devview.crashhistory.core.CrashRecordKind SYSTEM_REPORTED;
+    enum_constant public static final com.worldline.devview.crashhistory.core.CrashRecordKind UNCAUGHT_EXCEPTION;
+  }
+
+  public final class CrashRecorder {
+    method public void clear();
+    method @InaccessibleFromKotlin public kotlinx.coroutines.flow.StateFlow<java.util.List<com.worldline.devview.crashhistory.core.CrashRecord>> getRecords();
+    method @KotlinOnly @androidx.compose.runtime.Composable public void install(optional int maxRecords);
+    method public void record(String exceptionType, String? message, String? stackTrace, optional long timestampMillis);
+    method public void record(Throwable throwable);
+    property public static int DEFAULT_MAX_RECORDS;
+    property public static int MAX_MESSAGE_LENGTH;
+    property public static int MAX_STACK_TRACE_LENGTH;
+    property public kotlinx.coroutines.flow.StateFlow<java.util.List<com.worldline.devview.crashhistory.core.CrashRecord>> records;
+    field public static final int DEFAULT_MAX_RECORDS = 20; // 0x14
+    field public static final com.worldline.devview.crashhistory.core.CrashRecorder INSTANCE;
+    field public static final int MAX_MESSAGE_LENGTH = 2000; // 0x7d0
+    field public static final int MAX_STACK_TRACE_LENGTH = 32000; // 0x7d00
+  }
+
+  public final class CrashReportKt {
+    method public static String toJson(java.util.List<com.worldline.devview.crashhistory.core.CrashRecord>);
+    method public static String toReportText(com.worldline.devview.crashhistory.core.CrashRecord);
+  }
+
+}
+

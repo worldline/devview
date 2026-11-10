@@ -70,6 +70,7 @@ nav = [
     { "FeatureFlip" = "modules/featureflip.md" },
     { "Analytics" = "modules/analytics.md" },
     { "Console Logger" = "modules/consolelogger.md" },
+    { "Crash History" = "modules/crashhistory.md" },
     { "TimeCapsule" = "modules/timecapsule.md" },
     { "NetworkMock" = [
       { "Overview" = "modules/networkmock.md" },
