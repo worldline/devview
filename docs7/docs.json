@@ -1,0 +1,15 @@
+{
+  "$schema": "https://context7.com/schema/docs7.json",
+  "name": "DevView",
+  "colors": {
+    "primary": "#545AAE"
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "DevView",
+        "pages": ["index"]
+      }
+    ]
+  }
+}
