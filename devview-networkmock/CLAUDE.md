@@ -65,35 +65,29 @@ current. Without that check, closing operation A's sheet and immediately opening
 could briefly show A's stale content while B is still discovering (a real race once one
 ViewModel handles every operation, not one ViewModel per opened operation).
 
-### Search and filters live in the composable, not the ViewModel
+### Saved per-API-group search and filters
 
-`NetworkMockScreen`'s search query, per-spec selected version, per-spec selected methods, and
-the mock-state filter are plain `remember`/`mutableStateMapOf` state in `ContentState` — all are
-pure client-side filters over data the ViewModel already loaded, so there's no reason to
-round-trip them through `NetworkMockUiState`. The version and method selections are keyed by
-`ApiSpec.id` (`mutableStateMapOf<String, ...>`) rather than living inside the pager's per-page
-scope, because the filter chip rows themselves render in the screen's `Scaffold` `bottomBar` —
-outside the `HorizontalPager` — and need to read/write the *current* tab's selection from there.
-The mock-state filter (`MockStateFilter`: `MOCKED`/`NETWORK`) is deliberately **not** keyed by
-spec — mocked-ness is a question about every operation, not just the visible tab's, so unlike
-version/method it stays selected across tab switches.
+The navigation-owned `NetworkMockViewModel` keeps an internal `NetworkMockListState` in
+`SavedStateHandle` as a JSON string. Selected spec ID, panel visibility, and each spec’s
+query, mock states, version, methods, tags, and sort survive navigation and recreation.
+The existing public two-repository constructor remains available without navigation-owned
+saved state. Filtering stays client-side through pure `filterOperations`; it does not
+change persisted mock settings or add fields to public `NetworkMockUiState`.
 
-### Bottom bar: search always visible, filters collapse behind a chevron
+### Shared bounded filter panel
 
-Only the search field and a chevron `IconButton` are visible by default (mirrors
-`devview-analytics`'s `AnalyticsScreen` bottom bar). Tapping the chevron toggles `filtersExpanded`,
-revealing — top to bottom — the mock-state filter row, the version filter row (if the current
-spec has versioned operations), the method filter row (if it has more than one method), then the
-tag filter row (if the current spec has any tagged operations — see
-[Tags](../docs/modules/networkmock-core.md#tags)) inside an `AnimatedVisibility`. The chevron
-rotates via `graphicsLayer(rotationX = ...)` driven by `animateFloatAsState`, identical to the
-Analytics pattern.
+`DevViewFilterBar` pins Search operations and an accessible expand control. Its 240dp
+scrollable panel groups Sort by, State, Version, Method, and Tag controls. Multi-select
+within State/Method/Tag is OR; dimensions are AND. Version is All or one selection.
+The active count excludes search and includes a non-default sort. Clear filters resets
+that API group’s selections and sort but keeps search; filtered-empty recovery clears both.
+Retained unavailable selections remain visible after spec reload so the user can clear them.
 
 ### Global mocked-count header
 
 The `GlobalMockToggle` row (above the tab row, not inside the `HorizontalPager`) shows
-`"$mockedCount of $totalCount mocked"` computed by summing `OperationMockState.Mock` occurrences
-across **every** spec via `remember(key1 = uiState.specs) { derivedStateOf { ... } }` — global,
+`"$mockedCount of $totalCount mocked"` computed by counting every non-Network state (Mock,
+Failure, and Sequence) across **every** spec — global,
 not per-tab, so it answers "what have I left mocked anywhere" without needing to visit every
 tab. This replaced the two-line "Mock responses enabled/disabled" explainer text.
 
@@ -114,6 +108,7 @@ the path's first line when it wraps. There is no version badge in the row: `Oper
 parsed out of the very path segment rendered next to it (see
 [Version Tags](../docs/modules/networkmock-core.md#version-tags)), so a separate badge could
 never show anything the path wasn't already showing — it only crowded the trailing state chip.
+Network now uses quiet host-theme text rather than a filled status chip.
 The version *filter* in the bottom bar is unaffected; it still needs `Operation.version` to group
 operations, it's just not repeated as a badge on every row. HTTP method badges are coloured via
 `HttpMethod.badgeContainerColor`/`.badgeContentColor` (`ModelUtils.kt`), mapped onto
@@ -125,29 +120,13 @@ deliberately don't (see "Status code colors and icons" below).
 
 Wired via a `MutableSharedFlow<Unit>` (capacity 1, `DROP_OLDEST`) created in `NetworkMock` and passed into `NetworkMockScreen`. `resetAllToNetwork()` resets every operation in the parsed config (not just those stored in DataStore) to avoid gaps for operations the user has never touched.
 
-### "Sort" toolbar dropdown
+### Sort inside the filter panel
 
-Registered via `DestinationMetadataBuilder.menu` (the shared toolbar's dropdown-menu action —
-see `devview/DevView.kt` and `ModuleDestinationAction.menuItems`), not the plain single-tap
-`action` used by "Refresh"/"Reset to Network" — a sort key is a discrete choice among several, so
-it gets an anchored dropdown instead of a cycling single-tap icon. One menu entry per
-`OperationSort` value (`Default`, `Path (A-Z)`, `Method`, `Tag`, `Mocked first`), built once at module-construction
-time from `OperationSort.entries`; because the shared `menu` DSL takes a fixed list of items with
-no access to the currently-visible spec, "Tag" is always offered even when the current spec has no
-tagged operations — picking it in that case is a harmless no-op (`sortedByOption` sorts by every
-operation's absent first tag, i.e. an equal empty string for all, so the list order doesn't
-change). "Mocked first" uses `sortedBy { it.currentState is OperationMockState.Network }`:
-Mock, Failure, and Sequence precede Network, with stable spec order within both groups. List
-items use `animateItem()` so filter and sort changes animate.
-
-The flow crossing `NetworkMock` → `NetworkMockScreen` carries an `OperationSort.label: String`,
-not `OperationSort` itself. Both the screen and sort enum are now internal; this string flow
-is retained until the filter-panel sort migration. `ContentState` maps the label
-back to the enum entry via `OperationSort.entries.firstOrNull { it.label == label }`; both ends of
-this flow live in this module and share the same `OperationSort.label` values, so the label is a
-module-local protocol. Sort selection itself is stored
-the same way as the version/method/tag filters — plain `mutableStateMapOf<String, OperationSort>`
-in `ContentState`, keyed by spec ID, never round-tripped through `NetworkMockViewModel`.
+Sort chips select Default, Path (A-Z), Method, Tag, or Mocked first per API group. The old
+module-to-screen sort flow and toolbar menu are removed. Default retains spec order; Method
+uses `HttpMethod.DefaultMethods` with unknown methods last; Tag uses the first declared tag
+with untagged operations first. Mocked first puts Mock, Failure, and Sequence before Network,
+stably within both groups. List items keep `animateItem()` for filter and sort changes.
 
 ### Operation sheet: a fixed-height tabbed sheet and preview
 
@@ -174,7 +153,8 @@ Switching tabs or opening Preview leaves the height unchanged.
 It no longer models marked rows or a toggle cycle: `transition` and `isInPreviewMode` are
 removed. Response variant identity includes `(statusCode, mediaType, exampleName)`.
 The ViewModel, `OperationSheetState`, repositories, mock engine, Ktor plugin, persistence,
-and public API are unchanged by this revamp.
+and public API are unchanged by the sheet revamp. The list update separately adds internal
+navigation-owned saved filter state.
 
 ### Diff rendering pipeline
 

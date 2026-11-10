@@ -49,7 +49,8 @@ import com.worldline.devview.networkmock.utils.containerColor
 internal fun EndpointCard(
     endpoint: OperationUiModel,
     openEndpointDetails: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     val railColor = when (val state = endpoint.currentState) {
         is OperationMockState.Mock -> state.containerColor
@@ -62,7 +63,7 @@ internal fun EndpointCard(
             .fillMaxWidth()
             .height(intrinsicSize = IntrinsicSize.Min)
             .clickable(
-                enabled = true,
+                enabled = enabled,
                 onClick = openEndpointDetails
             ),
         verticalAlignment = Alignment.CenterVertically

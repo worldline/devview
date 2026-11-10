@@ -2,350 +2,285 @@ package com.worldline.devview.networkmock
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
-import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
 import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.HttpMethod
 import com.worldline.devview.networkmock.core.model.MockResponse
+import com.worldline.devview.networkmock.viewmodel.asState
 import com.worldline.devview.networkmock.core.model.Operation
 import com.worldline.devview.networkmock.core.model.OperationDescriptor
 import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.model.OperationMockState
+import com.worldline.devview.networkmock.core.repository.MockStateRepository
 import com.worldline.devview.networkmock.model.OperationUiModel
+import com.worldline.devview.networkmock.viewmodel.MutationOrigin
+import com.worldline.devview.networkmock.viewmodel.MutationTicket
+import com.worldline.devview.networkmock.viewmodel.NetworkMockMutation
+import com.worldline.devview.networkmock.viewmodel.NetworkMockMutationCoordinator
 import com.worldline.devview.networkmock.viewmodel.OperationSheetState
+import com.worldline.devview.test.FakePreferencesDataStore
 import io.kotest.matchers.shouldBe
+import java.io.IOException
 import kotlin.test.Test
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CompletableDeferred
 
 class NetworkMockOperationSheetTest {
-
-    private val response200 = MockResponse(
-        statusCode = 200,
-        mediaType = "application/json",
-        exampleName = "default",
-        displayName = "200 - default",
-        content = "{}"
-    )
-    private val response404 = MockResponse(
-        statusCode = 404,
-        mediaType = "application/json",
-        exampleName = "default",
-        displayName = "404 - default",
-        content = "{}"
-    )
+    private val key = OperationKey(specId = "test", operationId = "getUser")
+    private val response200 = MockResponse(200, "application/json", "default", "200 - default", "{}")
+    private val response404 = response200.copy(statusCode = 404, displayName = "404 - default")
 
     @Test
-    fun displaysOperationHeaderAndBothResponses() = runComposeUiTest {
-        setSheet(currentState = OperationMockState.Network)
-
-        onNodeWithText(text = "Get User").assertIsDisplayed()
-        onNodeWithTag(testTag = "operation_sheet_network_item").assertIsDisplayed()
-        onNodeWithTag(testTag = "mock_item_200_application/json_default").assertIsDisplayed()
-        onNodeWithTag(testTag = "operation_sheet_tab_responses").assertIsSelected()
+    fun pickerShowsRadioSelectionAndStatusFamiliesWithoutTabs() = runComposeUiTest {
+        setPicker()
+        onNodeWithTag("operation_sheet_network_item").assertIsSelected()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+        onNodeWithTag("mock_item_200_application/json_default")
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+        onNodeWithTag("operation_picker_list").performScrollToNode(androidx.compose.ui.test.hasText("Successful mocks"))
+        onNodeWithText("Successful mocks").assertIsDisplayed()
+        onNodeWithTag("operation_picker_list").performScrollToNode(androidx.compose.ui.test.hasText("Client Error mocks"))
+        onNodeWithText("Client Error mocks").assertIsDisplayed()
+        onNodeWithTag("operation_sheet_tab_responses").assertDoesNotExist()
     }
 
     @Test
-    fun groupsResponsesByStatusFamily_showingAStickyHeaderPerFamily() = runComposeUiTest {
-        // response200 (2xx) and response404 (4xx) fall into distinct StatusCodeFamily groups -
-        // each must get its own sticky header, not be lumped under one.
-        setPickerPage(currentState = OperationMockState.Network)
-
-        onNodeWithText(text = "SUCCESSFUL MOCKS").assertIsDisplayed()
-        onNodeWithText(text = "CLIENT ERROR MOCKS").assertIsDisplayed()
-    }
-
-    @Test
-    fun tappingNetworkItem_selectsNetwork() = runComposeUiTest {
+    fun networkAndMockRowsInvokeExactSelection() = runComposeUiTest {
         var selected: MockResponse? = response200
-        setPickerPage(
-            currentState = OperationMockState.Mock(
-                statusCode = 200,
-                mediaType = "application/json",
-                exampleName = "default"
-            ),
-            onSelectResponse = { selected = it }
-        )
-
-        onNodeWithTag(testTag = "operation_sheet_network_item").performClick()
-
+        setPicker(current = response200.asState(), onSelect = { selected = it })
+        onNodeWithTag("operation_sheet_network_item").performClick()
         selected shouldBe null
-    }
-
-    @Test
-    fun tappingMockItem_selectsThatResponse() = runComposeUiTest {
-        var selected: MockResponse? = null
-        setPickerPage(
-            currentState = OperationMockState.Network,
-            onSelectResponse = { selected = it }
-        )
-
-        onNodeWithTag(testTag = "mock_item_404_application/json_default").performClick()
-
+        scrollTo("mock_item_404_application/json_default")
+        onNodeWithTag("mock_item_404_application/json_default").performClick()
         selected shouldBe response404
     }
 
     @Test
-    fun tappingCloseButton_invokesOnClose() = runComposeUiTest {
-        var closed = false
-        setSheet(currentState = OperationMockState.Network, onClose = { closed = true })
-
-        onNodeWithTag(testTag = "operation_sheet_close_button").performClick()
-        waitUntil(timeoutMillis = 5_000) { closed }
-
-        closed shouldBe true
-    }
-
-    @Test
-    fun eye_opensResponseDirectly_withoutSelectingOrMarking() = runComposeUiTest {
+    fun responseChevronInspectsWithoutSelecting() = runComposeUiTest {
         var preview: MockResponse? = null
         var selected: MockResponse? = null
-        setPickerPage(
-            currentState = OperationMockState.Network,
-            onPreview = { preview = it },
-            onSelectResponse = { selected = it }
-        )
-
-        onNodeWithTag(testTag = "mock_item_200_application/json_default_preview_toggle").performClick()
-
+        setPicker(onSelect = { selected = it }, onPreview = { preview = it })
+        onNodeWithTag("mock_item_200_application/json_default_preview_toggle").performClick()
         preview shouldBe response200
         selected shouldBe null
-        onNodeWithTag(testTag = "open_preview_button").assertDoesNotExist()
     }
 
     @Test
-    fun tabsAndPreview_keepHeaderAndHeight_andCancelReturnsToResponses() = runComposeUiTest {
-        setSheet(currentState = OperationMockState.Network)
-        val height = onNodeWithTag(testTag = "operation_sheet_content").fetchSemanticsNode().boundsInRoot.height
-        onNodeWithText(text = "Build a Sequence").assertDoesNotExist()
-        onNodeWithText(text = "SIMULATE FAILURE").assertDoesNotExist()
-        onNodeWithTag(testTag = "sequence_builder_list").assertDoesNotExist()
-        FailureKind.entries.forEach { kind ->
-            onNodeWithTag(testTag = "failure_item_${kind.name}").assertDoesNotExist()
-        }
-        onNodeWithTag(testTag = "operation_sheet_tab_sequence").performClick().assertIsSelected()
-        onNodeWithText(text = "Get User").assertIsDisplayed()
-        onNodeWithTag(testTag = "sequence_page_back_button").assertDoesNotExist()
-        onNodeWithTag(testTag = "operation_sheet_content").fetchSemanticsNode().boundsInRoot.height shouldBe height
-        onNodeWithTag(testTag = "sequence_cancel_button").performClick()
-        onNodeWithTag(testTag = "operation_sheet_tab_responses").assertIsSelected()
-        onNodeWithTag(testTag = "operation_sheet_tab_failure").performClick().assertIsSelected()
-        onNodeWithText(text = "SIMULATE FAILURE").assertIsDisplayed()
-        onNodeWithTag(testTag = "operation_sheet_network_item").assertDoesNotExist()
-        onNodeWithTag(testTag = "sequence_builder_list").assertDoesNotExist()
-        onNodeWithTag(testTag = "operation_sheet_content").fetchSemanticsNode().boundsInRoot.height shouldBe height
-        onNodeWithTag(testTag = "operation_sheet_tab_responses").performClick()
-        onNodeWithTag(testTag = "mock_item_200_application/json_default_preview_toggle").performClick()
-        onNodeWithTag(testTag = "preview_content").assertIsDisplayed()
-        onNodeWithText(text = "Get User").assertIsDisplayed()
-        onNodeWithTag(testTag = "operation_sheet_content").fetchSemanticsNode().boundsInRoot.height shouldBe height
-        onNodeWithTag(testTag = "preview_page_back_button").performClick()
-        onNodeWithTag(testTag = "operation_sheet_tab_responses").assertIsSelected()
-        onNodeWithTag(testTag = "operation_sheet_network_item").assertIsDisplayed()
+    fun sheetShowsHeaderAndCurrentStateAndCloseWorks() = runComposeUiTest {
+        var closed = false
+        setSheet(current = response200.asState(), onClose = { closed = true })
+        onNodeWithText("Get User").assertIsDisplayed()
+        onNodeWithTag("operation_sheet_current_state").assertIsDisplayed()
+        onNodeWithTag("operation_sheet_close_button").performClick()
+        waitUntil(timeoutMillis = 5_000) { closed }
     }
 
     @Test
-    fun activeSequence_statusAndResetAppearOnlyInSequenceTab() = runComposeUiTest {
-        var reset = false
+    fun chevronClosesBeforeNavigatingAndNavigatesOnce() = runComposeUiTest {
+        val events = mutableListOf<String>()
+        setSheet(onClose = { events += "closed" }, onPreview = { events += "detail" })
+        onNodeWithTag("mock_item_200_application/json_default_preview_toggle").performClick()
+        waitUntil(timeoutMillis = 5_000) { events.size == 2 }
+        events shouldBe listOf("closed", "detail")
+    }
+
+    @Test
+    fun hidingSheetBlocksNavigationUntilTheTransitionFinishes() = runComposeUiTest {
+        var transitioning = false
+        val events = mutableListOf<String>()
         setSheet(
-            currentState = OperationMockState.Sequence(
-                responses = listOf(
-                    OperationMockState.Mock(statusCode = 200, mediaType = "application/json", exampleName = "default"),
-                    OperationMockState.Mock(statusCode = 404, mediaType = "application/json", exampleName = "default")
-                ),
-                currentIndex = 1
-            ),
-            onResetSequencePosition = { reset = true }
+            onClose = { events += "closed" },
+            onPreview = { events += "detail" },
+            onTransition = { transitioning = it }
         )
+        mainClock.autoAdvance = false
+        onNodeWithTag("mock_item_200_application/json_default_preview_toggle").performClick()
+        runOnIdle { transitioning shouldBe true }
+        events shouldBe emptyList()
+        mainClock.advanceTimeBy(1_000)
+        mainClock.autoAdvance = true
+        waitUntil(timeoutMillis = 5_000) { events.size == 2 }
+        transitioning shouldBe false
+        events shouldBe listOf("closed", "detail")
+    }
 
-        onNodeWithTag(testTag = "sequence_position").assertDoesNotExist()
-        onNodeWithTag(testTag = "sequence_reset_button").assertDoesNotExist()
-        onNodeWithTag(testTag = "operation_sheet_tab_sequence").performClick()
-        onNodeWithText(text = "Step 2 of 2").assertIsDisplayed()
-        onNodeWithTag(testTag = "sequence_reset_button").performClick()
+    @Test
+    fun buildSequenceClosesBeforeNavigating() = runComposeUiTest {
+        val events = mutableListOf<String>()
+        setSheet(onClose = { events += "closed" }, onBuild = { events += "sequence" })
+        scrollTo("build_sequence")
+        onNodeWithTag("build_sequence").performClick()
+        waitUntil(timeoutMillis = 5_000) { events.size == 2 }
+        events shouldBe listOf("closed", "sequence")
+    }
+
+    @Test
+    fun selectionClosesOnlyAfterSuccessfulPersistence() = runComposeUiTest {
+        val store = ControlledDataStore(block = CompletableDeferred())
+        var closed = false
+        setSheet(store = store, onClose = { closed = true })
+        onNodeWithTag("mock_item_200_application/json_default").performClick()
+        onNodeWithTag("operation_sheet_close_button").assertIsNotEnabled()
+        closed shouldBe false
+        store.block!!.complete(Unit)
+        waitUntil(timeoutMillis = 5_000) { closed }
+    }
+
+    @Test
+    fun failedWriteKeepsSheetAndRetryCompletesSameSelection() = runComposeUiTest {
+        val store = ControlledDataStore(fail = true)
+        var closed = false
+        setSheet(store = store, onClose = { closed = true })
+        onNodeWithTag("mock_item_200_application/json_default").performClick()
+        onNodeWithText("Mock setting was not saved").assertIsDisplayed()
+        onNodeWithTag("operation_sheet_close_button").assertIsNotEnabled()
+        closed shouldBe false
+        store.fail = false
+        onNodeWithTag("mutation_retry").performClick()
+        waitUntil(timeoutMillis = 5_000) { closed }
+    }
+
+    @Test
+    fun cancellingFailedWriteKeepsSheetAndUnlocksChoices() = runComposeUiTest {
+        var closed = false
+        setSheet(store = ControlledDataStore(fail = true), onClose = { closed = true })
+        onNodeWithTag("mock_item_200_application/json_default").performClick()
+        onNodeWithTag("mutation_cancel").performClick()
+        onNodeWithTag("operation_sheet_network_item").assertIsSelected()
+        onNodeWithTag("operation_sheet_close_button").performClick()
+        waitUntil(timeoutMillis = 5_000) { closed }
+    }
+
+    @Test
+    fun failuresAndConfiguredRateShareThePicker() = runComposeUiTest {
+        var selected: FailureKind? = null
+        setPicker(failureRate = 0.25, onFailure = { selected = it })
+        scrollTo("failure_item_TIMEOUT")
+        onNodeWithTag("failure_item_TIMEOUT").performClick()
+        selected shouldBe FailureKind.TIMEOUT
+        onNodeWithText("The spec also applies a 25% random failure rate to mock responses.").assertIsDisplayed()
+    }
+
+    @Test
+    fun activeSequenceOffersEditAndResetInThePicker() = runComposeUiTest {
+        var reset = false
+        setPicker(
+            current = OperationMockState.Sequence(listOf(response200.asState(), response404.asState()), currentIndex = 1),
+            onReset = { reset = true }
+        )
+        scrollTo("reset_sequence_position")
+        onNodeWithText("Edit sequence").assertIsDisplayed()
+        onNodeWithTag("reset_sequence_position").performClick()
         reset shouldBe true
     }
 
     @Test
-    fun failureRow_preservesFailureCallbackAndCloses() = runComposeUiTest {
-        var selected: FailureKind? = null
-        var closed = false
-        setSheet(
-            currentState = OperationMockState.Network,
-            onSelectFailure = { selected = it },
-            onClose = { closed = true }
-        )
-        val kind = FailureKind.entries.first()
-        onNodeWithTag(testTag = "failure_item_${kind.name}").assertDoesNotExist()
-        onNodeWithTag(testTag = "operation_sheet_tab_failure").performClick()
-        onNodeWithTag(testTag = "operation_failure_list").performScrollToNode(
-            matcher = hasTestTag(testTag = "failure_item_${kind.name}")
-        )
-        onNodeWithTag(testTag = "failure_item_${kind.name}").performClick()
-        selected shouldBe kind
-        waitUntil(timeoutMillis = 5_000) { closed }
-        closed shouldBe true
+    fun mediaTypesDisambiguateOtherwiseIdenticalVariants() = runComposeUiTest {
+        setPicker(responses = listOf(response200, response200.copy(mediaType = "application/xml")))
+        onNodeWithText("application/json").assertIsDisplayed()
+        onNodeWithText("application/xml").assertIsDisplayed()
     }
 
-    @Test
-    fun configuredFailureRate_isOnlyInFailureFooter() = runComposeUiTest {
-        setSheet(currentState = OperationMockState.Network, failureRate = 0.25)
-        onNodeWithTag(testTag = "operation_sheet_failure_rate").assertDoesNotExist()
-        onNodeWithTag(testTag = "operation_sheet_tab_failure").performClick()
-        onNodeWithTag(testTag = "operation_failure_list").performScrollToNode(
-            matcher = hasTestTag(testTag = "operation_sheet_failure_rate")
-        )
-        onNodeWithTag(testTag = "operation_sheet_failure_rate").assertIsDisplayed()
-        onNodeWithText(
-            text = "Also configured to fail 25% of mocked requests on its own (x-devview.failureRate)"
-        ).assertIsDisplayed()
-        onNodeWithTag(testTag = "operation_sheet_tab_responses").performClick()
-        onNodeWithTag(testTag = "operation_sheet_failure_rate").assertDoesNotExist()
+    private fun content(
+        current: OperationMockState,
+        responses: List<MockResponse>,
+        failureRate: Double?
+    ) = OperationSheetState.Content(
+        operationUiModel = OperationUiModel(
+            descriptor = OperationDescriptor(key, Operation("getUser", "Get User", "/api/users/{userId}", HttpMethod.Get, failureRate = failureRate)),
+            currentState = current
+        ),
+        responses = responses.toPersistentList()
+    )
+
+    private fun ComposeUiTest.scrollTo(tag: String) {
+        onNodeWithTag("operation_picker_list").performScrollToNode(hasTestTag(tag))
     }
 
-    @Test
-    fun savingSequence_commitsAndCloses() = runComposeUiTest {
-        var saved: List<MockResponse> = emptyList()
-        var closed = false
-        setSheet(
-            currentState = OperationMockState.Network,
-            onCommitSequence = { saved = it },
-            onClose = { closed = true }
-        )
-        onNodeWithTag(testTag = "operation_sheet_tab_sequence").performClick()
-        repeat(times = 2) {
-            onNodeWithTag(testTag = "sequence_builder_list").performScrollToNode(
-                matcher = hasTestTag(testTag = "sequence_response_200_application/json_default")
-            )
-            onNodeWithTag(testTag = "sequence_response_200_application/json_default").performClick()
-        }
-        onNodeWithTag(testTag = "sequence_save_button").performClick()
-        saved shouldBe listOf(response200, response200)
-        waitUntil(timeoutMillis = 5_000) { closed }
-        closed shouldBe true
-    }
-
-    @Test
-    fun disambiguatesResponsesByMediaType_whenSameStatusCodeHasMultipleMediaTypes() = runComposeUiTest {
-        val jsonVariant = MockResponse(
-            statusCode = 200,
-            mediaType = "application/json",
-            exampleName = "default",
-            displayName = "200 - default",
-            content = "{}"
-        )
-        val xmlVariant = MockResponse(
-            statusCode = 200,
-            mediaType = "application/xml",
-            exampleName = "default",
-            displayName = "200 - default",
-            content = "<user/>"
-        )
-
-        setContent {
-            MaterialTheme {
-                OperationPickerPage(
-                    content = OperationSheetState.Content(
-                        operationUiModel = OperationUiModel(
-                            descriptor = OperationDescriptor(
-                                key = OperationKey(specId = "test", operationId = "getUser"),
-                                config = Operation(
-                                    operationId = "getUser",
-                                    name = "Get User",
-                                    path = "/api/users/{userId}",
-                                    method = HttpMethod.Get
-                                )
-                            ),
-                            currentState = OperationMockState.Network
-                        ),
-                        responses = listOf(jsonVariant, xmlVariant).toPersistentList()
-                    ),
-                    onSelectResponse = {},
-                    onPreview = {}
-                )
-            }
-        }
-
-        onNodeWithText(text = "application/json").assertIsDisplayed()
-        onNodeWithText(text = "application/xml").assertIsDisplayed()
-    }
-
-    private fun ComposeUiTest.setPickerPage(
-        currentState: OperationMockState,
-        onSelectResponse: (MockResponse?) -> Unit = {},
-        onPreview: (MockResponse) -> Unit = {}
+    private fun ComposeUiTest.setPicker(
+        current: OperationMockState = OperationMockState.Network,
+        responses: List<MockResponse> = listOf(response200, response404),
+        failureRate: Double? = null,
+        onSelect: (MockResponse?) -> Unit = {},
+        onPreview: (MockResponse) -> Unit = {},
+        onFailure: (FailureKind) -> Unit = {},
+        onReset: () -> Unit = {}
     ) {
         setContent {
             MaterialTheme {
                 OperationPickerPage(
-                    content = OperationSheetState.Content(
-                        operationUiModel = OperationUiModel(
-                            descriptor = OperationDescriptor(
-                                key = OperationKey(specId = "test", operationId = "getUser"),
-                                config = Operation(
-                                    operationId = "getUser",
-                                    name = "Get User",
-                                    path = "/api/users/{userId}",
-                                    method = HttpMethod.Get
-                                )
-                            ),
-                            currentState = currentState
-                        ),
-                        responses = listOf(response200, response404).toPersistentList()
-                    ),
-                    onSelectResponse = onSelectResponse,
-                    onPreview = onPreview
+                    content = content(current, responses, failureRate), onSelectResponse = onSelect,
+                    onPreview = onPreview, onSelectFailure = onFailure, onResetSequencePosition = onReset
                 )
             }
         }
     }
 
     private fun ComposeUiTest.setSheet(
-        currentState: OperationMockState,
-        onSelectFailure: (FailureKind) -> Unit = {},
-        onResetSequencePosition: () -> Unit = {},
-        onCommitSequence: (List<MockResponse>) -> Unit = {},
+        current: OperationMockState = OperationMockState.Network,
+        store: DataStore<Preferences> = FakePreferencesDataStore(),
         onClose: () -> Unit = {},
-        failureRate: Double? = null
+        onPreview: (MockResponse) -> Unit = {},
+        onBuild: () -> Unit = {},
+        onTransition: (Boolean) -> Unit = {}
     ) {
         setContent {
             val navigationOwner = rememberNavigationEventDispatcherOwner(parent = null)
+            val scope = rememberCoroutineScope()
+            val mutations = remember { NetworkMockMutationCoordinator(MockStateRepository(store), scope) }
+            var selection by remember { mutableStateOf<MutationTicket?>(null) }
             CompositionLocalProvider(LocalNavigationEventDispatcherOwner provides navigationOwner) {
                 MaterialTheme {
                     NetworkMockOperationSheet(
-                        sheetState = OperationSheetState.Content(
-                            operationUiModel = OperationUiModel(
-                                descriptor = OperationDescriptor(
-                                    key = OperationKey(specId = "test", operationId = "getUser"),
-                                    config = Operation(
-                                        operationId = "getUser",
-                                        name = "Get User",
-                                        path = "/api/users/{userId}",
-                                        method = HttpMethod.Get,
-                                        failureRate = failureRate
-                                    )
-                                ),
-                                currentState = currentState
-                            ),
-                            responses = listOf(response200, response404).toPersistentList()
-                        ),
+                        sheetState = content(current, listOf(response200, response404), null), mutations = mutations,
+                        selection = selection, onSelectionComplete = { onClose() }, onTransitionChange = onTransition,
+                        canCompleteSelection = { it == selection?.id && mutations.interactionsEnabled },
                         onDismissRequest = onClose,
-                        onSelectResponse = {},
-                        onSelectFailure = onSelectFailure,
-                        onResetSequencePosition = onResetSequencePosition,
-                        onCommitSequence = onCommitSequence
+                        onSelectResponse = { response ->
+                            selection = mutations.submit(
+                                NetworkMockMutation.Select(key, response?.asState() ?: OperationMockState.Network), MutationOrigin(1, 1)
+                            )
+                        },
+                        onSelectFailure = {}, onOpenResponse = onPreview, onBuildSequence = onBuild,
+                        onResetSequencePosition = {}, onReload = {}
                     )
                 }
             }
+        }
+    }
+
+    private class ControlledDataStore(
+        var fail: Boolean = false,
+        val block: CompletableDeferred<Unit>? = null
+    ) : DataStore<Preferences> {
+        private val delegate = FakePreferencesDataStore()
+        override val data = delegate.data
+        override suspend fun updateData(transform: suspend (Preferences) -> Preferences): Preferences {
+            block?.await()
+            if (fail) throw IOException("disk error")
+            return delegate.updateData(transform)
         }
     }
 }

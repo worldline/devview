@@ -90,6 +90,10 @@ Like the Console Logger's `LogColorScheme`, the Network Mock module's per-status
 **not** derived from `MaterialTheme.colorScheme` — a mocked 2xx response needs to read as
 "success" regardless of your app's brand colors. `MockColorScheme.Light`
 and `MockColorScheme.Dark` are two complete, hand-tuned palettes chosen for contrast in each theme.
+Dark status chips use deep containers and light labels. All eight container/label pairs in
+both built-in palettes have tests for at least 4.5:1 text contrast; custom overrides need
+their own checks. Network pass-through rows use quiet host-theme text instead of a colored
+chip, while HTTP method badges keep their host-theme roles.
 
 Provide the palette where you already configure your app's `MaterialTheme`, so it switches
 alongside your light/dark theme:
@@ -118,6 +122,15 @@ from the ambient `MaterialTheme`'s surface luminance — usually correct, but th
 cue to wire up `LocalMockColorScheme` explicitly. As with the console, the fallback deliberately
 does not use `isSystemInDarkTheme()`, since DevView's theme may be driven by something other
 than the system setting.
+
+### Response comparison colours
+
+`MockResponseDiffColors()` selects light or deep-dark lavender and bisque pairs from the
+ambient `MaterialTheme.colorScheme.surface` luminance, independently of the system theme.
+Left and right sides keep their colour identity in both palettes. The default container/label
+pairs meet 4.5:1 text contrast; callers can override each colour independently and should
+check contrast against their own surfaces. Both inline and split comparisons share these
+colours.
 
 ## Customising Typography
 Use your app's typography settings in custom modules:

@@ -1,8 +1,11 @@
 package com.worldline.devview.networkmock.viewmodel
 
 import androidx.compose.runtime.Immutable
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.worldline.devview.networkmock.NetworkMockListState
+import com.worldline.devview.networkmock.OperationFilters
 import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.MockConfiguration
 import com.worldline.devview.networkmock.core.model.MockResponse
@@ -15,12 +18,16 @@ import com.worldline.devview.networkmock.model.ApiSpecUiModel
 import com.worldline.devview.networkmock.model.OperationUiModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
 private const val WHILE_SUBSCRIBED_TIMEOUT_MS = 5000L
 
@@ -41,10 +48,88 @@ private const val WHILE_SUBSCRIBED_TIMEOUT_MS = 5000L
  * @property configRepository Repository for loading mock configuration
  * @property stateRepository Repository for managing persisted state
  */
-public class NetworkMockViewModel(
+@Suppress("TooManyFunctions")
+public class NetworkMockViewModel internal constructor(
     private val configRepository: MockConfigRepository,
-    private val stateRepository: MockStateRepository
+    private val stateRepository: MockStateRepository,
+    private val savedStateHandle: SavedStateHandle,
+    sharedMutations: NetworkMockMutationCoordinator? = null
 ) : ViewModel() {
+    /** Creates a ViewModel without navigation-owned saved state. */
+    public constructor(
+        configRepository: MockConfigRepository,
+        stateRepository: MockStateRepository
+    ) : this(configRepository, stateRepository, SavedStateHandle())
+
+    internal val mutations = sharedMutations ?: NetworkMockMutationCoordinator(
+        stateRepository = stateRepository,
+        scope = viewModelScope
+    )
+    internal val entryId = mutations.createEntryId()
+    private var sheetId = 0L
+    private var discoveryJob: Job? = null
+    private val detailsLoader = OperationDetailsLoader(configRepository = configRepository)
+    private val privateSelection = MutableStateFlow<MutationTicket?>(value = null)
+    internal val selection: StateFlow<MutationTicket?> = privateSelection.asStateFlow()
+
+    private fun submit(command: NetworkMockMutation) {
+        val ticket = mutations.submit(
+            command = command,
+            origin = MutationOrigin(entryId = entryId, sheetId = sheetId)
+        )
+        val appliesToOpenSheet = when (command) {
+            is NetworkMockMutation.GlobalToggle -> false
+            is NetworkMockMutation.Select -> command.key == privateOpenOperationKey.value
+            is NetworkMockMutation.ResetSequence -> command.key == privateOpenOperationKey.value
+            NetworkMockMutation.ResetAll -> privateOpenOperationKey.value != null
+        }
+        if (appliesToOpenSheet) privateSelection.value = ticket
+    }
+
+    internal fun canAcknowledgeSelection(ticketId: Long): Boolean {
+        val ticket = privateSelection.value ?: return false
+        return ticket.id == ticketId && ticket.origin == MutationOrigin(
+            entryId = entryId,
+            sheetId = sheetId
+        ) &&
+            ticket.outcome.value == MutationOutcome.Succeeded && mutations.interactionsEnabled &&
+            privateOpenOperationKey.value != null
+    }
+
+    internal fun acknowledgeSelection(ticketId: Long): Boolean {
+        if (!canAcknowledgeSelection(ticketId = ticketId)) return false
+        privateSelection.value = null
+        closeSheet()
+        return true
+    }
+
+    private val privateListState = MutableStateFlow(
+        value = savedStateHandle
+            .get<String>(key = "networkmock_list")
+            ?.let { Json.decodeFromString<NetworkMockListState>(string = it) }
+            ?: NetworkMockListState()
+    )
+    internal val listState: StateFlow<NetworkMockListState> = privateListState.asStateFlow()
+
+    private fun updateListState(state: NetworkMockListState) {
+        savedStateHandle["networkmock_list"] = Json.encodeToString(value = state)
+        privateListState.value = state
+    }
+
+    internal fun selectSpec(specId: String) {
+        updateListState(state = listState.value.copy(selectedSpecId = specId))
+    }
+
+    internal fun setFiltersExpanded(expanded: Boolean) {
+        updateListState(state = listState.value.copy(expanded = expanded))
+    }
+
+    internal fun updateFilters(specId: String, filters: OperationFilters) {
+        updateListState(
+            state = listState.value.copy(filters = listState.value.filters + (specId to filters))
+        )
+    }
+
     private val privateConfiguration = MutableStateFlow<MockConfiguration?>(value = null)
     private val privateLoadingState = MutableStateFlow<LoadingState>(value = LoadingState.Loading)
 
@@ -170,57 +255,68 @@ public class NetworkMockViewModel(
      *
      * @param key The [OperationKey] identifying the spec and operation to open
      */
+    @Suppress("TooGenericExceptionCaught")
     public fun openOperation(key: OperationKey) {
+        if (!mutations.interactionsEnabled) return
+        check(value = sheetId < Long.MAX_VALUE) { "Network mock sheet identifiers exhausted" }
+        val requestId = ++sheetId
+        privateSelection.value = null
+        discoveryJob?.cancel()
         privateOpenOperationKey.value = key
         privateLoadedOperation.value = null
         privateSheetError.value = null
-        viewModelScope.launch {
-            runCatching {
-                configRepository.discoverResponseFiles(key = key)
-            }.onSuccess { responses ->
-                val operation = privateConfiguration.value
-                    ?.specs
-                    ?.firstOrNull { it.id == key.specId }
-                    ?.operations
-                    ?.firstOrNull { it.operationId == key.operationId }
-
-                if (operation == null) {
-                    privateSheetError.value = "Operation configuration not found"
-                    return@onSuccess
+        discoveryJob = viewModelScope.launch {
+            try {
+                val loaded = detailsLoader.load(key = key)
+                if (sheetId == requestId && privateOpenOperationKey.value == key) {
+                    privateLoadedOperation.value = loaded
                 }
-
-                privateLoadedOperation.value = LoadedOperation(
-                    key = key,
-                    descriptor = OperationDescriptor(key = key, config = operation),
-                    responses = responses.toPersistentList()
-                )
-            }.onFailure { error ->
-                privateSheetError.value = error.message ?: "Failed to load operation"
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                if (sheetId == requestId && privateOpenOperationKey.value == key) {
+                    privateSheetError.value = error.message ?: "Failed to load operation"
+                }
             }
         }
     }
 
+    internal fun reloadOpenOperation() {
+        if (!mutations.interactionsEnabled) return
+        val key = privateOpenOperationKey.value ?: return
+        configRepository.invalidate()
+        openOperation(key = key)
+    }
+
     /**
-     * Closes the operation picker/preview sheet, resetting [sheetState] to
+     * Closes the operation picker sheet, resetting [sheetState] to
      * [OperationSheetState.Hidden].
      */
     public fun closeSheet() {
+        if (!mutations.interactionsEnabled) return
+        discoveryJob?.cancel()
+        privateSelection.value = null
         privateOpenOperationKey.value = null
         privateLoadedOperation.value = null
         privateSheetError.value = null
     }
 
+    private var observedReloadGeneration = 0L
+
+    internal fun consumeReload(generation: Long) {
+        if (generation <= observedReloadGeneration || !mutations.interactionsEnabled) return
+        reloadConfiguration()
+        observedReloadGeneration = generation
+    }
+
     /**
-     * Re-reads and re-parses every configured OpenAPI spec, picking up edits made to a spec
-     * file since the app started without requiring a restart.
+     * Invalidates cached specs and reloads endpoint metadata without restarting the app.
      *
-     * Invalidates [configRepository]'s cache, then re-runs [loadConfiguration] — operations
-     * added, removed, or renamed in the spec are reflected in [uiState] once this completes.
-     * The operation picker/preview sheet ([sheetState]) is unaffected by this call; if it's
-     * open for an operation that no longer exists, it keeps showing its last-loaded content
-     * until closed.
+     * An open operation picker retains its discovered content until explicitly reloaded or closed.
+     * This action is unavailable while a mock-setting write is pending or awaiting recovery.
      */
     public fun reloadConfiguration() {
+        if (!mutations.interactionsEnabled) return
         configRepository.invalidate()
         loadConfiguration()
     }
@@ -228,9 +324,8 @@ public class NetworkMockViewModel(
     /**
      * Loads the mock configuration from the configured OpenAPI specs.
      *
-     * This only parses spec metadata — no response body is read or decoded here. See #98:
-     * that work is deferred to [openOperation], which discovers response variants for exactly
-     * one operation when its picker/preview sheet is opened.
+     * Only parses spec metadata. Response bodies are discovered per operation when its picker
+     * or registered response-detail/sequence-builder destination opens.
      */
     @Suppress("DocumentationOverPrivateFunction")
     private fun loadConfiguration() {
@@ -268,9 +363,7 @@ public class NetworkMockViewModel(
      * @param enabled `true` to enable global mocking, `false` to disable
      */
     public fun setGlobalMockingEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            stateRepository.setGlobalMockingEnabled(enabled = enabled)
-        }
+        submit(command = NetworkMockMutation.GlobalToggle(enabled = enabled))
     }
 
     /**
@@ -286,25 +379,23 @@ public class NetworkMockViewModel(
      * @param response The response variant to activate, or `null` to use the actual network
      */
     public fun setOperationMockState(key: OperationKey, response: MockResponse?) {
-        viewModelScope.launch {
-            val newState = if (response != null) {
-                OperationMockState.Mock(
-                    statusCode = response.statusCode,
-                    mediaType = response.mediaType,
-                    exampleName = response.exampleName
-                )
-            } else {
-                OperationMockState.Network
-            }
-            stateRepository.setOperationMockState(key = key, state = newState)
+        val newState = if (response != null) {
+            OperationMockState.Mock(
+                statusCode = response.statusCode,
+                mediaType = response.mediaType,
+                exampleName = response.exampleName
+            )
+        } else {
+            OperationMockState.Network
         }
+        submit(command = NetworkMockMutation.Select(key = key, state = newState))
     }
 
     /**
      * Sets an operation to deterministically simulate a network failure of the given [kind].
      *
      * Every request to the operation fails the same way, the same way [setOperationMockState]
-     * makes an operation always serve the same response — the two are mutually exclusive
+     * makes an operation always serve the same response. The two are mutually exclusive
      * states, so selecting a failure kind here replaces any previously-selected mock response.
      *
      * @param key The [OperationKey] identifying the spec and operation
@@ -312,12 +403,12 @@ public class NetworkMockViewModel(
      * @see OperationMockState.Failure
      */
     public fun setOperationFailureState(key: OperationKey, kind: FailureKind) {
-        viewModelScope.launch {
-            stateRepository.setOperationMockState(
+        submit(
+            command = NetworkMockMutation.Select(
                 key = key,
                 state = OperationMockState.Failure(kind = kind)
             )
-        }
+        )
     }
 
     /**
@@ -329,19 +420,19 @@ public class NetworkMockViewModel(
      * @see OperationMockState.Sequence
      */
     public fun setOperationSequenceState(key: OperationKey, responses: List<MockResponse>) {
-        viewModelScope.launch {
-            val steps = responses.map {
-                OperationMockState.Mock(
-                    statusCode = it.statusCode,
-                    mediaType = it.mediaType,
-                    exampleName = it.exampleName
-                )
-            }
-            stateRepository.setOperationMockState(
+        val steps = responses.map {
+            OperationMockState.Mock(
+                statusCode = it.statusCode,
+                mediaType = it.mediaType,
+                exampleName = it.exampleName
+            )
+        }
+        submit(
+            command = NetworkMockMutation.Select(
                 key = key,
                 state = OperationMockState.Sequence(responses = steps)
             )
-        }
+        )
     }
 
     /**
@@ -351,45 +442,17 @@ public class NetworkMockViewModel(
      * @param key The [OperationKey] identifying the spec and operation
      */
     public fun resetOperationSequencePosition(key: OperationKey) {
-        viewModelScope.launch {
-            val current = stateRepository.getState().getOperationState(key = key)
-            if (current is OperationMockState.Sequence) {
-                stateRepository.setOperationMockState(
-                    key = key,
-                    state = current.copy(currentIndex = 0)
-                )
-            }
-        }
+        submit(command = NetworkMockMutation.ResetSequence(key = key))
     }
 
     /**
      * Resets all operation mocks to use actual network.
      *
-     * Builds a [OperationMockState.Network] state for every operation present in
-     * the loaded configuration (not just those already stored in DataStore), then
-     * persists it in one write. This ensures that operations which have never been
-     * touched by the user are also explicitly reset, leaving no gaps.
+     * Queues one atomic reset of every registered or persisted operation, including untouched
+     * operations and keys written by other repository instances. Global mocking is unchanged.
      */
     public fun resetAllToNetwork() {
-        viewModelScope.launch {
-            val config = privateConfiguration.value
-            if (config == null) {
-                // Config not loaded yet — fall back to resetting only known stored entries
-                stateRepository.resetKnownOperationsToNetwork()
-                return@launch
-            }
-
-            // Build a Network state for every configured spec + operation
-            val allNetwork = config.specs
-                .flatMap { spec ->
-                    spec.operations.map { operation ->
-                        OperationKey(specId = spec.id, operationId = operation.operationId) to
-                            OperationMockState.Network
-                    }
-                }.toMap()
-
-            stateRepository.setAllOperationStates(states = allNetwork)
-        }
+        submit(command = NetworkMockMutation.ResetAll)
     }
 }
 
@@ -484,7 +547,7 @@ public sealed interface OperationSheetState {
  * Internal record of a successfully-discovered operation, keyed so [NetworkMockViewModel.sheetState]
  * can tell whether it still corresponds to the currently-open operation.
  */
-private data class LoadedOperation(
+internal data class LoadedOperation(
     val key: OperationKey,
     val descriptor: OperationDescriptor,
     val responses: PersistentList<MockResponse>

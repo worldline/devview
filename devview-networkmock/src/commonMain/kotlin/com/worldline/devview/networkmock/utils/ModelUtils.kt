@@ -32,7 +32,7 @@ import kotlinx.collections.immutable.toPersistentList
 
 internal fun ApiSpecUiModel.Companion.fake(amount: Int = 4): List<ApiSpecUiModel> =
     List(size = amount) { index ->
-        val specId = "spec${if (index <= 2) "" else index / 3 % 3}"
+        val specId = "spec${index + 1}"
         ApiSpecUiModel(
             specId = specId,
             name = specId.capitalize(locale = Locale.current),

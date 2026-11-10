@@ -1,9 +1,15 @@
 package com.worldline.devview.core
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.rememberViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.rememberViewModelStoreProvider
 import com.worldline.devview.utils.RequiresDataStore
+import kotlin.random.Random
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
@@ -243,13 +249,23 @@ public fun buildModules(block: ModuleRegistry.() -> Unit): ImmutableList<Module>
 public fun rememberModules(block: ModuleRegistry.() -> Unit): ImmutableList<Module> {
     val modules = remember { buildModules(block = block) }
     val initializedModules = remember { mutableSetOf<Module>() }
+    val registryId = rememberSaveable { "devview-modules-${Random.nextLong()}" }
+    val moduleStores = rememberViewModelStoreProvider(key = registryId)
 
     modules.forEach { module ->
         key(module) {
             if (initializedModules.add(element = module) && module is RequiresDataStore) {
                 module.initDataStore()
             }
-            module.initModule()
+            val moduleOwner = rememberViewModelStoreOwner(
+                key = module.entryDestination::class,
+                provider = moduleStores
+            )
+            CompositionLocalProvider(
+                values = arrayOf(LocalViewModelStoreOwner provides moduleOwner)
+            ) {
+                module.initModule()
+            }
         }
     }
 

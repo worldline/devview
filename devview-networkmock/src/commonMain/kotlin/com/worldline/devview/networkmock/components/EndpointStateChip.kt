@@ -39,6 +39,19 @@ internal fun EndpointStateChip(
     chipTestTag: String = "endpoint_state_chip",
     labelTestTag: String = "endpoint_state_chip_label"
 ) {
+    if (endpointMockState is OperationMockState.Network) {
+        Row(modifier = modifier.testTag(tag = chipTestTag)) {
+            Text(
+                text = label,
+                modifier = Modifier.testTag(tag = "${labelTestTag}_$label").widthIn(max = 160.dp),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        return
+    }
     Row(
         modifier = modifier
             .testTag(tag = chipTestTag)

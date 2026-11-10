@@ -1,6 +1,20 @@
 package com.worldline.devview.networkmock
 
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.test.withKeyDown
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -10,10 +24,11 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.worldline.devview.networkmock.core.model.MockResponse
+import com.worldline.devview.networkmock.viewmodel.asState
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
-class MockResponsePreviewPageTest {
+class ResponseDetailScreenTest {
 
     private val response200 = MockResponse(
         statusCode = 200,
@@ -56,7 +71,7 @@ class MockResponsePreviewPageTest {
             onBack = { backTapped = true }
         )
 
-        onNodeWithTag(testTag = "preview_page_back_button").performClick()
+        onNodeWithTag(testTag = "response_back").performClick()
 
         backTapped shouldBe true
     }
@@ -81,10 +96,10 @@ class MockResponsePreviewPageTest {
     }
 
     @Test
-    fun noOtherResponses_disablesCompare() = runComposeUiTest {
+    fun noOtherResponses_hidesCompare() = runComposeUiTest {
         setPage(previewSheetState = PreviewSheetState.Single(response = response200))
 
-        onNodeWithTag(testTag = "preview_compare_button").assertIsNotEnabled()
+        onNodeWithTag(testTag = "preview_compare_button").assertDoesNotExist()
     }
 
     @Test
@@ -115,18 +130,59 @@ class MockResponsePreviewPageTest {
         onAllNodesWithText(text = "200 - default · application/xml")[1].assertIsDisplayed()
     }
 
+    @Test
+    fun useInvokesSelectionAndCopyBodyIsAvailable() = runComposeUiTest {
+        var used = false
+        setPage(PreviewSheetState.Single(response200), onUse = { used = true })
+        onNodeWithTag("response_copy_body").assertIsDisplayed().performClick()
+        val clipboard = InstrumentationRegistry.getInstrumentation().targetContext
+            .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        waitUntil(timeoutMillis = 10_000) {
+            clipboard.primaryClip?.getItemAt(0)?.text?.toString() == response200.content
+        }
+        onNodeWithTag("response_use").performClick()
+        used shouldBe true
+    }
+
+    @Test
+    fun keyboardCanReachAndActivateCompare() = runComposeUiTest {
+        setPage(PreviewSheetState.Single(response200), otherResponses = listOf(response404), keyboard = true)
+
+        onNodeWithTag("response_copy_body").performSemanticsAction(SemanticsActions.RequestFocus)
+        onNodeWithTag("response_copy_body").assertIsFocused()
+        onRoot().performKeyInput { withKeyDown(Key.ShiftLeft) { pressKey(Key.Tab) } }
+        onNodeWithTag("preview_compare_button").assertIsFocused()
+        onRoot().performKeyInput { pressKey(Key.Enter) }
+        onNodeWithTag("preview_compare_404_application/json_not-found").assertIsDisplayed()
+    }
+
+    @Test
+    fun currentResponseDisablesUseAndReadsInUse() = runComposeUiTest {
+        setPage(PreviewSheetState.Single(response200), currentState = response200.asState())
+        onNodeWithText("In use").assertIsDisplayed()
+        onNodeWithTag("response_use").assertIsNotEnabled()
+    }
+
     private fun ComposeUiTest.setPage(
         previewSheetState: PreviewSheetState.HasResponse,
         otherResponses: List<MockResponse> = emptyList(),
         onCompareWith: (MockResponse) -> Unit = {},
-        onBack: () -> Unit = {}
+        onBack: () -> Unit = {},
+        currentState: com.worldline.devview.networkmock.core.model.OperationMockState = com.worldline.devview.networkmock.core.model.OperationMockState.Network,
+        onUse: () -> Unit = {},
+        keyboard: Boolean = false
     ) {
         setContent {
+            val inputMode = LocalInputModeManager.current
+            SideEffect { if (keyboard) inputMode.requestInputMode(InputMode.Keyboard) }
             MaterialTheme {
-                MockResponsePreviewPage(
-                    previewSheetState = previewSheetState,
+                ResponseDetailContent(
+                    preview = previewSheetState,
                     otherResponses = otherResponses,
-                    onCompareWith = onCompareWith,
+                    currentState = currentState,
+                    enabled = true,
+                    onCompare = onCompareWith,
+                    onUse = onUse,
                     onBack = onBack
                 )
             }

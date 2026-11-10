@@ -46,6 +46,7 @@ import com.worldline.devview.core.ModuleDestinationAction
 import kotlinx.collections.immutable.ImmutableList
 
 internal const val DESTINATION_METADATA_KEY = "com.worldline.devview.internal.destination"
+internal const val INTERACTIONS_ENABLED_METADATA_KEY = "com.worldline.devview.internal.interactionsEnabled"
 internal val LocalEntryBottomPadding = staticCompositionLocalOf(defaultFactory = { 0.dp })
 
 internal fun destinationScaffoldDecorator(
@@ -57,6 +58,10 @@ internal fun destinationScaffoldDecorator(
     val destination = entry.metadata.getValue(key = DESTINATION_METADATA_KEY) as NavKey
     val module = modules.find { destination::class in it.destinations }
     val metadata = module?.destinations?.get(key = destination::class)
+
+    @Suppress("UNCHECKED_CAST")
+    val interactionsEnabled = entry.metadata[INTERACTIONS_ENABLED_METADATA_KEY]
+        as? (() -> Boolean) ?: { true }
     DestinationScaffold(
         destination = destination,
         isActive = destination == activeDestination,
@@ -67,6 +72,7 @@ internal fun destinationScaffoldDecorator(
                 ?: module?.moduleName.orEmpty()
         },
         actions = metadata?.actions.orEmpty(),
+        interactionsEnabled = interactionsEnabled,
         onNavigateBack = onNavigateBack,
         closeDevView = closeDevView,
         content = { entry.Content() }
@@ -79,6 +85,7 @@ private fun DestinationScaffold(
     isActive: Boolean,
     title: String,
     actions: List<ModuleDestinationAction>,
+    interactionsEnabled: () -> Boolean,
     onNavigateBack: () -> Unit,
     closeDevView: () -> Unit,
     content: @Composable () -> Unit
@@ -100,6 +107,7 @@ private fun DestinationScaffold(
                     title = { Text(text = title, fontWeight = FontWeight.SemiBold) },
                     navigationIcon = {
                         IconButton(
+                            enabled = interactionsEnabled(),
                             onClick = if (destination == Home) closeDevView else onNavigateBack
                         ) {
                             Icon(
@@ -131,7 +139,9 @@ private fun DestinationScaffold(
                                 ) {
                                     IconButton(
                                         modifier = Modifier.testTag(tag = "top_bar_action_$index"),
+                                        enabled = interactionsEnabled(),
                                         onClick = {
+                                            if (!interactionsEnabled()) return@IconButton
                                             when {
                                                 action.menuItems != null ->
                                                     expandedMenuIndex =
@@ -156,8 +166,10 @@ private fun DestinationScaffold(
                                             DropdownMenuItem(
                                                 text = { Text(text = item.label) },
                                                 onClick = {
-                                                    expandedMenuIndex = null
-                                                    item.onClick()
+                                                    if (interactionsEnabled()) {
+                                                        expandedMenuIndex = null
+                                                        item.onClick()
+                                                    }
                                                 }
                                             )
                                         }
@@ -196,10 +208,15 @@ private fun DestinationScaffold(
                         title = { Text(text = popup.title) },
                         text = popup.subtitle?.let { { Text(text = it) } },
                         confirmButton = {
-                            TextButton(onClick = {
-                                activePopupIndex = null
-                                action.action(destination)
-                            }) {
+                            TextButton(
+                                enabled = interactionsEnabled(),
+                                onClick = {
+                                    if (interactionsEnabled()) {
+                                        activePopupIndex = null
+                                        action.action(destination)
+                                    }
+                                }
+                            ) {
                                 Text(text = popup.confirmButton)
                             }
                         },

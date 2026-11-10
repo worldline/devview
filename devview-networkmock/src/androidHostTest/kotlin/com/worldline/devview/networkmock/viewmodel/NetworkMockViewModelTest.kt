@@ -1,5 +1,9 @@
 package com.worldline.devview.networkmock.viewmodel
 
+import androidx.lifecycle.SavedStateHandle
+import com.worldline.devview.networkmock.MockStateFilter
+import com.worldline.devview.networkmock.OperationFilters
+import com.worldline.devview.networkmock.OperationSort
 import com.worldline.devview.networkmock.core.NetworkMockResourceLoader
 import com.worldline.devview.networkmock.core.model.ApiSpec
 import com.worldline.devview.networkmock.core.model.HttpMethod
@@ -29,6 +33,7 @@ import io.mockk.slot
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
@@ -228,19 +233,12 @@ class NetworkMockViewModelTest : ViewModelTest() {
             )
         )
 
-        val statesSlot = slot<Map<OperationKey, OperationMockState>>()
-        coEvery { stateRepository.setAllOperationStates(states = capture(statesSlot)) } coAnswers {
-            stateFlow.value = stateFlow.value.copy(
-                operationStates = statesSlot.captured.mapKeys { (key, _) -> key.compositeKey }
-            )
-        }
-
         viewModel.resetAllToNetwork()
 
-        val allNetwork = statesSlot.captured
-        allNetwork[OperationKey("user-api", "getUser")] shouldBe OperationMockState.Network
-        allNetwork[OperationKey("user-api", "createUser")] shouldBe OperationMockState.Network
-        allNetwork[OperationKey("catalog-api", "getProduct")] shouldBe OperationMockState.Network
+        coVerify(exactly = 1) { stateRepository.resetKnownOperationsToNetwork() }
+        stateFlow.value.getOperationState(OperationKey("user-api", "getUser")) shouldBe OperationMockState.Network
+        stateFlow.value.getOperationState(OperationKey("user-api", "createUser")) shouldBe OperationMockState.Network
+        stateFlow.value.getOperationState(OperationKey("catalog-api", "getProduct")) shouldBe OperationMockState.Network
     }
 
     @Test
@@ -442,6 +440,130 @@ class NetworkMockViewModelTest : ViewModelTest() {
         )
     }
 
+    @Test
+    fun globalToggleSuccess_isNotAnOperationSelection_forALaterSheet() = runTest {
+        val config = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val repository = createStateRepositoryMock(MutableStateFlow(NetworkMockState()))
+        val viewModel = NetworkMockViewModel(config, repository)
+        collectStates(viewModel.uiState, viewModel.sheetState)
+
+        viewModel.setGlobalMockingEnabled(enabled = false)
+        viewModel.selection.value shouldBe null
+        viewModel.openOperation(key = OperationKey(specId = "user-api", operationId = "getUser"))
+        viewModel.selection.value shouldBe null
+        viewModel.sheetState.value.shouldBeInstanceOf<OperationSheetState.Content>()
+    }
+
+    @Test
+    fun successfulSelection_acknowledgesOnce_andCannotCloseANewerSheet() = runTest {
+        val config = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val repository = createStateRepositoryMock(MutableStateFlow(NetworkMockState()))
+        val viewModel = NetworkMockViewModel(config, repository)
+        val first = OperationKey(specId = "user-api", operationId = "getUser")
+        collectStates(viewModel.uiState, viewModel.sheetState)
+        viewModel.openOperation(key = first)
+        viewModel.setOperationMockState(key = first, response = null)
+        val firstTicket = requireNotNull(viewModel.selection.value)
+        viewModel.canAcknowledgeSelection(ticketId = firstTicket.id) shouldBe true
+
+        val second = OperationKey(specId = "user-api", operationId = "createUser")
+        viewModel.openOperation(key = second)
+        viewModel.selection.value shouldBe null
+        viewModel.acknowledgeSelection(ticketId = firstTicket.id) shouldBe false
+        viewModel.sheetState.value.shouldBeInstanceOf<OperationSheetState.Content>()
+
+        viewModel.setOperationMockState(key = second, response = null)
+        val secondTicket = requireNotNull(viewModel.selection.value)
+        viewModel.acknowledgeSelection(ticketId = secondTicket.id) shouldBe true
+        viewModel.acknowledgeSelection(ticketId = secondTicket.id) shouldBe false
+        viewModel.sheetState.value shouldBe OperationSheetState.Hidden
+    }
+
+    @Test
+    fun reloadAcceptedBeforeABusyWrite_isConsumedAfterTheWrite_notDroppedOrRepeated() = runTest {
+        val config = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val repository = createStateRepositoryMock(MutableStateFlow(NetworkMockState()))
+        val release = CompletableDeferred<Unit>()
+        every { config.invalidate() } just Runs
+        coEvery { repository.setGlobalMockingEnabled(enabled = false) } coAnswers { release.await() }
+        val viewModel = NetworkMockViewModel(config, repository)
+        collectState(viewModel.uiState)
+        viewModel.setGlobalMockingEnabled(enabled = false)
+        viewModel.consumeReload(generation = 1L)
+        coVerify(exactly = 1) { config.loadConfiguration() }
+
+        release.complete(Unit)
+        viewModel.consumeReload(generation = 1L)
+        viewModel.consumeReload(generation = 1L)
+        coVerify(exactly = 2) { config.loadConfiguration() }
+        io.mockk.verify(exactly = 1) { config.invalidate() }
+    }
+
+    @Test
+    fun listState_restoresAllFiltersAndSelectedApiGroup() = runTest {
+        val handle = SavedStateHandle()
+        val configRepository = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val stateRepository = createStateRepositoryMock(MutableStateFlow(NetworkMockState()))
+        val viewModel = NetworkMockViewModel(configRepository, stateRepository, handle)
+        val filters = OperationFilters(
+            query = "USER",
+            states = setOf(MockStateFilter.MOCKED),
+            version = "v2",
+            methods = setOf("GET", "POST"),
+            tags = setOf("Users"),
+            sort = OperationSort.MOCKED_FIRST
+        )
+        viewModel.updateFilters(specId = "user-api", filters = filters)
+        viewModel.updateFilters(specId = "catalog-api", filters = OperationFilters(query = "product"))
+        viewModel.selectSpec(specId = "catalog-api")
+        viewModel.setFiltersExpanded(expanded = true)
+
+        val restoredHandle = SavedStateHandle(
+            initialState = mapOf("networkmock_list" to handle.get<String>(key = "networkmock_list"))
+        )
+        val restored = NetworkMockViewModel(configRepository, stateRepository, restoredHandle)
+        restored.listState.value shouldBe viewModel.listState.value
+        restored.listState.value.filters["user-api"] shouldBe filters
+        restored.listState.value.selectedSpecId shouldBe "catalog-api"
+        restored.listState.value.expanded shouldBe true
+        filters.activeCount shouldBe 6
+    }
+
+    @Test
+    fun clearingFilters_preservesQueryWithoutChangingAnotherApiGroup() = runTest {
+        val configRepository = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val stateRepository = createStateRepositoryMock(MutableStateFlow(NetworkMockState()))
+        val viewModel = NetworkMockViewModel(configRepository, stateRepository)
+        viewModel.updateFilters(
+            specId = "user-api",
+            filters = OperationFilters(query = "user", version = "v1", sort = OperationSort.METHOD)
+        )
+        viewModel.updateFilters(
+            specId = "catalog-api",
+            filters = OperationFilters(query = "product", tags = setOf("Catalog"))
+        )
+        viewModel.updateFilters(specId = "user-api", filters = OperationFilters(query = "user"))
+
+        viewModel.listState.value.filters["user-api"] shouldBe OperationFilters(query = "user")
+        viewModel.listState.value.filters["catalog-api"] shouldBe OperationFilters(query = "product", tags = setOf("Catalog"))
+    }
+
+    @Test
+    fun selectingApiGroupAndExpandingFilters_preservesAnUncollectedFilterEdit() = runTest {
+        val configRepository = createConfigRepositoryMock(loadResult = Result.success(testConfiguration()))
+        val stateRepository = createStateRepositoryMock(MutableStateFlow(NetworkMockState()))
+        val viewModel = NetworkMockViewModel(configRepository, stateRepository)
+        val filters = OperationFilters(query = "just edited", tags = setOf("Users"))
+
+        viewModel.updateFilters(specId = "user-api", filters = filters)
+        viewModel.selectSpec(specId = "catalog-api")
+        viewModel.setFiltersExpanded(expanded = true)
+
+        viewModel.listState.value.filters["user-api"] shouldBe filters
+        viewModel.listState.value.selectedSpecId shouldBe "catalog-api"
+        viewModel.listState.value.expanded shouldBe true
+    }
+
     private fun createConfigRepositoryMock(
         loadResult: Result<MockConfiguration>,
         loadDelayMs: Long = 0L,
@@ -484,6 +606,7 @@ class NetworkMockViewModelTest : ViewModelTest() {
         stateFlow: MutableStateFlow<NetworkMockState>
     ): MockStateRepository {
         val repository = mockk<MockStateRepository>()
+        val registeredKeys = mutableSetOf<OperationKey>()
 
         coEvery { repository.setGlobalMockingEnabled(any()) } coAnswers {
             val enabled = firstArg<Boolean>()
@@ -501,11 +624,16 @@ class NetworkMockViewModelTest : ViewModelTest() {
             )
         }
         coEvery { repository.resetKnownOperationsToNetwork() } coAnswers {
-            stateFlow.value = stateFlow.value.resetAllToNetwork()
+            stateFlow.value = registeredKeys.fold(stateFlow.value.resetAllToNetwork()) { state, key ->
+                state.withOperationState(key, OperationMockState.Network)
+            }
         }
 
         every { repository.observeState() } returns stateFlow
-        every { repository.registerOperations(any()) } just Runs
+        every { repository.registerOperations(any()) } answers {
+            registeredKeys.addAll(firstArg<Collection<OperationKey>>())
+            Unit
+        }
 
         coEvery { repository.getState() } coAnswers { stateFlow.value }
 

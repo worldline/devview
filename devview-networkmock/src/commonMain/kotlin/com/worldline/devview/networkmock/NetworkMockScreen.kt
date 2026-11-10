@@ -1,17 +1,10 @@
 package com.worldline.devview.networkmock
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,34 +14,30 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Done
-import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -61,15 +50,20 @@ import com.worldline.devview.networkmock.components.ErrorState
 import com.worldline.devview.networkmock.components.GlobalMockToggle
 import com.worldline.devview.networkmock.components.LoadingState
 import com.worldline.devview.networkmock.core.model.HttpMethod
+import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.core.model.OperationKey
 import com.worldline.devview.networkmock.core.model.OperationMockState
-import com.worldline.devview.networkmock.model.OperationUiModel
+import com.worldline.devview.networkmock.model.ApiSpecUiModel
 import com.worldline.devview.networkmock.preview.NetworkMockUiStatePreviewParameterProvider
+import com.worldline.devview.networkmock.viewmodel.NetworkMockSessionViewModel
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel
 import com.worldline.devview.networkmock.viewmodel.OperationSheetState
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import com.worldline.devview.ui.DevViewEmptyState
+import com.worldline.devview.ui.DevViewFilterBar
+import com.worldline.devview.ui.DevViewSectionHeader
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 
 /**
  * Main screen for the Network Mock module.
@@ -81,55 +75,75 @@ import kotlinx.coroutines.flow.SharedFlow
  * - Reset all mocks to use actual network
  * - Reload the configured OpenAPI specs from disk, picking up edits without an app restart
  *
- * @param resetToNetworkSharedFlow Shared flow emitted by [NetworkMock] when the user triggers
- *   the "Reset to Network" toolbar action. Collected here to call [NetworkMockViewModel.resetAllToNetwork].
- * @param reloadConfigSharedFlow Shared flow emitted by [NetworkMock] when the user triggers the
- *   "Reload Config" toolbar action. Collected here to call [NetworkMockViewModel.reloadConfiguration],
- *   picking up edits to a spec file without restarting the app.
- * @param sortSharedFlow Shared flow emitted by [NetworkMock] when the user picks an entry from
- *   the "Sort" toolbar dropdown. Each emission is an [OperationSort.label] string.
- *   Collected in [ContentState] (not here — sort is
- *   per-tab, client-side state, never round-tripped through [NetworkMockViewModel]) to set the
- *   [OperationSort] for the currently visible spec tab directly.
- * @param viewModel The [NetworkMockViewModel] instance. Constructed and provided by
- *   [NetworkMock.registerContent] via the `viewModel { }` factory so that it is scoped to the
- *   navigation entry. Also owns the operation sheet's state — see [NetworkMockViewModel.sheetState].
+ * @param session Retained module session owning accepted writes and toolbar reload requests.
+ * @param viewModel Entry-owned list, filters and quick-choice sheet state.
+ * @param onOpenResponse Opens registered response details after the picker has closed.
+ * @param onBuildSequence Opens the registered sequence builder after the picker has closed.
  * @param modifier Optional modifier for the screen.
  * @param bottomPadding Bottom inset padding provided by the DevView [androidx.compose.material3.Scaffold].
  *   Applied to the operation list so the last item is not obscured by system navigation bars.
  */
 @Composable
 internal fun NetworkMockScreen(
-    resetToNetworkSharedFlow: SharedFlow<Unit>,
-    reloadConfigSharedFlow: SharedFlow<Unit>,
-    sortSharedFlow: SharedFlow<String>,
+    session: NetworkMockSessionViewModel,
     viewModel: NetworkMockViewModel,
+    onOpenResponse: (OperationKey, MockResponse) -> Unit,
+    onBuildSequence: (OperationKey) -> Unit,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val sheetState by viewModel.sheetState.collectAsStateWithLifecycle()
+    val listState by viewModel.listState.collectAsStateWithLifecycle()
+    val mutation by session.mutations.state.collectAsState()
+    val selection by viewModel.selection.collectAsState()
 
-    LaunchedEffect(key1 = Unit) {
-        resetToNetworkSharedFlow.collect {
-            viewModel.resetAllToNetwork()
+    LaunchedEffect(key1 = session, key2 = viewModel) {
+        combine(
+            flow = session.reloadGeneration,
+            flow2 = session.mutations.state
+        ) { generation, mutation ->
+            generation to mutation.busy
+        }.collect { (generation, busy) ->
+            if (!busy) viewModel.consumeReload(generation = generation)
         }
     }
 
-    LaunchedEffect(key1 = Unit) {
-        reloadConfigSharedFlow.collect {
-            viewModel.reloadConfiguration()
+    Column(modifier = modifier.fillMaxSize()) {
+        if (sheetState == OperationSheetState.Hidden) {
+            MutationStatus(
+                state = mutation,
+                onRetry = session.mutations::retryFailed,
+                onCancel = session.mutations::cancelFailed
+            )
         }
+        NetworkMockScreenContent(
+            uiState = uiState,
+            onGlobalToggle = {
+                if (session.mutations.interactionsEnabled) {
+                    viewModel
+                        .setGlobalMockingEnabled(
+                            enabled = it
+                        )
+                }
+            },
+            onSelectOperation = {
+                if (session.mutations.interactionsEnabled) {
+                    viewModel
+                        .openOperation(
+                            key = it
+                        )
+                }
+            },
+            listState = listState,
+            onSpecSelect = viewModel::selectSpec,
+            onFiltersExpandedChange = viewModel::setFiltersExpanded,
+            onFiltersChange = viewModel::updateFilters,
+            interactionsEnabled = !mutation.busy,
+            modifier = Modifier.weight(weight = 1f),
+            bottomPadding = bottomPadding
+        )
     }
-
-    NetworkMockScreenContent(
-        uiState = uiState,
-        onGlobalToggle = viewModel::setGlobalMockingEnabled,
-        onSelectOperation = viewModel::openOperation,
-        sortSharedFlow = sortSharedFlow,
-        modifier = modifier,
-        bottomPadding = bottomPadding
-    )
 
     if (sheetState != OperationSheetState.Hidden) {
         val openKey = (sheetState as? OperationSheetState.Content)
@@ -138,6 +152,11 @@ internal fun NetworkMockScreen(
             ?.key
         NetworkMockOperationSheet(
             sheetState = sheetState,
+            mutations = session.mutations,
+            selection = selection,
+            onSelectionComplete = { viewModel.acknowledgeSelection(ticketId = it) },
+            onTransitionChange = { session.sheetTransitionInProgress = it },
+            canCompleteSelection = viewModel::canAcknowledgeSelection,
             onDismissRequest = viewModel::closeSheet,
             onSelectResponse = { response ->
                 if (openKey != null) {
@@ -149,11 +168,9 @@ internal fun NetworkMockScreen(
                     viewModel.setOperationFailureState(key = openKey, kind = kind)
                 }
             },
-            onCommitSequence = { responses ->
-                if (openKey != null) {
-                    viewModel.setOperationSequenceState(key = openKey, responses = responses)
-                }
-            },
+            onOpenResponse = { response -> if (openKey != null) onOpenResponse(openKey, response) },
+            onBuildSequence = { if (openKey != null) onBuildSequence(openKey) },
+            onReload = viewModel::reloadOpenOperation,
             onResetSequencePosition = {
                 if (openKey != null) {
                     viewModel.resetOperationSequencePosition(key = openKey)
@@ -168,433 +185,205 @@ internal fun NetworkMockScreenContent(
     uiState: NetworkMockUiState,
     onGlobalToggle: (Boolean) -> Unit,
     onSelectOperation: (OperationKey) -> Unit,
+    listState: NetworkMockListState,
+    onSpecSelect: (String) -> Unit,
+    onFiltersExpandedChange: (Boolean) -> Unit,
+    onFiltersChange: (String, OperationFilters) -> Unit,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp,
-    sortSharedFlow: SharedFlow<String> = MutableSharedFlow()
+    interactionsEnabled: Boolean = true
 ) {
     when (uiState) {
         is NetworkMockUiState.Loading -> LoadingState(modifier = modifier)
         is NetworkMockUiState.Error -> ErrorState(message = uiState.message, modifier = modifier)
         is NetworkMockUiState.Empty -> EmptyState(modifier = modifier)
-        is NetworkMockUiState.Content -> {
-            ContentState(
-                uiState = uiState,
-                onGlobalToggle = onGlobalToggle,
-                onSelectOperation = onSelectOperation,
-                sortSharedFlow = sortSharedFlow,
-                modifier = modifier,
-                bottomPadding = bottomPadding
-            )
-        }
+        is NetworkMockUiState.Content -> ContentState(
+            uiState = uiState,
+            listState = listState,
+            onSpecSelect = onSpecSelect,
+            onFiltersExpandedChange = onFiltersExpandedChange,
+            onFiltersChange = onFiltersChange,
+            onGlobalToggle = onGlobalToggle,
+            onSelectOperation = onSelectOperation,
+            interactionsEnabled = interactionsEnabled,
+            modifier = modifier,
+            bottomPadding = bottomPadding
+        )
     }
 }
 
 @Composable
 private fun ContentState(
     uiState: NetworkMockUiState.Content,
+    listState: NetworkMockListState,
+    onSpecSelect: (String) -> Unit,
+    onFiltersExpandedChange: (Boolean) -> Unit,
+    onFiltersChange: (String, OperationFilters) -> Unit,
     onGlobalToggle: (Boolean) -> Unit,
     onSelectOperation: (OperationKey) -> Unit,
-    sortSharedFlow: SharedFlow<String>,
-    modifier: Modifier = Modifier,
-    bottomPadding: Dp = 0.dp
+    interactionsEnabled: Boolean,
+    bottomPadding: Dp,
+    modifier: Modifier = Modifier
 ) {
-    var selectedTabIndex by remember { mutableIntStateOf(value = 0) }
-    var searchQuery by remember { mutableStateOf(value = "") }
-    var filtersExpanded by remember { mutableStateOf(value = false) }
-
-    // Keyed by ApiSpec.id so each tab keeps its own selection independently of the others.
-    val selectedVersions = remember { mutableStateMapOf<String, String>() }
-    val selectedMethods = remember { mutableStateMapOf<String, Set<HttpMethod>>() }
-    val selectedTags = remember { mutableStateMapOf<String, Set<String>>() }
-
-    // Sort is also a per-spec, client-side-only concern (see `OperationSort`) — deliberately
-    // not in NetworkMockViewModel, same reasoning as the filters above. Set directly by
-    // sortSharedFlow (the toolbar's "Sort" dropdown), never by direct user input here.
-    val selectedSort = remember { mutableStateMapOf<String, OperationSort>() }
-
-    // Not keyed by spec — mocked-ness is a question about everything, not the current tab,
-    // so unlike version/method the selection persists across tab switches.
-    var selectedMockStates by remember { mutableStateOf(value = emptySet<MockStateFilter>()) }
-
-    val iconRotation by animateFloatAsState(
-        targetValue = if (filtersExpanded) 180f else 0f
+    if (uiState.specs.isEmpty()) {
+        EmptyState(modifier = modifier)
+        return
+    }
+    val initialPage = uiState.specs
+        .indexOfFirst { it.specId == listState.selectedSpecId }
+        .coerceAtLeast(
+            minimumValue = 0
+        )
+    val pagerState = rememberPagerState(
+        initialPage = initialPage,
+        pageCount = { uiState.specs.size }
     )
-
-    val totalOperations by remember(key1 = uiState.specs) {
-        derivedStateOf { uiState.specs.sumOf { it.operations.size } }
-    }
-    val mockedOperations by remember(key1 = uiState.specs) {
-        derivedStateOf {
-            uiState.specs.sumOf { spec ->
-                // "Mocked" means anything that isn't plain pass-through — Mock and Failure both count.
-                spec.operations.count { it.currentState !is OperationMockState.Network }
-            }
+    val scope = rememberCoroutineScope()
+    val latestListState by rememberUpdatedState(newValue = listState)
+    val latestOnSpecSelect by rememberUpdatedState(newValue = onSpecSelect)
+    LaunchedEffect(key1 = uiState.specs.map { it.specId }) {
+        val restoredPage = uiState.specs
+            .indexOfFirst { it.specId == latestListState.selectedSpecId }
+            .coerceAtLeast(minimumValue = 0)
+        pagerState.scrollToPage(page = restoredPage)
+        snapshotFlow { pagerState.settledPage }.collect { page ->
+            val specId = uiState.specs.getOrNull(index = page)?.specId ?: return@collect
+            latestOnSpecSelect(specId)
         }
     }
-
-    val pagerState = rememberPagerState(pageCount = { uiState.specs.size })
-
-    LaunchedEffect(key1 = selectedTabIndex) {
-        pagerState.animateScrollToPage(page = selectedTabIndex)
-    }
-
-    LaunchedEffect(key1 = pagerState.currentPage) {
-        selectedTabIndex = pagerState.currentPage
-    }
-
-    val currentSpecId = uiState.specs.getOrNull(index = selectedTabIndex)?.specId
-    val currentSpecOperations = uiState.specs.getOrNull(index = selectedTabIndex)?.operations
-    val availableVersions = remember(key1 = currentSpecOperations) {
-        currentSpecOperations.orEmpty().mapNotNull { it.descriptor.config.version }.distinct()
-    }
-    val availableMethods = remember(key1 = currentSpecOperations) {
-        val distinctMethods = currentSpecOperations
-            .orEmpty()
-            .map { it.descriptor.config.method }
-            .distinct()
-        distinctMethods.sortedBy { method ->
-            HttpMethod.DefaultMethods.indexOf(element = method).takeIf { it >= 0 } ?: Int.MAX_VALUE
-        }
-    }
-    val availableTags = remember(key1 = currentSpecOperations) {
-        currentSpecOperations
-            .orEmpty()
-            .asSequence()
-            .flatMap { it.descriptor.config.tags }
-            .distinct()
-            .sorted()
-            .toList()
-    }
-    // Triggered by the "Sort" toolbar dropdown in the shared DevView.kt TopAppBar (see
-    // NetworkMock.onSortSelected) — sets the OperationSort for the currently visible spec tab
-    // directly. Each emission is an OperationSort.label string, not OperationSort itself (see
-    // NetworkMock.onSortSelected's KDoc for why); firstOrNull defensively falls back to no-op if
-    // a label is ever unrecognized, rather than crashing. The dropdown's entries are fixed at
-    // module-construction time (one per OperationSort, see NetworkMock.kt), so "Tag" is offered
-    // even when the current spec has no tagged operations; picking it in that case is a harmless
-    // no-op since sortedByOption sorts by each operation's absent first tag (empty string for
-    // all).
-    LaunchedEffect(key1 = currentSpecId) {
-        sortSharedFlow.collect { label ->
-            val specId = currentSpecId ?: return@collect
-            val sort = OperationSort.entries.firstOrNull { it.label == label } ?: return@collect
-            selectedSort[specId] = sort
-        }
+    val currentPage = pagerState.currentPage.coerceIn(
+        minimumValue = 0,
+        maximumValue = uiState.specs.lastIndex
+    )
+    val currentSpec = uiState.specs[currentPage]
+    val currentFilters = listState.filters[currentSpec.specId] ?: OperationFilters()
+    val totalOperations = uiState.specs.sumOf { it.operations.size }
+    val mockedOperations = uiState.specs.sumOf { spec ->
+        spec.operations.count { it.currentState !is OperationMockState.Network }
     }
 
     Scaffold(
-        modifier = modifier
-            .fillMaxSize()
-            .imePadding(),
+        modifier = modifier.fillMaxSize().imePadding(),
         bottomBar = {
             Surface {
-                Column {
-                    AnimatedVisibility(visible = filtersExpanded) {
-                        Column {
-                            HorizontalDivider()
-                            LazyRow(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .testTag(tag = "state_filter_row"),
-                                horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                            ) {
-                                items(items = MockStateFilter.entries) { state ->
-                                    val selected = state in selectedMockStates
-                                    FilterChip(
-                                        modifier = Modifier.testTag(
-                                            tag = "state_filter_chip_${state.name}"
-                                        ),
-                                        selected = selected,
-                                        onClick = {
-                                            selectedMockStates = if (selected) {
-                                                selectedMockStates - state
-                                            } else {
-                                                selectedMockStates + state
-                                            }
-                                        },
-                                        label = { Text(text = state.label) },
-                                        leadingIcon = {
-                                            if (selected) {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.Done,
-                                                    contentDescription = null
-                                                )
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                            if (currentSpecId != null && availableVersions.isNotEmpty()) {
-                                HorizontalDivider()
-                                LazyRow(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .testTag(tag = "version_filter_row_$currentSpecId"),
-                                    horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-                                    contentPadding = PaddingValues(
-                                        horizontal = 16.dp,
-                                        vertical = 8.dp
-                                    )
-                                ) {
-                                    item {
-                                        FilterChip(
-                                            modifier = Modifier.testTag(
-                                                tag = "version_filter_all_$currentSpecId"
-                                            ),
-                                            selected = selectedVersions[currentSpecId] == null,
-                                            onClick = {
-                                                selectedVersions.remove(
-                                                    key = currentSpecId
-                                                )
-                                            },
-                                            label = { Text(text = "All") }
-                                        )
-                                    }
-                                    items(items = availableVersions) { version ->
-                                        FilterChip(
-                                            modifier = Modifier.testTag(
-                                                tag = "version_filter_${currentSpecId}_$version"
-                                            ),
-                                            selected = selectedVersions[currentSpecId] == version,
-                                            onClick = { selectedVersions[currentSpecId] = version },
-                                            label = { Text(text = version) }
-                                        )
-                                    }
-                                }
-                            }
-                            if (currentSpecId != null && availableMethods.isNotEmpty()) {
-                                val activeMethods = selectedMethods[currentSpecId].orEmpty()
-                                HorizontalDivider()
-                                LazyRow(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .testTag(tag = "method_filter_row_$currentSpecId"),
-                                    horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-                                    contentPadding = PaddingValues(
-                                        horizontal = 16.dp,
-                                        vertical = 8.dp
-                                    )
-                                ) {
-                                    items(items = availableMethods) { method ->
-                                        val selected = method in activeMethods
-                                        FilterChip(
-                                            modifier = Modifier.testTag(
-                                                tag = "method_filter_${currentSpecId}_${method.value}"
-                                            ),
-                                            selected = selected,
-                                            onClick = {
-                                                selectedMethods[currentSpecId] = if (selected) {
-                                                    activeMethods - method
-                                                } else {
-                                                    activeMethods + method
-                                                }
-                                            },
-                                            label = { Text(text = method.value) }
-                                        )
-                                    }
-                                }
-                            }
-                            if (currentSpecId != null && availableTags.isNotEmpty()) {
-                                val activeTags = selectedTags[currentSpecId].orEmpty()
-                                HorizontalDivider()
-                                LazyRow(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .testTag(tag = "tag_filter_row_$currentSpecId"),
-                                    horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-                                    contentPadding = PaddingValues(
-                                        horizontal = 16.dp,
-                                        vertical = 8.dp
-                                    )
-                                ) {
-                                    items(items = availableTags) { tag ->
-                                        val selected = tag in activeTags
-                                        FilterChip(
-                                            modifier = Modifier.testTag(
-                                                tag = "tag_filter_${currentSpecId}_$tag"
-                                            ),
-                                            selected = selected,
-                                            onClick = {
-                                                selectedTags[currentSpecId] = if (selected) {
-                                                    activeTags - tag
-                                                } else {
-                                                    activeTags + tag
-                                                }
-                                            },
-                                            label = { Text(text = tag) }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    HorizontalDivider()
-                    Row(
-                        modifier = Modifier
-                            .height(intrinsicSize = IntrinsicSize.Min)
-                            .padding(horizontal = 8.dp)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
-                    ) {
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .weight(weight = 1f)
-                                .padding(vertical = 8.dp)
-                                .padding(bottom = bottomPadding)
-                                .testTag(tag = "networkmock_search_field"),
-                            value = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            placeholder = { Text(text = "Search operations...") },
-                            leadingIcon = {
-                                Icon(imageVector = Icons.Rounded.Search, contentDescription = null)
-                            },
-                            trailingIcon = {
-                                AnimatedVisibility(visible = searchQuery.isNotEmpty()) {
-                                    IconButton(
-                                        modifier = Modifier.testTag(
-                                            tag = "networkmock_clear_search_button"
-                                        ),
-                                        onClick = { searchQuery = "" }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Close,
-                                            contentDescription = "Clear search"
-                                        )
-                                    }
-                                }
-                            },
-                            singleLine = true,
-                            shape = MaterialTheme.shapes.medium
+                DevViewFilterBar(
+                    query = currentFilters.query,
+                    onQueryChange = {
+                        onFiltersChange(
+                            currentSpec.specId,
+                            currentFilters.copy(query = it)
                         )
-                        VerticalDivider(modifier = Modifier.fillMaxHeight())
-                        IconButton(
-                            modifier = Modifier
-                                .padding(bottom = bottomPadding)
-                                .testTag(tag = "expand_filter_button"),
-                            onClick = { filtersExpanded = !filtersExpanded }
-                        ) {
-                            Icon(
-                                modifier = Modifier.graphicsLayer(rotationX = iconRotation),
-                                imageVector = Icons.Rounded.KeyboardArrowUp,
-                                contentDescription = "Expand filters"
-                            )
-                        }
-                    }
+                    },
+                    placeholder = "Search operations",
+                    activeFilterCount = currentFilters.activeCount,
+                    expanded = listState.expanded,
+                    onExpandedChange = onFiltersExpandedChange,
+                    onClearFilters = {
+                        onFiltersChange(
+                            currentSpec.specId,
+                            OperationFilters(query = currentFilters.query)
+                        )
+                    },
+                    bottomPadding = bottomPadding
+                ) {
+                    OperationFilterPanel(
+                        spec = currentSpec,
+                        filters = currentFilters,
+                        onFiltersChange = { onFiltersChange(currentSpec.specId, it) }
+                    )
                 }
             }
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Surface {
-                GlobalMockToggle(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    enabled = uiState.globalMockingEnabled,
-                    mockedCount = mockedOperations,
-                    totalCount = totalOperations,
-                    onToggle = onGlobalToggle
-                )
-            }
+        Column(modifier = Modifier.fillMaxSize().padding(paddingValues = paddingValues)) {
+            GlobalMockToggle(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                enabled = uiState.globalMockingEnabled,
+                mockedCount = mockedOperations,
+                totalCount = totalOperations,
+                onToggle = onGlobalToggle,
+                interactionsEnabled = interactionsEnabled
+            )
             HorizontalDivider()
-
-            PrimaryScrollableTabRow(
-                selectedTabIndex = selectedTabIndex,
-                edgePadding = 0.dp
-            ) {
+            PrimaryScrollableTabRow(selectedTabIndex = currentPage, edgePadding = 0.dp) {
                 uiState.specs.forEachIndexed { index, spec ->
                     Tab(
-                        modifier = Modifier.testTag(
-                            tag = "spec_tab_${spec.specId}"
-                        ),
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
+                        modifier = Modifier.testTag(tag = "spec_tab_" + spec.specId),
+                        selected = currentPage == index,
+                        onClick = { scope.launch { pagerState.animateScrollToPage(page = index) } },
                         text = { Text(text = spec.name) }
                     )
                 }
             }
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(weight = 1f),
-                verticalAlignment = Alignment.Top
+                modifier = Modifier.fillMaxWidth().weight(weight = 1f),
+                verticalAlignment = Alignment.Top,
+                key = { uiState.specs[it].specId }
             ) { pageIndex ->
                 val spec = uiState.specs.getOrNull(index = pageIndex) ?: return@HorizontalPager
-
-                val selectedVersion = selectedVersions[spec.specId]
-                val methodFilter = selectedMethods[spec.specId].orEmpty()
-                val tagFilter = selectedTags[spec.specId].orEmpty()
-                val sortOption = selectedSort[spec.specId] ?: OperationSort.SPEC_ORDER
-                val filteredOperations = remember(
-                    spec.operations,
-                    searchQuery,
-                    selectedVersion,
-                    methodFilter,
-                    tagFilter,
-                    selectedMockStates,
-                    sortOption
-                ) {
-                    spec.operations
-                        .filter {
-                            it.matches(
-                                query = searchQuery,
-                                version = selectedVersion,
-                                methods = methodFilter,
-                                tags = tagFilter,
-                                mockStates = selectedMockStates
-                            )
-                        }.sortedByOption(sort = sortOption)
+                val filters = listState.filters[spec.specId] ?: OperationFilters()
+                val operations = remember(key1 = spec.operations, key2 = filters) {
+                    filterOperations(operations = spec.operations, filters = filters)
                 }
-
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(space = 0.dp)
-                ) {
-                    if (filteredOperations.isEmpty()) {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    if (operations.isEmpty()) {
                         item(key = "empty_filter_state") {
-                            Text(
-                                modifier = Modifier
-                                    .animateItem()
-                                    .fillMaxWidth()
-                                    .padding(all = 16.dp)
-                                    .testTag(tag = "networkmock_empty_filter_message"),
-                                text = "No operations match your filter",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            DevViewEmptyState(
+                                icon = Icons.Rounded.Search,
+                                title = if (spec.operations.isEmpty()) {
+                                    "No operations in this API group"
+                                } else {
+                                    "No matching operations"
+                                },
+                                message = if (spec.operations.isEmpty()) {
+                                    "Check the specification and reload specs."
+                                } else {
+                                    "Try another search or clear search and filters."
+                                },
+                                modifier = Modifier.fillMaxWidth().testTag(
+                                    tag = "networkmock_empty_filter_message"
+                                ),
+                                action = if (spec.operations.isEmpty()) {
+                                    null
+                                } else {
+                                    {
+                                        TextButton(
+                                            onClick = {
+                                                onFiltersChange(
+                                                    spec.specId,
+                                                    OperationFilters()
+                                                )
+                                            }
+                                        ) {
+                                            Text(text = "Clear search and filters")
+                                        }
+                                    }
+                                }
                             )
                         }
                     }
                     itemsIndexed(
-                        items = filteredOperations,
+                        items = operations,
                         key = { _, operation -> operation.descriptor.key.compositeKey }
                     ) { index, operation ->
                         Column(modifier = Modifier.animateItem()) {
                             EndpointCard(
                                 modifier = Modifier.testTag(
-                                    tag = "endpoint_card_${operation.descriptor.specId}" +
-                                        "_${operation.descriptor.operationId}"
+                                    tag =
+                                        "endpoint_card_" + operation.descriptor.specId + "_" +
+                                            operation.descriptor.operationId
                                 ),
                                 endpoint = operation,
+                                enabled = interactionsEnabled,
                                 openEndpointDetails = {
-                                    onSelectOperation(operation.descriptor.key)
+                                    onSelectOperation(
+                                        operation.descriptor.key
+                                    )
                                 }
                             )
-                            if (index != filteredOperations.lastIndex) {
-                                HorizontalDivider()
-                            }
+                            if (index != operations.lastIndex) HorizontalDivider()
                         }
-                    }
-
-                    item {
-                        Spacer(
-                            modifier = Modifier.height(
-                                height = paddingValues.calculateBottomPadding()
-                            )
-                        )
                     }
                 }
             }
@@ -602,100 +391,154 @@ private fun ContentState(
     }
 }
 
-/**
- * Whether this operation's name, path, or operationId contains [query], and matches
- * [version], [methods], [tags], and [mockStates].
- */
-@Suppress("DocumentationOverPrivateFunction")
-private fun OperationUiModel.matches(
-    query: String,
-    version: String?,
-    methods: Set<HttpMethod>,
-    tags: Set<String>,
-    mockStates: Set<MockStateFilter>
-): Boolean {
-    val config = descriptor.config
-    val matchesQuery = query.isBlank() ||
-        config.name.contains(other = query, ignoreCase = true) ||
-        config.path.contains(other = query, ignoreCase = true) ||
-        config.operationId.contains(other = query, ignoreCase = true)
-    val matchesVersion = version == null || config.version == version
-    val matchesMethod = methods.isEmpty() || config.method in methods
-    val matchesTags = tags.isEmpty() || config.tags.any { it in tags }
-    val matchesMockState = mockStates.isEmpty() || when (currentState) {
-        // Failure counts as "Mocked" for this filter — like Mock, it's a deliberately
-        // configured non-default state, distinct only from plain pass-through.
-        is OperationMockState.Mock -> MockStateFilter.MOCKED in mockStates
-        is OperationMockState.Sequence -> MockStateFilter.MOCKED in mockStates
-        is OperationMockState.Failure -> MockStateFilter.MOCKED in mockStates
-        OperationMockState.Network -> MockStateFilter.NETWORK in mockStates
-    }
-    return matchesQuery && matchesVersion && matchesMethod && matchesTags && matchesMockState
-}
-
-/** Filter dimension over whether an operation is currently mocked or passing through to the network. */
-private enum class MockStateFilter(val label: String) {
-    MOCKED(label = "Mocked"),
-    NETWORK(label = "Network")
-}
-
-/**
- * Client-side sort order for the operation list — a pure display concern, exactly like search
- * and the filter chips above: state lives in [ContentState]'s own `remember`/`mutableStateMapOf`,
- * never in [NetworkMockViewModel]. `internal` rather than `private`, specifically so
- * [sortedByOption] can be unit-tested directly (see `NetworkMockScreenSortTest.kt`) without a
- * full Compose UI test to verify list ordering.
- */
-internal enum class OperationSort(val label: String) {
-    /**
-     * Whatever order [com.worldline.devview.networkmock.core.openapi.OpenApiParser] produced —
-     * the default, a no-op.
-     */
-    SPEC_ORDER(label = "Default"),
-
-    /** Alphabetical by [com.worldline.devview.networkmock.core.model.Operation.path]. */
-    PATH(label = "Path (A-Z)"),
-
-    /** Uses [HttpMethod.DefaultMethods]' canonical order — same as the method filter chips. */
-    METHOD(label = "Method"),
-
-    /** Sorts by an operation's first declared tag; untagged operations sort first. */
-    TAG(label = "Tag"),
-
-    /** Puts Mock, Failure, and Sequence states before Network, keeping spec order within each group. */
-    MOCKED_FIRST(label = "Mocked first")
-}
-
-/** Applies [sort] to [this] — see [OperationSort] for what each key does. */
-internal fun List<OperationUiModel>.sortedByOption(sort: OperationSort): List<OperationUiModel> =
-    when (sort) {
-        OperationSort.SPEC_ORDER -> this
-        OperationSort.PATH -> sortedBy { it.descriptor.config.path }
-        OperationSort.MOCKED_FIRST -> sortedBy { it.currentState is OperationMockState.Network }
-        OperationSort.METHOD -> sortedBy { operation ->
-            HttpMethod.DefaultMethods
-                .indexOf(element = operation.descriptor.config.method)
-                .takeIf { it >= 0 } ?: Int.MAX_VALUE
+@Composable
+private fun OperationFilterPanel(
+    spec: ApiSpecUiModel,
+    filters: OperationFilters,
+    onFiltersChange: (OperationFilters) -> Unit
+) {
+    Column {
+        DevViewSectionHeader(text = "Sort by")
+        FilterOptions(
+            options = OperationSort.entries,
+            selected = { it == filters.sort },
+            label = { it.label },
+            testTag = { "sort_filter_" + it.name },
+            onClick = { onFiltersChange(filters.copy(sort = it)) }
+        )
+        DevViewSectionHeader(text = "State")
+        FilterOptions(
+            options = MockStateFilter.entries,
+            selected = { it in filters.states },
+            label = { it.label },
+            testTag = { "state_filter_chip_" + it.name },
+            onClick = {
+                onFiltersChange(
+                    filters.copy(states = filters.states.toggled(value = it))
+                )
+            },
+            modifier = Modifier.testTag(tag = "state_filter_row")
+        )
+        val versions = (
+            spec.operations.mapNotNull { it.descriptor.config.version } + listOfNotNull(
+                element = filters.version
+            )
+            ).distinct()
+        if (versions.isNotEmpty()) {
+            DevViewSectionHeader(text = "Version")
+            FilterOptions(
+                options = listOf<String?>(element = null) + versions,
+                selected = { it == filters.version },
+                label = { it ?: "All" },
+                testTag = {
+                    if (it ==
+                        null
+                    ) {
+                        "version_filter_all_" + spec.specId
+                    } else {
+                        "version_filter_" + spec.specId + "_" +
+                            it
+                    }
+                },
+                onClick = { onFiltersChange(filters.copy(version = it)) },
+                modifier = Modifier.testTag(tag = "version_filter_row_" + spec.specId)
+            )
         }
-        OperationSort.TAG -> sortedBy {
-            it.descriptor.config.tags
-                .firstOrNull()
-                .orEmpty()
+        val methods = (spec.operations.map { it.descriptor.config.method.value } + filters.methods)
+            .distinct()
+            .sortedBy { method ->
+                HttpMethod.DefaultMethods.indexOfFirst { it.value == method }.takeIf {
+                    it >=
+                        0
+                }
+                    ?: Int.MAX_VALUE
+            }
+        DevViewSectionHeader(text = "Method")
+        FilterOptions(
+            options = methods,
+            selected = { it in filters.methods },
+            label = { it },
+            testTag = { "method_filter_" + spec.specId + "_" + it },
+            onClick = {
+                onFiltersChange(
+                    filters.copy(methods = filters.methods.toggled(value = it))
+                )
+            },
+            modifier = Modifier.testTag(tag = "method_filter_row_" + spec.specId)
+        )
+        val tags = (spec.operations.flatMap { it.descriptor.config.tags } + filters.tags)
+            .distinct()
+            .sorted()
+        if (tags.isNotEmpty()) {
+            DevViewSectionHeader(text = "Tag")
+            FilterOptions(
+                options = tags,
+                selected = { it in filters.tags },
+                label = { it },
+                testTag = { "tag_filter_" + spec.specId + "_" + it },
+                onClick = {
+                    onFiltersChange(
+                        filters.copy(tags = filters.tags.toggled(value = it))
+                    )
+                },
+                modifier = Modifier.testTag(tag = "tag_filter_row_" + spec.specId)
+            )
         }
     }
+}
+
+@Composable
+private fun <T> FilterOptions(
+    options: List<T>,
+    selected: (T) -> Boolean,
+    label: (T) -> String,
+    testTag: (T) -> String,
+    onClick: (T) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyRow(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        items(items = options) { option ->
+            val isSelected = selected(option)
+            FilterChip(
+                modifier = Modifier.testTag(tag = testTag(option)),
+                selected = isSelected,
+                onClick = { onClick(option) },
+                label = { Text(text = label(option)) },
+                leadingIcon = if (isSelected) {
+                    { Icon(imageVector = Icons.Rounded.Done, contentDescription = null) }
+                } else {
+                    null
+                }
+            )
+        }
+    }
+}
+
+private fun <T> Set<T>.toggled(value: T): Set<T> = if (value in this) this - value else this + value
 
 @Preview(locale = "en")
 @Composable
 private fun NetworkMockScreenPreview(
     @PreviewParameter(NetworkMockUiStatePreviewParameterProvider::class) uiState: NetworkMockUiState
 ) {
+    var listState by remember { mutableStateOf(value = NetworkMockListState()) }
     MaterialTheme {
-        Scaffold {
-            NetworkMockScreenContent(
-                uiState = uiState,
-                onGlobalToggle = {},
-                onSelectOperation = {}
-            )
-        }
+        NetworkMockScreenContent(
+            uiState = uiState,
+            onGlobalToggle = {},
+            onSelectOperation = {},
+            listState = listState,
+            onSpecSelect = { listState = listState.copy(selectedSpecId = it) },
+            onFiltersExpandedChange = { listState = listState.copy(expanded = it) },
+            onFiltersChange = { specId, filters ->
+                listState = listState.copy(
+                    filters = listState.filters + (specId to filters)
+                )
+            }
+        )
     }
 }

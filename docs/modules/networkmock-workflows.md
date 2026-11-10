@@ -54,23 +54,19 @@ Open DevView → Network Mock. Your new operation appears in the list under its 
 1. Open DevView → Network Mock → tap your operation.
 2. Tap a 4xx or 5xx response variant to activate it.
 3. The state chip turns red/orange. The Ktor plugin now returns that response for matching requests.
-4. After testing, tap "No mock" or use the "Reset to Network" toolbar action to restore pass-through.
+4. After testing, tap **Network** or use the "Reset to Network" toolbar action to restore pass-through.
 
 ## Previewing and comparing responses
 
-1. Open DevView → Network Mock → tap your operation. The sheet opens on **Responses**.
-2. Tap a response's eye icon to open **Preview** directly, without activating the response.
-3. Use the header's **"Compare with…" dropdown** to select a second response from the same operation.
-4. Read the inline or side-by-side diff; valid JSON is pretty-printed before display and comparison. Malformed JSON and non-JSON bodies stay unchanged, and logical lines stay unwrapped with one horizontal scroll for the whole pane and lazy vertical scrolling.
-Large comparisons fall back to stacked previews rather than allocating an unbounded diff table.
-
-5. Tap Back to return to Responses. Tap a response row there only when you want to activate it.
-
-Responses, Sequence, Failure, and Preview all use the same fixed 65% sheet height. The three tabs separate response selection, sequence building, and transport failures. Response choices use grouped cards with matching sticky headers and footer hints; no Preview/Compare button appears at the bottom.
+1. Open DevView → Network Mock and tap an operation.
+2. Tap a response's **Open details** chevron. The quick-choice sheet closes before the full-screen response opens; no mock is activated.
+3. Use **Compare with** to select another variant. The control is hidden when no other variant exists.
+4. Inspect selectable, pretty-printed JSON or unchanged non-JSON text. Logical lines stay unwrapped; each pane scrolls horizontally and creates only visible vertical rows. Large comparisons use stacked previews instead of an unbounded diff table.
+5. **Copy body** copies the original response body. **Use this response** saves and returns to the list; **In use** is disabled for an already-selected response. Back returns to the list without reopening the sheet.
 
 ## Finding mocked operations first
 
-Open the toolbar's Sort menu and select **"Mocked first"**. Mock, Failure, and Sequence operations appear before Network operations, retaining spec order within each group. Other choices are Default (spec order), Path (A-Z), Method, and Tag. Sort is per-tab, client-side, and not persisted; it does not change request matching.
+Expand the search field's filter panel and select **Mocked first** under Sort by. Mock, Failure and Sequence precede Network, retaining spec order within each group. Other choices are Default, Path (A-Z), Method and Tag. Sort is saved per API group with its search and filters; it does not change persisted mock settings or request matching.
 
 ## Naming response variants
 
@@ -135,8 +131,8 @@ paths:
 **Deterministically** — every request to the operation fails the same way until you change it:
 
 1. Open DevView → Network Mock → tap your operation.
-2. Select the **Failure** tab and tap Timeout or Connection Refused.
-3. The operation's state chip reflects the selected failure. Tap "No mock" (or select a response) to stop simulating it.
+2. In **Simulate failure**, tap Timeout or Connection refused.
+3. After the save succeeds, the sheet closes and the state chip reflects the failure. Select **Network** or a response to stop simulating it.
 
 **Probabilistically** — a percentage of requests fail on their own, the rest behave normally:
 
@@ -149,35 +145,34 @@ paths:
 ```
 
 This only rolls for requests that would otherwise be mocked — an operation left on `Network`
-passthrough is never affected. If the operation's Failure tab shows a configured failure rate in the footer below the failure group,
+passthrough is never affected. If the operation sheet shows a configured failure rate below the failure group,
 that's this field — it's read-only in the UI; edit the spec to change it. See
 [Simulating failures](networkmock-core.md#simulating-failures) for the exact exception each
 failure kind throws.
 
 ## Simulating a staged/polling flow (sequential mocks)
 
-For endpoints where the interesting behavior is the transition across repeated calls (order
-status, upload progress, async job completion):
+For repeated calls whose response changes over time, such as order status or upload progress:
 
-1. Open DevView → Network Mock → tap your operation.
-2. Select the **Sequence** tab.
-3. Tap responses in the order you want them served (e.g. `202 Pending`, then `200 Success`). Each tap appends a numbered step; you can repeat a response or remove an individual step.
-4. Tap **"Save Sequence (n)"** (enabled at two or more steps). The sequence applies, the sheet closes, and the operation advances one step per request.
+1. Open an operation and choose **Build sequence**. The sheet closes and the full-screen builder opens.
+2. Tap response variants in serving order. Repeated responses create separate, stable steps.
+3. Use labelled Move up, Move down and Remove controls to edit the order.
+4. **Save sequence (n)** becomes available at two steps. Save persists the complete draft, resets its position to step 1, and returns to the list.
+5. **Cancel** or Back returns to the list without applying edits.
 
-An active sequence shows its position in the Sequence tab (e.g. "Step 2 of 4"):
+An active sequence shows its current position in the operation sheet. **Edit sequence** seeds a draft from its saved steps; **Reset position** resets the latest persisted sequence to step 1 without replacing its response list. A successful reset returns to the list. Missing draft variants freeze editing and saving until Reload resolves them; the draft stays intact.
 
-- **Reset** restarts at step 1 without leaving the sequence.
-- The **Sequence** tab starts with the existing ordered steps. Append or remove steps, then save to apply the edited sequence.
-- **Cancel** returns to Responses without applying draft changes.
+The final step repeats instead of looping. Selecting Network, a single response or a failure replaces the sequence. Concurrent requests consume steps in successful DataStore commit order. A request retries against newer state if another request or UI action wins first, without rerolling its configured probability or applying its mock delay twice.
 
-Once the sequence reaches its last step, further requests keep serving that step — it does not loop. Selecting "No mock", a single response, or a failure exits the sequence.
+## Saving failures and interruptions
 
-These flows change only the UI; core request matching, persistence, sequence behavior, and the public API remain unchanged.
+Selections and drafts stay visible while saving. Conflicting changes, back navigation and sheet dismissal remain disabled. A failed save offers **Retry** for the same frozen command or **Cancel** to abandon that failed command. Cancel does not undo a running transaction. Hiding the overlay or a host configuration change retains the session; removing the registered module ends it. Filtering a displayed module out returns to Home and discards its entry drafts without cancelling the registered consumer. Pending writes are not restored after process death.
+
+If a selected mock resource is missing, unreadable or no longer declared, the Ktor request fails without sending the real request or advancing its sequence. Missing configuration and unmatched operations still use the network; this is not blanket network isolation.
 
 ## Resetting all mocks
 
-- **UI**: Open DevView → Network Mock → tap the restore icon in the top toolbar.
-- **All mocks are reset to `Network` state**, including operations the user has never explicitly touched.
+Open the **Reset all to network** toolbar action and confirm **Reset**. One transaction resets persisted and pre-registered operations, including untouched operations and entries written by another repository. It clears selections and sequences, but leaves the global toggle unchanged. The same Retry/Cancel recovery applies if persistence fails.
 
 ## Reloading a spec after editing it
 
