@@ -76,6 +76,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   filter and sort changes. Navigation guards consult pending mutations at action time.
 
 ### Removed
+- **Breaking** NetworkMock: `NetworkMockViewModel` is internal, matching the built-in screen
+  boundary. Use module registration for UI and the core repositories for runtime configuration.
 - **Breaking** DevView: built-in `AnalyticsScreen`, `ConsoleScreen`, `FeatureFlipScreen`,
   `NetworkMockScreen` and `TimeCapsuleScreen` are internal. Register modules through
   `rememberModules` and render `DevView`; module registration owns all tool content.
@@ -87,6 +89,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ModulePosition` enum. Module colour defaults are now `Color.Unspecified`.
 
 ### Fixed
+- Docs: analytics integration no longer uses the removed `LocalAnalytics` provider, and module
+  identity documentation covers built-in names, subtitles and icons.
+- TimeCapsule: eviction and Clear prune saved expansion IDs during the same recording.
+- Console: paused inspection restores its row and pixel offset after saved noise rules load;
+  a missing anchor falls back to the newest matching row without resuming follow mode.
+- FeatureFlip: failed saves retain independent per-feature retries. Newer choices supersede
+  older failures for the same flag, and stale Retry callbacks cannot overwrite them.
+- NetworkMock: superseded response-load failures retry the latest selection without real-network
+  fallback.
+- NetworkMock: long errors keep recovery actions visible, wide Unicode preview lines remain
+  horizontally reachable, and response comparisons retain their diff cache across recompositions.
 - Sample: Android status/navigation icon appearance follows the Dark Mode flag, including
   the navigation-bar background on API 26–28. Sample analytics seed once per composition
   instead of on every recomposition; cancelled requests are not displayed as errors.

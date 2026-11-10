@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +23,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -355,17 +361,27 @@ private fun ScrollableLinePane(
     modifier: Modifier = Modifier,
     row: @Composable (Int) -> Unit
 ) {
-    val longestLine = remember(key1 = lines) { lines.maxByOrNull { it.length }.orEmpty() }
     val textMeasurer = rememberTextMeasurer()
     val textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace)
-    val textWidth = remember(key1 = longestLine, key2 = textMeasurer, key3 = textStyle) {
-        textMeasurer
-            .measure(
-                text = longestLine,
-                style = textStyle,
-                softWrap = false,
-                maxLines = 1
-            ).size.width
+    val listState = rememberLazyListState()
+    var textWidth by remember(key1 = lines, key2 = textMeasurer, key3 = textStyle) {
+        mutableIntStateOf(value = 0)
+    }
+    LaunchedEffect(lines, textMeasurer, textStyle, listState) {
+        measureLineWidths(
+            lines = lines,
+            visibleIndices = { listState.layoutInfo.visibleItemsInfo.map { it.index } },
+            measure = { line ->
+                textMeasurer
+                    .measure(
+                        text = line,
+                        style = textStyle,
+                        softWrap = false,
+                        maxLines = 1
+                    ).size.width
+            },
+            onWidth = { textWidth = it }
+        )
     }
     val contentWidth = with(LocalDensity.current) { textWidth.toDp() } + gutterWidth + 16.dp
 
@@ -379,11 +395,44 @@ private fun ScrollableLinePane(
         ) {
             // Bound the lazy list before the horizontal scroller's infinite width reaches it.
             LazyColumn(
+                state = listState,
                 modifier = Modifier.width(width = rowWidth).testTag(tag = "${tag}_rows")
             ) {
                 items(count = lines.size) { index -> row(index) }
             }
         }
+    }
+}
+
+/** Measures every line across frames, prioritizing the current viewport without blocking first composition. */
+internal suspend fun measureLineWidths(
+    lines: List<String>,
+    visibleIndices: () -> List<Int>,
+    measure: (String) -> Int,
+    onWidth: (Int) -> Unit
+) {
+    val measured = BooleanArray(size = lines.size)
+    var count = 0
+    var next = 0
+    var width = 0
+    while (count < lines.size) {
+        withFrameNanos { }
+        var remaining = 32
+        val visible = visibleIndices().iterator()
+        while (remaining > 0 && count < lines.size) {
+            val index = if (visible.hasNext()) {
+                visible.next()
+            } else {
+                while (next < lines.size && measured[next]) next++
+                next
+            }
+            if (index !in lines.indices || measured[index]) continue
+            width = maxOf(a = width, b = measure(lines[index]))
+            measured[index] = true
+            count++
+            remaining--
+        }
+        onWidth(width)
     }
 }
 

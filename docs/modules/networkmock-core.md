@@ -351,7 +351,7 @@ The probabilistic roll uses an injectable `Random` (`NetworkMockConfig.random`, 
 `invalidate()` to clear that cache, then `loadConfiguration()` (or anything that calls it
 internally, like `findMatchingMock`) to force a fresh read — this is how a developer picks up
 an edited spec file without restarting the app. In `devview-networkmock`, the "Reload Config"
-toolbar action does exactly this via `NetworkMockViewModel.reloadConfiguration()`; see
+toolbar action does exactly this through the registered module; see
 [NetworkMock UI](networkmock-ui.md).
 
 ## DataStore Schema

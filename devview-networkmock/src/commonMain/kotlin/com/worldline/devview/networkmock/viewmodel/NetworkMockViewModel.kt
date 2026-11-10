@@ -49,18 +49,12 @@ private const val WHILE_SUBSCRIBED_TIMEOUT_MS = 5000L
  * @property stateRepository Repository for managing persisted state
  */
 @Suppress("TooManyFunctions")
-public class NetworkMockViewModel internal constructor(
+internal class NetworkMockViewModel(
     private val configRepository: MockConfigRepository,
     private val stateRepository: MockStateRepository,
-    private val savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle = SavedStateHandle(),
     sharedMutations: NetworkMockMutationCoordinator? = null
 ) : ViewModel() {
-    /** Creates a ViewModel without navigation-owned saved state. */
-    public constructor(
-        configRepository: MockConfigRepository,
-        stateRepository: MockStateRepository
-    ) : this(configRepository, stateRepository, SavedStateHandle())
-
     internal val mutations = sharedMutations ?: NetworkMockMutationCoordinator(
         stateRepository = stateRepository,
         scope = viewModelScope

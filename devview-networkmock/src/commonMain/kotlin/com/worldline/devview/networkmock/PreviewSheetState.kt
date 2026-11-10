@@ -1,6 +1,8 @@
 package com.worldline.devview.networkmock
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.remember
 import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.model.DiffLine
 import com.worldline.devview.networkmock.utils.INLINE_DIFF_THRESHOLD
@@ -8,6 +10,18 @@ import com.worldline.devview.networkmock.utils.computeLineDiff
 import com.worldline.devview.networkmock.utils.displayContent
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+
+@Composable
+internal fun rememberResponsePreview(
+    primary: MockResponse,
+    second: MockResponse?
+): PreviewSheetState.HasResponse = remember(key1 = primary, key2 = second) {
+    if (second == null) {
+        PreviewSheetState.Single(response = primary)
+    } else {
+        PreviewSheetState.Compare(first = primary, second = second)
+    }
+}
 
 private const val MAX_DIFF_CELLS = 1_000_000L
 

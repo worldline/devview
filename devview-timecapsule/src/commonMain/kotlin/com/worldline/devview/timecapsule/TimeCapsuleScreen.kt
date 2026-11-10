@@ -14,6 +14,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.listSaver
@@ -42,20 +44,11 @@ internal fun TimeCapsuleScreen(modifier: Modifier = Modifier, bottomPadding: Dp 
     val capsule = TimeCapsule.current
     val entries = capsule?.entries.orEmpty().asReversed()
     val recordingId = capsule?.recordingId.orEmpty()
-    var expandedIds by rememberSaveable(
-        recordingId,
-        stateSaver = listSaver<List<Long>, Any>(
-            save = { listOf(element = recordingId) + it },
-            // Saved inputs are not validated when a new composition restores its state.
-            restore = { saved ->
-                if (saved.firstOrNull() == recordingId) {
-                    saved.drop(n = 1).map { it as Long }
-                } else {
-                    emptyList()
-                }
-            }
-        )
-    ) { mutableStateOf(value = emptyList<Long>()) }
+    val retainedIds = entries.map { it.id }.toSet()
+    var expandedIds by rememberExpandedEntryIds(
+        recordingId = recordingId,
+        retainedIds = retainedIds
+    )
 
     Column(modifier = modifier.fillMaxSize()) {
         capsule?.subtitle?.let { subtitle ->
@@ -131,4 +124,29 @@ internal fun TimeCapsuleScreen(modifier: Modifier = Modifier, bottomPadding: Dp 
             }
         }
     }
+}
+
+@Composable
+internal fun rememberExpandedEntryIds(
+    recordingId: String,
+    retainedIds: Set<Long>
+): MutableState<List<Long>> {
+    val expanded = rememberSaveable(
+        recordingId,
+        stateSaver = listSaver<List<Long>, Any>(
+            save = { listOf(element = recordingId) + it.filter { id -> id in retainedIds } },
+            // Saved inputs are not validated when a new composition restores its state.
+            restore = { saved ->
+                if (saved.firstOrNull() == recordingId) {
+                    saved.drop(n = 1).map { it as Long }.filter { it in retainedIds }
+                } else {
+                    emptyList()
+                }
+            }
+        )
+    ) { mutableStateOf(value = emptyList<Long>()) }
+    LaunchedEffect(key1 = retainedIds) {
+        expanded.value = expanded.value.filter { it in retainedIds }
+    }
+    return expanded
 }

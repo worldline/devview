@@ -53,6 +53,8 @@ The registered module has one ordered mutation consumer shared by its list, shee
 
 Temporarily hiding the overlay and recreating the host for a configuration change retain pending writes, errors and entry drafts. Filtering a module out of `DevView.modules` returns to Home and discards its navigation entries and drafts, but does not unregister its mutation consumer. Removing its `rememberModules` registration ends that session. Process-death recovery of pending writes is not guaranteed.
 
+Built-in screens and ViewModels are internal. Register `NetworkMock` with `rememberModules` and present `DevView`; its registered UI owns save recovery. Use the core configuration and state repositories for runtime integrations, not a standalone screen or ViewModel.
+
 List search, filters and sort remain client-side saved UI state, separate from persisted mock settings. Request coordination and failure behaviour are described in [NetworkMock Core](networkmock-core.md#state-coordination) and [NetworkMock Ktor](networkmock-ktor.md#how-interception-works).
 
 ## Theming

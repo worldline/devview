@@ -68,18 +68,33 @@ internal fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp 
 
     val changes = remember(
         key1 = featureHandler
-    ) { Channel<Pair<String, FeatureState>>(capacity = Channel.UNLIMITED) }
-    var failedChange by remember(
-        key1 = featureHandler
-    ) { mutableStateOf<Pair<String, FeatureState>?>(value = null) }
+    ) { Channel<FeatureChange>(capacity = Channel.UNLIMITED) }
+    val latestChanges = remember(key1 = featureHandler) { mutableMapOf<String, FeatureChange>() }
+    var failedChanges by remember(key1 = featureHandler) {
+        mutableStateOf(value = emptyMap<String, FeatureChange>())
+    }
+    val submitChange: (String, FeatureState) -> Unit = { name, state ->
+        val revision = latestChanges[name]?.revision ?: 0L
+        check(value = revision < Long.MAX_VALUE) { "Feature change revisions exhausted" }
+        val change = FeatureChange(name = name, state = state, revision = revision + 1)
+        latestChanges[name] = change
+        failedChanges = failedChanges - name
+        changes.trySend(element = change)
+    }
     // One consumer preserves click order even when a DataStore write suspends.
     LaunchedEffect(key1 = changes) {
-        for ((name, state) in changes) {
+        for (change in changes) {
             try {
-                featureHandler.setFeatureState(featureName = name, state = state)
-                failedChange = null
+                featureHandler.setFeatureState(featureName = change.name, state = change.state)
+                if (latestChanges[change.name] ==
+                    change
+                ) {
+                    failedChanges = failedChanges - change.name
+                }
             } catch (_: IOException) {
-                failedChange = name to state
+                if (latestChanges[change.name] == change) {
+                    failedChanges = failedChanges + (change.name to change)
+                }
             }
         }
     }
@@ -173,10 +188,24 @@ internal fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp 
             }
         }
     ) { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues = paddingValues)) {
-            failedChange?.let { (name, state) ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    paddingValues = paddingValues
+                ).testTag(tag = "feature_list")
+        ) {
+            items(
+                items = failedChanges.entries.toList(),
+                key = { "failure:${it.key}" },
+                contentType = { "failure" }
+            ) { (name, change) ->
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            horizontal = 16.dp
+                        ).testTag(tag = "feature_failure_$name"),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -185,66 +214,65 @@ internal fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp 
                         color = MaterialTheme.colorScheme.error
                     )
                     TextButton(onClick = {
-                        failedChange = null
-                        changes.trySend(element = name to state)
+                        if (failedChanges[name] == change && latestChanges[name] == change) {
+                            failedChanges = failedChanges - name
+                            changes.trySend(element = change)
+                        }
                     }) { Text(text = "Retry") }
                 }
             }
             if (filteredFeatures.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    DevViewEmptyState(
-                        icon = Icons.Rounded.Lightbulb,
-                        title = if (features.isEmpty()) {
-                            "No features registered"
-                        } else {
-                            "No features match your filters"
-                        },
-                        message = if (features.isEmpty()) {
-                            "Register flags with FeatureHandler."
-                        } else {
-                            "Change your search or clear the filters."
-                        },
-                        action = if (features.isNotEmpty()) {
-                            {
-                                TextButton(onClick = {
-                                    query = ""
-                                    selectedFilters = emptyList()
-                                }) {
-                                    Text(text = "Clear search and filters")
+                item(key = "empty", contentType = "empty") {
+                    Box(
+                        modifier = Modifier.fillParentMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        DevViewEmptyState(
+                            icon = Icons.Rounded.Lightbulb,
+                            title = if (features.isEmpty()) {
+                                "No features registered"
+                            } else {
+                                "No features match your filters"
+                            },
+                            message = if (features.isEmpty()) {
+                                "Register flags with FeatureHandler."
+                            } else {
+                                "Change your search or clear the filters."
+                            },
+                            action = if (features.isNotEmpty()) {
+                                {
+                                    TextButton(onClick = {
+                                        query = ""
+                                        selectedFilters = emptyList()
+                                    }) {
+                                        Text(text = "Clear search and filters")
+                                    }
                                 }
+                            } else {
+                                null
                             }
-                        } else {
-                            null
-                        }
-                    )
+                        )
+                    }
                 }
             } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    itemsIndexed(
-                        items = filteredFeatures,
-                        key = { _, feature -> feature.name },
-                        contentType = { _, feature -> feature::class.simpleName }
-                    ) { index, feature ->
-                        Column(
-                            modifier = Modifier.animateItem().testTag(
-                                tag = "feature_item_${feature.name}"
-                            )
-                        ) {
-                            FeatureItem(
-                                feature = feature,
-                                onStateChange = { state ->
-                                    failedChange = null
-                                    changes.trySend(element = feature.name to state)
-                                }
-                            )
-                            if (index != filteredFeatures.lastIndex) {
-                                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                itemsIndexed(
+                    items = filteredFeatures,
+                    key = { _, feature -> "feature:${feature.name}" },
+                    contentType = { _, feature -> feature::class.simpleName }
+                ) { index, feature ->
+                    Column(
+                        modifier = Modifier.animateItem().testTag(
+                            tag = "feature_item_${feature.name}"
+                        )
+                    ) {
+                        FeatureItem(
+                            feature = feature,
+                            onStateChange = { state ->
+                                submitChange(feature.name, state)
                             }
+                        )
+                        if (index != filteredFeatures.lastIndex) {
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                         }
                     }
                 }
@@ -252,6 +280,8 @@ internal fun FeatureFlipScreen(modifier: Modifier = Modifier, bottomPadding: Dp 
         }
     }
 }
+
+private data class FeatureChange(val name: String, val state: FeatureState, val revision: Long)
 
 private enum class FeatureFilter(val label: String) {
     LOCAL("Local"),

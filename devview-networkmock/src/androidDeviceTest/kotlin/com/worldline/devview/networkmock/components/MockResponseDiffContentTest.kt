@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsActions
@@ -122,6 +123,40 @@ class MockResponseDiffContentTest {
         }
 
         assertLazyEnd(tag = "preview_inline_pane_rows", lastIndex = 4999)
+    }
+
+    @Test
+    fun shorter_wide_unicode_lines_are_not_clipped_and_their_end_is_reachable() = runComposeUiTest {
+        val narrow = "i".repeat(32)
+        val wide = "界🙂".repeat(10)
+        val body = List(size = 5_000) { if (it == 4_999) wide else narrow }.joinToString("\n")
+        setPreview { SplitDiffContent(first = response(body), second = null) }
+        assertTrue(wide.length < narrow.length)
+        onNodeWithTag("preview_first_pane_rows").performScrollToIndex(index = 4_999)
+        assertSingleLine(text = wide)
+        val wideLayout = mutableListOf<TextLayoutResult>()
+        val narrowLayout = mutableListOf<TextLayoutResult>()
+        onNodeWithText(wide).performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(wideLayout) }
+        onAllNodesWithText(narrow)[0].performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(narrowLayout) }
+        assertTrue(wideLayout.single().getLineRight(0) > narrowLayout.single().getLineRight(0))
+        onNodeWithTag("preview_first_pane").performSemanticsAction(SemanticsActions.ScrollBy) { it(100_000f, 0f) }
+        val viewport = onNodeWithTag("preview_first_pane").getUnclippedBoundsInRoot()
+        val line = onNodeWithText(wide).getUnclippedBoundsInRoot()
+        assertTrue(line.right <= viewport.right + 1.dp, "The widest rendered line must remain horizontally reachable")
+    }
+
+    @Test
+    fun replacing_a_wide_body_resets_width_and_horizontal_scroll() = runComposeUiTest {
+        val body = mutableStateOf(value = List(size = 100) { firstLine }.joinToString("\n"))
+        setPreview { SplitDiffContent(first = response(body.value), second = null) }
+        onNodeWithTag("preview_first_pane").performSemanticsAction(SemanticsActions.ScrollBy) { it(100_000f, 0f) }
+        runOnIdle { body.value = "short replacement" }
+        onNodeWithText("short replacement").assertIsDisplayed()
+        assertSingleLine(text = "short replacement")
+        val viewport = onNodeWithTag("preview_first_pane").getUnclippedBoundsInRoot()
+        val row = onNodeWithTag("preview_first_pane_rows").getUnclippedBoundsInRoot()
+        (row.right - row.left) shouldBe (viewport.right - viewport.left)
+        row.left shouldBe viewport.left
     }
 
     @Test

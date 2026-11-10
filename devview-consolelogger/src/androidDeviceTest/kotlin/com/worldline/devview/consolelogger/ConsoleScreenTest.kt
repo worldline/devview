@@ -8,6 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.StateRestorationTester
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -133,6 +136,83 @@ class ConsoleScreenTest {
         row.fetchSemanticsNode().positionInRoot.y shouldBe initialY
         onNodeWithContentDescription(label = "Resume following latest log").performClick()
         onNodeWithTag(testTag = "console_log_item_${latest.id}").assertIsDisplayed()
+    }
+
+    @Test
+    fun paused_anchor_waits_for_saved_noise_rules_and_survives_absence_and_restoration() = runComposeUiTest {
+        val store = FakePreferencesDataStore()
+        runBlocking {
+            ConsoleNoiseRepository(dataStore = store, defaults = Console.DEFAULT_EXCLUDED_PATTERNS)
+                .update(change = ConsoleNoiseChange.DisableAll)
+        }
+        var readGate: CompletableDeferred<Unit>? = null
+        val delayedStore = object : DataStore<Preferences> by store {
+            override val data: Flow<Preferences> = flow {
+                readGate?.await()
+                emitAll(flow = store.data)
+            }
+        }
+        val entries = mutableStateOf(value = (0..40).map { log(tag = "setRequestedFrameRate", message = "message $it") })
+        val show = mutableStateOf(value = true)
+        val inspected = entries.value[20]
+        val restoration = StateRestorationTester(this)
+        restoration.setContent {
+            val holder = rememberSaveableStateHolder()
+            if (show.value) {
+                holder.SaveableStateProvider(key = "console") {
+                    ConsoleScreen(dataStore = delayedStore, defaults = Console.DEFAULT_EXCLUDED_PATTERNS, logs = entries.value)
+                }
+            }
+        }
+        onNodeWithTag(testTag = "console_log_item_${entries.value.last().id}")
+            .assertIsDisplayed().performClick()
+        onNodeWithTag("console_log_list").performScrollToIndex(index = 20)
+        onNodeWithTag("console_log_list").performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 23f) }
+        val row = onNodeWithTag("console_log_item_${inspected.id}")
+        val initialY = row.fetchSemanticsNode().positionInRoot.y
+        runOnIdle { show.value = false }
+        runOnIdle {
+            readGate = CompletableDeferred()
+            entries.value = entries.value + log(tag = "setRequestedFrameRate", message = "incoming")
+        }
+        restoration.emulateSaveAndRestore()
+        runOnIdle { show.value = true }
+        onNodeWithText("No logs match your filters").assertIsDisplayed()
+        runOnIdle { readGate!!.complete(Unit) }
+        row.assertIsDisplayed()
+        row.fetchSemanticsNode().positionInRoot.y shouldBe initialY
+        onNodeWithContentDescription("Resume following latest log").assertIsDisplayed()
+        runOnIdle { entries.value = entries.value + log(tag = "setRequestedFrameRate", message = "another") }
+        row.fetchSemanticsNode().positionInRoot.y shouldBe initialY
+    }
+
+    @Test
+    fun a_missing_restored_anchor_uses_the_newest_matching_row_without_resuming_follow() = runComposeUiTest {
+        val entries = mutableStateOf(value = (0..40).map { log(tag = "row$it", message = "message $it") })
+        val show = mutableStateOf(value = true)
+        setContent {
+            val holder = rememberSaveableStateHolder()
+            if (show.value) {
+                holder.SaveableStateProvider(key = "console") { TestConsoleScreen(logs = entries.value) }
+            }
+        }
+        onNodeWithTag("console_log_item_${entries.value.last().id}")
+            .performClick()
+        onNodeWithTag("console_log_list").performScrollToIndex(index = 20)
+        onNodeWithTag("console_log_list").performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 23f) }
+        runOnIdle { show.value = false }
+        val replacement = log(tag = "replacement", message = "newest matching")
+        val excluded = log(tag = "setRequestedFrameRate", message = "newest excluded")
+        runOnIdle {
+            entries.value = (0..30).map { log(tag = "older$it", message = "older $it") } + replacement + excluded
+            show.value = true
+        }
+        val row = onNodeWithTag("console_log_item_${replacement.id}")
+        row.assertIsDisplayed()
+        row.fetchSemanticsNode().positionInRoot.y shouldBe
+            onNodeWithTag("console_log_list").fetchSemanticsNode().positionInRoot.y
+        onNodeWithTag("console_log_item_${excluded.id}").assertDoesNotExist()
+        onNodeWithContentDescription("Resume following latest log").assertIsDisplayed()
     }
 
     @Test

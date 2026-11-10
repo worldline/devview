@@ -195,7 +195,10 @@ internal fun NetworkMockScreenContent(
 ) {
     when (uiState) {
         is NetworkMockUiState.Loading -> LoadingState(modifier = modifier)
-        is NetworkMockUiState.Error -> ErrorState(message = uiState.message, modifier = modifier)
+        is NetworkMockUiState.Error -> ErrorState(
+            message = uiState.message,
+            modifier = modifier.fillMaxSize()
+        )
         is NetworkMockUiState.Empty -> EmptyState(modifier = modifier)
         is NetworkMockUiState.Content -> ContentState(
             uiState = uiState,

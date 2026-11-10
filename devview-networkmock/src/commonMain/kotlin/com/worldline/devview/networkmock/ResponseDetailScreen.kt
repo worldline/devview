@@ -82,14 +82,9 @@ internal fun ResponseDetailScreen(
                                 selected.asState()
                         }
                     }
+                    val preview = rememberResponsePreview(primary = primary, second = second)
                     ResponseDetailContent(
-                        preview = if (second == null) {
-                            PreviewSheetState.Single(
-                                response = primary
-                            )
-                        } else {
-                            PreviewSheetState.Compare(first = primary, second = second)
-                        },
+                        preview = preview,
                         otherResponses = content.responses.filter {
                             it.asState() !=
                                 primary.asState()
@@ -256,8 +251,8 @@ internal fun ReturnAfterSelection(viewModel: OperationDetailViewModel, onBack: (
 
 @Composable
 internal fun OperationDetailError(message: String, viewModel: OperationDetailViewModel) {
-    Column(modifier = Modifier.padding(all = 16.dp)) {
-        ErrorState(message = message)
+    Column(modifier = Modifier.fillMaxSize().padding(all = 16.dp)) {
+        ErrorState(message = message, modifier = Modifier.weight(weight = 1f))
         TextButton(
             enabled = viewModel.mutations.interactionsEnabled,
             onClick = viewModel::reload

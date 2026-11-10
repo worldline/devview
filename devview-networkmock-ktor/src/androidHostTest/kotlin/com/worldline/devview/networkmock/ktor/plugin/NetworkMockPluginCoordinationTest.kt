@@ -122,6 +122,114 @@ class NetworkMockPluginCoordinationTest {
     }
 
     @Test
+    fun aSupersededLoadFailureRetriesTheLatestMockOrSequence() = runTest {
+        listOf("missing", "unreadable").forEach { problem ->
+            listOf<OperationMockState>(sequence, sequence.responses[0]).forEach { initial ->
+                val latestSequence = sequence.copy(responses = sequence.responses.reversed())
+                listOf<OperationMockState>(latestSequence, sequence.responses[1]).forEach { replacement ->
+                    val ready = CompletableDeferred<Unit>()
+                    val release = CompletableDeferred<Unit>()
+                    var rolls = 0
+                    val random = object : Random() {
+                        override fun nextBits(bitCount: Int): Int = error("Expected nextDouble")
+                        override fun nextDouble(): Double { rolls++; return 0.9 }
+                    }
+                    val spec = KtorPluginTestData.defaultSpecJson.replace(
+                        oldValue = "\"operationId\": \"getUser\",",
+                        newValue = "\"operationId\": \"getUser\", \"x-devview\": { \"delayMs\": 100, \"failureRate\": 0.5 },"
+                    )
+                    val config = configuration { path ->
+                        if (path == KtorPluginTestData.SPEC_PATH) return@configuration spec.encodeToByteArray()
+                        if (path == responsePath) {
+                            ready.complete(value = Unit)
+                            release.await()
+                            if (problem == "unreadable") throw IOException("Stale resource failure")
+                            error("Stale resource missing")
+                        }
+                        resource(path = path)
+                    }
+                    val repository = repository()
+                    repository.setOperationMockState(key = key, state = initial)
+                    val networkCalls = AtomicInteger()
+                    val start = testScheduler.currentTime
+                    client(config = config, repository = repository, networkCalls = networkCalls, random = random).use { client ->
+                        val request = async { client.get(urlString = url).bodyAsText() }
+                        ready.await()
+                        repository.setOperationMockState(key = key, state = replacement)
+                        val revision = repository.getStateSnapshot().revision
+                        release.complete(value = Unit)
+                        request.await() shouldBe resource(
+                            path = "files/networkmocks/responses/getUser-404.json"
+                        ).decodeToString()
+                        repository.getStateSnapshot().revision shouldBe
+                            revision + if (replacement is OperationMockState.Sequence) 1 else 0
+                    }
+                    networkCalls.get() shouldBe 0
+                    rolls shouldBe 1
+                    testScheduler.currentTime - start shouldBe 100L
+                    repository.getState().getOperationState(key = key) shouldBe
+                        if (replacement is OperationMockState.Sequence) {
+                            latestSequence.copy(currentIndex = 1)
+                        } else {
+                            replacement
+                        }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun cancellationAfterAStaleFailureDoesNotConsumeTheReplacementSequence() = runTest {
+        listOf("missing", "unreadable").forEach { problem ->
+            val initialReady = CompletableDeferred<Unit>()
+            val releaseInitial = CompletableDeferred<Unit>()
+            val replacementReady = CompletableDeferred<Unit>()
+            var rolls = 0
+            val random = object : Random() {
+                override fun nextBits(bitCount: Int): Int = error("Expected nextDouble")
+                override fun nextDouble(): Double { rolls++; return 0.9 }
+            }
+            val spec = KtorPluginTestData.defaultSpecJson.replace(
+                oldValue = "\"operationId\": \"getUser\",",
+                newValue = "\"operationId\": \"getUser\", \"x-devview\": { \"delayMs\": 100, \"failureRate\": 0.5 },"
+            )
+            val config = configuration { path ->
+                when (path) {
+                    KtorPluginTestData.SPEC_PATH -> spec.encodeToByteArray()
+                    responsePath -> {
+                        initialReady.complete(value = Unit)
+                        releaseInitial.await()
+                        if (problem == "unreadable") throw IOException("Stale resource failure")
+                        error("Stale resource missing")
+                    }
+                    "files/networkmocks/responses/getUser-404.json" -> {
+                        replacementReady.complete(value = Unit)
+                        CompletableDeferred<Unit>().await()
+                        resource(path = path)
+                    }
+                    else -> resource(path = path)
+                }
+            }
+            val repository = repository()
+            val replacement = sequence.copy(responses = sequence.responses.reversed())
+            val networkCalls = AtomicInteger()
+            client(config = config, repository = repository, networkCalls = networkCalls, random = random).use { client ->
+                val request = async { client.get(urlString = url) }
+                initialReady.await()
+                repository.setOperationMockState(key = key, state = replacement)
+                val revision = repository.getStateSnapshot().revision
+                releaseInitial.complete(value = Unit)
+                replacementReady.await()
+                request.cancelAndJoin()
+                repository.getStateSnapshot().revision shouldBe revision
+            }
+            rolls shouldBe 1
+            networkCalls.get() shouldBe 0
+            repository.getState().getOperationState(key = key) shouldBe replacement
+        }
+    }
+
+    @Test
     fun aReplacementOfAReplacementWinsWhileItsResponseIsLoading() = runTest {
         listOf(OperationMockState.Network, OperationMockState.Failure(kind = FailureKind.TIMEOUT)).forEach { latest ->
             val firstReady = CompletableDeferred<Unit>()
