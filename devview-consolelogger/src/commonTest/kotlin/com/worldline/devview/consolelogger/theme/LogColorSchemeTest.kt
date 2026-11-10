@@ -1,11 +1,23 @@
 package com.worldline.devview.consolelogger.theme
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import com.worldline.devview.consolelogger.model.LogLevel
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class LogColorSchemeTest {
+
+    @Test
+    fun `every severity label contrasts with its default theme surface`() {
+        listOf(LogColorScheme.Light to Color(0xFFF7F7F7), LogColorScheme.Dark to Color(0xFF242424)).forEach { (scheme, surface) ->
+            LogLevel.entries.forEach { level ->
+                val label = scheme[level].label.luminance()
+                val background = surface.luminance()
+                ((maxOf(label, background) + 0.05f) / (minOf(label, background) + 0.05f) >= 4.5f) shouldBe true
+            }
+        }
+    }
 
     @Test
     fun `get returns the matching slot for every level`() {

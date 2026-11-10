@@ -1,186 +1,87 @@
-# CLAUDE.md
+# Console Logger
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Purpose
 
-## What This Module Does
+In-app console inspection on Android and iOS. Native capture works without a debugger;
+see `docs/modules/consolelogger.md` for the capture matrix. iOS `NSLog`/`os_log`/Swift
+`Logger` are not captured without a debugger; Kermit's `DevViewLogWriter` is the supported
+in-process alternative. Do not promise unified-log capture.
 
-`devview-consolelogger` is the console-log-viewer module for the DevView developer menu. It
-tails the platform's native console output — `logcat` on Android, a `stdout`/`stderr`
-redirect on iOS — and shows it in a filterable, auto-following Compose UI, similar to
-viewing Logcat in Android Studio.
+## Public surface
 
-The module is built around one hard requirement: capture must work on an **untethered**
-device (no debugger attached), because testers install a release build and never plug into
-a computer. See the capture matrix in `docs/modules/consolelogger.md` for exactly what each
-platform can and cannot see without a debugger — the one real gap is `NSLog`/`os_log`/Swift
-`Logger` on iOS, mitigated by `DevViewLogWriter`.
+- `Console(maxEntries = 1000, captureNativeConsole = true, defaultExcludedPatterns = Console.DEFAULT_EXCLUDED_PATTERNS)` is the module. It implements RequiresDataStore for noise preferences, not log storage.
+- `ConsoleLogger.log(ConsoleLog)` is safe from any thread and records a fresh internal UUID.
+- `ConsoleLogger.logs: List<ConsoleLog>` returns a read-only observable snapshot. Read it
+  in composition, not in `remember`. Mutation stays private; use `log()`.
+- `ConsoleLogger.hasLogs` reports retained history.
+- `ConsoleLog(level, tag, message, timestamp)` keeps identity outside value equality and
+  constructor/copy arguments.
+- `DevViewLogWriter` forwards Kermit calls including complete throwable messages. Register
+  it once. Android native capture plus Kermit `LogcatWriter` can produce duplicate records;
+  do not deduplicate equal messages because they can be distinct calls.
 
-## Public API Surface
+## Collector lifecycle
 
-### `Console` — the `Module` entry point
+`Console.initModule()` uses an effect keyed by capacity and native-capture setting.
+`rememberModules` keeps initialization effects in composition, with once-only DataStore
+setup. Removal cancels ongoing effects; re-entry starts them again.
 
-```kotlin
-Console(
-    maxEntries: Int = ConsoleLogger.DEFAULT_MAX_ENTRIES,
-    captureNativeConsole: Boolean = true
-)
-```
+`ConsoleLogger.collectInto` holds a coroutine Mutex across the entire collector/capture
+lifetime, including cancellation cleanup. Configuration happens after ownership acquisition.
+The drain uses one local channel reference. The non-suspending `ConsoleLock` protects queue
+handoff, enqueue, clear and append: an Android monitor and iOS recursive Foundation lock.
+Do not hold this lock across suspension. Recursive locking permits inline coroutine resumes
+from channel operations without deadlocking a same-thread logger callback.
 
-Registered in the host app's `buildModules { }` block. `captureNativeConsole = false`
-disables the native tail entirely — only entries logged manually via `ConsoleLogger.log()`
-or `DevViewLogWriter` will appear.
+The queue and retained history are both bounded/drop-oldest. Same-capacity setup preserves
+the queue; changing capacity migrates pending entries and trims history. Clear increments a
+private generation, drains pending entries and clears history, so stale received entries cannot
+reappear afterward. Cancellation during delivery still follows the channel's bounded,
+best-effort contract; this is not lossless log storage.
 
-### `ConsoleLogger` — singleton sink
+## UI
 
-| Member | Visibility | Purpose |
-|---|---|---|
-| `log(log: ConsoleLog)` | `public` | Append an entry; safe from any thread |
-| `logs: SnapshotStateList<ConsoleLog>` | `public` | Observable, bounded (ring) list |
-| `hasLogs: Boolean` | `public` | Convenience check |
-| `configure(maxEntries: Int)` | `internal` | Called once by `Console.initModule()` |
-| `collectInto()` | `internal` | The channel-drain collector; called once by `Console.initModule()` |
-| `clear()` | `internal` | Called by the in-UI "Clear" action only |
+Search and a collapsible filter panel use the public DevView UI kit. All severity levels are
+visible initially; hiding all produces a recoverable empty state. The toggle counts hidden
+levels plus enabled noise rules. Query, levels, panel, expanded row IDs and follow mode use saved state.
 
-### `ConsoleLog` — entry record
+`ConsoleScreen` is internal and owns persistence and rendering. Registration initializes the
+shared DataStore delegate before opening it. Rules match case-insensitive tag/message
+substrings without discarding captured logs. Three preference sets store additions, removed
+defaults and disabled identities; new host defaults merge without duplicates, and removed
+defaults stay removed. Clear filters disables rules; Reset discards edits. One ordered pending
+queue writes atomically against current preferences. Read/write IOException shows Retry and
+does not replace saved configuration with fallback values.
 
-```kotlin
-data class ConsoleLog(
-    val level: LogLevel,
-    val tag: String,       // empty when the source has no concept of a tag (iOS stdout)
-    val message: String,
-    val timestamp: Long
-)
-```
+Rows use UUID plus duplicate-occurrence rank for safe explicit lists. Duplicate expansion
+is positional within each ID; remove an earlier identical occurrence and expansion may
+transfer. Eviction/Clear prune expansion against the full source, not filtered results. Collapsed messages show
+one ellipsized line and an animated chevron. The collapsed row toggles expansion; an expanded
+row only toggles from its header so selection and Copy remain independent. Messages retain newlines, scroll horizontally, support selection
+and copying. Expansion or vertical user scrolling pauses follow. Resume aligns the newest
+matching row's start at the top, including full-capacity history replacements. Paused arrivals
+keep the inspected row in place. Assign duplicate ranks oldest-first, then reverse rows and keys.
 
-### `DevViewLogWriter` — optional Kermit bridge
+`LogColorScheme` remains a semantic light/dark palette independent of the host hue. Labels
+have contrast tests; layout and typography inherit MaterialTheme. `LocalLogColorScheme` is
+optional and falls back based on surface luminance.
 
-`public object DevViewLogWriter : LogWriter()`. Forwards Kermit `Logger` calls into
-`ConsoleLogger`. Register once: `Logger.addLogWriter(DevViewLogWriter)`.
+## Native boundary
 
-### `LocalConsoleLogs` / `LocalLogColorScheme` — CompositionLocals
+`tailNativeConsole()` is expect/actual. Android tails per-process brief logcat; iOS redirects
+stdout/stderr with POSIX pipes and tees bytes to the original descriptors. Native capture
+currently records physical lines, not grouped traces. Android cancellation terminates logcat
+before waiting for the blocked reader; iOS uses nonblocking reads with cancellable idle waits
+and restores descriptors on exit. Native grouping, partial writes and streaming UTF-8 handling
+are deferred. A stalled original iOS output destination can still block the tee write. Complete multiline messages are reliable through
+Kermit's in-process writer. Native failure handling must not cancel manual-log draining.
 
-`LocalConsoleLogs: ProvidableCompositionLocal<List<ConsoleLog>>` works exactly like
-`devview-analytics`'s `LocalAnalytics`. `LocalLogColorScheme:
-ProvidableCompositionLocal<LogColorScheme?>` is nullable — see Theming below.
+## Tests
 
-### `ConsoleScreen` — main composable
-
-```kotlin
-@Composable
-fun ConsoleScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 0.dp)
-```
-
-Reads from `LocalConsoleLogs.current`. All filtering state (level chips, text query) and
-auto-follow state live as local `remember` state inside this composable.
-
-## Internal Architecture
-
-```
-Native capture (androidMain / iosMain)          Manual calls
-        │                                             │
-        ▼                                             ▼
-                    ConsoleLogger.log()
-                    (Channel, capacity = maxEntries, DROP_OLDEST)
-                              │
-                              ▼
-                    ConsoleLogger.collectInto()
-                    (single collector, started by Console.initModule())
-                              │
-                              ▼
-                    consoleLogs: SnapshotStateList<ConsoleLog>
-                    (bounded ring, evicts from head past maxEntries)
-                              │  provides via LocalConsoleLogs
-                              ▼
-                    ConsoleScreen (stateful Compose UI)
-                        ├── bottom bar: LogLevel FilterChips + text filter field
-                        └── LazyColumn, auto-follow unless manually scrolled
-```
-
-`log()` writes into a channel rather than appending directly to the snapshot list — unlike
-`AnalyticsLogger`, which appends hand-placed events synchronously. Native capture can emit
-far faster than the UI can usefully render, so the channel (a) makes `log()` safe to call
-from the background capture threads and (b) lets `collectInto()`'s tight drain loop absorb
-a burst in one uninterrupted pass; Compose coalesces the resulting snapshot writes into a
-single recomposition rather than one per line.
-
-`Console.initModule()` calls `ConsoleLogger.configure(maxEntries)` then launches two
-coroutines: the `collectInto()` drain, and — if `captureNativeConsole` — the platform
-capture. The capture coroutine is wrapped in its own `try`/`catch` (rethrowing
-`CancellationException`) so a capture failure (e.g. an OEM ROM blocking `logcat`) can't
-cancel the sibling drain job and silently break manual logging too.
-
-## Platform-Specific Code
-
-This is the first DevView feature module with real `androidMain`/`iosMain` source sets and
-`expect`/`actual` declarations (`devview-analytics` and `devview-timecapsule` have none).
-
-**`ConsoleCapture.kt`** (`commonMain`) declares `internal expect suspend fun
-tailNativeConsole()`. Runs until the calling coroutine is cancelled.
-
-**`ConsoleCapture.android.kt`**: spawns `logcat -v brief --pid=<self>` via `ProcessBuilder`,
-parses each line with `parseLogcatLine` (`LogcatLine.kt`, `commonMain` — pure string logic,
-tested directly in `commonTest` rather than needing an Android-only test source set). If
-`ProcessBuilder.start()` throws `IOException` (some OEM ROMs block `logcat` for third-party
-apps), it logs a warning via Kermit and returns — native capture is disabled for that
-session, but `ConsoleLogger.log()`/`DevViewLogWriter` keep working.
-
-**`ConsoleCapture.ios.kt`**: redirects `stdout` and `stderr` through separate in-process
-`platform.posix` pipes (`dup`/`pipe`/`dup2`), so it works without a debugger attached —
-this is what makes iOS capture untethered-safe. Key details, in case this needs revisiting:
-- The write end (the fd `dup2`'d over `STDOUT_FILENO`/`STDERR_FILENO`) is set `O_NONBLOCK`.
-  Without it, a stalled reader fills the pipe buffer and every subsequent `println` in the
-  host app blocks forever; with it, writes past capacity drop instead — the correct
-  trade-off for a dev tool.
-- `stdout` is switched to `_IOLBF` (line-buffered) via `setvbuf`, since a pipe isn't a tty
-  and libc would otherwise default to 4KB full buffering, arriving in bursts.
-- Bytes read from the pipe are written back to the *original* fd (`saved`, from `dup()`
-  before redirecting) so Xcode's console still shows everything when the device is
-  tethered — the redirect is additive, not a replacement.
-- Cannot see `NSLog`/`os_log`/Swift `Logger` — those bypass the file descriptor. This is
-  the gap `DevViewLogWriter` exists to mitigate.
-
-No cinterop `.def` files or Swift shims are needed for any of this — everything used is
-already exposed by Kotlin/Native's bundled `platform.posix` and `kotlinx.cinterop`.
-
-## Theming
-
-`LogColorScheme` (`theme/LogColorScheme.kt`) holds two complete, hand-tuned palettes
-(`Light`/`Dark`) covering all seven `LogLevel` entries — ported verbatim from a prior
-Android-only implementation, deliberately *not* derived from `MaterialTheme.colorScheme`,
-since log-level colors need to stay visually distinct and theme-independent.
-
-Integrators provide the palette via `LocalLogColorScheme` at their app's theme site (see
-`docs/guides/theming.md`), not via a `Console` constructor parameter — `rememberModules { }`
-(where `Console` is constructed) typically runs before the host's dark/light state is
-readable, and a constructor param would be captured once rather than staying reactive to a
-runtime theme toggle. `theme/LocalLogColorScheme.kt`'s internal `rememberLogColorScheme()`
-resolves the CompositionLocal, or falls back to a luminance-based guess with a one-time
-Kermit warning if it was never provided.
-
-## Non-Obvious Patterns
-
-- **`ConsoleLogger.DEFAULT_MAX_ENTRIES`** is also the channel capacity used before
-  `configure()` runs — so `log()`/`DevViewLogWriter` calls made very early (before
-  `Console.initModule()` composes) aren't lost, just buffered against the default.
-- **Bounded ring, not unbounded list.** The prior Android-only implementation used an
-  unbounded `mutableStateListOf`, which could OOM on a sustained logcat firehose. Both the
-  channel (capacity `maxEntries`, `DROP_OLDEST`) and the retained `consoleLogs` list
-  (evicts from the head) are bounded to the same figure.
-- **`DevViewLogWriter` + Android `LogcatWriter` double-logs.** If a host app registers both
-  `DevViewLogWriter` and Kermit's own `LogcatWriter` on Android, every Kermit call appears
-  twice in the Console screen — once via the writer, once via the logcat tail picking up
-  what `LogcatWriter` already wrote to logcat. Documented as a known trade-off, not a bug.
-
-## Testing
-
-`commonTest` covers `ConsoleLogger` (ring eviction, `clear()`), `LogcatLine` (every priority
-prefix, the `UNKNOWN` fallback for unparseable lines), `DevViewLogWriter` (`Severity`
-mapping, throwable formatting), `Console` (module metadata/actions), and `LogColorScheme`
-(`get(level)`, `copy()`). `androidDeviceTest` covers `ConsoleScreen` (empty state, text
-filter, level-chip filter) and `rememberLogColorScheme()`'s resolution logic.
-
-The `ConsoleCapture.ios.kt` actual has no automated test — it can only be exercised on a
-Mac. CI verifies it compiles via the `ios-build` job (`compileKotlinIosArm64
-iosSimulatorArm64Test`) on `macos-26`; manual verification requires running the sample on
-an iOS simulator or device and confirming `println` output reaches the Console screen while
-still appearing in the Xcode console (the tee-back).
+Host tests cover recording identity, immutable snapshots, queue migration/overflow, history
+eviction, clear, serialized collector re-entry, metadata, filters, noise preference merging,
+removal/reset/restart, parser/writer and palettes.
+Android device tests cover query/levels/recovery/restoration, expanded copy, full-capacity
+follow, explicit-source replacement, duplicate objects and themes. Core registry tests cover
+module-effect recomposition, removal and re-entry. iOS execution requires macOS/device;
+Windows checks common metadata, while the macOS CI job compiles and tests Apple targets.

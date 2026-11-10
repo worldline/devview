@@ -19,7 +19,7 @@ import kotlin.time.Clock
  * fun ScreenPreview(
  *     @PreviewParameter(AnalyticsLogListPreviewParameterProvider::class) logs: List<AnalyticsLog>
  * ) {
- *     AnalyticsScreen(highlightedAnalyticsLogTypes = persistentListOf(), logs = logs)
+ *     AnalyticsScreen(highlightedAnalyticsLogTypes = persistentListOf(), onEventClick = {}, logs = logs)
  * }
  * ```
  *

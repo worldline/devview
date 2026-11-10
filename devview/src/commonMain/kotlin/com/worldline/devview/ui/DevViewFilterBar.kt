@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
  * @param onClearFilters Resets the panel's filters.
  * @param modifier Modifier applied to the bar.
  * @param bottomPadding Bottom system inset from Module.registerContent.
+ * @param clearFiltersEnabled Whether the caller can currently reset all panel filters.
  * @param panel Module-specific filter controls. The bar supplies the Clear filters action.
  */
 @Composable
@@ -55,6 +56,7 @@ public fun DevViewFilterBar(
     onClearFilters: () -> Unit,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp,
+    clearFiltersEnabled: Boolean = true,
     panel: @Composable () -> Unit
 ) {
     require(value = activeFilterCount >= 0) { "Active filter count must not be negative" }
@@ -69,7 +71,7 @@ public fun DevViewFilterBar(
             ) {
                 TextButton(
                     onClick = onClearFilters,
-                    enabled = activeFilterCount > 0,
+                    enabled = activeFilterCount > 0 && clearFiltersEnabled,
                     modifier = Modifier.align(alignment = Alignment.End)
                 ) {
                     Text(text = "Clear filters")

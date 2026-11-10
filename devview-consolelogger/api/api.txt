@@ -1,10 +1,13 @@
 // Signature format: 4.0
 package com.worldline.devview.consolelogger {
 
-  public final class Console implements com.worldline.devview.core.Module {
+  public final class Console implements com.worldline.devview.core.Module com.worldline.devview.utils.RequiresDataStore {
     ctor public Console();
-    ctor public Console(optional int maxEntries, optional boolean captureNativeConsole);
+    ctor public Console(optional int maxEntries, optional boolean captureNativeConsole, optional java.util.List<java.lang.String> defaultExcludedPatterns);
     method @InaccessibleFromKotlin public boolean getCaptureNativeConsole();
+    method @InaccessibleFromKotlin public com.worldline.devview.utils.DataStoreDelegate getDataStoreDelegate();
+    method @InaccessibleFromKotlin public String getDataStoreName();
+    method @InaccessibleFromKotlin public java.util.List<java.lang.String> getDefaultExcludedPatterns();
     method @InaccessibleFromKotlin public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> getDestinations();
     method @InaccessibleFromKotlin public androidx.navigation3.runtime.NavKey getEntryDestination();
     method @InaccessibleFromKotlin public int getMaxEntries();
@@ -13,6 +16,9 @@ package com.worldline.devview.consolelogger {
     method @KotlinOnly @androidx.compose.runtime.Composable public void initModule();
     method @KotlinOnly public void registerContent(androidx.navigation3.runtime.EntryProviderScope<androidx.navigation3.runtime.NavKey>, kotlin.jvm.functions.Function0<kotlin.Unit> onNavigateBack, kotlin.jvm.functions.Function1<androidx.navigation3.runtime.NavKey,kotlin.Unit> onNavigate, androidx.compose.ui.unit.Dp bottomPadding);
     property public boolean captureNativeConsole;
+    property public com.worldline.devview.utils.DataStoreDelegate dataStoreDelegate;
+    property public String dataStoreName;
+    property public java.util.List<java.lang.String> defaultExcludedPatterns;
     property public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> destinations;
     property public androidx.navigation3.runtime.NavKey entryDestination;
     property public androidx.compose.ui.graphics.vector.ImageVector icon;
@@ -21,6 +27,12 @@ package com.worldline.devview.consolelogger {
     property public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<androidx.navigation3.runtime.NavKey>,kotlin.Unit> registerSerializers;
     property public com.worldline.devview.core.Section section;
     property public String subtitle;
+    field public static final com.worldline.devview.consolelogger.Console.Companion Companion;
+  }
+
+  public static final class Console.Companion {
+    method @InaccessibleFromKotlin public java.util.List<java.lang.String> getDEFAULT_EXCLUDED_PATTERNS();
+    property public java.util.List<java.lang.String> DEFAULT_EXCLUDED_PATTERNS;
   }
 
   public sealed exhaustive interface ConsoleDestination extends androidx.navigation3.runtime.NavKey {
@@ -32,20 +44,11 @@ package com.worldline.devview.consolelogger {
 
   public final class ConsoleLogger {
     method @InaccessibleFromKotlin public boolean getHasLogs();
-    method @InaccessibleFromKotlin public androidx.compose.runtime.snapshots.SnapshotStateList<com.worldline.devview.consolelogger.model.ConsoleLog> getLogs();
+    method @InaccessibleFromKotlin public java.util.List<com.worldline.devview.consolelogger.model.ConsoleLog> getLogs();
     method public void log(com.worldline.devview.consolelogger.model.ConsoleLog log);
     property public boolean hasLogs;
-    property public androidx.compose.runtime.snapshots.SnapshotStateList<com.worldline.devview.consolelogger.model.ConsoleLog> logs;
+    property public java.util.List<com.worldline.devview.consolelogger.model.ConsoleLog> logs;
     field public static final com.worldline.devview.consolelogger.ConsoleLogger INSTANCE;
-  }
-
-  public final class ConsoleLoggerKt {
-    method @InaccessibleFromKotlin public static androidx.compose.runtime.ProvidableCompositionLocal<java.util.List<com.worldline.devview.consolelogger.model.ConsoleLog>> getLocalConsoleLogs();
-    property public static androidx.compose.runtime.ProvidableCompositionLocal<java.util.List<com.worldline.devview.consolelogger.model.ConsoleLog>> LocalConsoleLogs;
-  }
-
-  public final class ConsoleScreenKt {
-    method @KotlinOnly @androidx.compose.runtime.Composable public static void ConsoleScreen(optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding);
   }
 
   public final class DevViewLogWriter extends co.touchlab.kermit.LogWriter {

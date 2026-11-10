@@ -48,6 +48,32 @@ class DevViewUiTest {
     }
 
     @Test
+    fun clear_waits_for_caller_readiness_without_disabling_search_or_panel() = runComposeUiTest {
+        val ready = mutableStateOf(value = false)
+        var cleared = false
+        setContent {
+            MaterialTheme {
+                DevViewFilterBar(
+                    query = "",
+                    onQueryChange = {},
+                    placeholder = "Search events",
+                    activeFilterCount = 1,
+                    expanded = true,
+                    onExpandedChange = {},
+                    onClearFilters = { cleared = true },
+                    clearFiltersEnabled = ready.value
+                ) { Text(text = "Category filters") }
+            }
+        }
+        onNodeWithText(text = "Clear filters").assertIsNotEnabled()
+        onNodeWithText(text = "Search events").assertIsEnabled()
+        onNodeWithContentDescription(label = "Hide filters, 1 active").assertIsEnabled()
+        runOnIdle { ready.value = true }
+        onNodeWithText(text = "Clear filters").assertIsEnabled().performClick()
+        runOnIdle { cleared shouldBe true }
+    }
+
+    @Test
     fun section_header_exposes_heading_semantics() = runComposeUiTest {
         setContent { MaterialTheme { DevViewSectionHeader(text = "Categories") } }
         onNodeWithText(text = "Categories").assert(matcher = SemanticsMatcher.keyIsDefined(key = SemanticsProperties.Heading))

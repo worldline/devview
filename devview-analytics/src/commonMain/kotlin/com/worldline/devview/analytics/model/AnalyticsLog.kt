@@ -25,8 +25,8 @@ import kotlinx.datetime.toLocalDateTime
  * @property timestamp Unix timestamp in milliseconds representing when the event occurred.
  * @property type The category of this analytics event.
  * @property params Optional event parameters. Do not record secrets or personal data.
- *        The logger takes a defensive copy when recording the event. For standalone UI,
- *        replace the event when parameters change; do not mutate a caller-owned map in place.
+ *        The logger takes a defensive copy when recording the event; later changes to the
+ *        supplied map do not modify recorded history.
  *
  * @see AnalyticsLogType
  * @see AnalyticsLogCategory

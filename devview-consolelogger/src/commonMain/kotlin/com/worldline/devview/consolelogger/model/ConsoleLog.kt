@@ -2,6 +2,8 @@ package com.worldline.devview.consolelogger.model
 
 import androidx.compose.runtime.Immutable
 import kotlin.time.Instant
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
@@ -31,6 +33,9 @@ public data class ConsoleLog(
     val message: String,
     val timestamp: Long
 ) {
+    @OptIn(ExperimentalUuidApi::class)
+    internal val id: String = Uuid.random().toString()
+
     private val instantTimestamp = Instant.fromEpochMilliseconds(epochMilliseconds = timestamp)
 
     /**

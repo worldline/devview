@@ -24,27 +24,27 @@
     "semantic_hash": "96d892434d78897b5973bd67507d2114"
   },
   "devview-analytics/src/androidDeviceTest/kotlin/com/worldline/devview/analytics/AnalyticsScreenTest.kt": {
-    "mtime": 1793982243.0354812,
-    "seen": 1793982561.1653235,
-    "ast_hash": "864b5e4e4e6c725c7ec844774295ffab",
+    "mtime": 1793989350.0058303,
+    "seen": 1793990447.7383766,
+    "ast_hash": "8bbba13f679d3015426702014730e66c",
     "semantic_hash": ""
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/Analytics.kt": {
-    "mtime": 1793979458.6433384,
-    "seen": 1793982561.1653252,
-    "ast_hash": "0cf55d1f9e1bfa3e484405e545d20dea",
+    "mtime": 1793989679.9528992,
+    "seen": 1793990447.73838,
+    "ast_hash": "34188ef0293ef1cdc50bffd293000509",
     "semantic_hash": ""
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/AnalyticsLogger.kt": {
-    "mtime": 1793979446.1477218,
-    "seen": 1793982561.1653306,
-    "ast_hash": "f6a8114a12b0a4d72b167468a2059629",
+    "mtime": 1793989679.9839113,
+    "seen": 1793990447.73839,
+    "ast_hash": "9320dbadf85035637c048330233a7bc7",
     "semantic_hash": ""
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/AnalyticsScreen.kt": {
-    "mtime": 1793979458.6563413,
-    "seen": 1793982561.1653323,
-    "ast_hash": "38bf8e59f13ba3a53ddf8fbb43e13f6a",
+    "mtime": 1793989426.1224337,
+    "seen": 1793990447.738392,
+    "ast_hash": "e47f59846430bea81478ebc9aac3f59a",
     "semantic_hash": ""
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/components/AnalyticsLogItem.kt": {
@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/model/AnalyticsLog.kt": {
-    "mtime": 1793979487.26843,
-    "seen": 1793982561.1653376,
-    "ast_hash": "40dc3e12209b9212d1876b573c289305",
+    "mtime": 1793989752.9525628,
+    "seen": 1793990447.7384024,
+    "ast_hash": "dbcf932249fe2fa672b583aa03028a54",
     "semantic_hash": ""
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/model/AnalyticsLogCategory.kt": {
@@ -90,9 +90,9 @@
     "semantic_hash": "0f0f2302404ba090ad75330b840d424f"
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/preview/AnalyticsLogListPreviewParameterProvider.kt": {
-    "mtime": 1793979027.6447983,
-    "seen": 1793982561.1653438,
-    "ast_hash": "5191fc4e7a945a3ce52b74f283b7fa49",
+    "mtime": 1793989328.879285,
+    "seen": 1793990447.7384107,
+    "ast_hash": "459b5ee11f4453dee376b2e9f4cef158",
     "semantic_hash": ""
   },
   "devview-analytics/src/commonMain/kotlin/com/worldline/devview/analytics/preview/AnalyticsLogPreviewParameterProvider.kt": {
@@ -138,15 +138,15 @@
     "semantic_hash": ""
   },
   "devview-featureflip/src/commonMain/kotlin/com/worldline/devview/featureflip/FeatureFlip.kt": {
-    "mtime": 1793974791.584612,
-    "seen": 1793975308.1743917,
-    "ast_hash": "1fca799d9ec1422bd8b698d0e2f68c11",
+    "mtime": 1793989679.9672475,
+    "seen": 1793990447.7385044,
+    "ast_hash": "a69f1a520ed0d35d5d5f116b3d56f4e4",
     "semantic_hash": ""
   },
   "devview-featureflip/src/commonMain/kotlin/com/worldline/devview/featureflip/FeatureFlipScreen.kt": {
-    "mtime": 1793977995.2006888,
-    "seen": 1793978158.7038877,
-    "ast_hash": "d655126e34ca9ccf24c2809db3e645ce",
+    "mtime": 1793989679.9989393,
+    "seen": 1793990447.7385063,
+    "ast_hash": "59510df874d230b60cb3fc6be5227bf9",
     "semantic_hash": ""
   },
   "devview-featureflip/src/commonMain/kotlin/com/worldline/devview/featureflip/components/FeatureItem.kt": {
@@ -408,15 +408,15 @@
     "semantic_hash": ""
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/NetworkMock.kt": {
-    "mtime": 1793974311.8986237,
-    "seen": 1793975308.1745257,
-    "ast_hash": "5ec57efaa0f79d0d7668be5caf2d7e42",
+    "mtime": 1793989680.0284524,
+    "seen": 1793990447.7386315,
+    "ast_hash": "a33a3ff916d1a0ecb6d3de358bd236f2",
     "semantic_hash": ""
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/NetworkMockScreen.kt": {
-    "mtime": 1793948793.6135743,
-    "seen": 1793975308.1745296,
-    "ast_hash": "b66b6bcf4505515413cfb9aa9dc1e8f3",
+    "mtime": 1793989680.0119393,
+    "seen": 1793990447.7386355,
+    "ast_hash": "2a12d0e0916aa22025ffd35d6a5148c3",
     "semantic_hash": ""
   },
   "devview-networkmock/src/commonMain/kotlin/com/worldline/devview/networkmock/PreviewSheetState.kt": {
@@ -618,9 +618,9 @@
     "semantic_hash": ""
   },
   "devview-timecapsule/src/commonMain/kotlin/com/worldline/devview/timecapsule/TimeCapsuleScreen.kt": {
-    "mtime": 1793289949.1536748,
-    "seen": 1793975308.1746209,
-    "ast_hash": "1c9c20791f3072c28a50c75d8fbeccea",
+    "mtime": 1793989349.9988358,
+    "seen": 1793990447.7387288,
+    "ast_hash": "27ca0ec8571b145e5bbe604841a798dc",
     "semantic_hash": ""
   },
   "devview-timecapsule/src/commonMain/kotlin/com/worldline/devview/timecapsule/components/TimeCapsuleRow.kt": {
@@ -726,10 +726,10 @@
     "semantic_hash": "5a5db171949df3718157d51cec9e9837"
   },
   "devview/src/androidDeviceTest/kotlin/com/worldline/devview/core/ModuleRegistryUiTest.kt": {
-    "mtime": 1793124053.35486,
-    "seen": 1793975308.174661,
-    "ast_hash": "f04cd0d3c6eb11e91b5cf85287ec76f1",
-    "semantic_hash": "f04cd0d3c6eb11e91b5cf85287ec76f1"
+    "mtime": 1793984099.5881338,
+    "seen": 1793984974.8979402,
+    "ast_hash": "5780aacb690b24928b82bbbccb0b6684",
+    "semantic_hash": ""
   },
   "devview/src/androidDeviceTest/kotlin/com/worldline/devview/internal/components/ModuleItemUiTest.kt": {
     "mtime": 1793974326.7802262,
@@ -762,9 +762,9 @@
     "semantic_hash": ""
   },
   "devview/src/commonMain/kotlin/com/worldline/devview/core/Module.kt": {
-    "mtime": 1793975055.1861706,
-    "seen": 1793975308.1746767,
-    "ast_hash": "47b8d642cec9c92120bf4fb67cbaff8c",
+    "mtime": 1793983652.033795,
+    "seen": 1793984974.8979497,
+    "ast_hash": "4b238865037099eaf263b821c01d22e6",
     "semantic_hash": ""
   },
   "devview/src/commonMain/kotlin/com/worldline/devview/core/ModuleDestinationAction.kt": {
@@ -780,10 +780,10 @@
     "semantic_hash": "26735cb475ef48f319813f7cb0298336"
   },
   "devview/src/commonMain/kotlin/com/worldline/devview/core/ModuleRegistry.kt": {
-    "mtime": 1793124053.3598597,
-    "seen": 1793975308.1746845,
-    "ast_hash": "8361f978afa0c30c3a909e6d74f8ec4f",
-    "semantic_hash": "8361f978afa0c30c3a909e6d74f8ec4f"
+    "mtime": 1793983593.424186,
+    "seen": 1793984974.897954,
+    "ast_hash": "662815c51d3e7cda013bb64e7a7f1bc5",
+    "semantic_hash": ""
   },
   "devview/src/commonMain/kotlin/com/worldline/devview/core/Poko.kt": {
     "mtime": 1793124053.3608594,
@@ -978,10 +978,10 @@
     "semantic_hash": "940bd1387aab1aa3f121cfa98ed1edaa"
   },
   "konsist/src/test/kotlin/com/worldline/devview/konsist/ComposeTest.kt": {
-    "mtime": 1793124053.6432612,
-    "seen": 1793975308.1747904,
-    "ast_hash": "2362b2c164e2031c6e638439321891a5",
-    "semantic_hash": "2362b2c164e2031c6e638439321891a5"
+    "mtime": 1793989350.008175,
+    "seen": 1793990447.738899,
+    "ast_hash": "411694d5c369dc4b056d6fe77def7b32",
+    "semantic_hash": ""
   },
   "konsist/src/test/kotlin/com/worldline/devview/konsist/DevViewModules.kt": {
     "mtime": 1793124053.6432612,
@@ -1266,9 +1266,9 @@
     "semantic_hash": ""
   },
   "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/DevViewApp.kt": {
-    "mtime": 1793979137.8947754,
-    "seen": 1793982561.1657038,
-    "ast_hash": "93d7a2816ac2ffdf008c0bc60870ac19",
+    "mtime": 1793984285.7559633,
+    "seen": 1793984974.8980577,
+    "ast_hash": "833b5e02e7271543b6ff94f957bd2376",
     "semantic_hash": ""
   },
   "sample/shared/src/commonMain/kotlin/com/worldline/devview/sample/Greeting.kt": {
@@ -1434,9 +1434,9 @@
     "semantic_hash": "cb0999bb8fcc06e394e018f4dc6b8346"
   },
   ".github/workflows/build.yml": {
-    "mtime": 1793948793.6070147,
-    "seen": 1793975308.1742475,
-    "ast_hash": "b11e943d78454134f048879e43347a36",
+    "mtime": 1793983197.2151637,
+    "seen": 1793984974.8977125,
+    "ast_hash": "760713d7824f0f799db2bf286561fa7a",
     "semantic_hash": ""
   },
   ".github/workflows/close-issues.yml": {
@@ -1476,16 +1476,16 @@
     "semantic_hash": "cf96d090a20636202729d00ddf9bebe4"
   },
   "CHANGELOG.md": {
-    "mtime": 1793982393.4925714,
-    "seen": 1793982561.1657426,
-    "ast_hash": "ddc4a37930c17e528a0c25a42e807415",
+    "mtime": 1793991404.4860122,
+    "seen": 1793991656.4497802,
+    "ast_hash": "2ed01fde6164207d9d52e4bd349eaaad",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1793124053.2298348,
-    "seen": 1793975308.1749735,
-    "ast_hash": "d590a1fba661d33b67828a0c3922fb9c",
-    "semantic_hash": "d590a1fba661d33b67828a0c3922fb9c"
+    "mtime": 1793989651.1569846,
+    "seen": 1793990447.7390733,
+    "ast_hash": "72aa485cbd66d7bfe2f4c5072dbf2461",
+    "semantic_hash": ""
   },
   "README.md": {
     "mtime": 1793948793.608423,
@@ -1494,9 +1494,9 @@
     "semantic_hash": "42e3eef21ea740b04e70995dcb42ddc3"
   },
   "config/quality/detekt/compose-config.yml": {
-    "mtime": 1793982022.5939262,
-    "seen": 1793982561.1653156,
-    "ast_hash": "bcf5466e3f6838367e519ad50e39f576",
+    "mtime": 1793984377.6578298,
+    "seen": 1793984974.8977268,
+    "ast_hash": "26019e2cce9a0e6f82bfb68fef519c36",
     "semantic_hash": ""
   },
   "config/quality/detekt/ktlint-config.yml": {
@@ -1512,15 +1512,15 @@
     "semantic_hash": "284f07505a1d515cc6347f851fa56525"
   },
   "devview-analytics/CLAUDE.md": {
-    "mtime": 1793982022.5569043,
-    "seen": 1793982561.16575,
-    "ast_hash": "81faf94aabeffa7e684855433c498cbb",
+    "mtime": 1793989651.1254454,
+    "seen": 1793990447.7390814,
+    "ast_hash": "d95862e2795c3cb27c214fc3500389c3",
     "semantic_hash": ""
   },
   "devview-analytics/README.md": {
-    "mtime": 1793982022.5180058,
-    "seen": 1793982561.165751,
-    "ast_hash": "b6920986a61dee5650a11ff00452f7e5",
+    "mtime": 1793989568.837125,
+    "seen": 1793990447.7390833,
+    "ast_hash": "4117eed04771961a92149ae6d17f091e",
     "semantic_hash": ""
   },
   "devview-analytics/api/0.1.1.txt": {
@@ -1548,22 +1548,22 @@
     "semantic_hash": "cd49343ce3f248ab5cdaf7a000e8de8f"
   },
   "devview-analytics/api/api.txt": {
-    "mtime": 1793982135.3693297,
-    "seen": 1793982561.1657689,
-    "ast_hash": "3796a5d71dadfd3d048140c005a6ea0c",
+    "mtime": 1793989864.280016,
+    "seen": 1793990447.739109,
+    "ast_hash": "78e7c6309369deef11397ce1d29d099a",
     "semantic_hash": ""
   },
   "devview-featureflip/CLAUDE.md": {
-    "mtime": 1793978064.375273,
-    "seen": 1793978158.7042625,
-    "ast_hash": "fb3baac5d6c63969cb9614c3d14356c3",
+    "mtime": 1793989651.141459,
+    "seen": 1793990447.739129,
+    "ast_hash": "483a41f9f635c9eea56ce2d9fbaa01a1",
     "semantic_hash": ""
   },
   "devview-featureflip/README.md": {
-    "mtime": 1793124053.2628348,
-    "seen": 1793975308.175036,
-    "ast_hash": "c750e458941b3d17613f7a6957482570",
-    "semantic_hash": "c750e458941b3d17613f7a6957482570"
+    "mtime": 1793989651.1084466,
+    "seen": 1793990447.739131,
+    "ast_hash": "9d12df701bbe0a7cd768789be814902b",
+    "semantic_hash": ""
   },
   "devview-featureflip/api/0.1.1.txt": {
     "mtime": 1793124053.2628348,
@@ -1590,9 +1590,9 @@
     "semantic_hash": "593e5f54ff2adaec053423afff7ba71d"
   },
   "devview-featureflip/api/api.txt": {
-    "mtime": 1793979140.3278117,
-    "seen": 1793982561.165802,
-    "ast_hash": "35e823bb04543ede03f610a3afb539c0",
+    "mtime": 1793989854.716795,
+    "seen": 1793990447.7391577,
+    "ast_hash": "3094c902ca32e096277fd67868378a95",
     "semantic_hash": ""
   },
   "devview-networkmock-core/CLAUDE.md": {
@@ -1668,9 +1668,9 @@
     "semantic_hash": ""
   },
   "devview-networkmock/CLAUDE.md": {
-    "mtime": 1793948793.6097436,
-    "seen": 1793975308.1751394,
-    "ast_hash": "7a337f710727a68108af91c5294995d5",
+    "mtime": 1793989651.1529813,
+    "seen": 1793990447.7392142,
+    "ast_hash": "617206b3161f362badcecadb92e31ace",
     "semantic_hash": ""
   },
   "devview-networkmock/api/0.1.1.txt": {
@@ -1698,9 +1698,9 @@
     "semantic_hash": ""
   },
   "devview-networkmock/api/api.txt": {
-    "mtime": 1793975248.5452101,
-    "seen": 1793975308.1751766,
-    "ast_hash": "950b30149d3b3c12a5e5aaef68a120dd",
+    "mtime": 1793989865.4142704,
+    "seen": 1793990447.739239,
+    "ast_hash": "34bdd4d2be0baa73a6f8eca896e83829",
     "semantic_hash": ""
   },
   "devview-test/CLAUDE.md": {
@@ -1728,9 +1728,9 @@
     "semantic_hash": "6b1a33a8e677851ae1c7391479dc901d"
   },
   "devview-timecapsule/api/api.txt": {
-    "mtime": 1793975228.4291415,
-    "seen": 1793975308.175215,
-    "ast_hash": "280e26bf2b27a6024bbffee8e36c1b8d",
+    "mtime": 1793989859.856164,
+    "seen": 1793990447.7392638,
+    "ast_hash": "ada5ff029c65e04d9953bbb058ff0b66",
     "semantic_hash": ""
   },
   "devview-utils/CLAUDE.md": {
@@ -1770,9 +1770,9 @@
     "semantic_hash": ""
   },
   "devview/CLAUDE.md": {
-    "mtime": 1793974500.3937879,
-    "seen": 1793975308.1752486,
-    "ast_hash": "106eb634386aafb035e0c1b9f3247df4",
+    "mtime": 1793984377.6558318,
+    "seen": 1793984974.8982544,
+    "ast_hash": "5fca4d3848f7960216cb58c7bb3e16dc",
     "semantic_hash": ""
   },
   "devview/api/0.1.1.txt": {
@@ -1800,9 +1800,9 @@
     "semantic_hash": "92cc0829f68d67982c67daa1da3688bd"
   },
   "devview/api/api.txt": {
-    "mtime": 1793975196.3893611,
-    "seen": 1793975308.1752768,
-    "ast_hash": "106e4115ea9a426990d6d8c31cd8fcfb",
+    "mtime": 1793990114.3973768,
+    "seen": 1793990447.7393181,
+    "ast_hash": "204c668bc418714292de2100320090ba",
     "semantic_hash": ""
   },
   "docs/assets/branding/README.md": {
@@ -1854,9 +1854,9 @@
     "semantic_hash": ""
   },
   "docs/examples/analytics-tracking.md": {
-    "mtime": 1793982046.099214,
-    "seen": 1793982561.165918,
-    "ast_hash": "18a62e3bfd0904aade7541b8c08418cd",
+    "mtime": 1793989568.8231213,
+    "seen": 1793990447.7393348,
+    "ast_hash": "1ce93a10f14692ed1c007391768db3c8",
     "semantic_hash": ""
   },
   "docs/examples/android.md": {
@@ -1866,9 +1866,9 @@
     "semantic_hash": ""
   },
   "docs/examples/feature-flags.md": {
-    "mtime": 1793124053.368866,
-    "seen": 1793975308.1752996,
-    "ast_hash": "d9fcab28dcf91eebbb25ee33bc832220",
+    "mtime": 1793989651.0824497,
+    "seen": 1793990447.739339,
+    "ast_hash": "0c65fbcb4e1f0dc2d9e65f09dfd8c496",
     "semantic_hash": ""
   },
   "docs/examples/index.md": {
@@ -1944,9 +1944,9 @@
     "semantic_hash": ""
   },
   "docs/guides/module-development.md": {
-    "mtime": 1793974528.6559181,
-    "seen": 1793975308.1753302,
-    "ast_hash": "af69a23e603edd6d8260141b28af7d8f",
+    "mtime": 1793984377.6448314,
+    "seen": 1793984974.8983095,
+    "ast_hash": "31c0f75f6850afea3deb038bf26a3ee0",
     "semantic_hash": ""
   },
   "docs/guides/navigation.md": {
@@ -1956,9 +1956,9 @@
     "semantic_hash": ""
   },
   "docs/guides/theming.md": {
-    "mtime": 1793975055.1891723,
-    "seen": 1793975308.175335,
-    "ast_hash": "ee8c40aa28f8ed78e7090fc170a39b69",
+    "mtime": 1793984388.9631946,
+    "seen": 1793984974.898312,
+    "ast_hash": "d54515a27889b6246f7fe8cefb45404c",
     "semantic_hash": ""
   },
   "docs/index.md": {
@@ -1974,21 +1974,21 @@
     "semantic_hash": ""
   },
   "docs/modules/analytics.md": {
-    "mtime": 1793982243.0679977,
-    "seen": 1793982561.165947,
-    "ast_hash": "26c447b7a260c20893b3cf295b627675",
+    "mtime": 1793989553.8632865,
+    "seen": 1793990447.7393806,
+    "ast_hash": "3aca1502350ea257e0559cc96667515b",
     "semantic_hash": ""
   },
   "docs/modules/custom-modules.md": {
-    "mtime": 1793974905.0883002,
-    "seen": 1793975308.175352,
-    "ast_hash": "7fc6409797b4d9b05bc7c124f1c5b21d",
+    "mtime": 1793984377.6408255,
+    "seen": 1793984974.898321,
+    "ast_hash": "97067b1cde7324afee0271144b055aba",
     "semantic_hash": ""
   },
   "docs/modules/featureflip.md": {
-    "mtime": 1793978152.496539,
-    "seen": 1793978158.7044158,
-    "ast_hash": "58183319b846d9ffd18878291f115eea",
+    "mtime": 1793989651.0684478,
+    "seen": 1793990447.7393863,
+    "ast_hash": "27aa6fa9bf5d4c7846555e769d608417",
     "semantic_hash": ""
   },
   "docs/modules/index.md": {
@@ -2022,15 +2022,15 @@
     "semantic_hash": ""
   },
   "docs/modules/networkmock.md": {
-    "mtime": 1793124053.3778758,
-    "seen": 1793975308.1753676,
-    "ast_hash": "bc84fb99a38a722befba3ed6f9ef9b04",
+    "mtime": 1793989651.1134465,
+    "seen": 1793990447.7393975,
+    "ast_hash": "f487155cf164c8cc9701bceef3c08e6f",
     "semantic_hash": ""
   },
   "docs/modules/timecapsule.md": {
-    "mtime": 1793290810.7847376,
-    "seen": 1793975308.1753697,
-    "ast_hash": "41ccaff15c7adfb67b58f63be142d75e",
+    "mtime": 1793991714.5849433,
+    "seen": 1793991719.2249017,
+    "ast_hash": "b8af5163f12c68493642c37ba868a1a4",
     "semantic_hash": ""
   },
   "konsist/CLAUDE.md": {
@@ -2298,27 +2298,27 @@
     "semantic_hash": ""
   },
   "devview-consolelogger/build.gradle.kts": {
-    "mtime": 1793124053.2508328,
-    "seen": 1793975308.1743364,
-    "ast_hash": "2bec031a84a840ac4fba4f4e7fbb18d0",
-    "semantic_hash": "2bec031a84a840ac4fba4f4e7fbb18d0"
+    "mtime": 1793988134.4335227,
+    "seen": 1793990447.738427,
+    "ast_hash": "19ecc5c7ec0b78197c230c06d59df633",
+    "semantic_hash": ""
   },
   "devview-consolelogger/src/androidDeviceTest/kotlin/com/worldline/devview/consolelogger/ConsoleScreenTest.kt": {
-    "mtime": 1793124053.252835,
-    "seen": 1793975308.174339,
-    "ast_hash": "274d7cae9dedf5332e5ab893388bad71",
-    "semantic_hash": "274d7cae9dedf5332e5ab893388bad71"
+    "mtime": 1793990572.4421098,
+    "seen": 1793990966.5794053,
+    "ast_hash": "92dca3623fa9bfc3f87f74dfefab0c02",
+    "semantic_hash": ""
   },
   "devview-consolelogger/src/androidMain/kotlin/com/worldline/devview/consolelogger/ConsoleCapture.android.kt": {
-    "mtime": 1793124053.253835,
-    "seen": 1793975308.1743414,
-    "ast_hash": "e8ab8f14c67c49716305bc1c29bf737c",
-    "semantic_hash": "e8ab8f14c67c49716305bc1c29bf737c"
+    "mtime": 1793991453.6114423,
+    "seen": 1793991656.4494727,
+    "ast_hash": "8a9a5943d26187d02b23f7d720e4f3ec",
+    "semantic_hash": ""
   },
   "devview-consolelogger/src/commonMain/kotlin/com/worldline/devview/consolelogger/Console.kt": {
-    "mtime": 1793974311.8936183,
-    "seen": 1793975308.1743445,
-    "ast_hash": "72998cc1f872150fa85c8667a5574a9a",
+    "mtime": 1793990617.0274844,
+    "seen": 1793990966.5794132,
+    "ast_hash": "3f22611d1b154c257922e1a7210dcc54",
     "semantic_hash": ""
   },
   "devview-consolelogger/src/commonMain/kotlin/com/worldline/devview/consolelogger/ConsoleCapture.kt": {
@@ -2328,16 +2328,16 @@
     "semantic_hash": "47965e640b079f1d26b0fb8cb5a23639"
   },
   "devview-consolelogger/src/commonMain/kotlin/com/worldline/devview/consolelogger/ConsoleLogger.kt": {
-    "mtime": 1793124053.2558353,
-    "seen": 1793975308.1743495,
-    "ast_hash": "bf19afe7e29459a02792da8c36fa3113",
-    "semantic_hash": "bf19afe7e29459a02792da8c36fa3113"
+    "mtime": 1793984612.5770571,
+    "seen": 1793984974.8977711,
+    "ast_hash": "2439a7dbf0a3bb9dba40c0593e9f1aab",
+    "semantic_hash": ""
   },
   "devview-consolelogger/src/commonMain/kotlin/com/worldline/devview/consolelogger/ConsoleScreen.kt": {
-    "mtime": 1793124053.2558353,
-    "seen": 1793975308.1743517,
-    "ast_hash": "cf3d6a810d48b91d665ccbba77b99e0d",
-    "semantic_hash": "cf3d6a810d48b91d665ccbba77b99e0d"
+    "mtime": 1793989965.2449932,
+    "seen": 1793990447.7384539,
+    "ast_hash": "b03ca9a49c27840e258676233329e1e9",
+    "semantic_hash": ""
   },
   "devview-consolelogger/src/commonMain/kotlin/com/worldline/devview/consolelogger/DevViewLogWriter.kt": {
     "mtime": 1793124053.2558353,
@@ -2352,10 +2352,10 @@
     "semantic_hash": "9e7930afd04792e29ae78be8382d54ff"
   },
   "devview-consolelogger/src/commonMain/kotlin/com/worldline/devview/consolelogger/model/ConsoleLog.kt": {
-    "mtime": 1793124053.2568352,
-    "seen": 1793975308.1743581,
-    "ast_hash": "ea3efaa2f208286635d0206317779901",
-    "semantic_hash": "ea3efaa2f208286635d0206317779901"
+    "mtime": 1793983297.8555677,
+    "seen": 1793984974.8977761,
+    "ast_hash": "b4c5b79b4eea28839fa418f8240c684a",
+    "semantic_hash": ""
   },
   "devview-consolelogger/src/commonMain/kotlin/com/worldline/devview/consolelogger/model/LogLevel.kt": {
     "mtime": 1793124053.2568352,
@@ -2376,21 +2376,21 @@
     "semantic_hash": "6050e3cc11e645b1abc65f80881a04c7"
   },
   "devview-consolelogger/src/commonMain/kotlin/com/worldline/devview/consolelogger/theme/LogColorScheme.kt": {
-    "mtime": 1793124053.2578342,
-    "seen": 1793975308.174368,
-    "ast_hash": "db0cb6cc0f4853e902933598b1f4f42b",
-    "semantic_hash": "db0cb6cc0f4853e902933598b1f4f42b"
+    "mtime": 1793983945.2206688,
+    "seen": 1793984974.897781,
+    "ast_hash": "6418ddfd7a00a247314db4510ed197ac",
+    "semantic_hash": ""
   },
   "devview-consolelogger/src/commonTest/kotlin/com/worldline/devview/consolelogger/ConsoleLoggerTest.kt": {
-    "mtime": 1793124053.2598345,
-    "seen": 1793975308.1743703,
-    "ast_hash": "c84ae4048207546547caaa786be128cc",
-    "semantic_hash": "c84ae4048207546547caaa786be128cc"
+    "mtime": 1793984826.5639675,
+    "seen": 1793984974.8977833,
+    "ast_hash": "0d3ce1f2e39c2ca61e157e54d0c069ad",
+    "semantic_hash": ""
   },
   "devview-consolelogger/src/commonTest/kotlin/com/worldline/devview/consolelogger/ConsoleModuleTest.kt": {
-    "mtime": 1793974457.3443897,
-    "seen": 1793975308.1743722,
-    "ast_hash": "3d4c30e532d57354a521d40c9e6fc9ec",
+    "mtime": 1793983855.3517709,
+    "seen": 1793984974.8977842,
+    "ast_hash": "4bc68afeb5c4047133189413b8ea1532",
     "semantic_hash": ""
   },
   "devview-consolelogger/src/commonTest/kotlin/com/worldline/devview/consolelogger/DevViewLogWriterTest.kt": {
@@ -2406,16 +2406,16 @@
     "semantic_hash": "03f71a00cef3390352146876d0078907"
   },
   "devview-consolelogger/src/commonTest/kotlin/com/worldline/devview/consolelogger/theme/LogColorSchemeTest.kt": {
-    "mtime": 1793124053.2608347,
-    "seen": 1793975308.17438,
-    "ast_hash": "dbfd046ac9425754d754aa348d261661",
-    "semantic_hash": "dbfd046ac9425754d754aa348d261661"
+    "mtime": 1793983451.2287443,
+    "seen": 1793984974.897788,
+    "ast_hash": "ec7dcefbfaa170111d5026f53394124a",
+    "semantic_hash": ""
   },
   "devview-consolelogger/src/iosMain/kotlin/com/worldline/devview/consolelogger/ConsoleCapture.ios.kt": {
-    "mtime": 1793124053.2618349,
-    "seen": 1793975308.174383,
-    "ast_hash": "357aee822272cd054b630ff3317877b4",
-    "semantic_hash": "357aee822272cd054b630ff3317877b4"
+    "mtime": 1793991443.877766,
+    "seen": 1793991656.449501,
+    "ast_hash": "bad597557b1dd045ca68ff4b5a0303e3",
+    "semantic_hash": ""
   },
   "devview-timecapsule/src/commonMain/kotlin/com/worldline/devview/timecapsule/FieldChange.kt": {
     "mtime": 1793292943.300161,
@@ -2430,21 +2430,21 @@
     "semantic_hash": ""
   },
   "devview-consolelogger/CLAUDE.md": {
-    "mtime": 1793124053.2478347,
-    "seen": 1793975308.1750147,
-    "ast_hash": "462fd4d2867fff46a85d7b579214dd33",
-    "semantic_hash": "462fd4d2867fff46a85d7b579214dd33"
+    "mtime": 1793991404.483013,
+    "seen": 1793991656.4498043,
+    "ast_hash": "96bbe0f33f9e0e3616819b915ba7fce3",
+    "semantic_hash": ""
   },
   "devview-consolelogger/api/api.txt": {
-    "mtime": 1793975239.3454072,
-    "seen": 1793975308.175032,
-    "ast_hash": "6d2d5233e4076d965e58b692bad227ab",
+    "mtime": 1793989856.003544,
+    "seen": 1793990447.7391276,
+    "ast_hash": "ea8a135212b3512230245f0b8288cda0",
     "semantic_hash": ""
   },
   "docs/modules/consolelogger.md": {
-    "mtime": 1793124053.3758757,
-    "seen": 1793975308.1753476,
-    "ast_hash": "530c8fa7dd03768428ad81f050f238eb",
+    "mtime": 1793991592.1655648,
+    "seen": 1793991656.4499493,
+    "ast_hash": "6568b02cca8a1cd4904388cd2636177f",
     "semantic_hash": ""
   },
   "pip-requirements.txt": {
@@ -2802,9 +2802,9 @@
     "semantic_hash": ""
   },
   "devview/src/androidDeviceTest/kotlin/com/worldline/devview/ui/DevViewUiTest.kt": {
-    "mtime": 1793974905.0853033,
-    "seen": 1793975308.1746652,
-    "ast_hash": "c795db4eb484d2ff9e131fe44c40439b",
+    "mtime": 1793990063.641901,
+    "seen": 1793990447.7387738,
+    "ast_hash": "454f8deed310733909589056c819d61f",
     "semantic_hash": ""
   },
   "devview/src/androidMain/kotlin/com/worldline/devview/ui/Clipboard.android.kt": {
@@ -2838,9 +2838,9 @@
     "semantic_hash": ""
   },
   "devview/src/commonMain/kotlin/com/worldline/devview/ui/DevViewFilterBar.kt": {
-    "mtime": 1793974905.0712998,
-    "seen": 1793975308.1747026,
-    "ast_hash": "791087ce56dfc4d28b2ed593112043f4",
+    "mtime": 1793989965.24099,
+    "seen": 1793990447.7388144,
+    "ast_hash": "eab7956f927327f0b4e7878dfbc4fe3d",
     "semantic_hash": ""
   },
   "devview/src/commonMain/kotlin/com/worldline/devview/ui/DevViewGroupedItem.kt": {
@@ -3042,9 +3042,9 @@
     "semantic_hash": ""
   },
   "docs/guides/ui-components.md": {
-    "mtime": 1793974518.792248,
-    "seen": 1793975308.1753376,
-    "ast_hash": "2fcf5992674072d650b1541baa4d6061",
+    "mtime": 1793990063.6388998,
+    "seen": 1793990447.7393737,
+    "ast_hash": "bcf0be1a0334e1c4267dc72a56b9a422",
     "semantic_hash": ""
   },
   "devview-featureflip/src/androidDeviceTest/kotlin/com/worldline/devview/featureflip/components/FeatureItemTest.kt": {
@@ -3071,11 +3071,101 @@
     "ast_hash": "983609fc8de2bc21ca842d076f88359f",
     "semantic_hash": ""
   },
-  ".claude/skills/graphify/references/extraction-spec.md": {
-    "mtime": 1787585253.4360242,
+  "devview-consolelogger/src/androidMain/kotlin/com/worldline/devview/consolelogger/ConsoleLock.android.kt": {
+    "mtime": 1793983774.0323322,
+    "seen": 1793984974.8977647,
+    "ast_hash": "019e846eeb9a529ee04f72d5d6ca2d35",
+    "semantic_hash": ""
+  },
+  "devview-consolelogger/src/commonMain/kotlin/com/worldline/devview/consolelogger/ConsoleFilters.kt": {
+    "mtime": 1793989418.3144748,
+    "seen": 1793990447.738445,
+    "ast_hash": "1666f1bd78229a68fd99f647f55ca5db",
+    "semantic_hash": ""
+  },
+  "devview-consolelogger/src/commonMain/kotlin/com/worldline/devview/consolelogger/ConsoleLock.kt": {
+    "mtime": 1793983774.027342,
+    "seen": 1793984974.89777,
+    "ast_hash": "9dc24ae07c84938baa1bae5eef7aca3f",
+    "semantic_hash": ""
+  },
+  "devview-consolelogger/src/commonMain/kotlin/com/worldline/devview/consolelogger/components/ConsoleLogRow.kt": {
+    "mtime": 1793988334.471703,
+    "seen": 1793990447.738461,
+    "ast_hash": "754e5e76e0659d07a10eff76678fe7f9",
+    "semantic_hash": ""
+  },
+  "devview-consolelogger/src/commonTest/kotlin/com/worldline/devview/consolelogger/ConsoleFiltersTest.kt": {
+    "mtime": 1793990773.969442,
+    "seen": 1793990966.5794444,
+    "ast_hash": "54441b0ada0a0ffc1cdda94f1ac03ae4",
+    "semantic_hash": ""
+  },
+  "devview-consolelogger/src/iosMain/kotlin/com/worldline/devview/consolelogger/ConsoleLock.ios.kt": {
+    "mtime": 1793983855.3487773,
+    "seen": 1793984974.8977902,
+    "ast_hash": "21a53e50b62c5dddf5ca124b098c13de",
+    "semantic_hash": ""
+  },
+  "devview-consolelogger/src/androidDeviceTest/kotlin/com/worldline/devview/consolelogger/ConsoleNoisePersistenceTest.kt": {
+    "mtime": 1793989795.1950674,
+    "seen": 1793990447.7384295,
+    "ast_hash": "3e9a189d95c6e9d5a67797e5f7640c81",
+    "semantic_hash": ""
+  },
+  "devview-consolelogger/src/commonMain/kotlin/com/worldline/devview/consolelogger/ConsoleNoiseFilters.kt": {
+    "mtime": 1793989965.2589898,
+    "seen": 1793990447.7384517,
+    "ast_hash": "f09fef2b9ed59fd08fa845524e4296c8",
+    "semantic_hash": ""
+  },
+  "devview-consolelogger/src/commonMain/kotlin/com/worldline/devview/consolelogger/components/ConsoleNoiseFilterPanel.kt": {
+    "mtime": 1793989965.2619886,
+    "seen": 1793990447.7384627,
+    "ast_hash": "9e22221660b19608a5df784ce447d837",
+    "semantic_hash": ""
+  },
+  "devview-consolelogger/src/commonTest/kotlin/com/worldline/devview/consolelogger/ConsoleNoiseFiltersTest.kt": {
+    "mtime": 1793990572.4079945,
+    "seen": 1793990966.5794497,
+    "ast_hash": "718e7ece0a1299bb667038a7cd23feec",
+    "semantic_hash": ""
+  },
+  "devview-consolelogger/src/androidDeviceTest/kotlin/com/worldline/devview/consolelogger/ConsoleCaptureTest.kt": {
+    "mtime": 1793991404.4547622,
+    "seen": 1793991656.4494674,
+    "ast_hash": "0ba5284aa9bea7b295c6f4c402312f1c",
+    "semantic_hash": ""
+  },
+  "devview-consolelogger/src/iosTest/kotlin/com/worldline/devview/consolelogger/ConsoleCaptureTest.kt": {
+    "mtime": 1794219523.7965305,
+    "seen": 1794219571.7328465,
+    "ast_hash": "438f76ec1138d160707ddec11d19bd32",
+    "semantic_hash": ""
+  },
+  ".claude/skills/graphify/references/exports.md": {
+    "mtime": 1787585253.4323912,
     "seen": 1788872517.5817127,
-    "ast_hash": "42fef56a01698118f7fd722acdadea34",
-    "semantic_hash": "42fef56a01698118f7fd722acdadea34"
+    "ast_hash": "9da2a2152e60a22f07f05fed5158f287",
+    "semantic_hash": "9da2a2152e60a22f07f05fed5158f287"
+  },
+  ".claude/skills/graphify/references/transcribe.md": {
+    "mtime": 1787585253.5628953,
+    "seen": 1788872517.5817127,
+    "ast_hash": "67b6a5fa6c0974e18f60db9f8932fbd8",
+    "semantic_hash": "67b6a5fa6c0974e18f60db9f8932fbd8"
+  },
+  ".claude/skills/graphify/references/query.md": {
+    "mtime": 1787585253.5598843,
+    "seen": 1788872517.5817127,
+    "ast_hash": "3c46f8ad006874260614ed8657d02307",
+    "semantic_hash": "3c46f8ad006874260614ed8657d02307"
+  },
+  ".claude/skills/graphify/SKILL.md": {
+    "mtime": 1787585682.280166,
+    "seen": 1788872517.5817127,
+    "ast_hash": "1656a8a8e4a05bbe69f32cd15de81e87",
+    "semantic_hash": "1656a8a8e4a05bbe69f32cd15de81e87"
   },
   ".claude/skills/graphify/references/update.md": {
     "mtime": 1787585253.563904,
@@ -3089,29 +3179,11 @@
     "ast_hash": "d59d027fe449f06aa03905a01184e779",
     "semantic_hash": "d59d027fe449f06aa03905a01184e779"
   },
-  ".claude/skills/graphify/references/query.md": {
-    "mtime": 1787585253.5598843,
+  ".claude/skills/graphify/references/extraction-spec.md": {
+    "mtime": 1787585253.4360242,
     "seen": 1788872517.5817127,
-    "ast_hash": "3c46f8ad006874260614ed8657d02307",
-    "semantic_hash": "3c46f8ad006874260614ed8657d02307"
-  },
-  ".claude/skills/graphify/references/transcribe.md": {
-    "mtime": 1787585253.5628953,
-    "seen": 1788872517.5817127,
-    "ast_hash": "67b6a5fa6c0974e18f60db9f8932fbd8",
-    "semantic_hash": "67b6a5fa6c0974e18f60db9f8932fbd8"
-  },
-  ".claude/skills/graphify/SKILL.md": {
-    "mtime": 1787585682.280166,
-    "seen": 1788872517.5817127,
-    "ast_hash": "1656a8a8e4a05bbe69f32cd15de81e87",
-    "semantic_hash": "1656a8a8e4a05bbe69f32cd15de81e87"
-  },
-  ".claude/skills/graphify/references/exports.md": {
-    "mtime": 1787585253.4323912,
-    "seen": 1788872517.5817127,
-    "ast_hash": "9da2a2152e60a22f07f05fed5158f287",
-    "semantic_hash": "9da2a2152e60a22f07f05fed5158f287"
+    "ast_hash": "42fef56a01698118f7fd722acdadea34",
+    "semantic_hash": "42fef56a01698118f7fd722acdadea34"
   },
   ".claude/skills/graphify/references/github-and-merge.md": {
     "mtime": 1787585253.5175588,
