@@ -1,5 +1,6 @@
 package com.worldline.devview.networkmock.utils
 
+import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.model.DiffLine
 import com.worldline.devview.networkmock.model.DisplayLine
 import io.kotest.matchers.collections.shouldHaveSize
@@ -8,6 +9,31 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.test.Test
 
 class DiffLineUtilsTest {
+
+    @Test
+    fun `displayContent pretty prints JSON without changing the response`() {
+        val response = MockResponse.create(
+            statusCode = 200,
+            mediaType = "application/json",
+            exampleName = "default",
+            content = "{\"ok\":true}"
+        )
+        response.displayContent() shouldBe "{\n    \"ok\": true\n}"
+        response.content shouldBe "{\"ok\":true}"
+    }
+
+    @Test
+    fun `displayContent preserves malformed and non JSON bodies`() {
+        val response = MockResponse.create(
+            statusCode = 200,
+            mediaType = "application/json",
+            exampleName = "default",
+            content = "{broken"
+        )
+        response.displayContent() shouldBe response.content
+        val plain = response.copy(content = "{\"ok\":true}", contentType = "text/plain")
+        plain.displayContent() shouldBe plain.content
+    }
 
     // region shouldUseInlineDiff
 

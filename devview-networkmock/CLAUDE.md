@@ -129,12 +129,14 @@ Registered via `DestinationMetadataBuilder.menu` (the shared toolbar's dropdown-
 see `devview/DevView.kt` and `ModuleDestinationAction.menuItems`), not the plain single-tap
 `action` used by "Refresh"/"Reset to Network" — a sort key is a discrete choice among several, so
 it gets an anchored dropdown instead of a cycling single-tap icon. One menu entry per
-`OperationSort` value (`Default`, `Path (A-Z)`, `Method`, `Tag`), built once at module-construction
+`OperationSort` value (`Default`, `Path (A-Z)`, `Method`, `Tag`, `Mocked first`), built once at module-construction
 time from `OperationSort.entries`; because the shared `menu` DSL takes a fixed list of items with
 no access to the currently-visible spec, "Tag" is always offered even when the current spec has no
 tagged operations — picking it in that case is a harmless no-op (`sortedByOption` sorts by every
 operation's absent first tag, i.e. an equal empty string for all, so the list order doesn't
-change).
+change). "Mocked first" uses `sortedBy { it.currentState is OperationMockState.Network }`:
+Mock, Failure, and Sequence precede Network, with stable spec order within both groups. List
+items use `animateItem()` so filter and sort changes animate.
 
 The flow crossing `NetworkMock` → `NetworkMockScreen` carries an `OperationSort.label: String`,
 not `OperationSort` itself: `NetworkMockScreen` is public API but `OperationSort` is deliberately
@@ -146,55 +148,46 @@ safe, internal-only protocol despite the public parameter type. Sort selection i
 the same way as the version/method/tag filters — plain `mutableStateMapOf<String, OperationSort>`
 in `ContentState`, keyed by spec ID, never round-tripped through `NetworkMockViewModel`.
 
-### Operation sheet: one sheet, two pages
+### Operation sheet: a fixed-height tabbed sheet and preview
 
-`NetworkMockOperationSheet.kt` renders `NetworkMockViewModel.sheetState` as a `ModalBottomSheet`
-with two pages switched by `AnimatedContent`, both plain local `remember` state in the sheet
-composable (not the ViewModel — see `PreviewSheetState` below):
+`NetworkMockOperationSheet.kt` renders `NetworkMockViewModel.sheetState` as a
+`ModalBottomSheet` with `surfaceContainerLow` and a fixed `fillMaxHeight(0.65f)` root.
+An operation identity header precedes Responses / Sequence / Failure tabs. Tab choice and
+preview state are local UI details, not new ViewModel state or navigation destinations.
+Switching tabs or opening Preview leaves the height unchanged.
 
-- **Picker page** (`OperationPickerPage`, `internal` rather than `private` specifically so
-  device tests can exercise it without going through `ModalBottomSheet`'s chrome/animation,
-  which has no established testing pattern in this codebase): `OperationPickerHeader` mirrors
-  `EndpointCard`'s row anatomy (see "Endpoint row anatomy" above) for the name/method/path —
-  no version badge, wrapping instead of truncating path — since it renders the same operation
-  identity, just above the response list instead of in a list row. Unlike `EndpointCard`, the
-  header has **no** state chip: the currently-active response is already marked with a
-  checkmark, its full `displayName`, and a family icon/colour by `MockItemContent` in the list
-  right below, so a second, bare-status-code chip in the header would only repeat it — the same
-  "don't show it twice" reasoning as the deleted version badge. Below the header,
-  `NetworkItem` + `MockItem` rows grouped by `StatusCodeFamily`. Tapping a row calls
-  `onSelectResponse` and dismisses the sheet. Each `MockItem` also has an eye-icon preview
-  toggle (`isMarkedForPreview`/`onToggleMarkedForPreview`) that marks it *without* dismissing;
-  once ≥1 response is marked, a "Preview .../Compare 2 responses" button appears and switches
-  to the preview page. Below the grouped responses, a "SIMULATE FAILURE" sticky header plus one
-  `FailureItem` per `FailureKind` (built the same way as `NetworkItem`/`MockItem`, reusing the
-  shared `MockItemContent` — see `MockItem.kt`); tapping one calls `onSelectFailure` and
-  dismisses the sheet the same way a response row does. If the operation declares
-  `x-devview.failureRate`, a read-only `Text` row under that header shows the configured rate —
-  there is no in-UI editing for it, the field is spec-authored.
-- **Preview page** (`MockResponsePreviewPage.kt`, replaces the pre-sheet `NetworkMockEndpointPreviewBottomSheet.kt`):
-  same diff-rendering body as before, now reached via a back arrow instead of a close button —
-  going back returns to the picker page without clearing the marks.
+- **Responses**: Network and status-family cards with inset dividers, matching sticky headers,
+  and animated items. Tapping a row applies it and closes the sheet; the current choice is
+  checked. The eye opens Preview directly without a marking toggle or conditional bottom button.
+- **Sequence**: the existing builder seeds active steps, preserves order/repetitions, allows
+  removal, and saves at least two available steps through `onCommitSequence` before closing.
+  Active sequence position and Reset are here. Cancel returns to Responses without applying
+  the draft. The last response continues to repeat once the sequence finishes.
+- **Failure**: grouped Timeout / Connection Refused choices close the sheet when applied.
+  Spec-authored `x-devview.failureRate` remains read-only in a footer.
+- **Preview**: the eye-selected response body and Compare with dropdown of alternatives.
+  Comparing retains the original first response; Back returns to Responses. Neither preview
+  nor comparison activates a mock. Keep `previewToggleTestTag` despite the direct-open behavior.
 
-Marking is driven by `combinedClickable`'s replacement, plain per-row `clickable`s — the sheet
-used to require a *long-press* to mark a response for preview (invisible enough that the old
-detail screen carried a permanent hint card explaining it); the eye toggle is a visible
-affordance, so the hint card is gone along with the long-press gesture.
-
-`PreviewSheetState` (`PreviewSheetState.kt`, unchanged by the sheet redesign) is a sealed
-interface with three states: `Hidden`, `Single(response)`, `Compare(first, second)`. Toggling a
-response calls `transition(response)`, which cycles: Hidden → Single → Compare (second toggle)
-→ back to Single (untoggle one) → Hidden (untoggle the last). Selection identity is the whole
-`MockResponse` (effectively its `(statusCode, exampleName)` pair), not a file name. What changed
-is *what triggers* a transition (an explicit eye-icon tap, not a long-press) and what the state
-*means* (which responses are marked, not "is a second sheet open" — that's now a separate
-`showingPreviewPage: Boolean` alongside it).
+`PreviewSheetState` holds `Hidden`, `Single(response)`, or `Compare(first, second)`.
+It no longer models marked rows or a toggle cycle: `transition` and `isInPreviewMode` are
+removed. Response variant identity includes `(statusCode, mediaType, exampleName)`.
+The ViewModel, `OperationSheetState`, repositories, mock engine, Ktor plugin, persistence,
+and public API are unchanged by this revamp.
 
 ### Diff rendering pipeline
 
-When the sheet is in `Compare` state, responses are diffed:
+`MockResponse.displayContent()` (`utils/DiffLineUtils.kt`) pretty-prints valid JSON when
+`contentType` contains "json" (case-insensitive), falling back to the raw body for malformed
+JSON or non-JSON content. `ResponseContentPane` uses it for display, and
+`PreviewSheetState.Compare` uses it before similarity checking and diffing. This is display-only:
+served response bodies do not change. `DiffLineRow` keeps logical lines unwrapped (`softWrap = false`); each pane has one
+horizontal scroll around a finite-width `LazyColumn`, so all rows move together and only
+visible rows are composed.
 
-1. `shouldUseInlineDiff(...)` — computes LCS length / max lines; uses inline diff if ratio ≥ `INLINE_DIFF_THRESHOLD` (0.4).
+When the sheet is in `Compare` state, formatted responses are diffed:
+
+1. `PreviewSheetState.Compare` formats and caches one diff per pair, falling back to split previews above 1,000,000 LCS cells; shared-line ratio ≥ `INLINE_DIFF_THRESHOLD` (0.4) uses inline diff.
 2. `computeLineDiff(...)` — LCS-based O(m×n) diff producing a `PersistentList<DiffLine>` (Unchanged / Different).
 3. `List<DiffLine>.toDisplayLines()` — flattens to `DisplayLine` values and collapses runs of ≥ `COLLAPSE_THRESHOLD` (7) unchanged lines, keeping `CONTEXT_LINES` (3) on each side with a `Collapsed(count)` placeholder.
 
