@@ -1,481 +1,295 @@
 package com.worldline.devview.analytics
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
-import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.worldline.devview.analytics.components.AnalyticsLogItem
 import com.worldline.devview.analytics.components.HighlightedAnalyticsLogsHeader
 import com.worldline.devview.analytics.model.AnalyticsLog
-import com.worldline.devview.analytics.model.AnalyticsLogCategory
 import com.worldline.devview.analytics.model.AnalyticsLogType
 import com.worldline.devview.analytics.model.HighlightedAnalyticsLog
-import com.worldline.devview.analytics.preview.AnalyticsLogListPreviewParameterProvider
+import com.worldline.devview.ui.DevViewEmptyState
+import com.worldline.devview.ui.DevViewFilterBar
+import com.worldline.devview.ui.DevViewSectionHeader
 import kotlin.time.Clock
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Main UI component for displaying analytics logs in a tabular format.
+ * Displays analytics events with compact counts and a pinned search/filter bar.
  *
- * This composable renders a scrollable list of analytics events with a sticky header
- * displaying highlighted statistics, followed by a filterable and scrollable log list.
- * The bottom bar provides three complementary filtering mechanisms: a category chip row,
- * a time range segmented button, and a text field for filtering by tag or screen class.
+ * Search, category selection, time range and panel visibility survive saved-state restoration.
+ * Time-limited results refresh every five seconds. Tapping an event opens its details in place;
+ * the [Analytics] module instead navigates to a dedicated destination.
  *
- * ## Features
- * - Sticky header with highlighted analytics log statistics
- * - Formatted timestamps (HH:mm:ss)
- * - Category colour-coded chips per log entry
- * - Animated item transitions when filters change
- * - Scroll-to-top FAB that appears when the latest entry is out of view
- * - Bottom bar with category filter chips, time range selector, and text filter field
- * - Empty state message when no logs are present or no logs match the current filter
- *
- * ## Usage
- *
- * ### Basic Usage
- * ```kotlin
- * CompositionLocalProvider(LocalAnalytics provides AnalyticsLogger.logs) {
- *     AnalyticsScreen(
- *         highlightedAnalyticsLogTypes = persistentListOf(
- *             AnalyticsLogCategory.Action.Click,
- *             AnalyticsLogCategory.Performance.Error
- *         ),
- *         modifier = Modifier.fillMaxSize()
- *     )
- * }
- * ```
- *
- * @param highlightedAnalyticsLogTypes The list of [AnalyticsLogType] entries to highlight in the
- *        sticky header. Each type is displayed as a summary card showing its event count alongside
- *        a total count card. Typically contains two or three types of interest (e.g. clicks, errors).
- * @param modifier Modifier to be applied to the root [Scaffold].
- * @param bottomPadding Additional bottom padding applied to the bottom bar content, used to avoid
- *        overlap with system UI elements when this screen is nested inside another [Scaffold].
- *
- * @see AnalyticsLogger
- * @see LocalAnalytics
- * @see AnalyticsLog
- * @see HighlightedAnalyticsLogsHeader
+ * @param highlightedAnalyticsLogTypes Types whose counts appear beside the total count.
+ * @param modifier Modifier applied to the screen.
+ * @param bottomPadding Bottom inset supplied by the destination scaffold.
+ * @param logs Events to display. Defaults to the logger’s current read-only snapshot.
+ *        Read changing snapshots in composition, rather than remembering them.
  */
 @Composable
 public fun AnalyticsScreen(
     highlightedAnalyticsLogTypes: PersistentList<AnalyticsLogType>,
     modifier: Modifier = Modifier,
+    bottomPadding: Dp = 0.dp,
+    logs: List<AnalyticsLog> = AnalyticsLogger.logs
+) {
+    val stateHolder = rememberSaveableStateHolder()
+    var selectedId by rememberSaveable { mutableStateOf<String?>(value = null) }
+    val selectedLog = logs.firstOrNull { it.id == selectedId }
+    if (selectedId != null) {
+        AnalyticsDetailScreen(
+            log = selectedLog,
+            modifier = modifier,
+            bottomPadding = bottomPadding,
+            onBack = { selectedId = null }
+        )
+    } else {
+        stateHolder.SaveableStateProvider(key = "events") {
+            AnalyticsListScreen(
+                logs = logs,
+                highlightedAnalyticsLogTypes = highlightedAnalyticsLogTypes,
+                modifier = modifier,
+                bottomPadding = bottomPadding,
+                onEventClick = { selectedId = it.id }
+            )
+        }
+    }
+}
+
+@Composable
+internal fun AnalyticsListScreen(
+    highlightedAnalyticsLogTypes: PersistentList<AnalyticsLogType>,
+    onEventClick: (AnalyticsLog) -> Unit,
+    modifier: Modifier = Modifier,
+    logs: List<AnalyticsLog> = AnalyticsLogger.logs,
     bottomPadding: Dp = 0.dp
 ) {
-    val analytics = LocalAnalytics.current
-
-    val spacing = 8.dp
-
-    var filterQuery by remember { mutableStateOf(value = "") }
-
-    val lazyListState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
-
-    val showScrollToTopFab by remember {
-        derivedStateOf {
-            val layoutInfo = lazyListState.layoutInfo
-            val headerItem =
-                layoutInfo.visibleItemsInfo.firstOrNull { it.key == "highlighted_logs_header" }
-            val firstLogItem =
-                layoutInfo.visibleItemsInfo.firstOrNull { it.key != "highlighted_logs_header" }
-            val headerBottom = (headerItem?.offset ?: 0) + (headerItem?.size ?: 0)
-            firstLogItem == null || firstLogItem.offset < headerBottom
+    val analytics = logs
+    var query by rememberSaveable { mutableStateOf(value = "") }
+    var selectedCategories by rememberSaveable { mutableStateOf(value = emptyList<String>()) }
+    var range by rememberSaveable { mutableStateOf(value = TimeRange.All) }
+    var expanded by rememberSaveable { mutableStateOf(value = false) }
+    val now by produceState(initialValue = Clock.System.now().toEpochMilliseconds(), key1 = range) {
+        value = Clock.System.now().toEpochMilliseconds()
+        while (range != TimeRange.All) {
+            delay(timeMillis = 5_000)
+            value = Clock.System.now().toEpochMilliseconds()
         }
     }
-
-    var selectedCategories by remember { mutableStateOf(value = emptySet<AnalyticsLogCategory>()) }
-    var selectedTimeRange by remember { mutableStateOf(value = TimeRange.All) }
-    var filtersExpanded by remember { mutableStateOf(value = false) }
-
-    val iconRotation by animateFloatAsState(
-        targetValue = if (filtersExpanded) 180f else 0f
+    val filtered = filterLogs(
+        logs = analytics,
+        query = query,
+        categories = selectedCategories.toSet(),
+        range = range,
+        now = now
     )
-
-    val availableCategories by remember {
-        derivedStateOf {
-            analytics.map { it.type.category }.distinct()
-        }
+    val rowKeys = eventRowKeys(logs = filtered)
+    val categories = analytics.map { it.type.category }.distinctBy { it.displayName }
+    val count = selectedCategories.size + if (range == TimeRange.All) 0 else 1
+    val clearFilters = {
+        selectedCategories = emptyList()
+        range = TimeRange.All
     }
-
-    val filteredAnalytics by remember {
-        derivedStateOf {
-            val now = Clock.System.now().toEpochMilliseconds()
-            analytics.withIndex().filter { (_, log) ->
-                val matchesQuery = filterQuery.isBlank() ||
-                    log.tag.contains(other = filterQuery, ignoreCase = true) ||
-                    log.screenClass.contains(other = filterQuery, ignoreCase = true)
-                val matchesCategory = selectedCategories.isEmpty() ||
-                    log.type.category in selectedCategories
-                val matchesTimeRange = selectedTimeRange.durationMillis?.let { duration ->
-                    now - log.timestamp <= duration
-                } ?: true
-                matchesQuery && matchesCategory && matchesTimeRange
-            }
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    val summaries = buildList {
+        add(element = HighlightedAnalyticsLog.Total(count = filtered.size))
+        highlightedAnalyticsLogTypes.forEach { type ->
+            add(
+                element = HighlightedAnalyticsLog.Type(
+                    type = type,
+                    count = filtered.count { it.type == type }
+                )
+            )
         }
-    }
-
-    val highlightedAnalyticsLogs: PersistentList<HighlightedAnalyticsLog> by remember {
-        derivedStateOf {
-            buildList {
-                add(element = HighlightedAnalyticsLog.Total(count = analytics.size))
-                highlightedAnalyticsLogTypes.mapTo(destination = this) { type ->
-                    HighlightedAnalyticsLog.Type(
-                        type = type,
-                        count = analytics.count { it.type == type }
-                    )
-                }
-            }.toPersistentList()
-        }
-    }
+    }.toPersistentList()
 
     Scaffold(
-        modifier = modifier
-            .fillMaxSize()
-            .imePadding(),
+        modifier = modifier.fillMaxSize().imePadding(),
         floatingActionButton = {
-            AnimatedVisibility(
-                visible = showScrollToTopFab,
-                enter = slideInHorizontally(initialOffsetX = { it * 2 }),
-                exit = slideOutHorizontally(targetOffsetX = { it * 2 })
-            ) {
+            AnimatedVisibility(visible = listState.firstVisibleItemIndex > 1) {
                 FloatingActionButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            lazyListState.animateScrollToItem(index = 0)
-                        }
-                    }
+                    onClick = { scope.launch { listState.animateScrollToItem(index = 0) } }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowUp,
-                        contentDescription = "Scroll to latest"
+                        imageVector = Icons.Rounded.KeyboardArrowUp,
+                        contentDescription = "Scroll to first event"
                     )
                 }
             }
         },
         bottomBar = {
-            Surface {
-                Column {
-                    AnimatedVisibility(visible = filtersExpanded) {
-                        Column {
-                            HorizontalDivider()
-                            SingleChoiceSegmentedButtonRow(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                                    .testTag(tag = "time_range_selector")
-                            ) {
-                                TimeRange.entries.forEachIndexed { index, timeRange ->
-                                    SegmentedButton(
-                                        modifier = Modifier.testTag(
-                                            tag = "time_range_${timeRange.label}"
-                                        ),
-                                        selected = selectedTimeRange == timeRange,
-                                        onClick = { selectedTimeRange = timeRange },
-                                        shape = SegmentedButtonDefaults.itemShape(
-                                            index = index,
-                                            count = TimeRange.entries.size
-                                        ),
-                                        label = { Text(text = timeRange.label) }
-                                    )
-                                }
-                            }
-                            HorizontalDivider()
-                            LazyRow(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
-                                    .testTag(tag = "category_filter_row"),
-                                horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                contentPadding = PaddingValues(horizontal = 16.dp)
-                            ) {
-                                items(items = availableCategories) { category ->
-                                    FilterChip(
-                                        modifier = Modifier.testTag(
-                                            tag = "category_chip_${category.displayName}"
-                                        ),
-                                        selected = category in selectedCategories,
-                                        onClick = {
-                                            selectedCategories =
-                                                if (category in selectedCategories) {
-                                                    selectedCategories - category
-                                                } else {
-                                                    selectedCategories + category
-                                                }
-                                        },
-                                        label = { Text(text = category.displayName) },
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = category.icon,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(
-                                                    size = FilterChipDefaults.IconSize
-                                                )
-                                            )
-                                        },
-                                        colors = FilterChipDefaults.filterChipColors(
-                                            selectedContainerColor = category.containerColor,
-                                            selectedLabelColor = category.contentColor,
-                                            selectedLeadingIconColor = category.contentColor
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    HorizontalDivider()
-                    Row(
-                        modifier = Modifier
-                            .height(intrinsicSize = IntrinsicSize.Min)
-                            .padding(horizontal = 8.dp)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
-                    ) {
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .weight(weight = 1f)
-                                .padding(vertical = 8.dp)
-                                .padding(bottom = bottomPadding)
-                                .testTag(tag = "analytics_filter_field"),
-                            value = filterQuery,
-                            onValueChange = { filterQuery = it },
-                            placeholder = { Text(text = "Filter by tag or screen...") },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Rounded.Search,
-                                    contentDescription = null
-                                )
-                            },
-                            trailingIcon = {
-                                AnimatedVisibility(visible = filterQuery.isNotEmpty()) {
-                                    IconButton(
-                                        modifier = Modifier.testTag(tag = "clear_filter_button"),
-                                        onClick = { filterQuery = "" }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Close,
-                                            contentDescription = "Clear filter"
-                                        )
-                                    }
-                                }
-                            },
-                            singleLine = true,
-                            shape = MaterialTheme.shapes.medium
+            DevViewFilterBar(
+                query = query,
+                onQueryChange = { query = it },
+                placeholder = "Filter by tag or screen",
+                activeFilterCount = count,
+                expanded = expanded,
+                onExpandedChange = { expanded = it },
+                onClearFilters = clearFilters,
+                bottomPadding = bottomPadding,
+                modifier = Modifier.testTag(tag = "analytics_filter_bar")
+            ) {
+                DevViewSectionHeader(text = "Time range")
+                SingleChoiceSegmentedButtonRow(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                ) {
+                    TimeRange.entries.forEachIndexed { index, option ->
+                        SegmentedButton(
+                            selected = range == option,
+                            onClick = { range = option },
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = index,
+                                count = TimeRange.entries.size
+                            ),
+                            modifier = Modifier.testTag(tag = "time_range_${option.label}"),
+                            label = { Text(text = option.label) }
                         )
-                        VerticalDivider(modifier = Modifier.fillMaxHeight())
-                        IconButton(
-                            modifier = Modifier
-                                .padding(bottom = bottomPadding)
-                                .testTag(tag = "expand_filter_button"),
-                            onClick = { filtersExpanded = !filtersExpanded }
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .graphicsLayer(
-                                        rotationX = iconRotation
-                                    ),
-                                imageVector = Icons.Rounded.KeyboardArrowUp,
-                                contentDescription = "Expand filter"
+                    }
+                }
+                DevViewSectionHeader(text = "Categories")
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    items(items = categories, key = { it.displayName }) { category ->
+                        FilterChip(
+                            selected = category.displayName in selectedCategories,
+                            onClick = {
+                                selectedCategories =
+                                    if (category.displayName in selectedCategories) {
+                                        selectedCategories - category.displayName
+                                    } else {
+                                        selectedCategories + category.displayName
+                                    }
+                            },
+                            label = { Text(text = category.displayName) },
+                            modifier = Modifier.testTag(
+                                tag = "category_chip_${category.displayName}"
                             )
-                        }
+                        )
                     }
                 }
             }
         }
-    ) { paddingValues ->
-        LazyColumn(
-            state = lazyListState,
-            modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(space = spacing)
-        ) {
-            stickyHeader(
-                key = "highlighted_logs_header"
-            ) {
-                Surface {
-                    HighlightedAnalyticsLogsHeader(
-                        modifier = Modifier
-                            .padding(
-                                horizontal = 16.dp,
-                                vertical = 8.dp
-                            ),
-                        highlightedAnalyticsLogs = highlightedAnalyticsLogs
-                    )
-                }
-            }
-            if (filteredAnalytics.isEmpty()) {
-                item(key = "empty_state") {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(all = 16.dp)
-                            .wrapContentWidth(align = Alignment.CenterHorizontally)
-                            .testTag(tag = "empty_state_message"),
-                        text = if (filterQuery.isBlank()) {
-                            "Analytics logs will appear here"
-                        } else {
-                            "No logs match your filter"
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-            itemsIndexed(
-                items = filteredAnalytics,
-                key = { _, item -> item.index }
-            ) { index, item ->
-                val log = item.value
-                Column(
-                    modifier = Modifier
-                        .animateItem()
-                        .testTag(tag = "analytics_log_item_${log.tag}")
+    ) { padding ->
+        if (filtered.isEmpty()) {
+            Column(modifier = Modifier.padding(paddingValues = padding).fillMaxSize()) {
+                HighlightedAnalyticsLogsHeader(highlightedAnalyticsLogs = summaries)
+                Box(
+                    modifier = Modifier.weight(weight = 1f).fillMaxWidth(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    AnalyticsLogItem(
-                        analyticsLog = log
+                    DevViewEmptyState(
+                        icon = Icons.Rounded.Insights,
+                        title = if (analytics.isEmpty()) {
+                            "No logs yet"
+                        } else {
+                            "No logs match your filters"
+                        },
+                        message = if (analytics.isEmpty()) {
+                            "Record events with AnalyticsLogger.log()."
+                        } else {
+                            "Change your search or clear the filters."
+                        },
+                        modifier = Modifier.testTag(tag = "empty_state_message"),
+                        action = if (query.isNotEmpty() || count > 0) {
+                            {
+                                TextButton(
+                                    onClick = {
+                                        query = ""
+                                        clearFilters()
+                                    }
+                                ) { Text(text = "Clear search and filters") }
+                            }
+                        } else {
+                            null
+                        }
                     )
-                    if (index != filteredAnalytics.lastIndex) {
-                        HorizontalDivider(
-                            modifier = Modifier
-                                .padding(top = spacing)
-                        )
+                }
+            }
+        } else {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize().padding(paddingValues = padding)
+            ) {
+                stickyHeader(key = "highlighted_logs_header") {
+                    Surface { HighlightedAnalyticsLogsHeader(highlightedAnalyticsLogs = summaries) }
+                }
+                itemsIndexed(items = filtered, key = { index, _ -> rowKeys[index] }) { index, log ->
+                    Column(
+                        modifier = Modifier
+                            .animateItem()
+                            .testTag(
+                                tag = "analytics_log_item_${log.tag}"
+                            ).clickable(
+                                role = Role.Button,
+                                onClickLabel = "Open event details",
+                                onClick = { onEventClick(log) }
+                            )
+                    ) {
+                        AnalyticsLogItem(analyticsLog = log)
+                        if (index != filtered.lastIndex) {
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                        }
                     }
                 }
-            }
-            item(
-                key = "bottom_spacer"
-            ) {
-                Spacer(
-                    modifier = Modifier
-                        .height(
-                            height = paddingValues.calculateBottomPadding()
-                        )
-                )
             }
         }
     }
 }
 
-/**
- * Defines preset time ranges for filtering analytics logs based on their timestamp.
- *
- * Each enum entry represents a specific time range, with a user-friendly label and an optional
- * duration in milliseconds.
- * The `durationMillis` value is used to calculate the cutoff timestamp for filtering logs relative
- * to the current time. A `null` value for `durationMillis` indicates that there is no time limit
- * (i.e., all logs should be included regardless of their timestamp).
- *
- * ## Enum Entries
- * - `All`: Represents all time, with no filtering based on timestamp.
- * - `Last5Min`: Represents the last 5 minutes, filtering logs that occurred within the last 5 minutes.
- * - `Last15Min`: Represents the last 15 minutes, filtering logs that occurred within the last 15 minutes.
- * - `Last30Min`: Represents the last 30 minutes, filtering logs that occurred within the last 30 minutes.
- *
- * ## Usage
- * The `TimeRange` enum can be used in the `AnalyticsScreen` composable to provide users with predefined
- * time range options for filtering analytics logs. When a user selects a time range, the corresponding
- * `durationMillis` value can be used to calculate the cutoff timestamp and filter the logs accordingly
- * ```kotlin
- * val selectedTimeRange: TimeRange = TimeRange.Last15Min
- * val cutoffTimestamp = Clock.System.now().toEpochMilliseconds() - (selectedTimeRange.durationMillis ?: 0L)
- * val filteredLogs = analyticsLogs.filter { it.timestamp >= cutoffTimestamp }
- * ```
- *
- * @property label A user-friendly label for the time range, used in the UI (e.g., "All", "5m", "15m", "30m").
- * @property durationMillis The duration of the time range in milliseconds, used for filtering logs
- * based on their timestamp. A `null` value indicates no time limit (include all logs).
- * @see AnalyticsScreen
- */
-private enum class TimeRange(val label: String, val durationMillis: Long?) {
-    All(label = "All", durationMillis = null),
-    Last5Min(label = "5m", durationMillis = 5 * 60 * 1000L),
-    Last15Min(label = "15m", durationMillis = 15 * 60 * 1000L),
-    Last30Min(label = "30m", durationMillis = 30 * 60 * 1000L)
-}
-
-@Preview(locale = "en")
+@Preview
 @Composable
-private fun AnalyticsLogScreenPreview(
-    @PreviewParameter(
-        AnalyticsLogListPreviewParameterProvider::class
-    ) analyticsLogs: List<AnalyticsLog>
-) {
+private fun AnalyticsLogScreenPreview() {
     MaterialTheme {
-        Scaffold {
-            CompositionLocalProvider(value = LocalAnalytics provides analyticsLogs) {
-                AnalyticsScreen(
-                    highlightedAnalyticsLogTypes = persistentListOf(
-                        AnalyticsLogCategory.Action.Click,
-                        AnalyticsLogCategory.Performance.Error
-                    ),
-                    modifier = Modifier
-                        .padding(paddingValues = it),
-                    bottomPadding = it.calculateBottomPadding()
-                )
-            }
-        }
+        AnalyticsScreen(highlightedAnalyticsLogTypes = persistentListOf(), logs = emptyList())
     }
 }

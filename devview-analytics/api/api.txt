@@ -27,43 +27,49 @@ package com.worldline.devview.analytics {
   public sealed exhaustive interface AnalyticsDestination extends androidx.navigation3.runtime.NavKey {
   }
 
+  @kotlinx.serialization.Serializable public static final class AnalyticsDestination.Detail implements com.worldline.devview.analytics.AnalyticsDestination {
+    ctor public AnalyticsDestination.Detail(String id);
+    method public String component1();
+    method public com.worldline.devview.analytics.AnalyticsDestination.Detail copy(optional String id);
+    method @InaccessibleFromKotlin public String getId();
+    property public String id;
+  }
+
   @kotlinx.serialization.Serializable public static final class AnalyticsDestination.Main implements com.worldline.devview.analytics.AnalyticsDestination {
     field public static final com.worldline.devview.analytics.AnalyticsDestination.Main INSTANCE;
   }
 
   public final class AnalyticsLogger {
     method @InaccessibleFromKotlin public boolean getHasLogs();
-    method @InaccessibleFromKotlin public androidx.compose.runtime.snapshots.SnapshotStateList<com.worldline.devview.analytics.model.AnalyticsLog> getLogs();
+    method @InaccessibleFromKotlin public java.util.List<com.worldline.devview.analytics.model.AnalyticsLog> getLogs();
     method public void log(com.worldline.devview.analytics.model.AnalyticsLog log);
     property public boolean hasLogs;
-    property public androidx.compose.runtime.snapshots.SnapshotStateList<com.worldline.devview.analytics.model.AnalyticsLog> logs;
+    property public java.util.List<com.worldline.devview.analytics.model.AnalyticsLog> logs;
     field public static final com.worldline.devview.analytics.AnalyticsLogger INSTANCE;
   }
 
-  public final class AnalyticsLoggerKt {
-    method @InaccessibleFromKotlin public static androidx.compose.runtime.ProvidableCompositionLocal<java.util.List<com.worldline.devview.analytics.model.AnalyticsLog>> getLocalAnalytics();
-    property public static androidx.compose.runtime.ProvidableCompositionLocal<java.util.List<com.worldline.devview.analytics.model.AnalyticsLog>> LocalAnalytics;
-  }
-
   public final class AnalyticsScreenKt {
-    method @KotlinOnly @androidx.compose.runtime.Composable public static void AnalyticsScreen(kotlinx.collections.immutable.PersistentList<com.worldline.devview.analytics.model.AnalyticsLogType> highlightedAnalyticsLogTypes, optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding);
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void AnalyticsScreen(kotlinx.collections.immutable.PersistentList<com.worldline.devview.analytics.model.AnalyticsLogType> highlightedAnalyticsLogTypes, optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding, optional java.util.List<com.worldline.devview.analytics.model.AnalyticsLog> logs);
   }
 
 }
 
 package com.worldline.devview.analytics.model {
 
-  @androidx.compose.runtime.Immutable public final class AnalyticsLog {
-    ctor public AnalyticsLog(String tag, String screenClass, long timestamp, com.worldline.devview.analytics.model.AnalyticsLogType type);
+  public final class AnalyticsLog {
+    ctor public AnalyticsLog(String tag, String screenClass, long timestamp, com.worldline.devview.analytics.model.AnalyticsLogType type, optional java.util.Map<java.lang.String,java.lang.String> params);
     method public String component1();
     method public String component2();
     method public long component3();
     method public com.worldline.devview.analytics.model.AnalyticsLogType component4();
-    method public com.worldline.devview.analytics.model.AnalyticsLog copy(optional String tag, optional String screenClass, optional long timestamp, optional com.worldline.devview.analytics.model.AnalyticsLogType type);
+    method public java.util.Map<java.lang.String,java.lang.String> component5();
+    method public com.worldline.devview.analytics.model.AnalyticsLog copy(optional String tag, optional String screenClass, optional long timestamp, optional com.worldline.devview.analytics.model.AnalyticsLogType type, optional java.util.Map<java.lang.String,java.lang.String> params);
+    method @InaccessibleFromKotlin public java.util.Map<java.lang.String,java.lang.String> getParams();
     method @InaccessibleFromKotlin public String getScreenClass();
     method @InaccessibleFromKotlin public String getTag();
     method @InaccessibleFromKotlin public long getTimestamp();
     method @InaccessibleFromKotlin public com.worldline.devview.analytics.model.AnalyticsLogType getType();
+    property public java.util.Map<java.lang.String,java.lang.String> params;
     property public String screenClass;
     property public String tag;
     property public long timestamp;

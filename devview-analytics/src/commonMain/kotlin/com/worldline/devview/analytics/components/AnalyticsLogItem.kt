@@ -1,16 +1,10 @@
 package com.worldline.devview.analytics.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -52,23 +46,15 @@ import com.worldline.devview.analytics.preview.AnalyticsLogPreviewParameterProvi
  */
 @Composable
 internal fun AnalyticsLogItem(analyticsLog: AnalyticsLog, modifier: Modifier = Modifier) {
-    val categoryColor = analyticsLog.type.category.containerColor
     Row(
         modifier = modifier
-            .fillMaxWidth()
-            .height(intrinsicSize = IntrinsicSize.Min),
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .width(width = 3.dp)
-                .fillMaxHeight()
-                .background(color = categoryColor)
-        )
         Row(
             modifier = Modifier
                 .weight(weight = 1f)
-                .padding(start = 13.dp, end = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
