@@ -5,21 +5,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ChevronRight
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.worldline.devview.networkmock.core.model.FailureKind
 import com.worldline.devview.networkmock.core.model.MockResponse
@@ -40,6 +40,11 @@ internal fun MockItem(
 ) {
     MockItemContent(
         label = mockResponse.displayName,
+        status = OperationMockState.Mock(
+            statusCode = mockResponse.statusCode,
+            mediaType = mockResponse.mediaType,
+            exampleName = mockResponse.exampleName
+        ),
         secondaryLabel = secondaryLabel,
         isSynthesized = mockResponse.isSynthesized,
         selected = selected,
@@ -61,8 +66,8 @@ internal fun NetworkItem(
     enabled: Boolean = true
 ) {
     MockItemContent(
-        label = OperationMockState.Network.displayName,
-        secondaryLabel = "Use the actual network",
+        label = "Use actual network",
+        secondaryLabel = "Bypass this operation's mock",
         selected = selected,
         onClick = onClick,
         enabled = enabled,
@@ -81,6 +86,7 @@ internal fun FailureItem(
 ) {
     MockItemContent(
         label = OperationMockState.Failure(kind = kind).displayName,
+        status = OperationMockState.Failure(kind = kind),
         selected = selected,
         onClick = onClick,
         enabled = enabled,
@@ -98,6 +104,7 @@ private fun MockItemContent(
     onPreview: (() -> Unit)? = null,
     previewToggleTestTag: String = "mock_item_preview_toggle",
     secondaryLabel: String? = null,
+    status: OperationMockState? = null,
     isSynthesized: Boolean = false,
     selectionControl: Boolean = true
 ) {
@@ -116,12 +123,23 @@ private fun MockItemContent(
             .fillMaxWidth()
             .then(other = interaction)
             .minimumInteractiveComponentSize()
+            .heightIn(min = 72.dp)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
         if (selectionControl) RadioButton(selected = selected, onClick = null, enabled = enabled)
-        Column(modifier = Modifier.weight(weight = 1f)) {
+        Column(
+            modifier = Modifier.weight(weight = 1f),
+            verticalArrangement = Arrangement.spacedBy(space = 4.dp)
+        ) {
+            if (status != null) {
+                EndpointStateChip(
+                    endpointMockState = status,
+                    chipTestTag = "${previewToggleTestTag}_status",
+                    label = if (status is OperationMockState.Mock) status.statusCode.toString() else "Transport failure"
+                )
+            }
             Text(text = label, style = MaterialTheme.typography.bodyLarge)
             if (!secondaryLabel.isNullOrBlank()) {
                 Text(
@@ -135,16 +153,13 @@ private fun MockItemContent(
             }
         }
         if (onPreview != null) {
-            IconButton(
-                modifier = Modifier.testTag(tag = previewToggleTestTag),
+            TextButton(
+                modifier = Modifier
+                    .testTag(tag = previewToggleTestTag)
+                    .semantics { contentDescription = "Open $label details" },
                 enabled = enabled,
                 onClick = onPreview
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.ChevronRight,
-                    contentDescription = "Open $label details"
-                )
-            }
+            ) { Text(text = "Details") }
         }
     }
 }

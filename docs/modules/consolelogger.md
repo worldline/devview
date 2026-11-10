@@ -85,7 +85,10 @@ unlimited channel and is rejected.
 ### Noise exclusions
 
 The built-in defaults are `setRequestedFrameRate` and `setFrameRateCategory`. Matching is a case-insensitive substring
-of either the tag or full message. Exclusions hide entries; they never drop captured history.
+of either the tag or full message. Enabled exclusions discard incoming matches before the pending queue and
+retained history, so excluded noise cannot evict useful entries. Disabling or removing a rule admits future
+matches only: discarded entries cannot be recovered. Entries already retained before enabling a rule are
+hidden while it is enabled, not deleted. Search and severity filters remain display-only.
 
 ```kotlin
 // Append to the built-in defaults.
@@ -97,10 +100,13 @@ module(Console(defaultExcludedPatterns = listOf("My noisy tag")))
 The bottom filter panel lets testers add, remove and enable patterns. Device additions,
 removed defaults and disabled patterns persist in DataStore across restarts and app updates.
 New host defaults merge without case-insensitive duplicates; removed defaults stay removed.
-**Clear filters** disables rules without deleting them. **Reset to defaults** discards device
+**Clear filters** disables rules without deleting them; it cannot recover discarded entries. **Reset to defaults** discards device
 edits and restores the current host defaults. A fresh install starts from host defaults.
-Loading or saving failures keep the saved configuration intact and offer Retry. Log entries
-are in memory only; preferences contain rules, not log messages.
+Loading or saving failures keep the saved configuration intact and offer Retry. Native capture waits for
+the initial saved rules to load; the capture owner retries read failures and keeps the last applied
+admission rules during subsequent failures. Rules remain active when the Console screen is closed.
+Before the first module initialization, the log sink has no device rules and uses its bounded pending
+queue. Log entries are in memory only; preferences contain rules, not log messages.
 
 ### `DevViewLogWriter`
 

@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   preserving spec order within each group.
 
 ### Changed
+- Sample: labelled Compose, TimeCapsule and Network sections use one primary Open DevView
+  action, spaced secondary controls, scrollable inset-safe content and a monospace result card.
+  Counter controls have explicit accessible names, and section titles expose heading semantics.
 - NetworkMock: the shared search/filter bar includes per-API-group Sort, State, Version, Method,
   and Tag selections with saved UI state and an active count. Clear filters keeps search;
   empty results offer Clear search and filters. Network is quiet text, and dark status chips
@@ -27,9 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   horizontal scrolling and Copy log. Search and collapsible level filters retain UI state;
   the badge counts hidden levels and enabled noise rules. Newest-first rows follow the latest matching entry’s start
   at the top; paused arrivals keep the inspected row in place.
-  History is a read-only snapshot. Noise exclusions match tag/message substrings without
-  dropping captured entries. Host defaults merge with device-persisted additions, removals
-  and enabled states; Clear filters disables rules and Reset restores current host defaults.
+  History is a read-only snapshot. Enabled noise exclusions discard tag/message matches
+  before buffering so excluded bursts cannot evict useful logs. Disabling a rule admits only
+  future matches; previously retained history is not deleted. Host defaults merge with
+  device-persisted additions, removals and enabled states; Clear filters disables rules and
+  Reset restores current host defaults. Native capture waits for saved rules to load.
 - DevView: module initialization effects remain in composition after once-only DataStore
   setup, survive recomposition, cancel on removal and restart on re-entry.
 - Analytics: compact counts reflect filtered results, rows open event details, and the shared
@@ -50,11 +55,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `NavKey`. Module registration remains unchanged and receives its entry's measured bottom inset.
 - NetworkMock: Reset all to network now asks for confirmation before clearing mocks, failures
   and sequences.
-- NetworkMock: operation sheets wrap their content and use one radio-choice list for Network,
-  status-grouped responses and forced failures. Labelled chevrons open full-screen response
-  details with Compare, selectable content, Copy body and Use/In use. A full-screen sequence
-  builder uses stable step identities, Move up/down and Remove, preserves unresolved drafts,
-  and requires at least two steps. Saving or resetting position returns to the operation list.
+- NetworkMock: operation sheets pair a compact configuration summary with direct actual-network
+  selection, Responses/Failures browsing tabs and response search. Status badges match the list;
+  labelled Details buttons inspect without selecting. Sequence next-step, Edit and Restart
+  controls share a compact header that wraps at narrow widths. Controls scroll when necessary
+  to keep choices reachable. Full-screen response details provide Compare, selectable content,
+  Copy body and Use/In use. The sequence builder uses stable step identities, Move up/down and
+  Remove, preserves unresolved drafts and requires at least two steps. Saving or restarting
+  position returns to the operation list.
 - NetworkMock: one retained module session serializes accepted writes. Failed saves retain
   the selection/draft and offer Retry or Cancel while conflicting actions stay disabled.
   Overlay hiding and host configuration changes retain the session and entry drafts; filtering
@@ -79,6 +87,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ModulePosition` enum. Module colour defaults are now `Color.Unspecified`.
 
 ### Fixed
+- Sample: Android status/navigation icon appearance follows the Dark Mode flag, including
+  the navigation-bar background on API 26–28. Sample analytics seed once per composition
+  instead of on every recomposition; cancelled requests are not displayed as errors.
 - Console: severity label contrast in both palettes, recoverable empty results when all
   levels are hidden, and following new entries at full history capacity. Reconfiguration
   preserves pending entries within the new limit and trims history immediately; Clear
