@@ -588,15 +588,15 @@
     "semantic_hash": "52039b7b64b1b1d75d92bc4ee82ad74c"
   },
   "devview-timecapsule/build.gradle.kts": {
-    "mtime": 1793124053.3318603,
-    "seen": 1793975308.1746063,
-    "ast_hash": "c044223a196be5ac25399038e6e31c3a",
-    "semantic_hash": "c044223a196be5ac25399038e6e31c3a"
+    "mtime": 1794220186.3896787,
+    "seen": 1794220984.8606665,
+    "ast_hash": "77279bf4dad6f3fa9f31311bfe603fa1",
+    "semantic_hash": ""
   },
   "devview-timecapsule/src/commonMain/kotlin/com/worldline/devview/timecapsule/ScreenCapsule.kt": {
-    "mtime": 1793290711.4444215,
-    "seen": 1793975308.1746106,
-    "ast_hash": "ad10f9c4622bc1b63b2b2c7f4cbb747e",
+    "mtime": 1794220716.5383072,
+    "seen": 1794220984.860674,
+    "ast_hash": "1b58b41f3cc4c15d00af217d38458739",
     "semantic_hash": ""
   },
   "devview-timecapsule/src/commonMain/kotlin/com/worldline/devview/timecapsule/TimeCapsule.kt": {
@@ -618,15 +618,15 @@
     "semantic_hash": ""
   },
   "devview-timecapsule/src/commonMain/kotlin/com/worldline/devview/timecapsule/TimeCapsuleScreen.kt": {
-    "mtime": 1793989349.9988358,
-    "seen": 1793990447.7387288,
-    "ast_hash": "27ca0ec8571b145e5bbe604841a798dc",
+    "mtime": 1794220762.3450756,
+    "seen": 1794220984.8606822,
+    "ast_hash": "3b24517cb1411917d113b64ea9907a2e",
     "semantic_hash": ""
   },
   "devview-timecapsule/src/commonMain/kotlin/com/worldline/devview/timecapsule/components/TimeCapsuleRow.kt": {
-    "mtime": 1793289949.094671,
-    "seen": 1793975308.1746228,
-    "ast_hash": "d74c1f7feaf18ba7ae530316861d8cc4",
+    "mtime": 1794220682.136179,
+    "seen": 1794220984.8606837,
+    "ast_hash": "a53db582fad0c3318a2221871526d448",
     "semantic_hash": ""
   },
   "devview-timecapsule/src/commonTest/kotlin/com/worldline/devview/timecapsule/ScreenCapsuleTest.kt": {
@@ -1476,9 +1476,9 @@
     "semantic_hash": "cf96d090a20636202729d00ddf9bebe4"
   },
   "CHANGELOG.md": {
-    "mtime": 1793991404.4860122,
-    "seen": 1793991656.4497802,
-    "ast_hash": "2ed01fde6164207d9d52e4bd349eaaad",
+    "mtime": 1794220186.4044483,
+    "seen": 1794220984.860925,
+    "ast_hash": "ade3fed5b569b3fc6dcd36031c3cdb25",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -1716,10 +1716,10 @@
     "semantic_hash": "e87c92dd54f201e40938ef16ee4df4de"
   },
   "devview-timecapsule/CLAUDE.md": {
-    "mtime": 1793124053.3288596,
-    "seen": 1793975308.175193,
-    "ast_hash": "441dabff85a90ef1ab2d429b80d03bfd",
-    "semantic_hash": "441dabff85a90ef1ab2d429b80d03bfd"
+    "mtime": 1794220186.4014435,
+    "seen": 1794220984.861063,
+    "ast_hash": "24dd58c06221e05911bcf2ba4edf09df",
+    "semantic_hash": ""
   },
   "devview-timecapsule/README.md": {
     "mtime": 1793124053.3298595,
@@ -2028,9 +2028,9 @@
     "semantic_hash": ""
   },
   "docs/modules/timecapsule.md": {
-    "mtime": 1793991714.5849433,
-    "seen": 1793991719.2249017,
-    "ast_hash": "b8af5163f12c68493642c37ba868a1a4",
+    "mtime": 1794220186.3912911,
+    "seen": 1794220984.8611844,
+    "ast_hash": "b7bedee1e874e60de18545aaf9aa3876",
     "semantic_hash": ""
   },
   "konsist/CLAUDE.md": {
@@ -3196,5 +3196,11 @@
     "seen": 1788872517.5817127,
     "ast_hash": "3f545db6ce646650bb9de588f5512a27",
     "semantic_hash": "3f545db6ce646650bb9de588f5512a27"
+  },
+  "devview-timecapsule/src/androidDeviceTest/kotlin/com/worldline/devview/timecapsule/TimeCapsuleScreenTest.kt": {
+    "mtime": 1794220701.50867,
+    "seen": 1794220984.8606696,
+    "ast_hash": "325df010ac93f765827596fa15a12e6d",
+    "semantic_hash": ""
   }
 }
