@@ -1,15 +1,14 @@
 package com.worldline.devview.featureflip.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -17,119 +16,91 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.worldline.devview.featureflip.model.Feature
-import com.worldline.devview.featureflip.model.Feature.LocalFeature
-import com.worldline.devview.featureflip.model.Feature.RemoteFeature
 import com.worldline.devview.featureflip.model.FeatureState
 import com.worldline.devview.featureflip.preview.FeaturePreviewParameterProvider
 
-/**
- * Displays a single feature item card with interactive controls.
- *
- * Renders a Material Design card containing the feature's information and
- * appropriate control widget based on the feature type:
- * - [Feature.LocalFeature]: Displays a Material [Switch] for simple on/off toggling
- * - [Feature.RemoteFeature]: Displays a [FeatureTriStateSwitch] for Remote/Off/On selection
- *
- * The card's shape automatically adapts based on its position in a list to create
- * a visually connected group of items:
- * - First item: Rounded top corners, squared bottom corners
- * - Middle items: All corners squared
- * - Last item: Squared top corners, rounded bottom corners
- * - Single item: All corners rounded
- *
- * ## Layout Structure
- * ```
- * Card
- * └── Row
- *     ├── Column (feature info, weighted)
- *     │   ├── Text (feature name, bold)
- *     │   ├── Text (description, optional)
- *     │   └── Text (type label: "Local" or "Remote")
- *     └── Control Widget
- *         ├── Switch (for LocalFeature)
- *         └── FeatureTriStateSwitch (for RemoteFeature)
- * └── HorizontalDivider (if not last item)
- * ```
- *
- * @param feature The feature to display.
- * @param onStateChange Callback invoked when the feature's state changes via user interaction.
- * @param modifier Modifier to apply to the card container.
- *
- * @see Feature.LocalFeature
- * @see Feature.RemoteFeature
- * @see FeatureTriStateSwitch
- * @see com.worldline.devview.featureflip.model.FeatureState
- */
+/** Displays a flag with a local switch or labelled remote override choices. */
 @Composable
 internal fun FeatureItem(
     feature: Feature,
     onStateChange: (FeatureState) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .weight(weight = 1f),
-            verticalArrangement = Arrangement.spacedBy(space = 4.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                modifier = Modifier.testTag(tag = "feature_name_${feature.name}"),
-                text = feature.name,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = FontWeight.Bold
-                )
-            )
-            feature.description?.let {
-                Text(
-                    modifier = Modifier.testTag(tag = "feature_description_${feature.name}"),
-                    text = it,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        shape = MaterialTheme.shapes.extraSmall
-                    ).padding(horizontal = 6.dp, vertical = 2.dp)
+            Column(
+                modifier = Modifier.weight(weight = 1f),
+                verticalArrangement = Arrangement.spacedBy(space = 4.dp)
             ) {
                 Text(
-                    modifier = Modifier.testTag(tag = "feature_type_${feature.name}"),
-                    text = when (feature) {
-                        is LocalFeature -> "Local"
-                        is RemoteFeature -> "Remote"
+                    text = feature.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.testTag(tag = "feature_name_${feature.name}")
+                )
+                feature.description?.let { description ->
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.testTag(tag = "feature_description_${feature.name}")
+                    )
+                }
+            }
+            if (feature is Feature.LocalFeature) {
+                Switch(
+                    checked = feature.isEnabled,
+                    onCheckedChange = {
+                        onStateChange(
+                            if (it) FeatureState.LOCAL_ON else FeatureState.LOCAL_OFF
+                        )
                     },
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurface
+                    modifier = Modifier
+                        .testTag(tag = "feature_switch_${feature.name}")
+                        .semantics { contentDescription = feature.name }
                 )
             }
         }
-
-        when (feature) {
-            is LocalFeature -> Switch(
-                modifier = Modifier.testTag(tag = "feature_switch_${feature.name}"),
-                checked = feature.isEnabled,
-                onCheckedChange = {
-                    onStateChange(if (it) FeatureState.LOCAL_ON else FeatureState.LOCAL_OFF)
+        if (feature is Feature.RemoteFeature) {
+            Text(
+                text = "Remote value: ${if (feature.defaultRemoteValue) "on" else "off"}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                FeatureState.entries.forEachIndexed { index, state ->
+                    val label = when (state) {
+                        FeatureState.REMOTE -> "Remote"
+                        FeatureState.LOCAL_OFF -> "Off"
+                        FeatureState.LOCAL_ON -> "On"
+                    }
+                    SegmentedButton(
+                        selected = feature.state == state,
+                        onClick = { onStateChange(state) },
+                        shape = SegmentedButtonDefaults.itemShape(
+                            index = index,
+                            count = FeatureState.entries.size
+                        ),
+                        modifier = Modifier
+                            .testTag(tag = "feature_segment_${feature.name}_${state.name}")
+                            .semantics { contentDescription = "${feature.name}: $label" }
+                    ) {
+                        Text(text = label)
+                    }
                 }
-            )
-
-            is RemoteFeature -> FeatureTriStateSwitch(
-                modifier = Modifier.testTag(tag = "feature_tri_state_switch_${feature.name}"),
-                feature = feature,
-                onStateChange = onStateChange
-            )
+            }
         }
     }
 }
@@ -141,16 +112,7 @@ private fun FeatureItemPreview(
 ) {
     MaterialTheme {
         Surface {
-            LazyColumn {
-                items(
-                    items = listOf(element = feature)
-                ) {
-                    FeatureItem(
-                        feature = it,
-                        onStateChange = {}
-                    )
-                }
-            }
+            FeatureItem(feature = feature, onStateChange = {})
         }
     }
 }

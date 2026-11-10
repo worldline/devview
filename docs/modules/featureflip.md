@@ -54,6 +54,24 @@ CompositionLocalProvider(LocalFeatureHandler provides featureHandler) {
 }
 ```
 
+## Controls and filters
+
+Local flags use a named on/off switch. Remote flags use Material3 segmented buttons
+labelled **Remote**, **Off** and **On**, with supporting text showing the remote value.
+Selecting Remote follows that value; Off and On force a local override. Selection
+uses the host theme's paired container/content colours rather than an error colour
+to represent a disabled flag. Local/Remote badges are no longer shown on each row.
+
+Search stays pinned below the list. Expand filters to choose Type and State; Type
+is omitted when all flags have the same kind unless a saved type filter is still active. Filters combine OR within a group
+and AND across groups. The toggle reports the active filter count even when
+collapsed. **Clear filters** resets the chips; the no-results action clears both
+search and filters. Search, chip choices and panel visibility survive saved-state
+restoration, including type filters when the registered flags change. Flag values continue to persist in DataStore.
+
+Changes are saved in click order. If a save fails, the persisted selection stays
+unchanged and the screen offers **Retry** instead of crashing the host app.
+
 ## Usage
 - Use `FeatureHandler` to manage features programmatically.
 - Use `FeatureFlipScreen` for a ready-made UI.
