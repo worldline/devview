@@ -1,40 +1,18 @@
 package com.worldline.devview
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -47,7 +25,9 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.worldline.devview.core.Module
-import com.worldline.devview.internal.HasTitle
+import com.worldline.devview.internal.DESTINATION_METADATA_KEY
+import com.worldline.devview.internal.LocalEntryBottomPadding
+import com.worldline.devview.internal.destinationScaffoldDecorator
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -207,7 +187,6 @@ import kotlinx.serialization.modules.polymorphic
  * @see com.worldline.devview.core.buildModules
  * @see Home
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 public fun DevView(
     devViewIsOpen: Boolean,
@@ -238,188 +217,76 @@ public fun DevView(
         onBack = closeDevView
     )
 
-    val currentModule: Module? by remember(key1 = modules) {
-        derivedStateOf {
-            modules.find { module ->
-                module.destinations.containsKey(key = backstack.last()::class)
-            }
-        }
+    val currentModules by rememberUpdatedState(newValue = modules)
+    val onNavigateBack: () -> Unit = {
+        if (backstack.size > 1) backstack.removeLastOrNull()
     }
 
-    val title: String by remember {
-        derivedStateOf {
-            val current = backstack.last()
-            when {
-                // Framework-level screens (Home, future settings, etc.) carry their own title
-                current is HasTitle -> current.title
-                // Module screens: use metadata title if set, otherwise fall back to module name
-                else ->
-                    currentModule
-                        ?.let { module ->
-                            module.destinations[current::class]?.title ?: module.moduleName
-                        }.orEmpty()
-            }
-        }
-    }
-
-    // Actions for the current destination, resolved from its DestinationMetadata
-    val currentActions by remember {
-        derivedStateOf {
-            currentModule
-                ?.destinations
-                ?.get(key = backstack.last()::class)
-                ?.actions
-                .orEmpty()
-        }
-    }
-
-    // Tracks which action's confirmation popup (if any) is currently shown
-    var activePopupIndex by rememberSaveable { mutableStateOf<Int?>(value = null) }
-
-    // Tracks which action's dropdown menu (if any) is currently expanded
-    var expandedMenuIndex by rememberSaveable { mutableStateOf<Int?>(value = null) }
-
-    AnimatedVisibility(
-        visible = devViewIsOpen
-    ) {
+    AnimatedVisibility(visible = devViewIsOpen) {
         CompositionLocalProvider(
             value = LocalNavigationEventDispatcherOwner provides overlayNavigationOwner
         ) {
-            Scaffold(
+            NavDisplay(
                 modifier = modifier,
-                topBar = {
-                    Column {
-                        TopAppBar(
-                            title = {
-                                Text(text = title, fontWeight = FontWeight.SemiBold)
-                            },
-                            actions = {
-                                currentActions.forEachIndexed { index, action ->
-                                    Box {
-                                        IconButton(
-                                            modifier = Modifier.testTag(
-                                                tag = "top_bar_action_$index"
-                                            ),
-                                            onClick = {
-                                                when {
-                                                    action.menuItems != null ->
-                                                        expandedMenuIndex =
-                                                            index
-                                                    action.popup != null -> activePopupIndex = index
-                                                    else -> action.action()
-                                                }
-                                            }
-                                        ) {
-                                            Icon(
-                                                imageVector = action.icon,
-                                                contentDescription = null
-                                            )
-                                        }
-                                        action.menuItems?.let { menuItems ->
-                                            DropdownMenu(
-                                                expanded = expandedMenuIndex == index,
-                                                onDismissRequest = { expandedMenuIndex = null }
-                                            ) {
-                                                menuItems.forEach { menuItem ->
-                                                    DropdownMenuItem(
-                                                        text = { Text(text = menuItem.label) },
-                                                        onClick = {
-                                                            menuItem.onClick()
-                                                            expandedMenuIndex = null
-                                                        }
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        )
-                        HorizontalDivider()
-                    }
-                }
-            ) { padding ->
-                val layoutDirection = LocalLayoutDirection.current
-                val newPaddingValues = PaddingValues(
-                    start = padding.calculateStartPadding(layoutDirection = layoutDirection),
-                    top = padding.calculateTopPadding(),
-                    end = padding.calculateEndPadding(layoutDirection = layoutDirection)
-                )
-
-                // Confirmation popup for the active action — rendered at Scaffold level so that
-                // it overlays the full screen rather than being constrained to the TopAppBar slot
-                activePopupIndex?.let { index ->
-                    val action = currentActions[index]
-                    action.popup?.let { popup ->
-                        AlertDialog(
-                            onDismissRequest = { activePopupIndex = null },
-                            title = { Text(text = popup.title) },
-                            text = popup.subtitle?.let { { Text(text = it) } },
-                            confirmButton = {
-                                TextButton(
-                                    onClick = {
-                                        action.action()
-                                        activePopupIndex = null
-                                    }
-                                ) {
-                                    Text(text = popup.confirmButton)
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(
-                                    onClick = { activePopupIndex = null }
-                                ) {
-                                    Text(text = popup.dismissButton)
-                                }
-                            }
-                        )
-                    }
-                }
-
-                NavDisplay(
-                    modifier = Modifier
-                        .padding(
-                            paddingValues = newPaddingValues
-                        ).consumeWindowInsets(
-                            paddingValues = newPaddingValues
-                        ),
-                    backStack = backstack,
-                    entryDecorators = listOf(
-                        rememberSaveableStateHolderNavEntryDecorator(),
-                        rememberViewModelStoreNavEntryDecorator()
-                    ),
-                    onBack = {
-                        backstack.removeLastOrNull()
-                    },
-                    entryProvider = entryProvider {
-                        // Home screen entry
-                        entry<Home> {
+                backStack = backstack,
+                entryDecorators = listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator(),
+                    destinationScaffoldDecorator(
+                        modules = modules,
+                        activeDestination = backstack.last(),
+                        onNavigateBack = onNavigateBack,
+                        closeDevView = closeDevView
+                    )
+                ),
+                onBack = onNavigateBack,
+                entryProvider = { destination ->
+                    if (destination == Home) {
+                        NavEntry(
+                            key = destination,
+                            metadata = mapOf(
+                                pairs = arrayOf(DESTINATION_METADATA_KEY to destination)
+                            )
+                        ) {
                             HomeScreen(
                                 modules = modules,
                                 openModule = { module ->
-                                    // Navigate to the module's entry destination
-                                    backstack.add(element = module.entryDestination)
+                                    backstack.add(
+                                        element = module.entryDestination
+                                    )
                                 }
                             )
                         }
-
-                        // Register each module's content
-                        modules.forEach { module ->
-                            with(receiver = module) {
-                                this@entryProvider.registerContent(
-                                    onNavigateBack = {
-                                        backstack.removeLastOrNull()
-                                    },
-                                    onNavigate = { destination ->
-                                        backstack.add(element = destination)
-                                    },
-                                    bottomPadding = padding.calculateBottomPadding()
-                                )
-                            }
+                    } else {
+                        fun moduleProvider(bottomPadding: Dp): (NavKey) -> NavEntry<NavKey> =
+                            entryProvider(builder = {
+                                with(
+                                    receiver = currentModules.first {
+                                        destination::class in
+                                            it.destinations
+                                    }
+                                ) {
+                                    registerContent(
+                                        onNavigateBack = onNavigateBack,
+                                        onNavigate = { backstack.add(element = it) },
+                                        bottomPadding = bottomPadding
+                                    )
+                                }
+                            })
+                        val template = moduleProvider(bottomPadding = 0.dp)(destination)
+                        NavEntry(
+                            key = destination,
+                            contentKey = template.contentKey,
+                            metadata = template.metadata + (DESTINATION_METADATA_KEY to destination)
+                        ) { key ->
+                            // Registration captures Dp, so resolve it inside the decorated entry's composition.
+                            moduleProvider(
+                                bottomPadding = LocalEntryBottomPadding.current
+                            )(key).Content()
                         }
                     }
-                )
-            }
+                }
+            )
         }
     }
 }

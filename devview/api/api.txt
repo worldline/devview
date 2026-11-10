@@ -28,8 +28,8 @@ package com.worldline.devview.core {
   }
 
   public final class DestinationMetadataBuilder {
-    method public void action(androidx.compose.ui.graphics.vector.ImageVector icon, optional com.worldline.devview.core.ModuleDestinationActionPopup? popup, kotlin.jvm.functions.Function0<kotlin.Unit> action);
-    method public void menu(androidx.compose.ui.graphics.vector.ImageVector icon, kotlin.jvm.functions.Function1<? super com.worldline.devview.core.ModuleDestinationActionMenuBuilder,kotlin.Unit> block);
+    method public void action(String label, androidx.compose.ui.graphics.vector.ImageVector icon, optional com.worldline.devview.core.ModuleDestinationActionPopup? popup, kotlin.jvm.functions.Function1<? super androidx.navigation3.runtime.NavKey,kotlin.Unit> action);
+    method public void menu(String label, androidx.compose.ui.graphics.vector.ImageVector icon, kotlin.jvm.functions.Function1<? super com.worldline.devview.core.ModuleDestinationActionMenuBuilder,kotlin.Unit> block);
   }
 
   public final class DestinationMetadataExtensionsKt {
@@ -65,18 +65,21 @@ package com.worldline.devview.core {
   }
 
   public final class ModuleDestinationAction {
-    ctor public ModuleDestinationAction(androidx.compose.ui.graphics.vector.ImageVector icon, optional kotlin.jvm.functions.Function0<kotlin.Unit> action, optional com.worldline.devview.core.ModuleDestinationActionPopup? popup, optional kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationActionMenuItem>? menuItems);
-    method public androidx.compose.ui.graphics.vector.ImageVector component1();
-    method public kotlin.jvm.functions.Function0<kotlin.Unit> component2();
-    method public com.worldline.devview.core.ModuleDestinationActionPopup? component3();
-    method public kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationActionMenuItem>? component4();
-    method public com.worldline.devview.core.ModuleDestinationAction copy(optional androidx.compose.ui.graphics.vector.ImageVector icon, optional kotlin.jvm.functions.Function0<kotlin.Unit> action, optional com.worldline.devview.core.ModuleDestinationActionPopup? popup, optional kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationActionMenuItem>? menuItems);
-    method @InaccessibleFromKotlin public kotlin.jvm.functions.Function0<kotlin.Unit> getAction();
+    ctor public ModuleDestinationAction(String label, androidx.compose.ui.graphics.vector.ImageVector icon, optional kotlin.jvm.functions.Function1<? super androidx.navigation3.runtime.NavKey,kotlin.Unit> action, optional com.worldline.devview.core.ModuleDestinationActionPopup? popup, optional kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationActionMenuItem>? menuItems);
+    method public String component1();
+    method public androidx.compose.ui.graphics.vector.ImageVector component2();
+    method public kotlin.jvm.functions.Function1<androidx.navigation3.runtime.NavKey,kotlin.Unit> component3();
+    method public com.worldline.devview.core.ModuleDestinationActionPopup? component4();
+    method public kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationActionMenuItem>? component5();
+    method public com.worldline.devview.core.ModuleDestinationAction copy(optional String label, optional androidx.compose.ui.graphics.vector.ImageVector icon, optional kotlin.jvm.functions.Function1<? super androidx.navigation3.runtime.NavKey,kotlin.Unit> action, optional com.worldline.devview.core.ModuleDestinationActionPopup? popup, optional kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationActionMenuItem>? menuItems);
+    method @InaccessibleFromKotlin public kotlin.jvm.functions.Function1<androidx.navigation3.runtime.NavKey,kotlin.Unit> getAction();
     method @InaccessibleFromKotlin public androidx.compose.ui.graphics.vector.ImageVector getIcon();
+    method @InaccessibleFromKotlin public String getLabel();
     method @InaccessibleFromKotlin public kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationActionMenuItem>? getMenuItems();
     method @InaccessibleFromKotlin public com.worldline.devview.core.ModuleDestinationActionPopup? getPopup();
-    property public kotlin.jvm.functions.Function0<kotlin.Unit> action;
+    property public kotlin.jvm.functions.Function1<androidx.navigation3.runtime.NavKey,kotlin.Unit> action;
     property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    property public String label;
     property public kotlinx.collections.immutable.PersistentList<com.worldline.devview.core.ModuleDestinationActionMenuItem>? menuItems;
     property public com.worldline.devview.core.ModuleDestinationActionPopup? popup;
   }
@@ -137,23 +140,35 @@ package com.worldline.devview.core {
   }
 
   public final class SectionKt {
+    method @InaccessibleFromKotlin public static String getDisplayName(com.worldline.devview.core.Section);
     method @InaccessibleFromKotlin public static androidx.compose.ui.graphics.vector.ImageVector getIcon(com.worldline.devview.core.Section);
-    property public static androidx.compose.ui.graphics.Color com.worldline.devview.core.Section.containerColor;
-    property public static androidx.compose.ui.graphics.Color com.worldline.devview.core.Section.contentColor;
+    property public static String com.worldline.devview.core.Section.displayName;
     property public static androidx.compose.ui.graphics.vector.ImageVector com.worldline.devview.core.Section.icon;
   }
 
 }
 
-package com.worldline.devview.internal.components {
+package com.worldline.devview.ui {
 
-  public enum ModulePosition {
-    method @InaccessibleFromKotlin public boolean getHasDivider();
-    property public boolean hasDivider;
-    enum_constant public static final com.worldline.devview.internal.components.ModulePosition FIRST;
-    enum_constant public static final com.worldline.devview.internal.components.ModulePosition LAST;
-    enum_constant public static final com.worldline.devview.internal.components.ModulePosition MIDDLE;
-    enum_constant public static final com.worldline.devview.internal.components.ModulePosition SINGLE;
+  public final class ClipboardKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static kotlin.jvm.functions.Function1<java.lang.String,kotlin.Unit> rememberCopyToClipboard();
+  }
+
+  public final class DevViewEmptyStateKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void DevViewEmptyState(androidx.compose.ui.graphics.vector.ImageVector icon, String title, String message, optional androidx.compose.ui.Modifier modifier, optional kotlin.jvm.functions.Function0<kotlin.Unit>? action);
+  }
+
+  public final class DevViewFilterBarKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void DevViewFilterBar(String query, kotlin.jvm.functions.Function1<java.lang.String,kotlin.Unit> onQueryChange, String placeholder, int activeFilterCount, boolean expanded, kotlin.jvm.functions.Function1<java.lang.Boolean,kotlin.Unit> onExpandedChange, kotlin.jvm.functions.Function0<kotlin.Unit> onClearFilters, optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding, kotlin.jvm.functions.Function0<kotlin.Unit> panel);
+  }
+
+  public final class DevViewGroupedItemKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void DevViewGroupedDivider(optional androidx.compose.ui.Modifier modifier);
+    method @KotlinOnly @androidx.compose.runtime.Composable public static androidx.compose.ui.Modifier devViewGroupedItem(androidx.compose.ui.Modifier, int index, int count);
+  }
+
+  public final class DevViewSectionHeaderKt {
+    method @KotlinOnly @androidx.compose.runtime.Composable public static void DevViewSectionHeader(String text, optional androidx.compose.ui.Modifier modifier);
   }
 
 }

@@ -1,6 +1,7 @@
 package com.worldline.devview.core
 
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation3.runtime.NavKey
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -37,7 +38,7 @@ import kotlinx.collections.immutable.toPersistentList
  *
  * override val destinations = persistentMapOf(
  *     MyDestination.Main.withTitle("Logs") {
- *         action(icon = Icons.Rounded.Delete) { logger.clear() }
+ *         action(label = "Clear logs", icon = Icons.Rounded.Delete) { logger.clear() }
  *     }
  * )
  * ```
@@ -48,7 +49,7 @@ import kotlinx.collections.immutable.toPersistentList
  * MyDestination.Main to DestinationMetadata(
  *     title = "My Screen",
  *     actions = persistentListOf(
- *         ModuleDestinationAction(icon = Icons.Rounded.Refresh, action = { logger.clear() })
+ *         ModuleDestinationAction(label = "Refresh", icon = Icons.Rounded.Refresh, action = { logger.clear() })
  *     )
  * )
  * ```
@@ -95,7 +96,7 @@ public class DestinationMetadataBuilder internal constructor() {
      *
      * - **Module-owned singletons** — the simplest and most common case:
      * ```kotlin
-     * action(icon = Icons.Rounded.Delete) { AnalyticsLogger.clear() }
+     * action(label = "Clear logs", icon = Icons.Rounded.Delete) { AnalyticsLogger.clear() }
      * ```
      *
      * - **Cross-boundary commands (e.g. triggering a ViewModel)** — use a [SharedFlow][kotlinx.coroutines.flow.SharedFlow]
@@ -105,7 +106,7 @@ public class DestinationMetadataBuilder internal constructor() {
      * // In the module
      * val onClearRequested = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
      * // ...
-     * action(icon = Icons.Rounded.Delete) { onClearRequested.tryEmit(Unit) }
+     * action(label = "Clear logs", icon = Icons.Rounded.Delete) { onClearRequested.tryEmit(Unit) }
      *
      * // In the host Composable, where the ViewModel is in scope
      * LaunchedEffect(myModule) {
@@ -115,21 +116,30 @@ public class DestinationMetadataBuilder internal constructor() {
      * This keeps the module decoupled from the host app's DI graph while still
      * allowing ViewModel functions to be triggered safely.
      *
+     * @param label Accessible name and tooltip describing the action.
      * @param icon The icon to display for this action button.
      * @param popup Optional confirmation dialog shown before [action] is invoked.
      *   Pass `null` (the default) to invoke [action] immediately on tap.
      * @param action The callback invoked when the action is confirmed (or tapped
-     *   directly if no [popup] is provided).
+     *   directly if no [popup] is provided), receiving the displayed destination key.
      *
      * @see ModuleDestinationAction
      * @see ModuleDestinationActionPopup
      */
     public fun action(
+        label: String,
         icon: ImageVector,
         popup: ModuleDestinationActionPopup? = null,
-        action: () -> Unit
+        action: (NavKey) -> Unit
     ) {
-        actions.add(element = ModuleDestinationAction(icon = icon, action = action, popup = popup))
+        actions.add(
+            element = ModuleDestinationAction(
+                label = label,
+                icon = icon,
+                action = action,
+                popup = popup
+            )
+        )
     }
 
     /**
@@ -146,12 +156,13 @@ public class DestinationMetadataBuilder internal constructor() {
      *
      * ## Example
      * ```kotlin
-     * menu(icon = Icons.AutoMirrored.Rounded.Sort) {
+     * menu(label = "Sort", icon = Icons.AutoMirrored.Rounded.Sort) {
      *     item(label = "Path") { onSortChanged.tryEmit(Sort.PATH) }
      *     item(label = "Method") { onSortChanged.tryEmit(Sort.METHOD) }
      * }
      * ```
      *
+     * @param label Accessible name and tooltip describing the menu.
      * @param icon The icon to display for this action button.
      * @param block A [ModuleDestinationActionMenuBuilder] DSL block in which you register menu
      *   entries via [ModuleDestinationActionMenuBuilder.item].
@@ -159,9 +170,14 @@ public class DestinationMetadataBuilder internal constructor() {
      * @see ModuleDestinationActionMenuItem
      * @see action
      */
-    public fun menu(icon: ImageVector, block: ModuleDestinationActionMenuBuilder.() -> Unit) {
+    public fun menu(
+        label: String,
+        icon: ImageVector,
+        block: ModuleDestinationActionMenuBuilder.() -> Unit
+    ) {
         actions.add(
             element = ModuleDestinationAction(
+                label = label,
                 icon = icon,
                 menuItems = ModuleDestinationActionMenuBuilder().apply(block = block).build()
             )

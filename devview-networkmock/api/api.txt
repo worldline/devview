@@ -15,8 +15,10 @@ package com.worldline.devview.networkmock {
     property public String dataStoreName;
     property public kotlinx.collections.immutable.PersistentMap<kotlin.reflect.KClass<? extends androidx.navigation3.runtime.NavKey>,com.worldline.devview.core.DestinationMetadata> destinations;
     property public androidx.navigation3.runtime.NavKey entryDestination;
+    property public String moduleName;
     property public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<androidx.navigation3.runtime.NavKey>,kotlin.Unit> registerSerializers;
     property public com.worldline.devview.core.Section section;
+    property public String subtitle;
   }
 
   public sealed exhaustive interface NetworkMockDestination extends androidx.navigation3.runtime.NavKey {

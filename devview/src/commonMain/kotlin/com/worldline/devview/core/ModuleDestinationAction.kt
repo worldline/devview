@@ -1,6 +1,7 @@
 package com.worldline.devview.core
 
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation3.runtime.NavKey
 import kotlinx.collections.immutable.PersistentList
 
 /**
@@ -17,9 +18,11 @@ import kotlinx.collections.immutable.PersistentList
  * Prefer building instances via [DestinationMetadataBuilder.action] or
  * [DestinationMetadataBuilder.menu] rather than this constructor directly.
  *
+ * @property label Accessible name and tooltip describing this action.
  * @property icon The icon to display for this action button.
  * @property action The callback invoked when the icon is tapped directly (no [menuItems], no
- *   [popup]) or when a [popup] confirmation is confirmed. Ignored when [menuItems] is non-null.
+ *   [popup]) or when a [popup] confirmation is confirmed. Receives the displayed destination's
+ *   [NavKey], including its arguments. Ignored when [menuItems] is non-null.
  * @property popup Optional confirmation dialog shown before [action] runs. Ignored when
  *   [menuItems] is non-null.
  * @property menuItems Optional dropdown menu entries shown when the icon is tapped, instead of
@@ -30,8 +33,9 @@ import kotlinx.collections.immutable.PersistentList
  * @see ModuleDestinationActionMenuItem
  */
 public data class ModuleDestinationAction(
+    val label: String,
     val icon: ImageVector,
-    val action: () -> Unit = {},
+    val action: (NavKey) -> Unit = {},
     val popup: ModuleDestinationActionPopup? = null,
     val menuItems: PersistentList<ModuleDestinationActionMenuItem>? = null
 )
