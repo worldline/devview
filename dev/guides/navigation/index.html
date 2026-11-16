@@ -328,6 +328,8 @@
       
         
       
+        
+      
     
     
     
@@ -1222,6 +1224,8 @@
       
         
       
+        
+      
     
     
     
@@ -1486,6 +1490,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#destination-toolbars" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Destination toolbars
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#best-practices" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1553,6 +1568,33 @@
     
   
   Theming
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui-components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  UI Components
 
     
   </span>
@@ -2205,6 +2247,8 @@
       
         
       
+        
+      
     
     
     
@@ -2271,6 +2315,20 @@
 </span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="p">)</span>
 </span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="p">}</span>
 </span></code></pre></div>
+<h2 id="destination-toolbars">Destination toolbars</h2>
+<p>DevView renders a separate top bar inside each Navigation3 entry. Its title, actions and confirmation state move with that screen, including predictive back. Home has <strong>Close DevView</strong>; module screens have <strong>Back</strong>. A title defaults to <code>moduleName</code> unless destination metadata overrides it.</p>
+<p>Every toolbar action and menu requires a user-facing <code>label</code>. DevView uses it for the accessible name and tooltip. Action callbacks receive the displayed <code>NavKey</code>, not the destination currently at the top of an animating backstack:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">MyDestination</span><span class="p">.</span><span class="na">Detail</span><span class="o">::</span><span class="n">class</span><span class="p">.</span><span class="na">withTitle</span><span class="p">(</span><span class="s">"Details"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">action</span><span class="p">(</span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Refresh item"</span><span class="p">,</span><span class="w"> </span><span class="n">icon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Icons</span><span class="p">.</span><span class="na">Rounded</span><span class="p">.</span><span class="na">Refresh</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">-&gt;</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">        </span><span class="n">refresh</span><span class="p">((</span><span class="n">key</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">MyDestination</span><span class="p">.</span><span class="na">Detail</span><span class="p">).</span><span class="na">id</span><span class="p">)</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="n">menu</span><span class="p">(</span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Sort"</span><span class="p">,</span><span class="w"> </span><span class="n">icon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Icons</span><span class="p">.</span><span class="na">AutoMirrored</span><span class="p">.</span><span class="na">Rounded</span><span class="p">.</span><span class="na">Sort</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">        </span><span class="n">item</span><span class="p">(</span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Name"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">sortByName</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>A confirmation popup invokes the same key-aware callback only after confirmation. Menu items keep their zero-argument callbacks.</p>
+<p>Registration must be side-effect-free: DevView may call <code>registerContent</code> again to pass the destination Scaffold's measured bottom inset. Initialise ViewModels and UI state inside the registered entry's composable content. Top and horizontal insets are applied by DevView; pass <code>bottomPadding</code> to your scrollable content.</p>
 <h2 id="best-practices">Best Practices</h2>
 <ul>
 <li>Use sealed interfaces for navigation keys</li>

@@ -328,6 +328,8 @@
       
         
       
+        
+      
     
     
     
@@ -1222,6 +1224,8 @@
       
         
       
+        
+      
     
     
     
@@ -1481,6 +1485,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#destination-toolbar-and-insets" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Destination toolbar and insets
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#troubleshooting" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1564,6 +1579,33 @@
     
   
   Theming
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui-components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  UI Components
 
     
   </span>
@@ -2216,6 +2258,8 @@
       
         
       
+        
+      
     
     
     
@@ -2255,6 +2299,10 @@
 2. <strong>Serialisers</strong> - For type-safe navigation
 3. <strong>Content</strong> - Composable UI
 4. <strong>Metadata</strong> - Name, icon, section</p>
+<p>Use the <a href="../ui-components/">shared UI kit</a> for headings, grouped rows,
+filter bars, empty states and clipboard actions. Built-ins supply readable names and subtitles;
+module icon colours default to <code>Color.Unspecified</code> and resolve from section hues and host-theme tones.
+Explicit <code>containerColor</code> / <code>contentColor</code> overrides remain supported (<a href="../theming/">theming</a>).</p>
 <h2 id="step-by-step-creating-a-module">Step-by-Step: Creating a Module</h2>
 <h3 id="1-define-destinations">1. Define Destinations</h3>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">sealed</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nc">MyModuleDestination</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">NavKey</span><span class="w"> </span><span class="p">{</span>
@@ -2332,6 +2380,9 @@
 <li>Use descriptive names and icons for your module</li>
 <li>Group related screens under a single module</li>
 </ul>
+<h2 id="destination-toolbar-and-insets">Destination toolbar and insets</h2>
+<p>DevView supplies each destination with its own title, a labelled Back button, and optional actions. Home has Close DevView. Actions and menus require a <code>label</code>; action callbacks receive the displayed <code>NavKey</code>. See <a href="../navigation/#destination-toolbars">Navigation guide</a> for the DSL and confirmation behavior.</p>
+<p>Keep <code>registerContent</code> side-effect-free. Create ViewModels inside entry content, and forward its <code>bottomPadding</code> to scrollable screens. DevView already applies top and horizontal insets.</p>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <ul>
 <li><strong>Module not appearing?</strong> Ensure it is registered and implements the required interface.</li>

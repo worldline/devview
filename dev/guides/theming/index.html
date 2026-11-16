@@ -19,7 +19,7 @@
         <link rel="prev" href="../navigation/">
       
       
-        <link rel="next" href="../best-practices/">
+        <link rel="next" href="../ui-components/">
       
       
         
@@ -312,6 +312,8 @@
       
         
           
+        
+      
         
       
         
@@ -1222,6 +1224,8 @@
       
         
       
+        
+      
     
     
     
@@ -1486,10 +1490,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#section-derived-defaults-v014" class="md-nav__link">
+  <a href="#section-hues-and-host-theme-tones" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Section-Derived Defaults (v0.1.4+)
+        Section hues and host-theme tones
       </span>
     </span>
   </a>
@@ -1593,6 +1597,33 @@
   
 </nav>
       
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui-components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  UI Components
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -2238,6 +2269,8 @@
       
         
       
+        
+      
     
     
     
@@ -2286,46 +2319,20 @@
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="c1">// ...other properties...</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">}</span>
 </span></code></pre></div></p>
-<h3 id="section-derived-defaults-v014">Section-Derived Defaults (v0.1.4+)</h3>
-<p>Since v0.1.4, <code>containerColor</code> and <code>contentColor</code> on <code>Module</code> default to the
-module's <code>Section</code> palette colors. Each section has its own brand-palette tint:</p>
-<table>
-<thead>
-<tr>
-<th>Section</th>
-<th>Container Color</th>
-<th>Content Color</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>SETTINGS</code></td>
-<td><code>#545AAE</code></td>
-<td><code>#E8E9F7</code></td>
-</tr>
-<tr>
-<td><code>FEATURES</code></td>
-<td><code>#764DD0</code></td>
-<td><code>#E8E9F7</code></td>
-</tr>
-<tr>
-<td><code>NETWORK</code></td>
-<td><code>#5571B2</code></td>
-<td><code>#E8E9F7</code></td>
-</tr>
-<tr>
-<td><code>LOGGING</code></td>
-<td><code>#6970CA</code></td>
-<td><code>#E8E9F7</code></td>
-</tr>
-<tr>
-<td><code>CUSTOM</code></td>
-<td><code>#A03CBC</code></td>
-<td><code>#E8E9F7</code></td>
-</tr>
-</tbody>
-</table>
-<p>You only need to override <code>containerColor</code>/<code>contentColor</code> if your module requires a color outside its section's default.</p>
+<h3 id="section-hues-and-host-theme-tones">Section hues and host-theme tones</h3>
+<p>Module <code>containerColor</code> and <code>contentColor</code> default to <code>Color.Unspecified</code> and resolve at render time.
+Each section keeps a distinct hue, blended 25% toward the host primary hue along the shortest arc:
+Settings 235°, Features 265°, Network 215°, Logging 175°, Custom 35°.
+With HSL saturation 45%, light-theme tiles use container lightness 90% and icon lightness 20%;
+dark-theme tiles use 28% and 88%. The current background luminance determines the mode,
+not the device setting, so a feature-flag-driven theme also works.</p>
+<p>Explicit module colour overrides still win. With only a container override, the unspecified icon
+colour resolves to contrasting black or white. When both are explicit, check their contrast.
+The old <code>Section.containerColor</code> and <code>Section.contentColor</code> extensions are removed in alpha08;
+use module overrides rather than a fixed section palette.
+Section headings use <code>displayName</code> and the host primary colour. Home tile container and icon
+colours animate when their resolved values change; the surrounding host theme is not animated.</p>
+<p>Layout, filter bars and empty states are shared across modules through the <a href="../ui-components/">UI kit</a>.</p>
 <h2 id="console-log-level-colors">Console Log Level Colors</h2>
 <p>Unlike most of DevView, the Console Logger module's per-<a href="../../modules/consolelogger/"><code>LogLevel</code></a>
 colors (a debug teal, a warning yellow, an error red, etc.) are <strong>not</strong> derived from
@@ -2467,13 +2474,13 @@ than the system setting.</p>
         
         
           
-          <a href="../best-practices/" class="md-footer__link md-footer__link--next" aria-label="Next: Best Practices">
+          <a href="../ui-components/" class="md-footer__link md-footer__link--next" aria-label="Next: UI Components">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Best Practices
+                UI Components
               </div>
             </div>
             <div class="md-footer__button md-icon">

@@ -326,6 +326,8 @@
       
         
       
+        
+      
     
     
     
@@ -1220,6 +1222,8 @@
       
         
       
+        
+      
     
     
     
@@ -1396,6 +1400,33 @@
     
   
   Theming
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/ui-components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  UI Components
 
     
   </span>
@@ -2034,6 +2065,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#removed" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Removed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fixed" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2647,11 +2689,22 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <h2 id="unreleased"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha07...HEAD">Unreleased</a></h2>
 <h3 id="added">Added</h3>
 <ul>
+<li>DevView: public UI kit in <code>com.worldline.devview.ui</code> with section headings, grouped items,
+  empty states, filter bars and a multiplatform copy callback; <code>Section.displayName</code> for headings.</li>
 <li>NetworkMock: "Mocked first" sort puts Mock, Failure, and Sequence operations before Network,
   preserving spec order within each group.</li>
 </ul>
 <h3 id="changed">Changed</h3>
 <ul>
+<li>DevView: home icon tiles animate section hues with host-theme tones; explicit module overrides
+  remain supported. Home uses sentence-case headings, readable subtitles, aligned dividers and
+  a faint watermark in both themes. Built-in names are spaced and module icons are distinct.</li>
+<li>DevView: each destination now owns its top bar so titles and actions transition with content.
+  Home has Close DevView and module screens have Back. Toolbar actions and menus require a
+  user-facing <code>label</code> for accessibility and tooltips; action callbacks now receive the displayed
+  <code>NavKey</code>. Module registration remains unchanged and receives its entry's measured bottom inset.</li>
+<li>NetworkMock: Reset all to network now asks for confirmation before clearing mocks, failures
+  and sequences.</li>
 <li>NetworkMock: operation sheets now keep a fixed 65% height with Responses, Sequence, and Failure
   tabs, grouped cards, matching sticky headers, inset dividers, and failure-rate footers.
   Eye icons open previews directly; a "Compare with…" dropdown replaces marking responses and
@@ -2660,6 +2713,11 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <li>DevView: added a divider below the shared top app bar; NetworkMock operation lists animate
   filter and sort changes. The mock engine, ViewModel, repositories, Ktor behavior, persistence,
   and public API are unchanged.</li>
+</ul>
+<h3 id="removed">Removed</h3>
+<ul>
+<li>DevView: fixed <code>Section.containerColor</code> / <code>Section.contentColor</code> extensions and the public
+  <code>ModulePosition</code> enum. Module colour defaults are now <code>Color.Unspecified</code>.</li>
 </ul>
 <h3 id="fixed">Fixed</h3>
 <ul>
