@@ -10,7 +10,7 @@ Before integrating DevView, ensure your development environment meets the follow
 <!-- renovate: datasource=maven depName=org.jetbrains.kotlin:kotlin-stdlib -->
 - **Kotlin**: 2.3.21 or newer
 <!-- renovate: datasource=maven depName=org.jetbrains.compose:compose-gradle-plugin -->
-- **Compose Multiplatform**: 1.11.1 or newer
+- **Compose Multiplatform**: 1.12.2 or newer
 - **Android**: API level 26 (Oreo) or higher
 - **iOS**: iOS 16.0 or higher
 
