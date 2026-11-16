@@ -1,9 +1,30 @@
 package com.worldline.devview.networkmock.utils
 
+import com.worldline.devview.networkmock.core.model.MockResponse
 import com.worldline.devview.networkmock.model.DiffLine
 import com.worldline.devview.networkmock.model.DisplayLine
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+
+private val prettyJson = Json { prettyPrint = true }
+
+/** Formats JSON for display only; malformed and non-JSON bodies remain untouched. */
+internal fun MockResponse.displayContent(): String = if (contentType.contains(
+        other = "json",
+        ignoreCase = true
+    )
+) {
+    runCatching {
+        prettyJson.encodeToString(
+            serializer = JsonElement.serializer(),
+            value = Json.parseToJsonElement(string = content)
+        )
+    }.getOrDefault(defaultValue = content)
+} else {
+    content
+}
 
 /**
  * Threshold for deciding whether to use an inline diff (single column) or a split view

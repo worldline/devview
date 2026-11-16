@@ -559,6 +559,7 @@ private fun ContentState(
                         item(key = "empty_filter_state") {
                             Text(
                                 modifier = Modifier
+                                    .animateItem()
                                     .fillMaxWidth()
                                     .padding(all = 16.dp)
                                     .testTag(tag = "networkmock_empty_filter_message"),
@@ -572,18 +573,20 @@ private fun ContentState(
                         items = filteredOperations,
                         key = { _, operation -> operation.descriptor.key.compositeKey }
                     ) { index, operation ->
-                        EndpointCard(
-                            modifier = Modifier.testTag(
-                                tag = "endpoint_card_${operation.descriptor.specId}" +
-                                    "_${operation.descriptor.operationId}"
-                            ),
-                            endpoint = operation,
-                            openEndpointDetails = {
-                                onSelectOperation(operation.descriptor.key)
+                        Column(modifier = Modifier.animateItem()) {
+                            EndpointCard(
+                                modifier = Modifier.testTag(
+                                    tag = "endpoint_card_${operation.descriptor.specId}" +
+                                        "_${operation.descriptor.operationId}"
+                                ),
+                                endpoint = operation,
+                                openEndpointDetails = {
+                                    onSelectOperation(operation.descriptor.key)
+                                }
+                            )
+                            if (index != filteredOperations.lastIndex) {
+                                HorizontalDivider()
                             }
-                        )
-                        if (index != filteredOperations.lastIndex) {
-                            HorizontalDivider()
                         }
                     }
 
@@ -658,7 +661,10 @@ internal enum class OperationSort(val label: String) {
     METHOD(label = "Method"),
 
     /** Sorts by an operation's first declared tag; untagged operations sort first. */
-    TAG(label = "Tag")
+    TAG(label = "Tag"),
+
+    /** Puts Mock, Failure, and Sequence states before Network, keeping spec order within each group. */
+    MOCKED_FIRST(label = "Mocked first")
 }
 
 /** Applies [sort] to [this] — see [OperationSort] for what each key does. */
@@ -666,6 +672,7 @@ internal fun List<OperationUiModel>.sortedByOption(sort: OperationSort): List<Op
     when (sort) {
         OperationSort.SPEC_ORDER -> this
         OperationSort.PATH -> sortedBy { it.descriptor.config.path }
+        OperationSort.MOCKED_FIRST -> sortedBy { it.currentState is OperationMockState.Network }
         OperationSort.METHOD -> sortedBy { operation ->
             HttpMethod.DefaultMethods
                 .indexOf(element = operation.descriptor.config.method)

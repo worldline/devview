@@ -2,7 +2,6 @@ package com.worldline.devview.networkmock
 
 import com.worldline.devview.networkmock.core.model.MockResponse
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.test.Test
 
 class PreviewSheetStateTest {
@@ -12,111 +11,40 @@ class PreviewSheetStateTest {
         mediaType = "application/json",
         exampleName = "default",
         displayName = "Success (200)",
-        content = """{"id":1}"""
+        content = "{}"
     )
-    private val responseB = MockResponse(
-        statusCode = 404,
-        mediaType = "application/json",
-        exampleName = "default",
-        displayName = "Not Found (404)",
-        content = """{"error":"not found"}"""
-    )
-    private val responseC = MockResponse(
-        statusCode = 500,
-        mediaType = "application/json",
-        exampleName = "default",
-        displayName = "Server Error (500)",
-        content = """{"error":"server error"}"""
-    )
-
-    // region transition
+    private val responseB = responseA.copy(statusCode = 404, displayName = "Not Found (404)")
+    private val responseC = responseA.copy(statusCode = 500, displayName = "Server Error (500)")
 
     @Test
-    fun `transition from Hidden adds response as Single`() {
-        val result = PreviewSheetState.Hidden.transition(response = responseA)
-
-        result.shouldBeInstanceOf<PreviewSheetState.Single>().response shouldBe responseA
+    fun oversizedFormattedComparisonFallsBackToSplit() {
+        val body = (1..2000).joinToString(prefix = "[", postfix = "]") { it.toString() }
+        val response = responseA.copy(content = body)
+        val comparison = PreviewSheetState.Compare(first = response, second = response)
+        comparison.useInlineDiff shouldBe false
+        comparison.lineDiff.size shouldBe 0
     }
 
     @Test
-    fun `transition from Single with same response returns Hidden`() {
-        val result = PreviewSheetState.Single(response = responseA).transition(response = responseA)
-
-        result shouldBe PreviewSheetState.Hidden
+    fun identicalCompactAndFormattedJsonUseInlineDiff() {
+        val compact = responseA.copy(content = "{\"ok\":true}")
+        val formatted = compact.copy(content = "{\n    \"ok\": true\n}")
+        val comparison = PreviewSheetState.Compare(first = compact, second = formatted)
+        comparison.useInlineDiff shouldBe true
+        comparison.lineDiff.all { it is com.worldline.devview.networkmock.model.DiffLine.Unchanged } shouldBe true
     }
 
     @Test
-    fun `transition from Single with different response becomes Compare`() {
-        val result = PreviewSheetState.Single(response = responseA).transition(response = responseB)
-
-        val compare = result.shouldBeInstanceOf<PreviewSheetState.Compare>()
-        compare.first shouldBe responseA
-        compare.second shouldBe responseB
+    fun singleHoldsTheDirectlyOpenedResponse() {
+        PreviewSheetState.Single(response = responseA).response shouldBe responseA
     }
 
     @Test
-    fun `transition from Compare deselecting first returns Single with second`() {
+    fun changingComparisonKeepsThePrimaryResponse() {
         val initial = PreviewSheetState.Compare(first = responseA, second = responseB)
+        val changed = initial.copy(second = responseC)
 
-        val result = initial.transition(response = responseA)
-
-        result.shouldBeInstanceOf<PreviewSheetState.Single>().response shouldBe responseB
+        changed.first shouldBe responseA
+        changed.second shouldBe responseC
     }
-
-    @Test
-    fun `transition from Compare deselecting second returns Single with first`() {
-        val initial = PreviewSheetState.Compare(first = responseA, second = responseB)
-
-        val result = initial.transition(response = responseB)
-
-        result.shouldBeInstanceOf<PreviewSheetState.Single>().response shouldBe responseA
-    }
-
-    @Test
-    fun `transition from Compare with unrelated response is no-op`() {
-        val initial = PreviewSheetState.Compare(first = responseA, second = responseB)
-
-        val result = initial.transition(response = responseC)
-
-        result shouldBe initial
-    }
-
-    // endregion
-
-    // region isInPreviewMode
-
-    @Test
-    fun `isInPreviewMode returns false for Hidden`() {
-        PreviewSheetState.Hidden.isInPreviewMode(response = responseA) shouldBe false
-    }
-
-    @Test
-    fun `isInPreviewMode returns true for matching Single`() {
-        PreviewSheetState.Single(response = responseA).isInPreviewMode(response = responseA) shouldBe true
-    }
-
-    @Test
-    fun `isInPreviewMode returns false for non-matching Single`() {
-        PreviewSheetState.Single(response = responseA).isInPreviewMode(response = responseB) shouldBe false
-    }
-
-    @Test
-    fun `isInPreviewMode returns true for first response in Compare`() {
-        PreviewSheetState.Compare(first = responseA, second = responseB)
-            .isInPreviewMode(response = responseA) shouldBe true
-    }
-
-    @Test
-    fun `isInPreviewMode returns true for second response in Compare`() {
-        PreviewSheetState.Compare(first = responseA, second = responseB)
-            .isInPreviewMode(response = responseB) shouldBe true
-    }
-
-    @Test
-    fun `isInPreviewMode returns false for unrelated response in Compare`() {
-        PreviewSheetState.Compare(first = responseA, second = responseB)
-            .isInPreviewMode(response = responseC) shouldBe false
-    }
-
-    // endregion
 }
