@@ -999,6 +999,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#controls-and-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Controls and filters
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#usage" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2347,6 +2358,20 @@
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="c1">// State changes are handled internally by the DevView UI.</span>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">}</span>
 </span></code></pre></div>
+<h2 id="controls-and-filters">Controls and filters</h2>
+<p>Local flags use a named on/off switch. Remote flags use Material3 segmented buttons
+labelled <strong>Remote</strong>, <strong>Off</strong> and <strong>On</strong>, with supporting text showing the remote value.
+Selecting Remote follows that value; Off and On force a local override. Selection
+uses the host theme's paired container/content colours rather than an error colour
+to represent a disabled flag. Local/Remote badges are no longer shown on each row.</p>
+<p>Search stays pinned below the list. Expand filters to choose Type and State; Type
+is omitted when all flags have the same kind unless a saved type filter is still active. Filters combine OR within a group
+and AND across groups. The toggle reports the active filter count even when
+collapsed. <strong>Clear filters</strong> resets the chips; the no-results action clears both
+search and filters. Search, chip choices and panel visibility survive saved-state
+restoration, including type filters when the registered flags change. Flag values continue to persist in DataStore.</p>
+<p>Changes are saved in click order. If a save fails, the persisted selection stays
+unchanged and the screen offers <strong>Retry</strong> instead of crashing the host app.</p>
 <h2 id="usage">Usage</h2>
 <ul>
 <li>Use <code>FeatureHandler</code> to manage features programmatically.</li>
