@@ -2689,6 +2689,8 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <h2 id="unreleased"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha07...HEAD">Unreleased</a></h2>
 <h3 id="added">Added</h3>
 <ul>
+<li>Analytics: event details with string parameters, millisecond timestamps with timezone,
+  selectable text and Copy event. Standalone screens accept an explicit <code>logs</code> source.</li>
 <li>DevView: public UI kit in <code>com.worldline.devview.ui</code> with section headings, grouped items,
   empty states, filter bars and a multiplatform copy callback; <code>Section.displayName</code> for headings.</li>
 <li>NetworkMock: "Mocked first" sort puts Mock, Failure, and Sequence operations before Network,
@@ -2696,6 +2698,10 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 </ul>
 <h3 id="changed">Changed</h3>
 <ul>
+<li>Analytics: compact counts reflect filtered results, rows open event details, and the shared
+  collapsible filter panel preserves search, selection and scroll state. Logger history is a
+  read-only snapshot; record through <code>AnalyticsLogger.log()</code>, which assigns a fresh internal
+  UUID and copies parameters without changing event value equality.</li>
 <li>FeatureFlip: remote overrides use labelled Material3 Remote/Off/On segments with the remote
   value shown separately. Local flags keep their switch; type badges are removed. Search and
   collapsible Type/State filters expose active counts and recovery actions and retain UI state.
@@ -2721,11 +2727,18 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 </ul>
 <h3 id="removed">Removed</h3>
 <ul>
+<li>Analytics: <code>LocalAnalytics</code> and direct writes to <code>AnalyticsLogger.logs</code>. The module reads its
+  logger directly; standalone custom sources pass <code>AnalyticsScreen(logs = yourList, ...)</code>.</li>
 <li>DevView: fixed <code>Section.containerColor</code> / <code>Section.contentColor</code> extensions and the public
   <code>ModulePosition</code> enum. Module colour defaults are now <code>Color.Unspecified</code>.</li>
 </ul>
 <h3 id="fixed">Fixed</h3>
 <ul>
+<li>Analytics: category/time-only searches show recoverable no-results states, and limited time
+  windows refresh every five seconds without user input. Restored details cannot resolve to a
+  different recording with identical data.</li>
+<li>Sample: analytics seed events are recorded once per composition lifecycle instead of during
+  recomposition, preventing duplicates and a feedback loop when observing the logger.</li>
 <li>NetworkMock: valid JSON is pretty-printed before preview display and diffing, and long lines
   stay unwrapped with whole-pane horizontal scrolling and lazy vertical rows instead of
   per-line scrolling or eagerly composing entire previews. Malformed JSON and

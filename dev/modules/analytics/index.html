@@ -1037,6 +1037,34 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#inspection-and-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Inspection and history
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Inspection and history">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Migration
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#best-practices" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2308,8 +2336,8 @@
 <h2 id="features">Features</h2>
 <ul>
 <li>Multi-type event tracking (screen, event, custom)</li>
-<li>Real-time monitoring and tabular display</li>
-<li>Detailed event info: tags, screen classes, timestamps</li>
+<li>Live event list with compact counts for the filtered results</li>
+<li>Event details with screen, full timestamp, string parameters and Copy event</li>
 <li>Built-in Compose UI</li>
 <li>Type-safe API</li>
 <li>Multiplatform support (Android/iOS)</li>
@@ -2334,21 +2362,20 @@
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">        </span><span class="n">tag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"home_screen_view"</span><span class="p">,</span>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">        </span><span class="n">screenClass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"com.example.ui.HomeScreen"</span><span class="p">,</span>
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">        </span><span class="n">timestamp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">currentTimeMillis</span><span class="p">(),</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AnalyticsLogCategory</span><span class="p">.</span><span class="na">Screen</span><span class="p">.</span><span class="na">View</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="p">)</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">)</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AnalyticsLogCategory</span><span class="p">.</span><span class="na">Screen</span><span class="p">.</span><span class="na">View</span><span class="p">,</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="n">params</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapOf</span><span class="p">(</span><span class="s">"source"</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="s">"home"</span><span class="p">)</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="p">)</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="using-the-ui">Using the UI</h3>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// AnalyticsScreen is rendered automatically by DevView when Analytics() is registered.</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1">// To use it standalone, provide LocalAnalytics above it:</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">CompositionLocalProvider</span><span class="p">(</span><span class="n">LocalAnalytics</span><span class="w"> </span><span class="n">provides</span><span class="w"> </span><span class="n">AnalyticsLogger</span><span class="p">.</span><span class="na">logs</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="n">AnalyticsScreen</span><span class="p">(</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">        </span><span class="n">highlightedAnalyticsLogTypes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">persistentListOf</span><span class="p">(</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">            </span><span class="n">AnalyticsLogCategory</span><span class="p">.</span><span class="na">Action</span><span class="p">.</span><span class="na">Click</span><span class="p">,</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">            </span><span class="n">AnalyticsLogCategory</span><span class="p">.</span><span class="na">Performance</span><span class="p">.</span><span class="na">Error</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">        </span><span class="p">)</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="p">)</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="p">}</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1">// Standalone screens read the logger by default. Custom sources pass logs = yourList.</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">AnalyticsScreen</span><span class="p">(</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="n">highlightedAnalyticsLogTypes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">persistentListOf</span><span class="p">(</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">        </span><span class="n">AnalyticsLogCategory</span><span class="p">.</span><span class="na">Action</span><span class="p">.</span><span class="na">Click</span><span class="p">,</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">        </span><span class="n">AnalyticsLogCategory</span><span class="p">.</span><span class="na">Performance</span><span class="p">.</span><span class="na">Error</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="p">)</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">)</span>
 </span></code></pre></div>
 <h2 id="usage">Usage</h2>
 <ul>
@@ -2356,10 +2383,18 @@
 <li>Use <code>AnalyticsScreen</code> to view logs in real time.</li>
 <li>Integrate with your analytics backend for dual logging.</li>
 </ul>
+<h2 id="inspection-and-history">Inspection and history</h2>
+<p>Search matches tags and screens, ignoring case. Expand the pinned bottom panel for category and time filters; the toggle keeps their active count visible when collapsed. Limited time windows refresh every five seconds. Counts reflect the filtered results. Clear filters resets category and time selection; the no-results action clears search too.</p>
+<p>Tap a row to see its full timestamp with milliseconds and timezone, event type and sorted parameters. Copy event writes that data to the system clipboard. Returning to the list preserves search, filters and scroll position. If the event has been cleared or is unavailable after restoration, the detail page shows an empty state.</p>
+<p><code>AnalyticsLogger.logs: List&lt;AnalyticsLog&gt;</code> is a read-only snapshot, observable when read in composition. Do not remember a single snapshot if you need live updates. Record through <code>AnalyticsLogger.log()</code>; direct list writes are no longer supported. Each recording gets a fresh internal UUID without changing value equality, and the logger copies the parameter map. Events are in memory only.</p>
+<p>For standalone sources, pass <code>AnalyticsScreen(logs = yourList, highlightedAnalyticsLogTypes = ...)</code> and replace lists/maps when they change. Avoid in-place mutations.</p>
+<h3 id="migration">Migration</h3>
+<p>Remove <code>CompositionLocalProvider(LocalAnalytics provides ...)</code>: <code>LocalAnalytics</code> has been removed. The registered module requires no provider. Standalone custom sources use the explicit <code>logs</code> parameter. Replace mutations of <code>AnalyticsLogger.logs</code> with <code>AnalyticsLogger.log()</code>.</p>
 <h2 id="best-practices">Best Practices</h2>
 <ol>
 <li>Use descriptive tags and include screen context.</li>
-<li>Use SCREEN for navigation, EVENT for interactions, CUSTOM for business events.</li>
+<li>Choose a type such as <code>AnalyticsLogCategory.Screen.View</code>, <code>.Action.Click</code> or <code>.Custom.Event</code>.
+   Avoid credentials and personal data in parameters, especially when copying events.</li>
 <li>Log to DevView only in debug builds for best performance.</li>
 <li>Clear logs periodically during long sessions.</li>
 </ol>
@@ -2369,7 +2404,7 @@
 <li>Ensure you use <code>AnalyticsLogger.log()</code> and provide the correct event type.</li>
 <li>Confirm Compose state is correctly updated and the UI is observing the logs.</li>
 <li><strong>How do I clear logs?</strong></li>
-<li>Use <code>AnalyticsLogger.clear()</code> (for debug/testing only).</li>
+<li>Use the Clear logs toolbar action. <code>AnalyticsLogger.clear()</code> is internal.</li>
 <li><strong>Can I use this on iOS?</strong></li>
 <li>Yes, Compose Multiplatform is supported. Ensure platform-specific initialisation is correct.</li>
 <li><strong>Integration issues?</strong></li>
