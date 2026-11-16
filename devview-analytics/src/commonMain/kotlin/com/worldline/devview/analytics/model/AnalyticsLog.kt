@@ -1,7 +1,8 @@
 package com.worldline.devview.analytics.model
 
-import androidx.compose.runtime.Immutable
 import kotlin.time.Instant
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
@@ -11,7 +12,7 @@ import kotlinx.datetime.toLocalDateTime
 /**
  * Represents a single analytics event log entry.
  *
- * This immutable data class captures all essential information about an analytics event,
+ * This data class captures all essential information about an analytics event,
  * including what happened ([tag]), where it happened ([screenClass]), when it happened
  * ([timestamp]), and what type of event it was ([type]).
  *
@@ -23,6 +24,9 @@ import kotlinx.datetime.toLocalDateTime
  *           where the event occurred (e.g., "com.example.ui.HomeScreen").
  * @property timestamp Unix timestamp in milliseconds representing when the event occurred.
  * @property type The category of this analytics event.
+ * @property params Optional event parameters. Do not record secrets or personal data.
+ *        The logger takes a defensive copy when recording the event. For standalone UI,
+ *        replace the event when parameters change; do not mutate a caller-owned map in place.
  *
  * @see AnalyticsLogType
  * @see AnalyticsLogCategory
@@ -30,14 +34,37 @@ import kotlinx.datetime.toLocalDateTime
  *
  * @sample com.worldline.devview.analytics.samples.AnalyticsLogSamples.screenLogSample
  */
-@Immutable
 public data class AnalyticsLog(
     val tag: String,
     val screenClass: String,
     val timestamp: Long,
-    val type: AnalyticsLogType
+    val type: AnalyticsLogType,
+    val params: Map<String, String> = emptyMap()
 ) {
+    // Occurrence identity deliberately stays outside data-class equality and copy arguments.
+    @OptIn(ExperimentalUuidApi::class)
+    internal val id: String = Uuid.random().toString()
     private val instantTimestamp = Instant.fromEpochMilliseconds(epochMilliseconds = timestamp)
+
+    internal val detailedTimestamp: String
+        get() {
+            val zone = TimeZone.currentSystemDefault()
+            val dateTime = instantTimestamp.toLocalDateTime(timeZone = zone)
+            val time = dateTime.time.format(
+                format = LocalTime.Format {
+                    hour()
+                    char(value = ':')
+                    minute()
+                    char(value = ':')
+                    second()
+                }
+            )
+            val millis = (dateTime.nanosecond / 1_000_000).toString().padStart(
+                length = 3,
+                padChar = '0'
+            )
+            return "${dateTime.date} $time.$millis (${zone.id})"
+        }
 
     /**
      * Returns the timestamp formatted as HH:mm:ss in the current system timezone.

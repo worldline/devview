@@ -1,125 +1,46 @@
 package com.worldline.devview.analytics
 
-import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.staticCompositionLocalOf
 import com.worldline.devview.analytics.model.AnalyticsLog
+import kotlinx.collections.immutable.toPersistentMap
 
 /**
- * Central logger for managing analytics events in the DevView Analytics module.
+ * In-memory analytics recorder with observable, read-only history.
  *
- * This singleton object provides thread-safe, reactive storage for analytics logs using
- * Compose's snapshot state system. All logged events are stored in-memory and can be
- * observed reactively by UI components.
+ * Each [log] call records a distinct occurrence and snapshots its parameters. History belongs
+ * to this logger; consumers cannot insert or remove records through [logs]. Read [logs] inside
+ * composition to observe updates, rather than remembering a returned snapshot.
  *
- * ## Usage
- *
- * ### Logging Events
- * ```kotlin
- * AnalyticsLogger.log(
- *     AnalyticsLog(
- *         tag = "user_login",
- *         screenClass = "LoginScreen",
- *         timestamp = Clock.System.now().toEpochMilliseconds(),
- *         type = AnalyticsLogCategory.Session.Login
- *     )
- * )
- * ```
- *
- * ### Accessing Logs
- * ```kotlin
- * val allLogs = AnalyticsLogger.logs
- * val hasAnyLogs = AnalyticsLogger.hasLogs
- * ```
- *
- * ### Clearing Logs
- * ```kotlin
- * // Internal use only
- * AnalyticsLogger.clear()
- * ```
- *
- * @see AnalyticsLog
  * @see AnalyticsScreen
+ * @sample com.worldline.devview.analytics.samples.AnalyticsLoggerSamples.logSample
  */
 public object AnalyticsLogger {
     private val analyticsLogs = mutableStateListOf<AnalyticsLog>()
 
     /**
-     * Adds a new analytics log entry to the internal storage.
+     * Records [log] with a fresh internal occurrence ID and an immutable copy of its parameters.
+     * Snapshot-state storage supports calls from different threads and notifies observing UI.
      *
-     * This method is thread-safe and will trigger recomposition in any Compose
-     * UI that observes the [logs] property.
-     *
-     * @param log The analytics log entry to add.
-     *
+     * @param log Event to record. Never include secrets or personal data in its parameters.
      * @sample com.worldline.devview.analytics.samples.AnalyticsLoggerSamples.logSample
      */
     public fun log(log: AnalyticsLog) {
-        analyticsLogs.add(element = log)
+        analyticsLogs.add(element = log.copy(params = log.params.toPersistentMap()))
     }
 
-    /**
-     * Clears all stored analytics logs.
-     *
-     * This method is intended for internal use by the DevView framework.
-     * Use with caution as it will remove all historical log data.
-     */
+    /** Removes all recorded events after the developer confirms the clear-history action. */
     internal fun clear() {
         analyticsLogs.clear()
     }
 
     /**
-     * Returns a snapshot state list of all analytics logs.
-     *
-     * This property provides reactive access to the logs, meaning any Compose
-     * UI observing this property will automatically recompose when logs are
-     * added or removed.
-     *
-     * @return A [SnapshotStateList] containing all logged analytics events in chronological order.
+     * Immutable history snapshot in recording order. Previously returned snapshots never change.
+     * Read the property again to obtain new events; reading in composition observes changes.
      */
-    public val logs: SnapshotStateList<AnalyticsLog>
-        get() = analyticsLogs
+    public val logs: List<AnalyticsLog>
+        get() = analyticsLogs.toList()
 
-    /**
-     * Indicates whether any analytics logs have been recorded.
-     *
-     * @return `true` if at least one log entry exists, `false` otherwise.
-     */
+    /** Whether the history currently contains at least one event. */
     public val hasLogs: Boolean
         get() = analyticsLogs.isNotEmpty()
 }
-
-/**
- * CompositionLocal for providing analytics logs to Compose UI components.
- *
- * This allows analytics logs to be injected into the Compose tree and accessed
- * by child composables without explicit parameter passing.
- *
- * ## Usage
- *
- * ### Providing Logs
- * ```kotlin
- * CompositionLocalProvider(LocalAnalytics provides AnalyticsLogger.logs) {
- *     AnalyticsScreen()
- * }
- * ```
- *
- * ### Consuming Logs
- * ```kotlin
- * @Composable
- * fun MyComponent() {
- *     val analytics = LocalAnalytics.current
- *     // Use analytics logs
- * }
- * ```
- *
- * @throws IllegalStateException if accessed without being provided in the Compose tree.
- *
- * @see AnalyticsScreen
- * @see AnalyticsLogger
- */
-public val LocalAnalytics: ProvidableCompositionLocal<List<AnalyticsLog>> =
-    staticCompositionLocalOf {
-        error(message = "No analytics provided.")
-    }

@@ -7,8 +7,8 @@ Analytics enables real-time monitoring of analytics events (screen views, custom
 
 ## Features
 - Multi-type event tracking (screen, event, custom)
-- Real-time monitoring and tabular display
-- Detailed event info: tags, screen classes, timestamps
+- Live event list with compact counts for the filtered results
+- Event details with screen, full timestamp, string parameters and Copy event
 - Built-in Compose UI
 - Type-safe API
 - Multiplatform support (Android/iOS)
@@ -38,7 +38,8 @@ AnalyticsLogger.log(
         tag = "home_screen_view",
         screenClass = "com.example.ui.HomeScreen",
         timestamp = System.currentTimeMillis(),
-        type = AnalyticsLogCategory.Screen.View
+        type = AnalyticsLogCategory.Screen.View,
+        params = mapOf("source" to "home")
     )
 )
 ```
@@ -46,15 +47,13 @@ AnalyticsLogger.log(
 ### Using the UI
 ```kotlin
 // AnalyticsScreen is rendered automatically by DevView when Analytics() is registered.
-// To use it standalone, provide LocalAnalytics above it:
-CompositionLocalProvider(LocalAnalytics provides AnalyticsLogger.logs) {
-    AnalyticsScreen(
-        highlightedAnalyticsLogTypes = persistentListOf(
-            AnalyticsLogCategory.Action.Click,
-            AnalyticsLogCategory.Performance.Error
-        )
+// Standalone screens read the logger by default. Custom sources pass logs = yourList.
+AnalyticsScreen(
+    highlightedAnalyticsLogTypes = persistentListOf(
+        AnalyticsLogCategory.Action.Click,
+        AnalyticsLogCategory.Performance.Error
     )
-}
+)
 ```
 
 ## Usage
@@ -62,9 +61,24 @@ CompositionLocalProvider(LocalAnalytics provides AnalyticsLogger.logs) {
 - Use `AnalyticsScreen` to view logs in real time.
 - Integrate with your analytics backend for dual logging.
 
+## Inspection and history
+
+Search matches tags and screens, ignoring case. Expand the pinned bottom panel for category and time filters; the toggle keeps their active count visible when collapsed. Limited time windows refresh every five seconds. Counts reflect the filtered results. Clear filters resets category and time selection; the no-results action clears search too.
+
+Tap a row to see its full timestamp with milliseconds and timezone, event type and sorted parameters. Copy event writes that data to the system clipboard. Returning to the list preserves search, filters and scroll position. If the event has been cleared or is unavailable after restoration, the detail page shows an empty state.
+
+`AnalyticsLogger.logs: List<AnalyticsLog>` is a read-only snapshot, observable when read in composition. Do not remember a single snapshot if you need live updates. Record through `AnalyticsLogger.log()`; direct list writes are no longer supported. Each recording gets a fresh internal UUID without changing value equality, and the logger copies the parameter map. Events are in memory only.
+
+For standalone sources, pass `AnalyticsScreen(logs = yourList, highlightedAnalyticsLogTypes = ...)` and replace lists/maps when they change. Avoid in-place mutations.
+
+### Migration
+
+Remove `CompositionLocalProvider(LocalAnalytics provides ...)`: `LocalAnalytics` has been removed. The registered module requires no provider. Standalone custom sources use the explicit `logs` parameter. Replace mutations of `AnalyticsLogger.logs` with `AnalyticsLogger.log()`.
+
 ## Best Practices
 1. Use descriptive tags and include screen context.
-2. Use SCREEN for navigation, EVENT for interactions, CUSTOM for business events.
+2. Choose a type such as `AnalyticsLogCategory.Screen.View`, `.Action.Click` or `.Custom.Event`.
+   Avoid credentials and personal data in parameters, especially when copying events.
 3. Log to DevView only in debug builds for best performance.
 4. Clear logs periodically during long sessions.
 
@@ -73,7 +87,7 @@ CompositionLocalProvider(LocalAnalytics provides AnalyticsLogger.logs) {
   - Ensure you use `AnalyticsLogger.log()` and provide the correct event type.
   - Confirm Compose state is correctly updated and the UI is observing the logs.
 - **How do I clear logs?**
-  - Use `AnalyticsLogger.clear()` (for debug/testing only).
+  - Use the Clear logs toolbar action. `AnalyticsLogger.clear()` is internal.
 - **Can I use this on iOS?**
   - Yes, Compose Multiplatform is supported. Ensure platform-specific initialisation is correct.
 - **Integration issues?**

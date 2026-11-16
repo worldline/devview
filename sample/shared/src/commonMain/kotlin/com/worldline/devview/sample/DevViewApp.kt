@@ -16,7 +16,6 @@ import co.touchlab.kermit.Logger
 import com.worldline.devview.DevView
 import com.worldline.devview.analytics.Analytics
 import com.worldline.devview.analytics.AnalyticsLogger
-import com.worldline.devview.analytics.LocalAnalytics
 import com.worldline.devview.analytics.model.AnalyticsLog
 import com.worldline.devview.analytics.model.AnalyticsLogType
 import com.worldline.devview.consolelogger.Console
@@ -87,18 +86,25 @@ public fun DevViewApp() {
         )
     )
 
-    // Initialize analytics logger
-    val analytics = remember { AnalyticsLogger.logs }
-
-    AnalyticsLogType.allTypes().forEachIndexed { index, type ->
-        AnalyticsLogger.log(
-            log = AnalyticsLog(
-                tag = "Sample Event $index",
-                screenClass = "MainScreen $index",
-                timestamp = Clock.System.now().toEpochMilliseconds(),
-                type = type
+    LaunchedEffect(key1 = Unit) {
+        AnalyticsLogType.allTypes().forEachIndexed { index, type ->
+            AnalyticsLogger.log(
+                log = AnalyticsLog(
+                    tag = "Sample Event $index",
+                    screenClass = "MainScreen $index",
+                    timestamp = Clock.System.now().toEpochMilliseconds(),
+                    type = type,
+                    params = if (index == 0) {
+                        mapOf(
+                            "source" to "sample",
+                            "screen" to "main"
+                        )
+                    } else {
+                        emptyMap()
+                    }
+                )
             )
-        )
+        }
     }
 
     // Route Kermit-based logging (e.g. sample:network's HTTP client logging) into the
@@ -112,7 +118,6 @@ public fun DevViewApp() {
 
     CompositionLocalProvider(
         LocalFeatureHandler provides featureHandler,
-        LocalAnalytics provides analytics,
         LocalConsoleLogs provides consoleLogs
     ) {
         val localFeatureHandler = LocalFeatureHandler.current

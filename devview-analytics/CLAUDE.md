@@ -1,117 +1,29 @@
-# CLAUDE.md
+# Analytics module
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+`devview-analytics` records and inspects in-memory analytics events on Android and iOS. Production code is in `commonMain`.
 
-## What This Module Does
+## Public API
 
-`devview-analytics` is the analytics-inspection module for the DevView developer menu. It lets host apps forward analytics events to `AnalyticsLogger` at runtime; DevView then shows those events in a searchable, filterable Compose UI.
+- `Analytics(highlightedLogType1, highlightedLogType2, highlightedLogType3)` registers Main and Detail destinations. The highlighted types choose compact summary counts.
+- `AnalyticsLogger.log(log: AnalyticsLog)` appends a fresh copy with an immutable parameter map. `logs: List<AnalyticsLog>` returns the private SnapshotStateList’s immutable snapshot; `hasLogs` observes whether it is empty. `clear()` is internal and used by the toolbar.
+- `AnalyticsLog(tag: String, screenClass: String, timestamp: Long, type: AnalyticsLogType, params: Map<String, String> = emptyMap())` keeps value equality. Its internal random UUID is outside the constructor/equality and changes on copy. Do not mark the model Immutable: standalone callers can supply mutable maps.
+- `AnalyticsScreen(highlightedAnalyticsLogTypes: PersistentList<AnalyticsLogType>, modifier: Modifier = Modifier, bottomPadding: Dp = 0.dp, logs: List<AnalyticsLog> = AnalyticsLogger.logs)` supports standalone explicit sources and in-place details.
+- `AnalyticsDestination.Detail(id: String)` identifies the recorded event. Missing identities show an unavailable-event state.
 
-## Public API Surface
+`LocalAnalytics` was removed. Registered module list and detail destinations both use the logger. Standalone callers must replace lists/maps when updating them and read logger snapshots in composition, not remember a stale snapshot.
 
-### `Analytics` — the `Module` entry point
+## Internal UI
 
-```kotlin
-Analytics(
-    highlightedLogType1: AnalyticsLogType? = AnalyticsLogCategory.Action.Click,
-    highlightedLogType2: AnalyticsLogType? = AnalyticsLogCategory.Performance.Error,
-    highlightedLogType3: AnalyticsLogType? = null
-)
-```
+`AnalyticsListScreen` uses DevViewFilterBar, DevViewEmptyState and compact HighlightedAnalyticsLogsHeader. Search/category/time/panel state uses rememberSaveable; the standalone wrapper preserves list and scroll state with SaveableStateHolder while showing details. NavDisplay handles saved entry state in the registered module.
 
-Registered in the host app's `buildModules { }` block. The three `highlightedLogType*` params control which event-type counters appear in the sticky summary header.
+`filterLogs(logs, query, categories, range, now)` is pure. Query matches tag or screen; categories and time combine with it. The clock refreshes every five seconds only for limited ranges. Summary counts use filtered results. `eventRowKeys` adds occurrence ranks to UUIDs so explicitly supplied duplicate objects cannot collide in LazyColumn.
 
-### `AnalyticsLogger` — singleton event store
+`AnalyticsDetailScreen` shows selectable event data and sorted string parameters. Copy uses the core multiplatform clipboard callback. No payload is persisted.
 
-| Member | Visibility | Purpose |
-|---|---|---|
-| `log(log: AnalyticsLog)` | `public` | Append an event |
-| `logs: SnapshotStateList<AnalyticsLog>` | `public` | Observable list of all events |
-| `hasLogs: Boolean` | `public` | Convenience check |
-| `clear()` | `internal` | Called by the in-UI "Clear" action only |
+## Taxonomy and tests
 
-### `AnalyticsLog` — event record
+Types are data objects nested in AnalyticsLogCategory, not enum constants. Examples: `AnalyticsLogCategory.Screen.View`, `AnalyticsLogCategory.Action.Click`, `AnalyticsLogCategory.Performance.Error`. Each object implements AnalyticsLogType and its category. Adding a type also requires updating `AnalyticsLogType.allTypes()`; KMP has no sealed-class reflection. Category colours/icons come from the host MaterialTheme.
 
-```kotlin
-data class AnalyticsLog(
-    val tag: String,          // event name / identifier
-    val screenClass: String,  // origin screen or component
-    val timestamp: Long,      // epoch milliseconds
-    val type: AnalyticsLogType
-)
-```
+Host tests cover filtering, boundary expiry, duplicate-safe keys, logger snapshot/parameter isolation, identities and copied text. Device tests cover live updates, filters/restoration, returning from details, missing restored identities, periodic expiry and clipboard contents.
 
-`formattedTimestamp` (HH:mm:ss in system timezone) is `internal` — used by UI components only.
-
-### `AnalyticsLogType` / `AnalyticsLogCategory` — type taxonomy
-
-`AnalyticsLogType` is a sealed interface; every concrete type is a `data object` declared *inside* a nested `AnalyticsLogCategory` sealed interface. The same object simultaneously IS the type and IS the category (via `override val category: AnalyticsLogCategory get() = this`):
-
-```kotlin
-// Referencing a type:
-AnalyticsLogCategory.Action.Click       // AnalyticsLogType AND AnalyticsLogCategory.Action
-AnalyticsLogCategory.Performance.Error  // AnalyticsLogType AND AnalyticsLogCategory.Performance
-```
-
-Built-in categories: `Screen`, `Session`, `Action`, `Search`, `Performance`, `Ecommerce`, `Media`, `Feature`, `Social`, `Custom`, `Diagnostic`.
-
-`AnalyticsLogType.allTypes()` returns every known type and **must be updated manually** when a new type is added — KMP has no sealed-class reflection.
-
-### `LocalAnalytics` — CompositionLocal
-
-```kotlin
-val LocalAnalytics: ProvidableCompositionLocal<List<AnalyticsLog>>
-```
-
-Must be provided above any call site of `AnalyticsScreen`. The DevView host wraps module content with `CompositionLocalProvider(LocalAnalytics provides AnalyticsLogger.logs)` before rendering module destinations.
-
-### `AnalyticsScreen` — main composable
-
-```kotlin
-@Composable
-fun AnalyticsScreen(
-    highlightedAnalyticsLogTypes: PersistentList<AnalyticsLogType>,
-    modifier: Modifier = Modifier,
-    bottomPadding: Dp = 0.dp
-)
-```
-
-Reads from `LocalAnalytics.current`. All filtering state (text query, category chips, time range) lives as local `remember` state inside this composable — there is no ViewModel.
-
-## Internal Architecture
-
-```
-AnalyticsLogger (singleton, mutableStateListOf)
-        │
-        │  provides via LocalAnalytics
-        ▼
-AnalyticsScreen (stateful Compose UI)
-    ├── sticky header  →  HighlightedAnalyticsLogsHeader
-    │                          └── HighlightedAnalyticsLog.Total / .Type
-    ├── log list       →  AnalyticsLogItem
-    │                          └── CategoryChip
-    └── bottom bar     →  text filter + TimeRange segmented button + category FilterChips
-```
-
-`AnalyticsLogger` uses `mutableStateListOf`, so `AnalyticsScreen` recomposes automatically whenever an event is appended — no explicit notification mechanism needed.
-
-`Analytics.destinations` registers a single `AnalyticsDestination.Main` destination with a "Clear" toolbar action. That action calls `AnalyticsLogger.clear()` (the only caller of the `internal` function).
-
-`TimeRange` (All / 5m / 15m / 30m) is a `private enum` inside `AnalyticsScreen.kt`, not exported.
-
-## Platform-Specific Code
-
-There are no `androidMain` or `iosMain` source sets. All production code is in `commonMain`. The `androidDeviceTest` source set holds Compose UI tests that run on a device or emulator using `runComposeUiTest`.
-
-## Conventions Specific to This Module
-
-- **Test tags** follow a fixed scheme used by device tests:
-  - Log items: `analytics_log_item_${log.tag}`
-  - Category chips: `category_chip_${category.displayName}`
-  - Time range buttons: `time_range_${timeRange.label}` (e.g. `time_range_5m`)
-  - Text field: `analytics_filter_field`
-
-- **Adding a new `AnalyticsLogType`**: (1) declare a `data object` inside the appropriate `AnalyticsLogCategory` sub-interface implementing both `AnalyticsLogCategory` and `AnalyticsLogType`, (2) add it to `AnalyticsLogType.allTypes()`.
-
-- **Adding a new `AnalyticsLogCategory`**: add a new nested sealed interface inside `AnalyticsLogCategory` defining `displayName`, `containerColor`/`contentColor` (from `MaterialTheme`), and `icon`. Then add its types to `allTypes()`.
-
-- `@Poko` is not applied directly to analytics data classes; it is configured at the project level (annotation class at `com/worldline/devview/core/Poko`) and applied via the convention plugin.
+Test tags: `analytics_log_item_${log.tag}`, `category_chip_${category.displayName}`, `time_range_${range.label}`, `analytics_filter_bar`. Duplicate tags are allowed for explicitly repeated objects; list keys are distinct.
