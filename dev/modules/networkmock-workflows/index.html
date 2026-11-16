@@ -1259,6 +1259,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#previewing-and-comparing-responses" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Previewing and comparing responses
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#finding-mocked-operations-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Finding mocked operations first
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#naming-response-variants" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2362,6 +2384,22 @@
 <li>The state chip turns red/orange. The Ktor plugin now returns that response for matching requests.</li>
 <li>After testing, tap "No mock" or use the "Reset to Network" toolbar action to restore pass-through.</li>
 </ol>
+<h2 id="previewing-and-comparing-responses">Previewing and comparing responses</h2>
+<ol>
+<li>Open DevView → Network Mock → tap your operation. The sheet opens on <strong>Responses</strong>.</li>
+<li>Tap a response's eye icon to open <strong>Preview</strong> directly, without activating the response.</li>
+<li>Use the header's <strong>"Compare with…" dropdown</strong> to select a second response from the same operation.</li>
+<li>
+<p>Read the inline or side-by-side diff; valid JSON is pretty-printed before display and comparison. Malformed JSON and non-JSON bodies stay unchanged, and logical lines stay unwrapped with one horizontal scroll for the whole pane and lazy vertical scrolling.
+Large comparisons fall back to stacked previews rather than allocating an unbounded diff table.</p>
+</li>
+<li>
+<p>Tap Back to return to Responses. Tap a response row there only when you want to activate it.</p>
+</li>
+</ol>
+<p>Responses, Sequence, Failure, and Preview all use the same fixed 65% sheet height. The three tabs separate response selection, sequence building, and transport failures. Response choices use grouped cards with matching sticky headers and footer hints; no Preview/Compare button appears at the bottom.</p>
+<h2 id="finding-mocked-operations-first">Finding mocked operations first</h2>
+<p>Open the toolbar's Sort menu and select <strong>"Mocked first"</strong>. Mock, Failure, and Sequence operations appear before Network operations, retaining spec order within each group. Other choices are Default (spec order), Path (A-Z), Method, and Tag. Sort is per-tab, client-side, and not persisted; it does not change request matching.</p>
 <h2 id="naming-response-variants">Naming response variants</h2>
 <p>Multiple examples can be declared for the same status code — useful for a "simple" vs. "detailed" error body, or an empty vs. populated list response:</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">"404"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -2394,7 +2432,7 @@
 </span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">  </span><span class="p">}</span>
 </span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>Both operations appear in the same tab, each labeled with a version chip (<code>v1</code>/<code>v2</code>, extracted from the <code>/v{n}/</code> path segment) that the tab's version filter can narrow on. The engine mocks whichever path the app actually calls — it does not rewrite or force a version (that is a deliberately separate, deferred feature).</p>
+<p>Both operations appear in the same tab with their version visible in the wrapping path (no separate version badge). The tab's version filter can narrow on <code>v1</code>/<code>v2</code>, extracted from the <code>/v{n}/</code> path segment. The engine mocks whichever path the app actually calls — it does not rewrite or force a version (that is a deliberately separate, deferred feature).</p>
 <h2 id="simulating-response-delay">Simulating response delay</h2>
 <p>Set <code>x-devview.delayMs</code> at the document root for a spec-wide default, and/or per operation to override it:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">x-devview</span><span class="p">:</span>
@@ -2410,7 +2448,7 @@
 <p><strong>Deterministically</strong> — every request to the operation fails the same way until you change it:</p>
 <ol>
 <li>Open DevView → Network Mock → tap your operation.</li>
-<li>Scroll past the response variants to "Simulate Failure" and tap Timeout or Connection Refused.</li>
+<li>Select the <strong>Failure</strong> tab and tap Timeout or Connection Refused.</li>
 <li>The operation's state chip reflects the selected failure. Tap "No mock" (or select a response) to stop simulating it.</li>
 </ol>
 <p><strong>Probabilistically</strong> — a percentage of requests fail on their own, the rest behave normally:</p>
@@ -2421,7 +2459,7 @@
 </span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="nt">failureRate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span><span class="w">  </span><span class="c1"># 10% of requests to this operation fail, independently, each time</span>
 </span></code></pre></div>
 <p>This only rolls for requests that would otherwise be mocked — an operation left on <code>Network</code>
-passthrough is never affected. If the operation's picker page shows a configured failure rate,
+passthrough is never affected. If the operation's Failure tab shows a configured failure rate in the footer below the failure group,
 that's this field — it's read-only in the UI; edit the spec to change it. See
 <a href="../networkmock-core/#simulating-failures">Simulating failures</a> for the exact exception each
 failure kind throws.</p>
@@ -2430,13 +2468,18 @@ failure kind throws.</p>
 status, upload progress, async job completion):</p>
 <ol>
 <li>Open DevView → Network Mock → tap your operation.</li>
-<li>In the "SEQUENCE" section, tap "Build a Sequence".</li>
-<li>Tap responses above, in the order you want them served (e.g. <code>202 Pending</code>, then <code>200 Success</code>).</li>
-<li>Tap "Save Sequence" (needs at least 2 steps). The operation now advances one step per request.</li>
+<li>Select the <strong>Sequence</strong> tab.</li>
+<li>Tap responses in the order you want them served (e.g. <code>202 Pending</code>, then <code>200 Success</code>). Each tap appends a numbered step; you can repeat a response or remove an individual step.</li>
+<li>Tap <strong>"Save Sequence (n)"</strong> (enabled at two or more steps). The sequence applies, the sheet closes, and the operation advances one step per request.</li>
 </ol>
-<p>Once the sequence reaches its last step, every further request keeps serving that last step —
-it does not loop back to the start. "Reset Position" (in the same section) restarts at step 1
-without leaving the sequence; selecting "No mock" or a single response exits it entirely.</p>
+<p>An active sequence shows its position in the Sequence tab (e.g. "Step 2 of 4"):</p>
+<ul>
+<li><strong>Reset</strong> restarts at step 1 without leaving the sequence.</li>
+<li>The <strong>Sequence</strong> tab starts with the existing ordered steps. Append or remove steps, then save to apply the edited sequence.</li>
+<li><strong>Cancel</strong> returns to Responses without applying draft changes.</li>
+</ul>
+<p>Once the sequence reaches its last step, further requests keep serving that step — it does not loop. Selecting "No mock", a single response, or a failure exits the sequence.</p>
+<p>These flows change only the UI; core request matching, persistence, sequence behavior, and the public API remain unchanged.</p>
 <h2 id="resetting-all-mocks">Resetting all mocks</h2>
 <ul>
 <li><strong>UI</strong>: Open DevView → Network Mock → tap the restore icon in the top toolbar.</li>
