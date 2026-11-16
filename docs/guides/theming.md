@@ -22,20 +22,23 @@ object MyModule : Module {
 }
 ```
 
-### Section-Derived Defaults (v0.1.4+)
+### Section hues and host-theme tones
 
-Since v0.1.4, `containerColor` and `contentColor` on `Module` default to the
-module's `Section` palette colors. Each section has its own brand-palette tint:
+Module `containerColor` and `contentColor` default to `Color.Unspecified` and resolve at render time.
+Each section keeps a distinct hue, blended 25% toward the host primary hue along the shortest arc:
+Settings 235°, Features 265°, Network 215°, Logging 175°, Custom 35°.
+With HSL saturation 45%, light-theme tiles use container lightness 90% and icon lightness 20%;
+dark-theme tiles use 28% and 88%. The current background luminance determines the mode,
+not the device setting, so a feature-flag-driven theme also works.
 
-| Section | Container Color | Content Color |
-|---------|----------------|---------------|
-| `SETTINGS` | `#545AAE` | `#E8E9F7` |
-| `FEATURES` | `#764DD0` | `#E8E9F7` |
-| `NETWORK` | `#5571B2` | `#E8E9F7` |
-| `LOGGING` | `#6970CA` | `#E8E9F7` |
-| `CUSTOM` | `#A03CBC` | `#E8E9F7` |
+Explicit module colour overrides still win. With only a container override, the unspecified icon
+colour resolves to contrasting black or white. When both are explicit, check their contrast.
+The old `Section.containerColor` and `Section.contentColor` extensions are removed in alpha08;
+use module overrides rather than a fixed section palette.
+Section headings use `displayName` and the host primary colour. Home tile container and icon
+colours animate when their resolved values change; the surrounding host theme is not animated.
 
-You only need to override `containerColor`/`contentColor` if your module requires a color outside its section's default.
+Layout, filter bars and empty states are shared across modules through the [UI kit](ui-components.md).
 
 ## Console Log Level Colors
 

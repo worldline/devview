@@ -21,7 +21,8 @@ class ModuleItemUiTest {
         setContent {
             ModuleItem(
                 module = module,
-                position = ModulePosition.SINGLE,
+                index = 0,
+                count = 1,
                 openModule = { opened = it }
             )
         }
@@ -43,7 +44,8 @@ class ModuleItemUiTest {
         setContent {
             ModuleItem(
                 module = module,
-                position = ModulePosition.SINGLE,
+                index = 0,
+                count = 1,
                 openModule = {}
             )
         }

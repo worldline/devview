@@ -17,8 +17,11 @@ package com.worldline.devview.analytics {
     property public com.worldline.devview.analytics.model.AnalyticsLogType? highlightedLogType1;
     property public com.worldline.devview.analytics.model.AnalyticsLogType? highlightedLogType2;
     property public com.worldline.devview.analytics.model.AnalyticsLogType? highlightedLogType3;
+    property public androidx.compose.ui.graphics.vector.ImageVector icon;
+    property public String moduleName;
     property public kotlin.jvm.functions.Function1<kotlinx.serialization.modules.PolymorphicModuleBuilder<androidx.navigation3.runtime.NavKey>,kotlin.Unit> registerSerializers;
     property public com.worldline.devview.core.Section section;
+    property public String subtitle;
   }
 
   public sealed exhaustive interface AnalyticsDestination extends androidx.navigation3.runtime.NavKey {

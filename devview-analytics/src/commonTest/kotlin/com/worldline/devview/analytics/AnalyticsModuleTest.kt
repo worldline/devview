@@ -27,7 +27,8 @@ class AnalyticsModuleTest {
 
         val mainMetadata = module.destinations[AnalyticsDestination.Main::class].shouldNotBeNull()
 
-        mainMetadata.title shouldBe "Analytics"
+        mainMetadata.title shouldBe null
+        module.moduleName shouldBe "Analytics"
         mainMetadata.actions shouldHaveSize 1
 
         val clearAction = mainMetadata.actions.single()
@@ -57,7 +58,7 @@ class AnalyticsModuleTest {
             )
         )
 
-        clearAction.action()
+        clearAction.action(AnalyticsDestination.Main)
 
         AnalyticsLogger.hasLogs shouldBe false
     }

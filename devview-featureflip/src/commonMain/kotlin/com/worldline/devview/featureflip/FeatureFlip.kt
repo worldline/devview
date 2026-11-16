@@ -8,7 +8,7 @@ import androidx.navigation3.runtime.NavKey
 import com.worldline.devview.core.DestinationMetadata
 import com.worldline.devview.core.Module
 import com.worldline.devview.core.Section
-import com.worldline.devview.core.withTitle
+import com.worldline.devview.core.asDestination
 import com.worldline.devview.utils.DataStoreDelegate
 import com.worldline.devview.utils.RequiresDataStore
 import kotlin.reflect.KClass
@@ -135,6 +135,12 @@ public object FeatureFlip : Module, RequiresDataStore {
      */
     override val dataStoreDelegate: DataStoreDelegate = DataStoreDelegate()
 
+    /** Name displayed on the home screen and default destination toolbar. */
+    override val moduleName: String = "Feature Flip"
+
+    /** Summary displayed on the home screen. */
+    override val subtitle: String = "Toggle feature flags"
+
     /**
      * The section this module belongs to in the DevView menu.
      *
@@ -150,7 +156,7 @@ public object FeatureFlip : Module, RequiresDataStore {
      * Currently includes only the main feature management screen.
      */
     override val destinations: PersistentMap<KClass<out NavKey>, DestinationMetadata> = persistentMapOf(
-        FeatureFlipDestination.Main.withTitle(title = "Feature Flip")
+        FeatureFlipDestination.Main.asDestination()
     )
 
     override val entryDestination: NavKey = FeatureFlipDestination.Main
