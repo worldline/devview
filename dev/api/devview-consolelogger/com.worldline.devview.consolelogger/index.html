@@ -95,7 +95,7 @@
     <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
   </div>
   <div class="tabbedcontent">
-    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button><button class="section-tab" data-togglable="PROPERTY,EXTENSION_PROPERTY">Properties</button></div>
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button></div>
     <div class="tabs-section-body">
       <div data-togglable="TYPE">
         <h2 class="tableheader">Types</h2>
@@ -109,7 +109,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-consolelogger/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-console/index.html">Console</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>maxEntries<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>ConsoleLogger.DEFAULT_MAX_ENTRIES<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>captureNativeConsole<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span> : <a href="../../devview/com.worldline.devview.core/-module/index.html">Module</a></div><div class="brief "><p class="paragraph">Console Logger module for the DevView developer tools suite.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-consolelogger/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-console/index.html">Console</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>maxEntries<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>ConsoleLogger.DEFAULT_MAX_ENTRIES<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>captureNativeConsole<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">defaultExcludedPatterns<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>DEFAULT_EXCLUDED_PATTERNS</span></span><span class="token punctuation">)</span> : <a href="../../devview/com.worldline.devview.core/-module/index.html">Module</a>, <a href="../../devview-utils/com.worldline.devview.utils/-requires-data-store/index.html">RequiresDataStore</a></div><div class="brief "><p class="paragraph">Console Logger module for the DevView developer tools suite.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -139,7 +139,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-consolelogger/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-console-logger/index.html">ConsoleLogger</a></div><div class="brief "><p class="paragraph">Central sink for captured console log lines.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-consolelogger/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-console-logger/index.html">ConsoleLogger</a></div><div class="brief "><p class="paragraph">Central sink for native console capture, manual entries and <a href="-dev-view-log-writer/index.html">DevViewLogWriter</a>.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -155,44 +155,6 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-consolelogger/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-dev-view-log-writer/index.html">DevViewLogWriter</a> : <span data-unresolved-link="co.touchlab.kermit/LogWriter///PointingToDeclaration/">LogWriter</span></div><div class="brief "><p class="paragraph">Optional <span data-unresolved-link="co.touchlab.kermit/LogWriter///PointingToDeclaration/">LogWriter</span> that forwards Kermit log calls to <a href="-console-logger/index.html">ConsoleLogger</a>.</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div data-togglable="PROPERTY">
-        <h2 class="tableheader">Properties</h2>
-        <div class="table"><a data-name="-2010081532%2FProperties%2F-754924275" anchor-label="LocalConsoleLogs" id="-2010081532%2FProperties%2F-754924275" data-filterable-set=":devview-consolelogger/commonMain"></a>
-          <div class="table-row table-row_content" data-filterable-current=":devview-consolelogger/commonMain" data-filterable-set=":devview-consolelogger/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="-local-console-logs.html"><span>Local</span><wbr><span>Console</span><wbr><span><span>Logs</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2010081532%2FProperties%2F-754924275"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-consolelogger/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="-local-console-logs.html">LocalConsoleLogs</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/compose/runtime/ProvidableCompositionLocal.html">ProvidableCompositionLocal</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../com.worldline.devview.consolelogger.model/-console-log/index.html">ConsoleLog</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">CompositionLocal for providing console logs to Compose UI components.</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div data-togglable="FUNCTION">
-        <h2 class="tableheader">Functions</h2>
-        <div class="table"><a data-name="1977617966%2FFunctions%2F-754924275" anchor-label="ConsoleScreen" id="1977617966%2FFunctions%2F-754924275" data-filterable-set=":devview-consolelogger/commonMain"></a>
-          <div class="table-row table-row_content" data-filterable-current=":devview-consolelogger/commonMain" data-filterable-set=":devview-consolelogger/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="-console-screen.html"><span>Console</span><wbr><span><span>Screen</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1977617966%2FFunctions%2F-754924275"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":devview-consolelogger/commonMain"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/compose/runtime/Composable.html"><span class="token annotation builtin">Composable</span></a></div></div><span class="token keyword">fun </span><a href="-console-screen.html"><span class="token function">ConsoleScreen</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modifier<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/compose/ui/Modifier.html">Modifier</a><span class="token operator"> = </span>Modifier<span class="token punctuation">, </span></span><span class="parameter ">bottomPadding<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/compose/ui/unit/Dp.html">Dp</a><span class="token operator"> = </span>0.dp</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Main UI component for displaying captured console logs.</p></div></div></div>
                 </div>
               </div>
             </div>

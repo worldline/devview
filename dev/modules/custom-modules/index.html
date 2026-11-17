@@ -2356,6 +2356,10 @@
 </span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">    </span><span class="p">)</span>
 </span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="p">}</span>
 </span></code></pre></div>
+<p><code>rememberModules</code> keeps <code>initModule()</code> in composition after once-only DataStore setup.
+Use keyed <code>LaunchedEffect</code> or <code>DisposableEffect</code> for ongoing work: recomposition keeps
+it alive; removing the module cancels it, and re-entry starts a new lifetime. Do not
+perform one-shot writes directly in the composable body.</p>
 <h3 id="section-enum">Section Enum</h3>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kd">enum</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">Section</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">SETTINGS</span><span class="p">,</span><span class="w">   </span><span class="c1">// Configuration and app info</span>

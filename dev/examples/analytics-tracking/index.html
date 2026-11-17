@@ -1777,10 +1777,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-3-use-analyticsscreen-in-your-composable" class="md-nav__link">
+  <a href="#step-3-show-devview" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Step 3: Use AnalyticsScreen in Your Composable
+        Step 3: Show DevView
       </span>
     </span>
   </a>
@@ -2253,18 +2253,12 @@
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="c1">// ...other modules...</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">}</span>
 </span></code></pre></div>
-<h2 id="step-3-use-analyticsscreen-in-your-composable">Step 3: Use AnalyticsScreen in Your Composable</h2>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nd">@Composable</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kd">fun</span><span class="w"> </span><span class="nf">MyApp</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="c1">// AnalyticsScreen is rendered automatically when Analytics() is registered in rememberModules.</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="c1">// To use it standalone:</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="n">AnalyticsScreen</span><span class="p">(</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="n">highlightedAnalyticsLogTypes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">persistentListOf</span><span class="p">(</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">            </span><span class="n">AnalyticsLogCategory</span><span class="p">.</span><span class="na">Action</span><span class="p">.</span><span class="na">Click</span><span class="p">,</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">            </span><span class="n">AnalyticsLogCategory</span><span class="p">.</span><span class="na">Performance</span><span class="p">.</span><span class="na">Error</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">        </span><span class="p">)</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="p">)</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">}</span>
+<h2 id="step-3-show-devview">Step 3: Show DevView</h2>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">DevView</span><span class="p">(</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">devViewIsOpen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">isDevViewOpen</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="n">closeDevView</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">isDevViewOpen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">},</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="n">modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">modules</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="p">)</span>
 </span></code></pre></div>
 <h2 id="step-4-test-analytics-tracking">Step 4: Test Analytics Tracking</h2>
 <ul>
@@ -2273,7 +2267,7 @@
 <li>Use filtering and search to inspect specific events</li>
 <li>Tap an event to inspect parameters and copy its full details</li>
 </ul>
-<p>The logger exposes read-only snapshots. Custom standalone sources pass <code>logs = yourList</code>; no CompositionLocal provider is needed. Replace lists/maps when updating custom sources. Sample events should be recorded from an effect or event handler, not directly during composition.</p>
+<p>The registered module reads the logger; no CompositionLocal provider is needed. Record events from an effect or event handler, not directly during composition.</p>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <ul>
 <li>If events do not appear, check that you are using AnalyticsLogger.log() correctly</li>

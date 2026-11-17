@@ -2356,7 +2356,9 @@ pass this explicitly if <code>owner</code> is an anonymous class, where the clas
 <p>Declare the properties once at the call site; DevView handles observation, capture, and
 restore internally. The existing overload and <code>TimeCapsuleOwner</code> contract are unchanged.</p>
 <h3 id="timecapsule"><code>TimeCapsule</code></h3>
-<p>The DevView module. Registered with no arguments, like <code>FeatureFlip</code>:</p>
+<p>The DevView module. Its screen is internal and supplied by registration; integrators
+control how <code>DevView</code> is presented rather than composing <code>TimeCapsuleScreen</code> directly.
+Registered with no arguments, like <code>FeatureFlip</code>:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rememberModules</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="n">module</span><span class="p">(</span><span class="n">TimeCapsule</span><span class="p">)</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="p">}</span>

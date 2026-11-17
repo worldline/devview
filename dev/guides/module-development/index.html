@@ -1413,6 +1413,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#initialization-lifetime" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Initialization lifetime
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#step-by-step-creating-a-module" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2303,6 +2314,12 @@
 filter bars, empty states and clipboard actions. Built-ins supply readable names and subtitles;
 module icon colours default to <code>Color.Unspecified</code> and resolve from section hues and host-theme tones.
 Explicit <code>containerColor</code> / <code>contentColor</code> overrides remain supported (<a href="../theming/">theming</a>).</p>
+<h2 id="initialization-lifetime">Initialization lifetime</h2>
+<p><code>rememberModules</code> calls <code>initDataStore()</code> once before composing <code>initModule()</code>. The latter
+remains in composition, so implementations should put ongoing work in keyed
+<code>LaunchedEffect</code> or <code>DisposableEffect</code>. Ordinary recomposition preserves those effects;
+module removal cancels them and re-entry starts them again. Keep one-shot writes out
+of the composable body.</p>
 <h2 id="step-by-step-creating-a-module">Step-by-Step: Creating a Module</h2>
 <h3 id="1-define-destinations">1. Define Destinations</h3>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">sealed</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nc">MyModuleDestination</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">NavKey</span><span class="w"> </span><span class="p">{</span>

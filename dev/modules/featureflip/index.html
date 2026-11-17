@@ -2352,11 +2352,14 @@
 </span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="using-the-ui">Using the UI</h3>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">featureHandler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rememberFeatureHandler</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">CompositionLocalProvider</span><span class="p">(</span><span class="n">LocalFeatureHandler</span><span class="w"> </span><span class="n">provides</span><span class="w"> </span><span class="n">featureHandler</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="c1">// FeatureFlipScreen is rendered automatically by DevView when FeatureFlip is registered.</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="c1">// State changes are handled internally by the DevView UI.</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">val</span><span class="w"> </span><span class="nv">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rememberFeatureHandler</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">CompositionLocalProvider</span><span class="p">(</span><span class="n">LocalFeatureHandler</span><span class="w"> </span><span class="n">provides</span><span class="w"> </span><span class="n">handler</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="n">DevView</span><span class="p">(</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">        </span><span class="n">devViewIsOpen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">isDevViewOpen</span><span class="p">,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">        </span><span class="n">closeDevView</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">isDevViewOpen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">},</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">        </span><span class="n">modules</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">modules</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="p">)</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">}</span>
 </span></code></pre></div>
 <h2 id="controls-and-filters">Controls and filters</h2>
 <p>Local flags use a named on/off switch. Remote flags use Material3 segmented buttons
@@ -2375,7 +2378,7 @@ unchanged and the screen offers <strong>Retry</strong> instead of crashing the h
 <h2 id="usage">Usage</h2>
 <ul>
 <li>Use <code>FeatureHandler</code> to manage features programmatically.</li>
-<li>Use <code>FeatureFlipScreen</code> for a ready-made UI.</li>
+<li>Open DevView → Feature Flip to manage flags; registration owns the screen.</li>
 <li>Features are persisted using DataStore.</li>
 </ul>
 <h2 id="best-practices">Best Practices</h2>
