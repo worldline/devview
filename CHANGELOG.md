@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0-alpha08] - 2026-11-17
+
 ### Added
 - Analytics: event details with string parameters, millisecond timestamps with timezone,
   selectable text and Copy event.
@@ -515,7 +517,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added and expanded unit test coverage for all primary `devview-*` modules.
 - Added Konsist architecture enforcement tests and Kover coverage reporting across the module set.
 
-[Unreleased]: https://github.com/worldline/DevView/compare/0.2.0-alpha07...HEAD
+[Unreleased]: https://github.com/worldline/DevView/compare/0.2.0-alpha08...HEAD
+[0.2.0-alpha08]: https://github.com/worldline/DevView/compare/0.2.0-alpha07...0.2.0-alpha08
 [0.2.0-alpha07]: https://github.com/worldline/DevView/compare/0.2.0-alpha06...0.2.0-alpha07
 [0.2.0-alpha06]: https://github.com/worldline/DevView/compare/0.2.0-alpha05...0.2.0-alpha06
 [0.2.0-alpha05]: https://github.com/worldline/DevView/compare/0.2.0-alpha04...0.2.0-alpha05
