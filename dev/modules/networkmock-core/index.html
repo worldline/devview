@@ -1307,6 +1307,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#state-coordination" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        State coordination
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#logging" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2700,8 +2711,9 @@ is <code>false</code>: it is not schema-generated and gets no "Generated" badge.
 returns zero body bytes without adding a media-type-derived <code>Content-Type</code> header;
 declared response header examples are still served, including an explicit <code>Content-Type</code>.
 This also supports bodyless 200 responses such as logout. A declared media type with
-neither examples nor a schema remains unmockable; missing fixtures still fall through
-to the real network, so mocking is not a blanket network-isolation guarantee.</p>
+neither examples nor a schema remains unmockable. Once a variant is selected, a missing or
+unreadable fixture fails the Ktor request without a real-network fallback. Missing configuration,
+unmatched operations and Network selections still pass through; this is not blanket isolation.</p>
 <h3 id="schema-based-response-synthesis">Schema-based response synthesis</h3>
 <p>A status code with <strong>no</strong> <code>examples</code> at all, but a declared <code>content.&lt;mediaType&gt;.schema</code>,
 synthesizes one placeholder body per such media type instead of being unmockable:</p>
@@ -2723,7 +2735,7 @@ synthesizes one placeholder body per such media type instead of being unmockable
 declares <strong>any</strong> <code>examples</code> for a media type never falls back to synthesis for that media type,
 even if it also declares a <code>schema</code> — an author-provided example always wins. <code>MockResponse.isSynthesized</code>
 is <code>true</code> for a synthesized body, <code>false</code> otherwise; the operation picker page shows a small
-"Generated" badge on a synthesized response's row.</p>
+"Generated" label on a synthesized response's row.</p>
 <p>This is deliberately narrow, not full JSON Schema conformance — no <code>required</code>,
 <code>additionalProperties</code>, string patterns, <code>minimum</code>/<code>maximum</code>, etc. (anything that would matter for
 <em>validating</em> a body rather than <em>synthesizing one plausible value</em>):</p>
@@ -2857,6 +2869,11 @@ toolbar action does exactly this via <code>NetworkMockViewModel.reloadConfigurat
 <td>Epoch ms of last change</td>
 </tr>
 <tr>
+<td><code>network_mock_revision</code></td>
+<td>Long</td>
+<td>Shared state revision; absent means zero</td>
+</tr>
+<tr>
 <td><code>network_mock_schema_version</code></td>
 <td>Int</td>
 <td>Gates the one-shot pre-0.2.0 migration below</td>
@@ -2876,6 +2893,11 @@ the position to serve next. The position is part of this same persisted value, n
 key, so resetting the operation to <code>Network</code> (or resetting all mocks) discards it along with
 everything else about the sequence. See <a href="../networkmock-workflows/#simulating-a-stagedpolling-flow-sequential-mocks">Simulating a staged/polling flow</a>.</p>
 <p><strong>Upgrading from a pre-0.2.0 release</strong>: the operation-state key shape changed (<code>{groupId}-{environmentId}-{endpointId}</code> → <code>{specId}-{operationId}</code>), and so did the <code>Mock</code> payload (a response file name → <code>(statusCode, exampleName)</code> in schema 1, then gaining <code>mediaType</code> in schema 2). On first launch after upgrading across schema changes, legacy operation entries are wiped once — this is disabled-by-default developer-tooling state, not user data, so previously-selected mocks are reset rather than translated. The global mocking toggle is unaffected. See the <a href="../../guides/migrating-to-openapi/">migration guide</a> for converting an existing <code>mocks.json</code>.</p>
+<h2 id="state-coordination">State coordination</h2>
+<p><code>MockStateRepository.getStateSnapshot()</code> reads the state and <code>revision</code> from the same persisted snapshot. Unlike <code>getState()</code>, it propagates I/O failures instead of returning default state. The revision is additive to schema 2: existing valid selections remain readable without migration or reset.</p>
+<p>Every explicit state write increments the shared revision, including equal-value toggles, replacements and resets. <code>compareAndAdvanceSequence(key, expectedRevision, expectedSequence)</code> validates the current revision, global toggle and exact sequence inside one DataStore transaction. It returns false without writing if they changed or no current response exists. A successful non-terminal consume advances the position; the terminal step repeats and still validates, without incrementing the revision. Persistence errors propagate. Step order is successful commit order, not request-start or response-completion order.</p>
+<p><code>resetOperationSequencePosition(key)</code> reads the latest sequence inside its transaction and resets only its position. It preserves the latest response list, increments the revision even when already at zero, and does nothing for a non-sequence operation. <code>resetKnownOperationsToNetwork()</code> covers both persisted keys and pre-registered operations, including another repository's entries, without changing the global toggle.</p>
+<p>The Ktor plugin uses these operations to avoid lost updates, stale prepared responses and equal-value ABA replacements. See <a href="../networkmock-ktor/#how-interception-works">interception behaviour</a>.</p>
 <h2 id="logging">Logging</h2>
 <p><code>MockConfigRepository</code> logs spec-load outcomes through <a href="https://github.com/touchlab/Kermit">Kermit</a>, tagged <code>DevViewNetworkMock</code> — the same tag used by <code>devview-networkmock</code> and <code>devview-networkmock-ktor</code>, so a host can filter every NetworkMock-related log line by tag regardless of which module emitted it. Spec load success logs at <code>debug</code>, load failures at <code>warn</code> with the causing throwable attached. Request-matching outcomes (<code>findMatchingMock</code>) log at <code>verbose</code>, since they fire on every intercepted request.</p>
 <p>No response body content is ever logged. To silence NetworkMock's logs (or raise/lower their verbosity) in a host app, configure Kermit directly — this module adds no separate on/off flag of its own:</p>

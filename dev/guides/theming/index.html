@@ -1525,6 +1525,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Network Mock Status Colors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response-comparison-colours" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Response comparison colours
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2371,7 +2388,11 @@ and dark error/assert labels have also been adjusted.</p>
 (2xx green, 4xx/5xx red, etc.), the network pass-through state, and simulated-failure state are
 <strong>not</strong> derived from <code>MaterialTheme.colorScheme</code> — a mocked 2xx response needs to read as
 "success" regardless of your app's brand colors. <code>MockColorScheme.Light</code>
-and <code>MockColorScheme.Dark</code> are two complete, hand-tuned palettes chosen for contrast in each theme.</p>
+and <code>MockColorScheme.Dark</code> are two complete, hand-tuned palettes chosen for contrast in each theme.
+Dark status chips use deep containers and light labels. All eight container/label pairs in
+both built-in palettes have tests for at least 4.5:1 text contrast; custom overrides need
+their own checks. Network pass-through rows use quiet host-theme text instead of a colored
+chip, while HTTP method badges keep their host-theme roles.</p>
 <p>Provide the palette where you already configure your app's <code>MaterialTheme</code>, so it switches
 alongside your light/dark theme:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">MaterialTheme</span><span class="p">(</span><span class="n">colorScheme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">darkTheme</span><span class="p">)</span><span class="w"> </span><span class="n">darkColorScheme</span><span class="p">()</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">lightColorScheme</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
@@ -2393,6 +2414,13 @@ from the ambient <code>MaterialTheme</code>'s surface luminance — usually corr
 cue to wire up <code>LocalMockColorScheme</code> explicitly. As with the console, the fallback deliberately
 does not use <code>isSystemInDarkTheme()</code>, since DevView's theme may be driven by something other
 than the system setting.</p>
+<h3 id="response-comparison-colours">Response comparison colours</h3>
+<p><code>MockResponseDiffColors()</code> selects light or deep-dark lavender and bisque pairs from the
+ambient <code>MaterialTheme.colorScheme.surface</code> luminance, independently of the system theme.
+Left and right sides keep their colour identity in both palettes. The default container/label
+pairs meet 4.5:1 text contrast; callers can override each colour independently and should
+check contrast against their own surfaces. Both inline and split comparisons share these
+colours.</p>
 <h2 id="customising-typography">Customising Typography</h2>
 <p>Use your app's typography settings in custom modules:
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">Text</span><span class="p">(</span><span class="s">"DevView"</span><span class="p">,</span><span class="w"> </span><span class="n">style</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MaterialTheme</span><span class="p">.</span><span class="na">typography</span><span class="p">.</span><span class="na">titleLarge</span><span class="p">)</span>
