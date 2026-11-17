@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -96,7 +97,7 @@ internal fun TimeCapsuleRow(
         entry.changesFrom(previous = previous)
     }
     var summaryOverflows by remember { mutableStateOf(value = false) }
-    val isExpandable = changes.isNotEmpty() || summaryOverflows
+    val isExpandable = expanded || changes.isNotEmpty() || summaryOverflows
     val chevronRotation by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
 
     // A Row sized via IntrinsicSize.Min doesn't track AnimatedVisibility's per-frame animated
@@ -112,6 +113,7 @@ internal fun TimeCapsuleRow(
                 entry = entry,
                 changes = changes,
                 deltaMillis = deltaMillis,
+                isCurrent = isCurrent,
                 expanded = expanded,
                 isExpandable = isExpandable,
                 chevronRotation = chevronRotation,
@@ -146,6 +148,7 @@ private fun RowContent(
     entry: Recorded<*>,
     changes: List<FieldChange>,
     deltaMillis: Long?,
+    isCurrent: Boolean,
     expanded: Boolean,
     isExpandable: Boolean,
     chevronRotation: Float,
@@ -222,7 +225,7 @@ private fun RowContent(
             if (isExpandable) {
                 IconButton(
                     modifier = Modifier
-                        .size(size = 32.dp)
+                        .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
                         .testTag(tag = "time_capsule_expand_${entry.id}"),
                     onClick = onExpandToggle
                 ) {
@@ -234,8 +237,10 @@ private fun RowContent(
                 }
             }
             Spacer(modifier = Modifier.weight(weight = 1f))
-            TextButton(onClick = onRestoreClick) {
-                Text(text = "Restore", fontWeight = FontWeight.SemiBold)
+            if (!isCurrent) {
+                TextButton(onClick = onRestoreClick) {
+                    Text(text = "Restore", fontWeight = FontWeight.SemiBold)
+                }
             }
         }
     }

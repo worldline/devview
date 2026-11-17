@@ -1,36 +1,34 @@
 package com.worldline.devview.timecapsule
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.worldline.devview.timecapsule.components.TimeCapsuleRow
+import com.worldline.devview.ui.DevViewEmptyState
 
 /**
  * Screen showing the state history of whichever screen is currently recording via
- * [TimeCapsuleEffect], newest entry first, with a restore action on each row.
+ * [TimeCapsuleEffect], newest entry first, with restore actions on earlier entries.
  *
  * @param modifier Modifier to be applied to the root container.
  * @param bottomPadding Additional bottom padding applied to the list, used to avoid overlap
@@ -43,7 +41,21 @@ import com.worldline.devview.timecapsule.components.TimeCapsuleRow
 internal fun TimeCapsuleScreen(modifier: Modifier = Modifier, bottomPadding: Dp = 0.dp) {
     val capsule = TimeCapsule.current
     val entries = capsule?.entries.orEmpty().asReversed()
-    var expandedIds by remember { mutableStateOf(value = emptySet<Long>()) }
+    val recordingId = capsule?.recordingId.orEmpty()
+    var expandedIds by rememberSaveable(
+        recordingId,
+        stateSaver = listSaver<List<Long>, Any>(
+            save = { listOf(element = recordingId) + it },
+            // Saved inputs are not validated when a new composition restores its state.
+            restore = { saved ->
+                if (saved.firstOrNull() == recordingId) {
+                    saved.drop(n = 1).map { it as Long }
+                } else {
+                    emptyList()
+                }
+            }
+        )
+    ) { mutableStateOf(value = emptyList<Long>()) }
 
     Column(modifier = modifier.fillMaxSize()) {
         capsule?.subtitle?.let { subtitle ->
@@ -58,30 +70,28 @@ internal fun TimeCapsuleScreen(modifier: Modifier = Modifier, bottomPadding: Dp 
 
         if (entries.isEmpty()) {
             Box(
-                modifier = Modifier.weight(weight = 1f).fillMaxWidth().padding(all = 32.dp),
+                modifier = Modifier
+                    .weight(
+                        weight = 1f
+                    ).fillMaxWidth()
+                    .padding(bottom = bottomPadding),
                 contentAlignment = Alignment.Center
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(space = 8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.History,
-                        contentDescription = null,
-                        modifier = Modifier.size(size = 48.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = if (capsule == null) {
-                            "No screen is recording. Add TimeCapsuleEffect(owner) to a screen."
-                        } else {
-                            "No states captured yet."
-                        },
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Center
-                    )
-                }
+                DevViewEmptyState(
+                    icon = Icons.Rounded.History,
+                    title = if (capsule ==
+                        null
+                    ) {
+                        "No screen is recording"
+                    } else {
+                        "No states captured yet"
+                    },
+                    message = if (capsule == null) {
+                        "Add TimeCapsuleEffect(owner) to a screen to record its state history."
+                    } else {
+                        "State changes will appear here while this screen is recording."
+                    }
+                )
             }
             return@Column
         }
