@@ -52,8 +52,8 @@ import kotlinx.collections.immutable.PersistentList
  *
  * - Unchanged lines are rendered normally with a line-number gutter on both sides.
  * - Differing lines use a [MockResponseDiffColors.leftContainer] background for the left response
- *   and [MockResponseDiffColors.rightContainer] for the right. These map to `primaryContainer` and
- *   `secondaryContainer` by default to avoid implying additions or removals.
+ *   and [MockResponseDiffColors.rightContainer] for the right. Their indigo and brown pairs
+ *   adapt to the surface luminance without implying additions or removals.
  * - Long runs of unchanged lines are collapsed into a "… N unchanged lines …" label,
  *   showing only [CONTEXT_LINES] lines of context on each side of a changed region.
  * - When [leftLabel] and [rightLabel] are provided, a colour legend is rendered above the diff

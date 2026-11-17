@@ -5,18 +5,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 
-/** Light lavender — background for left-side diff lines. Legible in both light and dark. */
+/** Light lavender background for left-side diff lines in light themes. */
 internal val DiffLeftContainer = Color(color = 0xFFDDD8FF)
 
-/** Deep indigo — text colour on [DiffLeftContainer]. */
+/** Deep indigo text on [DiffLeftContainer]. */
 internal val DiffOnLeftContainer = Color(color = 0xFF352D6E)
 
-/** Light bisque — background for right-side diff lines. Maximally distinct from [DiffLeftContainer]. */
+/** Light bisque background for right-side diff lines in light themes. */
 internal val DiffRightContainer = Color(color = 0xFFFFE4C4)
 
-/** Muted amber/brown — text colour on [DiffRightContainer]. */
+/** Muted brown text on [DiffRightContainer]. */
 internal val DiffOnRightContainer = Color(color = 0xFF4A3320)
+
+/** Dark indigo background for left-side diff lines in dark themes. */
+internal val DiffDarkLeftContainer = Color(color = 0xFF352D6E)
+
+/** Lavender text on [DiffDarkLeftContainer]. */
+internal val DiffDarkOnLeftContainer = Color(color = 0xFFDDD8FF)
+
+/** Dark brown background for right-side diff lines in dark themes. */
+internal val DiffDarkRightContainer = Color(color = 0xFF4A3320)
+
+/** Bisque text on [DiffDarkRightContainer]. */
+internal val DiffDarkOnRightContainer = Color(color = 0xFFFFE4C4)
 
 /**
  * Colours used by [InlineDiffContent], [SplitDiffContent], and [DiffLineRow] to render mock
@@ -142,9 +155,9 @@ internal object MockResponseDiffDefaults {
      * Override any slot to customise the appearance of the diff components.
      *
      * - [leftContainer] / [onLeftContainer] and [rightContainer] / [onRightContainer] are
-     *   hardcoded to muted blue and amber/brown respectively. These are theme-agnostic values
-     *   chosen to be clearly distinct from each other and legible in both light and dark modes,
-     *   without implying additions or removals.
+     *   indigo and brown pairs selected from the theme surface luminance. Dark surfaces use
+     *   deep containers with light text, retaining contrast without large bright diff patches.
+     *   The two hues distinguish response ownership without implying additions or removals.
      */
     @Composable
     internal fun colors(
@@ -153,10 +166,34 @@ internal object MockResponseDiffDefaults {
         gutterContainer: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
         onGutterContainer: Color = MaterialTheme.colorScheme.onSurfaceVariant,
         collapsedContainer: Color = MaterialTheme.colorScheme.surfaceContainerLow,
-        leftContainer: Color = DiffLeftContainer,
-        onLeftContainer: Color = DiffOnLeftContainer,
-        rightContainer: Color = DiffRightContainer,
-        onRightContainer: Color = DiffOnRightContainer
+        leftContainer: Color = if (surface.luminance() <
+            0.5f
+        ) {
+            DiffDarkLeftContainer
+        } else {
+            DiffLeftContainer
+        },
+        onLeftContainer: Color = if (surface.luminance() <
+            0.5f
+        ) {
+            DiffDarkOnLeftContainer
+        } else {
+            DiffOnLeftContainer
+        },
+        rightContainer: Color = if (surface.luminance() <
+            0.5f
+        ) {
+            DiffDarkRightContainer
+        } else {
+            DiffRightContainer
+        },
+        onRightContainer: Color = if (surface.luminance() <
+            0.5f
+        ) {
+            DiffDarkOnRightContainer
+        } else {
+            DiffOnRightContainer
+        }
     ): MockResponseDiffColors = MockResponseDiffColors(
         surface = surface,
         onSurface = onSurface,

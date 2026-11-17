@@ -40,23 +40,21 @@ val client = HttpClient(OkHttp) {
 
 For every outgoing request, the plugin:
 
-1. Calls `stateRepository.getState()` to read the current mock state.
-2. If `globalMockingEnabled` is `false` → sends the real request.
-3. Calls `mockRepository.findMatchingMock(host, path, method, queryParameters)`.
-4. If no match → sends the real request.
-5. If matched, reads the operation's `OperationMockState`:
-   - `Network` or `null` → sends the real request.
-   - `Failure(kind)` → throws immediately, simulating that failure kind (see below). No response is loaded.
-   - `Mock(statusCode, mediaType, exampleName)`:
-     - If the operation declares `x-devview.failureRate` and the configured `Random` rolls below it → throws a simulated connection failure instead, same as `Failure(CONNECTION_REFUSED)`.
-     - Otherwise, loads that declared response variant and returns a synthetic response.
-6. On any error loading a declared mock (undeclared variant, missing file, exception) → falls back to the real network and logs the reason.
+1. Reads a strict `getStateSnapshot()`. Disabled global mocking sends the real request.
+2. Matches the host, path, method, query and applicable request body against the loaded configuration. No operation match or unavailable configuration sends the real request.
+3. Reads fresh state after matching. Network or an unset operation sends the real request; a forced Failure throws the corresponding simulated transport exception.
+4. For Mock or Sequence, rolls the operation's configured probability at most once per request. A hit throws a simulated connection refusal. Otherwise it loads the exact selected variant and applies the configured delay at most once.
+5. Revalidates the state before returning a prepared response. Sequence validation and non-terminal advancement share one atomic DataStore transaction. If a newer write wins, the prepared body is discarded and the request retries against fresh state. New Network, forced failure or replacement mock settings take precedence; retries do not add probability rolls or mock delays.
 
-Simulated failures (deterministic `Failure` states and the probabilistic `failureRate` roll) are the one case where **the plugin does throw** — this is deliberate: it's mirroring a real network failure, not an internal error to recover from. See [Simulating failures](networkmock-core.md#simulating-failures) for which exception each failure kind throws.
+Concurrent sequence requests consume steps in successful commit order. The final step repeats but still requires validation. A failed commit returns neither the mock nor a real-network fallback, and a reset cannot be overwritten by a stale prepared response.
 
-Mock responses are returned with HTTP/1.1 status, `Content-Type` set from the response's declared media type (defaulting to `application/json`), any additional headers declared on `responses.<code>.headers`, and the response body as the content. See [Response headers and content type](networkmock-core.md#response-headers-and-content-type).
+**Selected mocks fail without network fallback.** An undeclared variant, missing resource or resource-loading exception fails the request and is logged; it does not send a real GET, POST or other request, and does not consume the sequence. State-read errors also propagate. Coroutine cancellation propagates without being treated as a mock-load fallback. Missing configuration and unmatched operations retain pass-through behaviour, so this is not a general network-isolation guarantee.
 
-Each intercepted request logs exactly one line through [Kermit](https://github.com/touchlab/Kermit) (tag `DevViewNetworkMock`, `debug` level, `warn` for a failed mock load) — e.g. `GET /v1/users/42 -> MOCK 200/default` or `-> NETWORK (no operation match)`. No response body content is ever logged. See [Logging](networkmock-core.md#logging) for how to adjust verbosity or route these into `devview-consolelogger`.
+Simulated failures deliberately throw the same categories of exception as a real engine; see [Simulating failures](networkmock-core.md#simulating-failures).
+
+Mock responses use HTTP/1.1, the resolved content type, declared response headers and body bytes. Bodyless variants have no media-type-derived header. See [Response headers and content type](networkmock-core.md#response-headers-and-content-type).
+
+The plugin logs routing, retries and errors through Kermit (tag `DevViewNetworkMock`) without logging response bodies. Retries can produce more than one log line. See [Logging](networkmock-core.md#logging) to adjust verbosity or capture logs in Console.
 
 ## Platform Actuals
 

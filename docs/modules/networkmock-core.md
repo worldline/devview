@@ -241,8 +241,9 @@ is `false`: it is not schema-generated and gets no "Generated" badge. The Ktor p
 returns zero body bytes without adding a media-type-derived `Content-Type` header;
 declared response header examples are still served, including an explicit `Content-Type`.
 This also supports bodyless 200 responses such as logout. A declared media type with
-neither examples nor a schema remains unmockable; missing fixtures still fall through
-to the real network, so mocking is not a blanket network-isolation guarantee.
+neither examples nor a schema remains unmockable. Once a variant is selected, a missing or
+unreadable fixture fails the Ktor request without a real-network fallback. Missing configuration,
+unmatched operations and Network selections still pass through; this is not blanket isolation.
 
 ### Schema-based response synthesis
 
@@ -269,7 +270,7 @@ synthesizes `{"id":0,"status":"ACTIVE"}` under the example name `"default"`. A s
 declares **any** `examples` for a media type never falls back to synthesis for that media type,
 even if it also declares a `schema` — an author-provided example always wins. `MockResponse.isSynthesized`
 is `true` for a synthesized body, `false` otherwise; the operation picker page shows a small
-"Generated" badge on a synthesized response's row.
+"Generated" label on a synthesized response's row.
 
 This is deliberately narrow, not full JSON Schema conformance — no `required`,
 `additionalProperties`, string patterns, `minimum`/`maximum`, etc. (anything that would matter for
@@ -361,6 +362,7 @@ State is persisted via `MockStateRepository`:
 |-----|------|---------|
 | `network_mock_global_enabled` | Boolean | Master toggle |
 | `network_mock_last_modified` | Long | Epoch ms of last change |
+| `network_mock_revision` | Long | Shared state revision; absent means zero |
 | `network_mock_schema_version` | Int | Gates the one-shot pre-0.2.0 migration below |
 | `network_mock_operation_{compositeKey}` | String (JSON) | Per-operation state |
 
@@ -373,6 +375,16 @@ key, so resetting the operation to `Network` (or resetting all mocks) discards i
 everything else about the sequence. See [Simulating a staged/polling flow](networkmock-workflows.md#simulating-a-stagedpolling-flow-sequential-mocks).
 
 **Upgrading from a pre-0.2.0 release**: the operation-state key shape changed (`{groupId}-{environmentId}-{endpointId}` → `{specId}-{operationId}`), and so did the `Mock` payload (a response file name → `(statusCode, exampleName)` in schema 1, then gaining `mediaType` in schema 2). On first launch after upgrading across schema changes, legacy operation entries are wiped once — this is disabled-by-default developer-tooling state, not user data, so previously-selected mocks are reset rather than translated. The global mocking toggle is unaffected. See the [migration guide](../guides/migrating-to-openapi.md) for converting an existing `mocks.json`.
+
+## State coordination
+
+`MockStateRepository.getStateSnapshot()` reads the state and `revision` from the same persisted snapshot. Unlike `getState()`, it propagates I/O failures instead of returning default state. The revision is additive to schema 2: existing valid selections remain readable without migration or reset.
+
+Every explicit state write increments the shared revision, including equal-value toggles, replacements and resets. `compareAndAdvanceSequence(key, expectedRevision, expectedSequence)` validates the current revision, global toggle and exact sequence inside one DataStore transaction. It returns false without writing if they changed or no current response exists. A successful non-terminal consume advances the position; the terminal step repeats and still validates, without incrementing the revision. Persistence errors propagate. Step order is successful commit order, not request-start or response-completion order.
+
+`resetOperationSequencePosition(key)` reads the latest sequence inside its transaction and resets only its position. It preserves the latest response list, increments the revision even when already at zero, and does nothing for a non-sequence operation. `resetKnownOperationsToNetwork()` covers both persisted keys and pre-registered operations, including another repository's entries, without changing the global toggle.
+
+The Ktor plugin uses these operations to avoid lost updates, stale prepared responses and equal-value ABA replacements. See [interception behaviour](networkmock-ktor.md#how-interception-works).
 
 ## Logging
 

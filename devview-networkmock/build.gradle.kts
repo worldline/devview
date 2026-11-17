@@ -33,6 +33,12 @@ kotlin {
                 implementation(projects.devviewTest)
             }
         }
+
+        androidDeviceTest {
+            dependencies {
+                implementation(projects.devviewTest)
+            }
+        }
     }
 }
 

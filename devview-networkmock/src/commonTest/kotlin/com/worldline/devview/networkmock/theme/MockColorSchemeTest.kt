@@ -1,11 +1,27 @@
 package com.worldline.devview.networkmock.theme
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import com.worldline.devview.networkmock.core.model.StatusCodeFamily
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class MockColorSchemeTest {
+
+    @Test
+    fun `every built in text and container pair meets normal text contrast`() {
+        listOf(MockColorScheme.Light, MockColorScheme.Dark).forEach { scheme ->
+            val pairs = StatusCodeFamily.entries.map { scheme[it] } + scheme.network + scheme.failure
+            pairs.forEach { colors ->
+                val background = colors.container.luminance()
+                val foreground = colors.content.luminance()
+                val contrast = (maxOf(a = background, b = foreground) + 0.05f) /
+                    (minOf(a = background, b = foreground) + 0.05f)
+                assertTrue(actual = contrast >= 4.5f, message = "Status text contrast: $contrast")
+            }
+        }
+    }
 
     @Test
     fun `get returns the matching slot for every family`() {

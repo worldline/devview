@@ -6,8 +6,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -15,6 +17,7 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
@@ -26,6 +29,7 @@ import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.worldline.devview.core.Module
 import com.worldline.devview.internal.DESTINATION_METADATA_KEY
+import com.worldline.devview.internal.INTERACTIONS_ENABLED_METADATA_KEY
 import com.worldline.devview.internal.LocalEntryBottomPadding
 import com.worldline.devview.internal.destinationScaffoldDecorator
 import kotlinx.collections.immutable.ImmutableList
@@ -209,6 +213,18 @@ public fun DevView(
         Home
     )
 
+    val registeredBackstack = if (backstack.any { destination ->
+            destination != Home && modules.none { destination::class in it.destinations }
+        }
+    ) {
+        listOf(elements = arrayOf(Home))
+    } else {
+        backstack.toList()
+    }
+    SideEffect {
+        backstack.removeAll { destination -> destination !in registeredBackstack }
+    }
+
     val overlayNavigationOwner = rememberNavigationEventDispatcherOwner()
     SideEffect { overlayNavigationOwner.navigationEventDispatcher.isEnabled = devViewIsOpen }
     OverlayBackHandler(
@@ -218,75 +234,88 @@ public fun DevView(
     )
 
     val currentModules by rememberUpdatedState(newValue = modules)
+    var activeInteractionGuard by remember { mutableStateOf<() -> Boolean>(value = { true }) }
     val onNavigateBack: () -> Unit = {
-        if (backstack.size > 1) backstack.removeLastOrNull()
+        if (activeInteractionGuard() && backstack.size > 1) backstack.removeLastOrNull()
     }
+    val entries = rememberDecoratedNavEntries(
+        backStack = registeredBackstack,
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator(),
+            destinationScaffoldDecorator(
+                modules = modules,
+                activeDestination = registeredBackstack.last(),
+                onNavigateBack = onNavigateBack,
+                closeDevView = closeDevView
+            )
+        ),
+        entryProvider = { destination ->
+            if (destination == Home) {
+                NavEntry(
+                    key = destination,
+                    metadata = mapOf(
+                        pairs = arrayOf(DESTINATION_METADATA_KEY to destination)
+                    )
+                ) {
+                    HomeScreen(
+                        modules = currentModules,
+                        openModule = { module ->
+                            backstack.add(
+                                element = module.entryDestination
+                            )
+                        }
+                    )
+                }
+            } else {
+                fun moduleProvider(bottomPadding: Dp): (NavKey) -> NavEntry<NavKey> =
+                    entryProvider(builder = {
+                        with(
+                            receiver = currentModules.first {
+                                destination::class in
+                                    it.destinations
+                            }
+                        ) {
+                            registerContent(
+                                onNavigateBack = onNavigateBack,
+                                onNavigate = {
+                                    if (backstack.lastOrNull() == destination &&
+                                        activeInteractionGuard()
+                                    ) {
+                                        backstack.add(element = it)
+                                    }
+                                },
+                                bottomPadding = bottomPadding
+                            )
+                        }
+                    })
+                val template = moduleProvider(bottomPadding = 0.dp)(destination)
+                NavEntry(
+                    key = destination,
+                    contentKey = template.contentKey,
+                    metadata = template.metadata + (DESTINATION_METADATA_KEY to destination)
+                ) { key ->
+                    // NavDisplay may still render the outgoing entry after its module is removed.
+                    if (currentModules.any { key::class in it.destinations }) {
+                        moduleProvider(
+                            bottomPadding = LocalEntryBottomPadding.current
+                        )(key).Content()
+                    }
+                }
+            }
+        }
+    )
+
+    @Suppress("UNCHECKED_CAST")
+    val interactionGuard = entries.last().metadata[INTERACTIONS_ENABLED_METADATA_KEY]
+        as? (() -> Boolean) ?: { true }
+    SideEffect { activeInteractionGuard = interactionGuard }
 
     AnimatedVisibility(visible = devViewIsOpen) {
         CompositionLocalProvider(
             value = LocalNavigationEventDispatcherOwner provides overlayNavigationOwner
         ) {
-            NavDisplay(
-                modifier = modifier,
-                backStack = backstack,
-                entryDecorators = listOf(
-                    rememberSaveableStateHolderNavEntryDecorator(),
-                    rememberViewModelStoreNavEntryDecorator(),
-                    destinationScaffoldDecorator(
-                        modules = modules,
-                        activeDestination = backstack.last(),
-                        onNavigateBack = onNavigateBack,
-                        closeDevView = closeDevView
-                    )
-                ),
-                onBack = onNavigateBack,
-                entryProvider = { destination ->
-                    if (destination == Home) {
-                        NavEntry(
-                            key = destination,
-                            metadata = mapOf(
-                                pairs = arrayOf(DESTINATION_METADATA_KEY to destination)
-                            )
-                        ) {
-                            HomeScreen(
-                                modules = modules,
-                                openModule = { module ->
-                                    backstack.add(
-                                        element = module.entryDestination
-                                    )
-                                }
-                            )
-                        }
-                    } else {
-                        fun moduleProvider(bottomPadding: Dp): (NavKey) -> NavEntry<NavKey> =
-                            entryProvider(builder = {
-                                with(
-                                    receiver = currentModules.first {
-                                        destination::class in
-                                            it.destinations
-                                    }
-                                ) {
-                                    registerContent(
-                                        onNavigateBack = onNavigateBack,
-                                        onNavigate = { backstack.add(element = it) },
-                                        bottomPadding = bottomPadding
-                                    )
-                                }
-                            })
-                        val template = moduleProvider(bottomPadding = 0.dp)(destination)
-                        NavEntry(
-                            key = destination,
-                            contentKey = template.contentKey,
-                            metadata = template.metadata + (DESTINATION_METADATA_KEY to destination)
-                        ) { key ->
-                            // Registration captures Dp, so resolve it inside the decorated entry's composition.
-                            moduleProvider(
-                                bottomPadding = LocalEntryBottomPadding.current
-                            )(key).Content()
-                        }
-                    }
-                }
-            )
+            NavDisplay(modifier = modifier, entries = entries, onBack = onNavigateBack)
         }
     }
 }

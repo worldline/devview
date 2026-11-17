@@ -1,12 +1,22 @@
 package com.worldline.devview.networkmock
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -18,9 +28,6 @@ import com.worldline.devview.networkmock.fixtures.MockScreenTestData
 import com.worldline.devview.networkmock.viewmodel.NetworkMockUiState
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
 
 class NetworkMockScreenTest {
 
@@ -79,6 +86,7 @@ class NetworkMockScreenTest {
         onNodeWithTag(testTag = "spec_tab_catalog").performClick()
         waitForIdle()
 
+        collapseFilters()
         onNodeWithTag(testTag = "endpoint_card_catalog_getUser").assertIsDisplayed()
     }
 
@@ -155,9 +163,10 @@ class NetworkMockScreenTest {
     fun searchQuery_narrowsVisibleOperations() = runComposeUiTest {
         setScreen(uiState = MockScreenTestData.contentState())
 
-        onNodeWithTag(testTag = "networkmock_search_field").performTextInput(text = "health")
+        onNodeWithText(text = "Search operations").performTextInput(text = "health")
         waitForIdle()
 
+        collapseFilters()
         onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
         onAllNodesWithTag(testTag = "endpoint_card_example_getUser").assertCountEquals(expectedSize = 0)
     }
@@ -166,11 +175,12 @@ class NetworkMockScreenTest {
     fun clearSearchButton_restoresFullList() = runComposeUiTest {
         setScreen(uiState = MockScreenTestData.contentState())
 
-        onNodeWithTag(testTag = "networkmock_search_field").performTextInput(text = "health")
+        onNodeWithText(text = "Search operations").performTextInput(text = "health")
         waitForIdle()
-        onNodeWithTag(testTag = "networkmock_clear_search_button").performClick()
+        onNodeWithText(text = "Search operations").performTextClearance()
         waitForIdle()
 
+        collapseFilters()
         onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
         onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
     }
@@ -180,9 +190,10 @@ class NetworkMockScreenTest {
         setScreen(uiState = MockScreenTestData.contentState())
         expandFilters()
 
-        onNodeWithTag(testTag = "version_filter_example_v1").performClick()
+        clickFilter(rowTag = "version_filter_row_example", chipTag = "version_filter_example_v1")
         waitForIdle()
 
+        collapseFilters()
         onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
         onAllNodesWithTag(testTag = "endpoint_card_example_createUser").assertCountEquals(expectedSize = 0)
     }
@@ -192,11 +203,12 @@ class NetworkMockScreenTest {
         setScreen(uiState = MockScreenTestData.contentState())
         expandFilters()
 
-        onNodeWithTag(testTag = "version_filter_example_v1").performClick()
+        clickFilter(rowTag = "version_filter_row_example", chipTag = "version_filter_example_v1")
         waitForIdle()
-        onNodeWithTag(testTag = "version_filter_all_example").performClick()
+        clickFilter(rowTag = "version_filter_row_example", chipTag = "version_filter_all_example")
         waitForIdle()
 
+        collapseFilters()
         onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
         onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
     }
@@ -217,9 +229,10 @@ class NetworkMockScreenTest {
         setScreen(uiState = MockScreenTestData.contentState())
         expandFilters()
 
-        onNodeWithTag(testTag = "method_filter_example_POST").performClick()
+        clickFilter(rowTag = "method_filter_row_example", chipTag = "method_filter_example_POST")
         waitForIdle()
 
+        collapseFilters()
         onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
         onAllNodesWithTag(testTag = "endpoint_card_example_getUser").assertCountEquals(expectedSize = 0)
         onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
@@ -230,11 +243,12 @@ class NetworkMockScreenTest {
         setScreen(uiState = MockScreenTestData.contentState())
         expandFilters()
 
-        onNodeWithTag(testTag = "method_filter_example_POST").performClick()
+        clickFilter(rowTag = "method_filter_row_example", chipTag = "method_filter_example_POST")
         waitForIdle()
-        onNodeWithTag(testTag = "method_filter_example_POST").performClick()
+        clickFilter(rowTag = "method_filter_row_example", chipTag = "method_filter_example_POST", selected = false)
         waitForIdle()
 
+        collapseFilters()
         onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
         onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
         onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
@@ -245,11 +259,16 @@ class NetworkMockScreenTest {
         setScreen(uiState = MockScreenTestData.contentState())
         expandFilters()
 
-        onNodeWithTag(testTag = "method_filter_example_GET").performClick()
-        waitForIdle()
-        onNodeWithTag(testTag = "method_filter_example_POST").performClick()
+        clickFilter(rowTag = "method_filter_row_example", chipTag = "method_filter_example_GET")
+        collapseFilters()
+        onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
+        onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
+        onAllNodesWithTag(testTag = "endpoint_card_example_createUser").assertCountEquals(expectedSize = 0)
+        expandFilters()
+        clickFilter(rowTag = "method_filter_row_example", chipTag = "method_filter_example_POST")
         waitForIdle()
 
+        collapseFilters()
         onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
         onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
         onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
@@ -260,11 +279,12 @@ class NetworkMockScreenTest {
         setScreen(uiState = MockScreenTestData.contentState())
         expandFilters()
 
-        onNodeWithTag(testTag = "version_filter_example_v1").performClick()
+        clickFilter(rowTag = "version_filter_row_example", chipTag = "version_filter_example_v1")
         waitForIdle()
-        onNodeWithTag(testTag = "method_filter_example_GET").performClick()
+        clickFilter(rowTag = "method_filter_row_example", chipTag = "method_filter_example_GET")
         waitForIdle()
 
+        collapseFilters()
         onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
         onAllNodesWithTag(testTag = "endpoint_card_example_createUser").assertCountEquals(expectedSize = 0)
         onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
@@ -282,7 +302,7 @@ class NetworkMockScreenTest {
         setScreen(uiState = MockScreenTestData.contentState())
         expandFilters()
 
-        onNodeWithTag(testTag = "state_filter_row").assertIsDisplayed()
+        onNodeWithTag(testTag = "state_filter_row").performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -291,9 +311,10 @@ class NetworkMockScreenTest {
         setScreen(uiState = MockScreenTestData.contentState())
         expandFilters()
 
-        onNodeWithTag(testTag = "state_filter_chip_MOCKED").performClick()
+        onNodeWithTag(testTag = "state_filter_chip_MOCKED").performScrollTo().performClick()
         waitForIdle()
 
+        collapseFilters()
         onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
         onAllNodesWithTag(testTag = "endpoint_card_example_getUser").assertCountEquals(expectedSize = 0)
         onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
@@ -316,9 +337,10 @@ class NetworkMockScreenTest {
         setScreen(uiState = MockScreenTestData.contentState())
         expandFilters()
 
-        onNodeWithTag(testTag = "tag_filter_example_Admin").performClick()
+        clickFilter(rowTag = "tag_filter_row_example", chipTag = "tag_filter_example_Admin")
         waitForIdle()
 
+        collapseFilters()
         onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
         onAllNodesWithTag(testTag = "endpoint_card_example_getUser").assertCountEquals(expectedSize = 0)
         onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
@@ -329,11 +351,12 @@ class NetworkMockScreenTest {
         setScreen(uiState = MockScreenTestData.contentState())
         expandFilters()
 
-        onNodeWithTag(testTag = "tag_filter_example_Users").performClick()
+        clickFilter(rowTag = "tag_filter_row_example", chipTag = "tag_filter_example_Users")
         waitForIdle()
-        onNodeWithTag(testTag = "tag_filter_example_Admin").performClick()
+        clickFilter(rowTag = "tag_filter_row_example", chipTag = "tag_filter_example_Admin")
         waitForIdle()
 
+        collapseFilters()
         onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
         onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
         onAllNodesWithTag(testTag = "endpoint_card_example_health").assertCountEquals(expectedSize = 0)
@@ -344,34 +367,27 @@ class NetworkMockScreenTest {
         setScreen(uiState = MockScreenTestData.contentState())
         expandFilters()
 
-        onNodeWithTag(testTag = "tag_filter_example_Admin").performClick()
+        clickFilter(rowTag = "tag_filter_row_example", chipTag = "tag_filter_example_Admin")
         waitForIdle()
-        onNodeWithTag(testTag = "tag_filter_example_Admin").performClick()
+        clickFilter(rowTag = "tag_filter_row_example", chipTag = "tag_filter_example_Admin", selected = false)
         waitForIdle()
 
+        collapseFilters()
         onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
         onNodeWithTag(testTag = "endpoint_card_example_createUser").assertIsDisplayed()
         onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
     }
 
     @Test
-    fun sortSharedFlow_emittingMethodLabel_reordersTheOperationList() = runComposeUiTest {
-        // "example" is tagged, so the dropdown offers [SPEC_ORDER, PATH, METHOD, TAG]. Emitting
-        // "Method" directly selects that sort key. Spec order is [getUser(GET), createUser(POST),
-        // health(GET)] — sorting by method is a stable sort, so the GET group keeps its
-        // relative order (getUser, health) ahead of the POST group (createUser), moving
-        // "Health" above "Create User" relative to the untouched spec-order default.
-        val sortSharedFlow = MutableSharedFlow<String>(
-            extraBufferCapacity = 1,
-            onBufferOverflow = BufferOverflow.DROP_OLDEST
-        )
-        setScreen(uiState = MockScreenTestData.contentState(), sortSharedFlow = sortSharedFlow)
-
+    fun sortChip_reordersTheOperationList() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
         val initialCreateUserY = onNodeWithText(text = "Create User").fetchSemanticsNode().positionInRoot.y
         val initialHealthY = onNodeWithText(text = "Health").fetchSemanticsNode().positionInRoot.y
         (initialCreateUserY < initialHealthY) shouldBe true
 
-        sortSharedFlow.tryEmit(value = "Method")
+        expandFilters()
+        onNodeWithTag(testTag = "sort_filter_METHOD").performScrollTo().performClick()
+        onNodeWithContentDescription(label = "Hide filters, 1 active").performClick()
         waitForIdle()
 
         val sortedCreateUserY = onNodeWithText(text = "Create User").fetchSemanticsNode().positionInRoot.y
@@ -379,24 +395,118 @@ class NetworkMockScreenTest {
         (sortedHealthY < sortedCreateUserY) shouldBe true
     }
 
+    @Test
+    fun clearFilters_keepsSearchAndResetsSort() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+        onNodeWithText(text = "Search operations").performTextInput(text = "health")
+        expandFilters()
+        onNodeWithTag(testTag = "sort_filter_METHOD").performScrollTo().performClick()
+        onNodeWithContentDescription(label = "Hide filters, 1 active").assertExists()
+        onNodeWithText(text = "Clear filters").performScrollTo().performClick()
+        onNodeWithContentDescription(label = "Hide filters, 0 active").performClick()
+
+        onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
+        onAllNodesWithTag(testTag = "endpoint_card_example_getUser").assertCountEquals(expectedSize = 0)
+    }
+
+    @Test
+    fun filteredEmptyState_clearsSearchAndFilters() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+        onNodeWithText(text = "Search operations").performTextInput(text = "no matching endpoint")
+        onNodeWithText(text = "Clear search and filters").performClick()
+        onNodeWithTag(testTag = "endpoint_card_example_getUser").assertIsDisplayed()
+    }
+
+    @Test
+    fun searchIsIndependentForEachApiGroup() = runComposeUiTest {
+        setScreen(uiState = MockScreenTestData.contentState())
+        onNodeWithText(text = "Search operations").performTextInput(text = "health")
+        onNodeWithTag(testTag = "spec_tab_catalog").performClick()
+        waitForIdle()
+        onNodeWithText(text = "Search operations").assertTextEquals("", "Search operations")
+        onNodeWithTag(testTag = "spec_tab_example").performClick()
+        waitForIdle()
+        onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
+        onAllNodesWithTag(testTag = "endpoint_card_example_getUser").assertCountEquals(expectedSize = 0)
+    }
+
+    @Test
+    fun removingSelectedSpec_fallsBackWithoutLosingOtherGroupsSearch() = runComposeUiTest {
+        val original = MockScreenTestData.contentState()
+        var content by mutableStateOf(value = original)
+        setScreen(uiState = original, uiStateProvider = { content })
+        onNodeWithText(text = "Search operations").performTextInput(text = "health")
+        onNodeWithTag(testTag = "spec_tab_catalog").performClick()
+        waitForIdle()
+        onNodeWithText(text = "Search operations").performTextInput(text = "create")
+
+        runOnIdle { content = original.copy(specs = original.specs.removingAt(index = 1)) }
+        waitForIdle()
+        onNodeWithTag(testTag = "spec_tab_example").assertIsSelected()
+        onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
+        onAllNodesWithTag(testTag = "endpoint_card_example_createUser").assertCountEquals(expectedSize = 0)
+    }
+
+    @Test
+    fun reorderingSpecs_keepsSelectedGroupAndBothSearches() = runComposeUiTest {
+        val original = MockScreenTestData.contentState()
+        var content by mutableStateOf(value = original)
+        setScreen(uiState = original, uiStateProvider = { content })
+        onNodeWithText(text = "Search operations").performTextInput(text = "health")
+        onNodeWithTag(testTag = "spec_tab_catalog").performClick()
+        waitForIdle()
+        onNodeWithText(text = "Search operations").performTextInput(text = "create")
+
+        runOnIdle { content = original.copy(specs = original.specs.removingAt(index = 1).addingAt(index = 0, element = original.specs[1])) }
+        waitForIdle()
+        onNodeWithTag(testTag = "spec_tab_catalog").assertIsSelected()
+        onNodeWithTag(testTag = "endpoint_card_catalog_createUser").assertIsDisplayed()
+        onAllNodesWithTag(testTag = "endpoint_card_catalog_health").assertCountEquals(expectedSize = 0)
+        onNodeWithTag(testTag = "spec_tab_example").performClick()
+        waitForIdle()
+        onNodeWithTag(testTag = "endpoint_card_example_health").assertIsDisplayed()
+        onAllNodesWithTag(testTag = "endpoint_card_example_createUser").assertCountEquals(expectedSize = 0)
+    }
+
+    private fun ComposeUiTest.clickFilter(rowTag: String, chipTag: String, selected: Boolean = true) {
+        onNodeWithTag(testTag = rowTag).performScrollTo()
+        onNodeWithTag(testTag = chipTag).performScrollTo().assertIsDisplayed().performClick()
+        waitForIdle()
+        if (selected) onNodeWithTag(testTag = chipTag).assertIsSelected()
+        else onNodeWithTag(testTag = chipTag).assertIsNotSelected()
+    }
+
     private fun ComposeUiTest.expandFilters() {
-        onNodeWithTag(testTag = "expand_filter_button").performClick()
+        onNodeWithContentDescription(label = "Show filters", substring = true).performClick()
+        waitForIdle()
+    }
+
+    private fun ComposeUiTest.collapseFilters() {
+        val expanded = onAllNodesWithContentDescription(label = "Hide filters", substring = true)
+            .fetchSemanticsNodes().isNotEmpty()
+        if (expanded) onNodeWithContentDescription(label = "Hide filters", substring = true).performClick()
         waitForIdle()
     }
 
     private fun ComposeUiTest.setScreen(
         uiState: NetworkMockUiState,
         onGlobalToggle: (Boolean) -> Unit = {},
-        onSelectOperation: (OperationKey) -> Unit = { },
-        sortSharedFlow: SharedFlow<String> = MutableSharedFlow(),
+        onSelectOperation: (OperationKey) -> Unit = {},
+        uiStateProvider: () -> NetworkMockUiState = { uiState }
     ) {
         setContent {
+            var listState by remember { mutableStateOf(value = NetworkMockListState()) }
             MaterialTheme {
                 NetworkMockScreenContent(
-                    uiState = uiState,
+                    uiState = uiStateProvider(),
                     onGlobalToggle = onGlobalToggle,
                     onSelectOperation = onSelectOperation,
-                    sortSharedFlow = sortSharedFlow,
+                    listState = listState,
+                    onSpecSelect = { listState = listState.copy(selectedSpecId = it) },
+                    onFiltersExpandedChange = { listState = listState.copy(expanded = it) },
+                    onFiltersChange = { specId, filters ->
+                        listState = listState.copy(filters = listState.filters + (specId to filters))
+                    }
                 )
             }
         }

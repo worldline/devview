@@ -110,11 +110,46 @@ class NetworkMockScreenSortTest {
         sorted.map { it.descriptor.operationId } shouldContainExactly listOf("b", "a")
     }
 
+    @Test
+    fun `filters intersect dimensions and union methods and tags without changing operations`() {
+        val operations = listOf(
+            operation(operationId = "first", path = "/v1/users", version = "v1", tags = listOf("Users")),
+            operation(operationId = "second", path = "/v1/admin", version = "v1", method = HttpMethod.Post, tags = listOf("Admin")),
+            operation(operationId = "other-version", path = "/v2/users", version = "v2", tags = listOf("Users"))
+        )
+        val filters = OperationFilters(
+            query = "/V1/",
+            version = "v1",
+            methods = setOf("GET", "POST"),
+            tags = setOf("Users", "Admin"),
+            states = setOf(MockStateFilter.NETWORK),
+            sort = OperationSort.PATH
+        )
+        filterOperations(operations = operations, filters = filters).map { it.descriptor.operationId } shouldContainExactly
+            listOf("second", "first")
+        operations.map { it.descriptor.operationId } shouldContainExactly listOf("first", "second", "other-version")
+        filterOperations(operations = operations, filters = filters.copy(tags = setOf("Removed tag"))) shouldContainExactly emptyList()
+    }
+
+    @Test
+    fun `mocked state filter includes failures and sequences`() {
+        val mock = OperationMockState.Mock(statusCode = 200, mediaType = "application/json", exampleName = "default")
+        val operations = listOf(
+            operation(operationId = "network", path = "/n"),
+            operation(operationId = "mock", path = "/m", currentState = mock),
+            operation(operationId = "failure", path = "/f", currentState = OperationMockState.Failure(kind = FailureKind.TIMEOUT)),
+            operation(operationId = "sequence", path = "/s", currentState = OperationMockState.Sequence(responses = listOf(mock, mock)))
+        )
+        filterOperations(operations = operations, filters = OperationFilters(states = setOf(MockStateFilter.MOCKED)))
+            .map { it.descriptor.operationId } shouldContainExactly listOf("mock", "failure", "sequence")
+    }
+
     private fun operation(
         operationId: String,
         path: String,
         method: HttpMethod = HttpMethod.Get,
         tags: List<String> = emptyList(),
+        version: String? = null,
         currentState: OperationMockState = OperationMockState.Network
     ): OperationUiModel = OperationUiModel(
         descriptor = OperationDescriptor(
@@ -124,7 +159,8 @@ class NetworkMockScreenSortTest {
                 name = operationId,
                 path = path,
                 method = method,
-                tags = tags
+                tags = tags,
+                version = version
             )
         ),
         currentState = currentState
