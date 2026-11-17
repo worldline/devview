@@ -141,7 +141,7 @@ internal fun NetworkMockOperationSheet(
                 is OperationSheetState.Error -> {
                     ErrorState(
                         message = sheetState.message,
-                        modifier = Modifier.padding(all = 24.dp)
+                        modifier = Modifier.weight(weight = 1f, fill = false).padding(all = 24.dp)
                     )
                     Row {
                         TextButton(

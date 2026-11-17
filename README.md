@@ -115,11 +115,8 @@ AnalyticsLogger.log(
 )
 ```
 
-Provide the log list above `DevView`:
-
-```kotlin
-CompositionLocalProvider(LocalAnalytics provides AnalyticsLogger.logs) { … }
-```
+Register `Analytics()` in `rememberModules` and render `DevView`; the module observes
+`AnalyticsLogger.logs` directly. No analytics composition-local provider or standalone screen is needed.
 
 ### 4. Network Mocking (Ktor)
 

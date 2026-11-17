@@ -62,7 +62,9 @@ as before.
 `subtitle` names the recorded screen in the Time Capsule header ("Recording {subtitle}"),
 so a tester can confirm which screen they're looking at. Defaults to `owner`'s class name;
 pass this explicitly if `owner` is an anonymous class, where the class name is unavailable.
-`maxEntries` bounds retention; the oldest entry is dropped once reached.
+`maxEntries` bounds retention; the oldest entry is dropped once reached. Expanded rows
+are retained only while their entry remains in that recording. Eviction and Clear prune
+expansion IDs, including when the screen returns from being closed.
 
 For states containing `TextFieldState`, use the additional overload:
 
