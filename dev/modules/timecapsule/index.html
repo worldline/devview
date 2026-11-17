@@ -2392,9 +2392,11 @@ Registered with no arguments, like <code>FeatureFlip</code>:</p>
 DevView → Time Capsule shows a "Recording CounterViewModel" header, then the history
 newest-first: <code>CounterState</code>'s default <code>toString()</code>-shaped label lets each row show a
 change summary (<code>count 3 → 4</code>) instead of the full state, expandable to see the rest.
-Tapping <strong>Restore</strong> on any entry calls <code>restoreState</code> with that entry's value, and the
-running screen reflects it immediately. Navigating away from <code>CounterScreen</code> and back
-starts a fresh, empty history.</p>
+Tapping <strong>Restore</strong> on an earlier entry calls <code>restoreState</code> with that entry's value, and
+the running screen reflects it immediately. The current entry has no redundant restore action.
+Expansion survives recreation of the DevView screen while the same recording remains active;
+a new recording resets expansion along with the history. Navigating away from <code>CounterScreen</code>
+and back starts a fresh history.</p>
 <h2 id="state-based-text-fields">State-based text fields</h2>
 <p><code>TextFieldState</code> is mutable: typing changes its contents without necessarily emitting a
 new value through the screen's <code>StateFlow</code>. Keeping the screen state alone, or making a
