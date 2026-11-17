@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-17
+
 ### Added
 - Console: new `devview-consolelogger` module captures Android logcat and iOS stdout/stderr on-device, with optional `DevViewLogWriter` integration for [Kermit](https://github.com/touchlab/Kermit), configurable severity colors, search/level filters, selectable expandable messages, Copy log and follow/pause inspection. Untethered iOS `NSLog`/`os_log` requires writer integration. ([#109](https://github.com/worldline/devview/pull/109), [#163](https://github.com/worldline/devview/pull/163))
 - NetworkMock: reload specs without restarting, lazily load response bodies, resolve chained/document-relative references with cycle and component-section validation, synthesize supported schema placeholders, and match required top-level request fields/discriminator values. Body matching only inspects already-buffered Ktor content; this is not full JSON Schema validation.
