@@ -1,0 +1,3145 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A Kotlin Multiplatform developer tools framework for Android and iOS">
+      
+      
+        <meta name="author" content="Maxime Michel">
+      
+      
+        <link rel="canonical" href="https://worldline.github.io/devview/0.2.0/changelog/">
+      
+      
+      
+        <link rel="prev" href="../contributing/code-of-conduct/">
+      
+      
+        <link rel="next" href="../license/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/branding/devview-icon-mono.svg">
+      <meta name="generator" content="zensical-0.0.70">
+    
+    
+      
+        <title>Changelog - DevView</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.e442bf79.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../assets/stylesheets/modern/palette.b60ce83d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetbrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Jetbrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/branding.css">
+    
+    <script>__md_scope=new URL("..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-hidden="true"></label>
+    <div data-md-component="skip">
+      <a href="#__skip" class="md-skip">
+        Skip to content
+      </a>
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="./.." title="DevView" class="md-header__button md-logo" aria-label="DevView" data-md-component="logo">
+      
+  <img src="../assets/branding/devview-icon-light.svg" alt="DevView">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            DevView
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-sun-moon" viewBox="0 0 24 24"><path d="M12 2v2M14.837 16.385a6 6 0 1 1-7.223-7.222c.624-.147.97.66.715 1.248a4 4 0 0 0 5.26 5.259c.589-.255 1.396.09 1.248.715M16 12a4 4 0 0 0-4-4M19 5l-1.256 1.256M20 12h2"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/worldline/devview" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M216.5 362.5c-66-8-112.5-55.5-112.5-117 0-25 9-52 24-70-6.5-16.5-5.5-51.5 2-66 20-2.5 47 8 63 22.5 19-6 39-9 63.5-9s44.5 3 62.5 8.5c15.5-14 43-24.5 63-22 7 13.5 8 48.5 1.5 65.5 16 19 24.5 44.5 24.5 70.5 0 61.5-46.5 108-113.5 116.5 17 11 28.5 35 28.5 62.5v52c0 15 12.5 23.5 27.5 17.5C441 459.5 512 369 512 257 512 115.5 397 0 255.5 0S0 115.5 0 257c0 111 70.5 203 165.5 237.5 13.5 5 26.5-4 26.5-17.5v-40c-7 3-16 5-24 5-33 0-52.5-18-66.5-51.5-5.5-13.5-11.5-21.5-23-23-6-.5-8-3-8-6 0-6 10-10.5 20-10.5 14.5 0 27 9 40 27.5 10 14.5 20.5 21 33 21s20.5-4.5 32-16c8.5-8.5 15-16 21-21"/></svg>
+  </div>
+  <div class="md-source__repository">
+    worldline/devview
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="./.." class="md-tabs__link">
+        
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../getting-started/" class="md-tabs__link">
+          
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../modules/" class="md-tabs__link">
+          
+  
+  Modules
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../guides/" class="md-tabs__link">
+          
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../api/index.html" class="md-tabs__link">
+        
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../examples/" class="md-tabs__link">
+          
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../contributing/" class="md-tabs__link">
+          
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="././" class="md-tabs__link">
+        
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../license/" class="md-tabs__link">
+        
+  
+  License
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="./.." title="DevView" class="md-nav__button md-logo" aria-label="DevView" data-md-component="logo">
+      
+  <img src="../assets/branding/devview-icon-light.svg" alt="DevView">
+
+    </a>
+    DevView
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/worldline/devview" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M216.5 362.5c-66-8-112.5-55.5-112.5-117 0-25 9-52 24-70-6.5-16.5-5.5-51.5 2-66 20-2.5 47 8 63 22.5 19-6 39-9 63.5-9s44.5 3 62.5 8.5c15.5-14 43-24.5 63-22 7 13.5 8 48.5 1.5 65.5 16 19 24.5 44.5 24.5 70.5 0 61.5-46.5 108-113.5 116.5 17 11 28.5 35 28.5 62.5v52c0 15 12.5 23.5 27.5 17.5C441 459.5 512 369 512 257 512 115.5 397 0 255.5 0S0 115.5 0 257c0 111 70.5 203 165.5 237.5 13.5 5 26.5-4 26.5-17.5v-40c-7 3-16 5-24 5-33 0-52.5-18-66.5-51.5-5.5-13.5-11.5-21.5-23-23-6-.5-8-3-8-6 0-6 10-10.5 20-10.5 14.5 0 27 9 40 27.5 10 14.5 20.5 21 33 21s20.5-4.5 32-16c8.5-8.5 15-16 21-21"/></svg>
+  </div>
+  <div class="md-source__repository">
+    worldline/devview
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Home
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../getting-started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Getting Started
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        
+          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+            <label class="md-nav__title" for="__nav_2">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+  Getting Started
+
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix>
+              
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/prerequisites/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Prerequisites
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Installation
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/quick-start/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Quick Start
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Configuration
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/troubleshooting-faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Troubleshooting & FAQ
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            </ul>
+          </nav>
+        
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../modules/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Modules
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        
+          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+            <label class="md-nav__title" for="__nav_3">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+  Modules
+
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix>
+              
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/featureflip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  FeatureFlip
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Analytics
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/consolelogger/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Console Logger
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/timecapsule/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  TimeCapsule
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_6" id="__nav_3_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  NetworkMock
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        
+          <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
+            <label class="md-nav__title" for="__nav_3_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+  NetworkMock
+
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix>
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/networkmock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Overview
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/networkmock-core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Core
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/networkmock-ui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  UI
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/networkmock-ktor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Ktor Plugin
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/networkmock-workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Workflows
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            </ul>
+          </nav>
+        
+      
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/custom-modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Creating Custom Modules
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            </ul>
+          </nav>
+        
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../guides/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Guides
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        
+          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+            <label class="md-nav__title" for="__nav_4">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+  Guides
+
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix>
+              
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/integration-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Integration Guide
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/migrating-to-openapi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Migrating to OpenAPI
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/module-development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Module Development
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/navigation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Navigation
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/theming/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Theming
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/ui-components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  UI Components
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/best-practices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Best Practices
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/common-pitfalls/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Common Pitfalls
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            </ul>
+          </nav>
+        
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  API Reference
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../examples/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Examples
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        
+          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+            <label class="md-nav__title" for="__nav_6">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+  Examples
+
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix>
+              
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/android/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Android Setup
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/ios/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  iOS Setup
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/feature-flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Feature Flags
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/analytics-tracking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Analytics Tracking
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/advanced-examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Advanced Examples
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            </ul>
+          </nav>
+        
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../contributing/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Contributing
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        
+          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+            <label class="md-nav__title" for="__nav_7">
+              <span class="md-nav__icon md-icon"></span>
+              
+  
+  Contributing
+
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix>
+              
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Development Setup
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/code-style/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Code Style
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/pull-requests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Pull Requests
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/publishing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Publishing a Release
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/code-of-conduct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Code of Conduct
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+            </ul>
+          </nav>
+        
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Changelog
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Changelog
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#unreleased" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Unreleased
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-2026-11-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.2.0 - 2026-11-17
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.0 - 2026-11-17">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Added
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Changed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Removed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Fixed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#015-2026-09-08" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.1.5 - 2026-09-08
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.5 - 2026-09-08">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Added
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#014-2026-07-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.1.4 - 2026-07-22
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.4 - 2026-07-22">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Changed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Fixed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Documentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#013-2026-07-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.1.3 - 2026-07-21
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.3 - 2026-07-21">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Added
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Fixed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#012-2026-07-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.1.2 - 2026-07-17
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.2 - 2026-07-17">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Fixed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Changed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#011-2026-07-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.1.1 - 2026-07-16
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.1 - 2026-07-16">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Changed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Documentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Quality
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#010-2026-07-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.1.0 - 2026-07-15
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.0 - 2026-07-15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Added
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Changed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Fixed
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Documentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quality_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Quality
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  License
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                <a id="__skip" tabindex="-1"></a>
+                
+                  
+
+  
+  
+
+
+<h1 id="changelog">Changelog</h1>
+<p>All notable changes to this project will be documented in this file.</p>
+<p>The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>,
+and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<h2 id="unreleased"><a href="https://github.com/worldline/DevView/compare/0.2.0...HEAD">Unreleased</a></h2>
+<h2 id="020-2026-11-17"><a href="https://github.com/worldline/DevView/compare/0.1.5...0.2.0">0.2.0</a> - 2026-11-17</h2>
+<h3 id="added">Added</h3>
+<ul>
+<li>Console: new <code>devview-consolelogger</code> module captures Android logcat and iOS stdout/stderr on-device, with optional <code>DevViewLogWriter</code> integration for <a href="https://github.com/touchlab/Kermit">Kermit</a>, configurable severity colors, search/level filters, selectable expandable messages, Copy log and follow/pause inspection. Untethered iOS <code>NSLog</code>/<code>os_log</code> requires writer integration. (<a href="https://github.com/worldline/devview/pull/109">#109</a>, <a href="https://github.com/worldline/devview/pull/163">#163</a>)</li>
+<li>NetworkMock: reload specs without restarting, lazily load response bodies, resolve chained/document-relative references with cycle and component-section validation, synthesize supported schema placeholders, and match required top-level request fields/discriminator values. Body matching only inspects already-buffered Ktor content; this is not full JSON Schema validation.</li>
+<li>NetworkMock: serve declared headers/media types, retain distinct media variants, support bodyless responses and OpenAPI 3.1 type arrays/null enum values, and resolve wildcard media types to concrete Content-Type. (<a href="https://github.com/worldline/devview/pull/138">#138</a>, <a href="https://github.com/worldline/devview/pull/141">#141</a>, <a href="https://github.com/worldline/devview/pull/144">#144</a>)</li>
+<li>NetworkMock: deterministic Timeout/Connection Refused, operation-level <code>x-devview.failureRate</code>, and persisted response sequences advancing per request and retaining the final step. Sequences support repeated steps, reorder/remove, editing/restart and at least two steps in the builder; <code>NetworkMockConfig.random</code> supports deterministic probability tests.</li>
+<li>Analytics: string event parameters and details with millisecond timestamps/timezone, selectable text and Copy event. (<a href="https://github.com/worldline/devview/pull/161">#161</a>)</li>
+<li>TimeCapsule: connected timeline, state-change summaries/highlighting, timestamps and owner subtitle; an additive <code>TimeCapsuleEffect</code> overload records detached <code>TextFieldState</code> text/selection and restores them alongside screen state. (<a href="https://github.com/worldline/devview/pull/111">#111</a>, <a href="https://github.com/worldline/devview/pull/146">#146</a>)</li>
+<li>DevView: public UI kit in <code>com.worldline.devview.ui</code>, <code>Section.displayName</code> and labelled custom-module toolbar menus. (<a href="https://github.com/worldline/devview/pull/159">#159</a>)</li>
+</ul>
+<h3 id="changed">Changed</h3>
+<ul>
+<li><strong>Breaking — NetworkMock configuration:</strong> migrate <code>mocks.json</code> to OpenAPI 3.x JSON or best-effort YAML, one spec per group. Use <code>NetworkMock(resourceLoader = loader, specPaths = listOf(...))</code>. Environments/overrides are removed; <code>servers</code> supplies matching hosts, declared examples replace response-suffix probing, and delays use <code>x-devview.delayMs</code>. Follow the <a href="https://worldline.github.io/devview/0.2.0/guides/migrating-to-openapi/">migration guide</a> and <code>scripts/mocks_json_to_openapi.py</code>; review converter warnings on ambiguous overrides/identifiers. (<a href="https://github.com/worldline/devview/pull/104">#104</a>, <a href="https://github.com/worldline/devview/pull/108">#108</a>)</li>
+<li><strong>Breaking — NetworkMock runtime:</strong> <code>ApiGroupConfig</code>/<code>Endpoint*</code> become <code>ApiSpec</code>/<code>Operation*</code>; keys drop environmentId, <code>Operation.method</code> is <code>HttpMethod</code>, and mock identity is <code>(statusCode, mediaType, exampleName)</code>, including <code>loadMockResponse(key, statusCode, mediaType, exampleName)</code>. Handle Failure/Sequence in exhaustive state branches. Legacy operation selections reset once at schema 2; the global toggle survives. (<a href="https://github.com/worldline/devview/pull/144">#144</a>)</li>
+<li>NetworkMock: saved per-group search and State/Version/Method/Tag filters plus sorting (including Mocked first), active counts, wrapping paths, quiet Network labels, theme-aware status colors and animated lists. <code>Operation.version</code> is display-only; sorting now lives in the filter panel. (<a href="https://github.com/worldline/devview/pull/119">#119</a>, <a href="https://github.com/worldline/devview/pull/165">#165</a>)</li>
+<li>NetworkMock: compact Responses/Failures operation sheets with direct network selection/search and inspect-without-selecting Details. Full-screen details provide Compare, Copy original body and Use/In use; full-screen sequence editing retains unresolved drafts. Reset all requires confirmation; configuration and recovery controls scroll at narrow sizes. (<a href="https://github.com/worldline/devview/pull/165">#165</a>, <a href="https://github.com/worldline/devview/pull/167">#167</a>)</li>
+<li>Console: read-only history with fresh recording identities; log through <code>ConsoleLogger.log()</code>. Persisted tag/message exclusions reject noise before buffering, merge device edits with host defaults and load before capture. Disabling rules admits future matches only, without deleting retained history; Clear filters disables rules and Reset restores current defaults. (<a href="https://github.com/worldline/devview/pull/163">#163</a>)</li>
+<li>FeatureFlip: labelled Remote/Off/On overrides and separate remote value; local flags retain switches. Saved search/Type/State filters show counts and recovery actions; override writes persist in click order. (<a href="https://github.com/worldline/devview/pull/160">#160</a>)</li>
+<li>DevView: destination-owned top bars transition with content, labelled accessible actions/tooltips and measured bottom insets. Animated home tiles use host-theme colors with explicit overrides supported; headings/subtitles, names/icons and dividers are clearer. (<a href="https://github.com/worldline/devview/pull/159">#159</a>)</li>
+<li>NetworkMock diagnostics use gated <a href="https://github.com/touchlab/Kermit">Kermit</a>, tag <code>DevViewNetworkMock</code>, without response bodies. Runtime dependencies include Ktor 3.6.0 and Kermit 2.2.0. (<a href="https://github.com/worldline/devview/pull/71">#71</a>, by <a href="https://github.com/apps/renovate">Renovate</a>)</li>
+</ul>
+<h3 id="removed">Removed</h3>
+<ul>
+<li><strong>Breaking — built-in UI:</strong> Analytics/FeatureFlip/NetworkMock/TimeCapsule screens and built-in NetworkMock view models are internal or removed; ConsoleScreen is also internal. Register modules with <code>rememberModules</code> and render <code>DevView</code>, not standalone built-in screens. <code>NetworkMockDestination.Endpoint</code> and endpoint UI types are removed; use core repositories for runtime configuration. <code>MockHttpClientCall</code> is internal.</li>
+<li><strong>Breaking — logger/custom-module API:</strong> removed <code>LocalAnalytics</code>, prerelease <code>LocalConsoleLogs</code> and mutable history writes; submit through <code>AnalyticsLogger.log()</code>/<code>ConsoleLogger.log()</code>. Analytics copies parameters and assigns recording UUIDs without changing value equality. Toolbar action/menu require <code>label</code>, action callbacks receive displayed <code>NavKey</code>; fixed <code>Section.containerColor</code>/<code>contentColor</code> and <code>ModulePosition</code> are removed, with module defaults now <code>Color.Unspecified</code>.</li>
+<li><strong>Breaking — TimeCapsule:</strong> <code>subtitle</code> is inserted between <code>label</code> and <code>maxEntries</code>; migrate positional calls to named <code>maxEntries</code>.</li>
+</ul>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li>NetworkMock: retained module sessions serialize writes and preserve selections/drafts across overlay hiding/host recreation. Failed writes offer Retry/Cancel and block conflicting actions. Revisions prevent stale sequence writes across repositories; concurrent consumption follows commit order, cancellation leaves uncommitted steps unconsumed and retries apply probability/delay at most once. Selected-mock/state-persistence failures do not fall back to real networking; superseded loads retry fresh state. Unmatched requests, Network selections and unavailable configurations still pass through. (<a href="https://github.com/worldline/devview/pull/167">#167</a>)</li>
+<li>NetworkMock: pretty-print valid JSON for preview/diff without changing served/copied bodies; malformed/non-JSON bodies stay unchanged. Lazy unwrapped panes scroll as a whole; wide Unicode lines remain reachable, diff caches survive recomposition and recovery remains reachable with long errors. (<a href="https://github.com/worldline/devview/pull/157">#157</a>, <a href="https://github.com/worldline/devview/pull/167">#167</a>)</li>
+<li>DevView: navigation uses the intended entry view model. Initialization effects remain after once-only DataStore setup, cancel on removal and restart on re-entry. Filtering out a displayed module returns Home/discards its entry draft, not its registered session; navigation checks pending writes at action time. (<a href="https://github.com/worldline/devview/pull/113">#113</a>)</li>
+<li>Analytics/Console: saved search, filters and inspection survive navigation; stable recording IDs prevent stale detail/anchor matches. Analytics counts use filtered results, empty searches remain recoverable and time windows refresh every five seconds. Console follows arrivals at capacity, restores paused row offsets after exclusions load, serializes clear/reconfiguration/capture lifetimes and cancels idle native readers cleanly. Both themes have improved severity/status label contrast. (<a href="https://github.com/worldline/devview/pull/161">#161</a>, <a href="https://github.com/worldline/devview/pull/163">#163</a>, <a href="https://github.com/worldline/devview/pull/167">#167</a>)</li>
+<li>FeatureFlip: independent per-feature retry preserves previous values after failure; newer choices supersede old failures and stale retries cannot overwrite them. Restored type filters remain active when registered types change. (<a href="https://github.com/worldline/devview/pull/167">#167</a>)</li>
+<li>TimeCapsule: only earlier entries offer Restore; expand controls have 48dp targets and saved expansion IDs prune on eviction/Clear. Selection-only restore avoids replacing text; bare-label quotes survive. (<a href="https://github.com/worldline/devview/pull/164">#164</a>, <a href="https://github.com/worldline/devview/pull/146">#146</a>, <a href="https://github.com/worldline/devview/pull/167">#167</a>)</li>
+<li>Sample: accessible labelled/inset-safe sections, theme-correct Android system bars, once-per-composition analytics seeding and cancellation-safe network results. (<a href="https://github.com/worldline/devview/pull/166">#166</a>)</li>
+</ul>
+<details>
+<summary>Prerelease history</summary>
+
+## [0.2.0-alpha08] - 2026-11-17
+
+### Added
+- Analytics: event details with string parameters, millisecond timestamps with timezone,
+  selectable text and Copy event.
+- DevView: public UI kit in `com.worldline.devview.ui` with section headings, grouped items,
+  empty states, filter bars and a multiplatform copy callback; `Section.displayName` for headings.
+- NetworkMock: "Mocked first" sort puts Mock, Failure, and Sequence operations before Network,
+  preserving spec order within each group.
+
+### Changed
+- Sample: labelled Compose, TimeCapsule and Network sections use one primary Open DevView
+  action, spaced secondary controls, scrollable inset-safe content and a monospace result card.
+  Counter controls have explicit accessible names, and section titles expose heading semantics.
+- NetworkMock: the shared search/filter bar includes per-API-group Sort, State, Version, Method,
+  and Tag selections with saved UI state and an active count. Clear filters keeps search;
+  empty results offer Clear search and filters. Network is quiet text, and dark status chips
+  use deep containers with light labels; both built-in palettes pass 4.5:1 label contrast tests.
+- TimeCapsule: only earlier entries offer Restore, expand controls have standard 48dp targets,
+  expansion survives screen recreation during the same recording, and empty history uses the
+  shared guidance component. The existing timeline rail and change highlighting are preserved.
+- Console: compact severity/time/tag rows expand to selectable multiline messages with
+  horizontal scrolling and Copy log. Search and collapsible level filters retain UI state;
+  the badge counts hidden levels and enabled noise rules. Newest-first rows follow the latest matching entry’s start
+  at the top; paused arrivals keep the inspected row in place.
+  History is a read-only snapshot. Enabled noise exclusions discard tag/message matches
+  before buffering so excluded bursts cannot evict useful logs. Disabling a rule admits only
+  future matches; previously retained history is not deleted. Host defaults merge with
+  device-persisted additions, removals and enabled states; Clear filters disables rules and
+  Reset restores current host defaults. Native capture waits for saved rules to load.
+- DevView: module initialization effects remain in composition after once-only DataStore
+  setup, survive recomposition, cancel on removal and restart on re-entry.
+- Analytics: compact counts reflect filtered results, rows open event details, and the shared
+  collapsible filter panel preserves search, selection and scroll state. Logger history is a
+  read-only snapshot; record through `AnalyticsLogger.log()`, which assigns a fresh internal
+  UUID and copies parameters without changing event value equality.
+- FeatureFlip: remote overrides use labelled Material3 Remote/Off/On segments with the remote
+  value shown separately. Local flags keep their switch; type badges are removed. Search and
+  collapsible Type/State filters expose active counts and recovery actions and retain UI state.
+  Selections persist in click order; failed saves keep the previous value and offer Retry.
+  Restored type filters remain active when the registered feature types change.
+- DevView: home icon tiles animate section hues with host-theme tones; explicit module overrides
+  remain supported. Home uses sentence-case headings, readable subtitles, aligned dividers and
+  a faint watermark in both themes. Built-in names are spaced and module icons are distinct.
+- DevView: each destination now owns its top bar so titles and actions transition with content.
+  Home has Close DevView and module screens have Back. Toolbar actions and menus require a
+  user-facing `label` for accessibility and tooltips; action callbacks now receive the displayed
+  `NavKey`. Module registration remains unchanged and receives its entry's measured bottom inset.
+- NetworkMock: Reset all to network now asks for confirmation before clearing mocks, failures
+  and sequences.
+- NetworkMock: operation sheets pair a compact configuration summary with direct actual-network
+  selection, Responses/Failures browsing tabs and response search. Status badges match the list;
+  labelled Details buttons inspect without selecting. Sequence next-step, Edit and Restart
+  controls share a compact header that wraps at narrow widths. Controls scroll when necessary
+  to keep choices reachable. Full-screen response details provide Compare, selectable content,
+  Copy body and Use/In use. The sequence builder uses stable step identities, Move up/down and
+  Remove, preserves unresolved drafts and requires at least two steps. Saving or restarting
+  position returns to the operation list.
+- NetworkMock: one retained module session serializes accepted writes. Failed saves retain
+  the selection/draft and offer Retry or Cancel while conflicting actions stay disabled.
+  Overlay hiding and host configuration changes retain the session and entry drafts; filtering
+  out a displayed module returns Home and discards its entry draft, not its registered session.
+- NetworkMock core/Ktor: additive state revisions prevent stale sequence writes across
+  repository instances. Concurrent requests consume steps in commit order and keep the final
+  step selected; retries apply probability and configured delay at most once per request.
+  An unavailable selected mock or state-persistence failure now fails without real-network
+  fallback. Cancellation propagates without consuming an uncommitted sequence step.
+- DevView: added a divider below the shared top app bar; NetworkMock operation lists animate
+  filter and sort changes. Navigation guards consult pending mutations at action time.
+
+### Removed
+- **Breaking** NetworkMock: `NetworkMockViewModel` is internal, matching the built-in screen
+  boundary. Use module registration for UI and the core repositories for runtime configuration.
+- **Breaking** DevView: built-in `AnalyticsScreen`, `ConsoleScreen`, `FeatureFlipScreen`,
+  `NetworkMockScreen` and `TimeCapsuleScreen` are internal. Register modules through
+  `rememberModules` and render `DevView`; module registration owns all tool content.
+- Console: `LocalConsoleLogs` and direct writes to `ConsoleLogger.logs`; submit entries
+  through `ConsoleLogger.log()` instead. Each recording gets a fresh internal UUID.
+- Analytics: `LocalAnalytics` and direct writes to `AnalyticsLogger.logs`. The module reads its
+  logger directly; register `Analytics()` to inspect its events in DevView.
+- DevView: fixed `Section.containerColor` / `Section.contentColor` extensions and the public
+  `ModulePosition` enum. Module colour defaults are now `Color.Unspecified`.
+
+### Fixed
+- Docs: analytics integration no longer uses the removed `LocalAnalytics` provider, and module
+  identity documentation covers built-in names, subtitles and icons.
+- TimeCapsule: eviction and Clear prune saved expansion IDs during the same recording.
+- Console: paused inspection restores its row and pixel offset after saved noise rules load;
+  a missing anchor falls back to the newest matching row without resuming follow mode.
+- FeatureFlip: failed saves retain independent per-feature retries. Newer choices supersede
+  older failures for the same flag, and stale Retry callbacks cannot overwrite them.
+- NetworkMock: superseded response-load failures retry the latest selection without real-network
+  fallback.
+- NetworkMock: long errors keep recovery actions visible, wide Unicode preview lines remain
+  horizontally reachable, and response comparisons retain their diff cache across recompositions.
+- Sample: Android status/navigation icon appearance follows the Dark Mode flag, including
+  the navigation-bar background on API 26–28. Sample analytics seed once per composition
+  instead of on every recomposition; cancelled requests are not displayed as errors.
+- Console: severity label contrast in both palettes, recoverable empty results when all
+  levels are hidden, and following new entries at full history capacity. Reconfiguration
+  preserves pending entries within the new limit and trims history immediately; Clear
+  removes pending entries and rejects stale deliveries. Capture and collection lifetimes
+  are serialized during cancellation and re-entry. Cancellation terminates an idle Android
+  logcat reader; iOS idle reads suspend and restore output descriptors on cancellation.
+- CI: allow 60 minutes for the iOS job instead of 30.
+- Analytics: category/time-only searches show recoverable no-results states, and limited time
+  windows refresh every five seconds without user input. Restored details cannot resolve to a
+  different recording with identical data. Newest-first rows do not automatically follow arrivals;
+  the inspected row and offset survive returning from details while new events arrive.
+- Sample: analytics seed events are recorded once per composition lifecycle instead of during
+  recomposition, preventing duplicates and a feedback loop when observing the logger.
+- NetworkMock: valid JSON is pretty-printed before preview display and diffing, and long lines
+  stay unwrapped with whole-pane horizontal scrolling and lazy vertical rows instead of
+  per-line scrolling or eagerly composing entire previews. Malformed JSON and
+  non-JSON bodies stay unchanged; formatting does not alter served response bodies.
+
+## [0.2.0-alpha07] - 2026-11-02
+
+### Added
+- TimeCapsule: an additive `TimeCapsuleEffect` overload accepts `TextFieldState` property
+  references to record text and selection changes without screen state emissions, retain
+  detached editing values, and restore them alongside screen state. Named field changes
+  appear in timeline summaries and expanded highlights.
+
+## [0.2.0-alpha06] - 2026-10-23
+
+### Changed
+- **Breaking** NetworkMock: response variant identity is now `(statusCode, mediaType, exampleName)`
+  instead of `(statusCode, exampleName)`. `MockResponse` and `OperationMockState.Mock` now carry
+  `mediaType`, and `MockConfigRepository.loadMockResponse` accepts `mediaType` as its third parameter.
+  Persisted operation mock selections are wiped once on upgrade (schema version 2) (#143).
+
+### Fixed
+- NetworkMock: wildcard response media types (e.g. `*/*`, `application/*`) are no longer
+  emitted verbatim as the HTTP `Content-Type`; they resolve to concrete types (`application/json`,
+  `text/plain`, `application/octet-stream`) based on the loaded body so Ktor `ContentNegotiation`
+  can deserialize responses (#143).
+- NetworkMock: multiple media types declared under the same status code no longer overwrite each
+  other when they declare same-named examples (such as `default`); both are retained as distinct
+  selectable variants disambiguated in the UI (#143).
+
+## [0.2.0-alpha05] - 2026-10-14
+
+### Fixed
+- NetworkMock: OpenAPI 3.1 schemas declaring `type` as an array (e.g. `[string, "null"]`)
+  or `null` in `enum` no longer fail spec loading.
+- NetworkMock: OpenAPI responses without `content` now expose an empty-body `"default"`
+  variant, including `$ref` responses and bodyless 200/204 statuses. No fixture file is
+  needed, and the Ktor plugin omits the media-type-derived `Content-Type` header while
+  preserving declared response headers.
+
+## [0.2.0-alpha04] - 2026-10-09
+
+### Added
+- NetworkMock: closed the remaining test-coverage gaps tracked in #91 — real sample specs
+  (`sample/network`'s `sample-api.json` and `jsonplaceholder.json`) now parse through the actual
+  `MockConfigRepository` in a new `RealSampleSpecTest` (`devview-networkmock-core`,
+  `androidHostTest`), guarding against the shipped sample silently drifting out of sync with what
+  the parser accepts; query-parameter matching is now exercised end-to-end through the real Ktor
+  plugin interception path (`NetworkMockPluginTest`); the operation sheet's sticky-header
+  status-family grouping now has explicit coverage (`NetworkMockOperationSheetTest`); and the
+  delay-precedence chain (`Operation.delayMs ?: ApiSpec.delayMs ?: null`) now covers its
+  previously-untested third case. Ambiguous host-match precedence, the preview/diff bottom sheet,
+  and response Content-Type/header assertions were already covered by prior work — verified, not
+  duplicated.
+- NetworkMock: operations can now declare OpenAPI `tags`, read verbatim into a new
+  `Operation.tags: List<String>` (empty by default, display-only — no effect on request
+  matching, same as `Operation.version`). The operation list gains a fourth per-tab filter chip
+  row (`tag_filter_row`, multi-select, hidden when the current spec has no tagged operations)
+  and a sort control — a new "Sort" toolbar dropdown, wired via the shared toolbar's new
+  `DestinationMetadataBuilder.menu` action (`NetworkMock` exposes a `sortSharedFlow`,
+  `NetworkMockScreen` collects it). Tapping it opens a menu with one entry per sort key: spec
+  order (default), path (A-Z), method (`HttpMethod.DefaultMethods` order), and tag (an
+  operation's first declared tag); picking an entry sets that sort directly. Sort
+  selection is per-tab, plain client-side state in `NetworkMockScreen`'s `ContentState`, not
+  the ViewModel — same convention as the existing filters. See
+  `docs/modules/networkmock-core.md`'s new "Tags" section and `docs/modules/networkmock-ui.md`.
+  (`devview`, `devview-networkmock-core`, `devview-networkmock`, #116, #117)
+- DevView: the shared top app bar's contextual actions can now be a dropdown menu of discrete
+  choices, not just a single-tap icon or a confirm/cancel popup. `ModuleDestinationAction` gains
+  a `menuItems: PersistentList<ModuleDestinationActionMenuItem>?` property (new public class);
+  `DestinationMetadataBuilder` gains a `menu(icon) { item(label) { ... } }` DSL alongside the
+  existing `action`. Precedence when both `action` and `menu` could apply: `menuItems` wins,
+  then `popup`, then the plain `action` lambda. (`devview`, #117)
+
+- NetworkMock: an operation can now declare narrow request-body match constraints — required
+  top-level fields and/or a discriminator field's value, read from its
+  `requestBody.content.<mediaType>.schema` — to disambiguate operations that would otherwise
+  collide on path, method, and query alone (e.g. two specs sharing a host, each declaring
+  `POST /api/payments`, differing only by body shape). Not full JSON Schema validation; an
+  operation declaring no `requestBody`, or one with neither a required field nor a usable
+  discriminator, matches any body, same as before. `Operation` gains `requestBodyMatch:
+  RequestBodyMatch?` (new public class); `RequestMatcher` gains `matchesRequestBody`;
+  `MockConfigRepository.findMatchingMock` gains an optional `requestBody: String?` parameter.
+  `devview-networkmock-ktor`'s plugin reads the request body only when it's already a fully
+  in-memory `OutgoingContent.ByteArrayContent` — a pure, repeatable read that never consumes or
+  mutates anything the real network call still needs to send. See
+  `docs/modules/networkmock-core.md`'s new "Request body matching" section.
+  (`devview-networkmock-core`, `devview-networkmock-ktor`, #83)
+- NetworkMock: a status code with a declared `content.<mediaType>.schema` but no `examples`
+  now synthesizes a placeholder response body instead of being unmockable — primitives, `enum`
+  (first value), `object`/`array` (recursively, by declared `type` or by the mere presence of
+  `properties`/`items`), `allOf` (properties merged; conflicting definitions across members
+  throw a clear error), and `oneOf` (first declared variant; `discriminator` is parsed but
+  doesn't yet steer variant selection). Deliberately narrow, not full JSON Schema conformance —
+  see `docs/modules/networkmock-core.md`'s new "Schema-based response synthesis" section.
+  Schema `$ref`s resolve relative to the file containing them, like every other `$ref`.
+  `MockResponse` gains `isSynthesized: Boolean` (default `false`); the operation picker page
+  shows a small "Generated" badge on a synthesized response's row.
+  (`devview-networkmock-core`, `devview-networkmock`, #82, #84)
+- NetworkMock: an operation can now be configured as a **sequence** — an ordered list of
+  responses it advances through one step per matched request, sticking on the last step once
+  exhausted rather than looping back to the start. Useful for polling flows (order status,
+  upload progress, async job completion) where the interesting behavior is the transition
+  across repeated calls. Build one from the operation sheet's new "SEQUENCE" section: tap
+  "Build a Sequence", tap responses in the desired order, then "Save Sequence"; "Reset
+  Position" restarts at step 1 without leaving the sequence. `OperationMockState` gains a
+  `Sequence(responses: List<Mock>, currentIndex: Int)` variant (**breaking**: another new
+  sealed subtype); the position is persisted as part of this same state, so resetting an
+  operation to `Network` discards it with no special-casing needed.
+  `NetworkMockViewModel` gains `setOperationSequenceState`/`resetOperationSequencePosition`.
+  (`devview-networkmock-core`, `devview-networkmock-ktor`, `devview-networkmock`, #96)
+- NetworkMock: an operation can now simulate a network failure instead of returning a response,
+  two ways — **deterministically**, by selecting Timeout or Connection Refused in the operation
+  sheet's picker page (a new "Simulate Failure" section, alongside the response variants); or
+  **probabilistically**, via a new `x-devview.failureRate` (0.0–1.0) OpenAPI extension field,
+  which independently rolls on every otherwise-mocked request to that operation (an operation
+  left on `Network` passthrough is never affected). Each failure kind mirrors the exception a
+  real Ktor engine throws for the equivalent condition (`HttpRequestTimeoutException` for
+  Timeout, a connection-level `kotlinx.io.IOException` for Connection Refused), so existing app
+  error handling exercises the same code path. `OperationMockState` gains a `Failure(kind:
+  FailureKind)` variant (**breaking**: exhaustive `when` blocks over `OperationMockState` need a
+  new branch); `Operation` gains `failureRate: Double?`; `NetworkMockConfig` gains an injectable
+  `random: Random` for deterministic tests; `MockColorScheme` gains a `failure: StatusColors`
+  slot (**breaking**: new required constructor parameter). (`devview-networkmock-core`,
+  `devview-networkmock-ktor`, `devview-networkmock`, #88, #95)
+- NetworkMock: mocked responses now serve the `Content-Type` derived from the spec's declared
+  media type (`responses.<code>.content.<mediaType>`, previously always hardcoded to
+  `application/json`) plus any additional headers declared on `responses.<code>.headers` — a
+  header's literal `example` value is served as-is, mirroring how query-parameter matching
+  already reads a parameter's `example`. `$ref`'d headers resolve against `components.headers`.
+  `MockResponse` gains `contentType` (default `"application/json"`) and `headers` (default
+  empty) properties. (`devview-networkmock-core`, `devview-networkmock-ktor`, #87)
+- NetworkMock: a "Reload Config" toolbar action, and `MockConfigRepository.invalidate()` /
+  `NetworkMockViewModel.reloadConfiguration()`, to re-read and re-parse the configured OpenAPI
+  specs without restarting the app — previously the parsed config was cached forever after the
+  first load, with no way to pick up an edited spec file short of a process restart. Operations
+  added, removed, or renamed in the spec appear immediately after reloading; persisted
+  per-operation mock selections are untouched. (`devview-networkmock-core`,
+  `devview-networkmock`, #90)
+
+### Changed
+- **Breaking:** `MockHttpClientCall` is now `internal` instead of `public` — it was only public
+  because Ktor's `HttpClientCall(client)` base constructor required it to be instantiable from
+  the plugin's install code, not because integrators have a legitimate reason to construct it
+  themselves. Its `rawContent` override already depends on the `@InternalAPI`-annotated Ktor
+  API, so staying public compounded that instability onto this library's own tracked surface.
+  (`devview-networkmock-ktor`, #89)
+
+### Fixed
+- NetworkMock: `OpenApiParser`'s `$ref` resolution now disambiguates by the full
+  `components.<section>` a fragment names, not just its trailing name — a `$ref` whose fragment
+  points at an unexpected section (e.g. `components/parameters/Foo` where a `components/responses`
+  entry was expected) is rejected with a clear error instead of being silently resolved against
+  whatever section the call site happened to expect, so a same-named entry in a different section
+  can never be conflated with the one actually referenced. `$ref` chains — an entry that itself
+  declares another `$ref` — are now followed until a non-ref entry is reached (previously only one
+  level deep), guarded against cycles: a circular `$ref` chain now fails with a clear error instead
+  of hanging. Each hop of an external `$ref` chain is now resolved relative to the document that
+  contains it (previously always the root spec's directory, so `shared/a.json` → `./b.json`
+  loaded `b.json` next to the root spec instead of `shared/b.json`); local `#/...` refs and
+  relative `externalValue` paths inside an external document likewise resolve against that
+  document, not the root. (`devview-networkmock-core`)
+- NetworkMock: replaced ~35 unconditional `println` calls in `MockConfigRepository` and
+  `NetworkMockPlugin` with gated [Kermit](https://github.com/touchlab/Kermit) logging
+  (tag `DevViewNetworkMock`), consolidating the plugin's multi-line per-request trace into one
+  line per intercepted request. No response body content is ever logged. A host app can adjust
+  or silence this via `Logger.setMinSeverity(...)`; `devview-consolelogger`, if installed,
+  captures it automatically. Detekt's `ForbiddenMethodCall` rule (`println`/`print`) is now
+  enforced repo-wide. (`devview-networkmock-core`, `devview-networkmock-ktor`, #86)
+- NetworkMock: the bottom bar's search field and expand-filter button were padded as a whole
+  `Surface`, pushing every filter chip row above them down by the system navigation bar inset
+  as well — the inset now only pads the search field and button themselves, matching
+  `AnalyticsScreen`'s existing (correct) layout. (`devview-networkmock`)
+
+## [0.2.0-alpha03] - 2026-09-11
+
+### Added
+- NetworkMock status-family chip colors (2xx green, 4xx/5xx red, etc.) are now configurable via
+  a `LocalMockColorScheme` CompositionLocal, mirroring `devview-consolelogger`'s
+  `LocalLogColorScheme`. Also fixes these colors rendering as washed-out light pastels on dark
+  surfaces — `MockColorScheme.Dark` is a proper hand-tuned dark palette rather than the light
+  values reused verbatim. (`devview-networkmock`)
+- NetworkMock UI: a multi-select HTTP method filter chip row, alongside the existing version
+  filter. No chip selected shows every method; selecting one or more narrows the list to
+  operations using any of the selected methods, combined with the version filter and search
+  via AND. (`devview-networkmock`)
+- `HttpMethod`: a value class modeled after Ktor's own `HttpMethod` (open set, companion
+  constants, `DefaultMethods` for canonical ordering), replacing the raw `String` on
+  `Operation.method` — without adding a Ktor dependency to `devview-networkmock-core`.
+  (`devview-networkmock-core`)
+- NetworkMock UI: a "Mocked"/"Network" filter chip row, and a mocked-operation count
+  (e.g. "3 of 47 mocked") on the global mocking toggle, computed across every spec — both
+  answer "what have I left mocked" at a glance. (`devview-networkmock`)
+
+### Changed
+- **Breaking:** `Operation.method` is now `HttpMethod` instead of `String`.
+  (`devview-networkmock-core`)
+- **Breaking:** NetworkMock's operation detail screen is now a bottom sheet over the operation
+  list instead of a second navigation destination — tapping an operation opens the response
+  picker directly, without leaving the list, and picking a response dismisses the sheet.
+  Removed: `NetworkMockDestination.Endpoint`, `NetworkMockEndpointViewModel`,
+  `NetworkMockEndpointUiState`, and `NetworkMockScreen`'s `navigateToEndpointScreen` parameter.
+  Added to `NetworkMockViewModel`: `sheetState: StateFlow<OperationSheetState>`,
+  `openOperation(key)`, `closeSheet()` — response variant discovery (previously
+  `NetworkMockEndpointViewModel`'s job) now happens here, once per sheet open. Marking a
+  response for preview/compare is now an explicit eye-icon toggle on each row instead of a
+  long-press, and the preview/diff view is a second page of the same sheet (reached via a
+  "Preview"/"Compare 2 responses" button) rather than a separate bottom sheet stacked on top of
+  the detail screen. (`devview-networkmock`)
+- NetworkMock UI: the search field and version filter row moved from the top of the screen into
+  a `Scaffold` bottom bar (alongside the new method filter), matching FeatureFlip, Analytics, and
+  ConsoleLogger's existing layout for one-handed reach. Only the search field and an expand
+  chevron are visible by default; the mock-state, version, and method filter rows collapse
+  behind the chevron (matching Analytics' bottom bar). (`devview-networkmock`)
+- NetworkMock UI: each operation row now shows a leading colour rail (the state chip's colour)
+  and a colour-coded HTTP method badge; the row's separate state-summary line — which duplicated
+  the status code already shown in the state chip — is gone (#115). The row's per-operation
+  version badge is also gone: `Operation.version` is parsed from the very path segment shown
+  right next to it, so the badge never showed anything the path wasn't already showing, and it
+  crowded the state chip. The path itself no longer truncates — it wraps instead, so a long URL
+  is never cut off. The operation sheet's picker-page header shares the same fix, since it shows
+  the same operation identity — except the header drops the state chip entirely: the picker
+  list right below already marks the active response with a checkmark, its full label, and a
+  family icon/colour, so a bare-status-code chip in the header would only repeat that.
+  (`devview-networkmock`)
+
+## [0.2.0-alpha02] - 2026-09-11
+
+### Fixed
+- Fixed ViewModel persistence during navigation: the `rememberViewModelStoreNavEntryDecorator()` was 
+  not applied to the `NavDisplay`'s `entryDecorators` causing `ViewModel`s to persist once instantiated.
+
+## [0.2.0-alpha01] - 2026-09-10
+
+### Added
+- `Operation.version`: a display-only version tag extracted from a `/v{n}/` path segment
+  (e.g. `/api/v2/x` → `"v2"`), shown as a chip on each operation in the NetworkMock UI. Purely
+  a UI label — request matching is unaffected. (`devview-networkmock-core`, `devview-networkmock`)
+- NetworkMock UI: a search field (filters by name, path, or operationId) and a per-tab version
+  filter row, both client-side over already-loaded data. (`devview-networkmock`)
+- A [migration guide](guides/migrating-to-openapi.md) and a `scripts/mocks_json_to_openapi.py`
+  conversion script for integrators upgrading from a pre-0.2.0 `mocks.json` config.
+- `devview-consolelogger` module: displays the app's native console output (logcat on
+  Android, a stdout/stderr redirect on iOS) inside the DevView overlay, with per-level
+  filter chips, a text filter, and auto-follow. Capture works on an untethered device
+  (no debugger required) on both platforms; an optional `DevViewLogWriter` routes
+  Kermit-based logging into the same view, closing the one remaining gap
+  (`NSLog`/`os_log` on iOS with no debugger attached). Log-level colors are configurable
+  via a `LocalLogColorScheme` CompositionLocal. (`devview-consolelogger`)
+- TimeCapsule rows now show a per-state change summary (e.g. `count 3 → 4`) derived from a
+  `key=value`-shaped label, expandable to reveal the full label with changed values
+  highlighted, plus a wall-clock timestamp alongside the existing delta pill. The screen now
+  shows a header naming the recorded owner. (`devview-timecapsule`)
+
+### Changed
+- **Breaking:** `devview-networkmock-core` now parses OpenAPI 3.x documents (JSON, and YAML
+  on a best-effort basis) instead of the bespoke `mocks.json` format. One spec file is one
+  API group — the environment axis is gone entirely; a group's request-matching hosts come
+  from the spec's `servers[]` list, and an app talking to two hosts for the same API is
+  simply two operations with different paths in one document. `NetworkMock(configPath: String)`
+  is now `NetworkMock(specPaths: List<String>)`. See the
+  [migration guide](guides/migrating-to-openapi.md). (`devview-networkmock-core`,
+  `devview-networkmock`, `devview-networkmock-ktor`)
+- Renamed to OpenAPI vocabulary throughout the networkmock modules: `ApiGroupConfig` →
+  `ApiSpec`, `EndpointConfig` → `Operation`, `EndpointKey` → `OperationKey` (drops the
+  `environmentId` component), `EndpointDescriptor` → `OperationDescriptor`,
+  `EndpointMockState` → `OperationMockState`, `GroupEnvironmentUiModel` → `ApiSpecUiModel`,
+  `EndpointUiModel` → `OperationUiModel`. `MockResponse` and `MockMatch` are deliberately
+  **not** renamed — they model DevView's own runtime mocking behavior, not something OpenAPI
+  describes. `EnvironmentConfig`, `EndpointOverride`, and `effectiveEndpoints` are deleted.
+- Response variant discovery now reads the spec's declared
+  `responses.<code>.content.*.examples` instead of probing status-code/suffix combinations
+  against the filesystem. `OperationMockState.Mock` is now keyed by `(statusCode,
+  exampleName)` instead of a response file name. (`devview-networkmock-core`)
+- Response delay simulation is now declared via the `x-devview.delayMs` OpenAPI
+  Specification Extension, at the document root (spec-wide default) and/or per operation
+  (overrides the default) — replacing `ApiGroupConfig.defaultDelayMs` /
+  `EndpointConfig.delayMs`. (`devview-networkmock-core`)
+- DataStore entries written under the pre-0.2.0 key shape
+  (`network_mock_endpoint_{groupId}-{environmentId}-{endpointId}`) are wiped once on first
+  launch after upgrading — the key shape and the `Mock` payload shape both changed, so a
+  translation wasn't attempted. The global mocking toggle is unaffected. (`devview-networkmock-core`)
+- `OperationDescriptor` no longer carries `availableResponses` — the main operation list never
+  read them, so `NetworkMockViewModel` no longer eagerly discovers and decodes every response
+  body on app start. Response variants are now only loaded when an operation's detail screen
+  actually opens (`NetworkMockEndpointUiState.Content.responses`). (`devview-networkmock-core`,
+  `devview-networkmock`)
+- `TimeCapsuleEffect` gains a `subtitle` parameter, inserted between `label` and `maxEntries`.
+  Callers passing `maxEntries` positionally must switch to a named argument.
+  (`devview-timecapsule`)
+
+</details>
+
+<h2 id="015-2026-09-08"><a href="https://github.com/worldline/DevView/compare/0.1.4...0.1.5">0.1.5</a> - 2026-09-08</h2>
+<h3 id="added_1">Added</h3>
+<ul>
+<li><code>devview-timecapsule</code> module: records the state history of the currently visible screen
+  via <code>TimeCapsuleEffect</code>/<code>TimeCapsuleOwner</code>, and lets a developer restore any earlier
+  state back into that screen from the DevView overlay. History resets automatically when
+  the screen leaves composition.</li>
+</ul>
+<h2 id="014-2026-07-22"><a href="https://github.com/worldline/DevView/compare/0.1.3...0.1.4">0.1.4</a> - 2026-07-22</h2>
+<h3 id="changed_1">Changed</h3>
+<ul>
+<li>Applied logo-inspired color palette to the sample app: custom light/dark <code>ColorScheme</code> using violet/indigo/magenta tones from the DevView brand, including the full <code>surfaceContainer</code> tonal ramp. (<code>sample</code>)</li>
+<li>Module icon containers on the home screen now use per-section colors derived from the logo palette; icon shape changed from circle to squircle (<code>RoundedCornerShape(8.dp)</code>) and module names are now <code>SemiBold</code>. Chevron indicator removed — touch ripple is the navigation affordance. (<code>devview</code>)</li>
+<li>Section headers on the home screen now use <code>primary</code> color instead of <code>outline</code>, and the DevView chameleon icon appears as a subtle watermark behind the module list. (<code>devview</code>)</li>
+<li>Analytics log items now display a <code>3dp</code> leading color strip matching the event category, making the log stream scannable by category at a glance. (<code>devview-analytics</code>)</li>
+<li>Feature type labels ("Local" / "Remote") are now rendered as small pill badges instead of plain text. (<code>devview-featureflip</code>)</li>
+<li>HTTP method labels on endpoint cards and the endpoint detail header are now rendered as proper badges with a <code>primaryContainer</code> background, matching the visual language of API explorer tools. (<code>devview-networkmock</code>)</li>
+<li>NetworkMock empty, error, and loading state screens now use Material icons instead of an emoji, with consistent typography and <code>onSurfaceVariant</code> text colors. (<code>devview-networkmock</code>)</li>
+<li>Added empty state to <code>FeatureFlipScreen</code> when the feature list is empty or no features match the active filter. (<code>devview-featureflip</code>)</li>
+<li>The endpoint detail hint card now shows a <code>TouchApp</code> icon for visual clarity. (<code>devview-networkmock</code>)</li>
+<li>Top app bar titles across all DevView screens are now <code>SemiBold</code> weight. (<code>devview</code>)</li>
+<li>Unified surface backgrounds: the <code>surfaceContainer</code> explicit color has been removed from the Analytics highlighted-logs header and the NetworkMock global toggle wrapper — backgrounds now inherit from <code>MaterialTheme</code> uniformly. (<code>devview-analytics</code>, <code>devview-networkmock</code>)</li>
+<li>Diff colors shifted from generic blue to lavender (<code>#DDD8FF</code>) to align with the brand palette. (<code>devview-networkmock</code>)</li>
+</ul>
+<h3 id="fixed_1">Fixed</h3>
+<ul>
+<li>Fixed excessive recompositions and broken Switch animation on <code>FeatureFlipScreen</code>: item keys now use the stable <code>feature.name</code> instead of <code>hashCode()</code>, <code>FeatureHandler</code> caches its Flow to prevent <code>collectAsStateWithLifecycle</code> from restarting on every recomposition, and redundant explicit <code>remember</code> keys have been removed from <code>derivedStateOf</code> blocks. (<code>devview-featureflip</code>)</li>
+<li>Added <code>distinctUntilChanged()</code> to <code>FeatureHandler.isFeatureEnabledFlow</code> and <code>getFeatures</code> to suppress recompositions when DataStore emits structurally identical values. (<code>devview-featureflip</code>)</li>
+<li>Fixed <code>AnalyticsScreen</code> <code>LazyColumn</code> item key: <code>log.hashCode()</code> was replaced by <code>log.timestamp</code>, then <code>log.timestamp</code> caused a crash because multiple events can share the same millisecond; the key is now the log's original position in the append-only <code>AnalyticsLogger.logs</code> list via <code>withIndex()</code>. Redundant explicit keys also removed from all <code>derivedStateOf</code> blocks. (<code>devview-analytics</code>)</li>
+<li>Fixed <code>HomeScreen</code> <code>LazyColumn</code> using <code>module.hashCode()</code> as item key instead of the stable <code>module.moduleName</code>. (<code>devview</code>)</li>
+<li>Fixed <code>NetworkMockScreen</code> using <code>collectAsState()</code> instead of <code>collectAsStateWithLifecycle()</code>, causing unnecessary state collection when the screen is off-stack or the app is backgrounded. (<code>devview-networkmock</code>)</li>
+<li>Added <code>distinctUntilChanged()</code> to <code>MockStateRepository.observeState()</code> to suppress recompositions triggered by structurally equal <code>NetworkMockState</code> emissions from DataStore. (<code>devview-networkmock-core</code>)</li>
+</ul>
+<h3 id="documentation">Documentation</h3>
+<ul>
+<li>Added Compose List Keys rules to the contributing guide (<code>code-style.md</code>): LazyColumn/LazyRow keys must be unique, stable under state changes, and semantically meaningful. Added matching item to the PR checklist.</li>
+</ul>
+<h2 id="013-2026-07-21"><a href="https://github.com/worldline/DevView/compare/0.1.2...0.1.3">0.1.3</a> - 2026-07-21</h2>
+<h3 id="added_2">Added</h3>
+<ul>
+<li><code>NetworkMockResourceLoader</code> fun interface in <code>devview-networkmock-core</code>: provides a named type for DI frameworks (Koin, Hilt, etc.) to bind, eliminating the need for a custom bridge interface in multi-module KMP projects where mock resource files live in a different module than where <code>NetworkMock</code> is constructed. Both <code>devview-networkmock</code> and <code>devview-networkmock-ktor</code> now expose <code>devview-networkmock-core</code> as an <code>api</code> dependency so the type is available to all integrators.</li>
+</ul>
+<h3 id="fixed_2">Fixed</h3>
+<ul>
+<li>Fixed DevView overlay back navigation: the overlay's back handler now correctly yields priority to the host app when closed, preventing it from silently consuming back events.</li>
+<li>Fixed crash on Network Mock screen startup: <code>MissingResourceException</code> thrown by Compose Resources when probing absent response files was not caught by the <code>IllegalStateException</code> handler in <code>MockConfigRepository</code>, causing a fatal crash. The exception is now normalised at the <code>NetworkMock</code> boundary before reaching the core module.</li>
+</ul>
+<h2 id="012-2026-07-17"><a href="https://github.com/worldline/DevView/compare/0.1.1...0.1.2">0.1.2</a> - 2026-07-17</h2>
+<h3 id="fixed_3">Fixed</h3>
+<ul>
+<li>Preserved Kotlin module metadata in Android packaging by replacing broad <code>META-INF/**</code> excludes with selective license/signature excludes.</li>
+<li>Fixed docs list rendering on Home (<code>What's New</code>) and License (<code>Third-Party Licences</code>) pages.</li>
+</ul>
+<h3 id="changed_2">Changed</h3>
+<ul>
+<li>Updated sample <code>DevViewApp</code> feature setup to include a local feature entry fix and a remote feature example.</li>
+</ul>
+<h2 id="011-2026-07-16"><a href="https://github.com/worldline/DevView/compare/v0.1.0...0.1.1">0.1.1</a> - 2026-07-16</h2>
+<h3 id="changed_3">Changed</h3>
+<ul>
+<li>Downgraded Kotlin from 2.4.10 to 2.3.21 for broader consumer compatibility.</li>
+<li>Removed <code>compose-stability-analyzer</code> plugin (KMP incompatible).</li>
+</ul>
+<h3 id="documentation_1">Documentation</h3>
+<ul>
+<li>Updated minimum Kotlin version requirement to 2.3.21 in installation guide.</li>
+<li>Added acknowledgment for chrisbanes/haze inspiration.</li>
+<li>Added GitHub issue templates for bugs and feature requests.</li>
+</ul>
+<h3 id="quality">Quality</h3>
+<ul>
+<li>Added Metalava API tracking to all published modules.</li>
+<li>Improved CI infrastructure: split workflows to Linux/macOS, added snapshot deploy, replaced <code>release.sh</code> with platform-agnostic <code>release.py</code>.</li>
+<li>Enabled automatic Maven Central publishing.</li>
+</ul>
+<h2 id="010-2026-07-15"><a href="https://github.com/worldline/DevView/releases/tag/v0.1.0">0.1.0</a> - 2026-07-15</h2>
+<h3 id="added_3">Added</h3>
+<ul>
+<li><code>devview</code>: core DevView framework with module registry DSL, section-based home screen, type-safe Navigation3 integration, and per-destination top-app-bar metadata/actions.</li>
+<li><code>devview-featureflip</code>: feature flag tooling with local and remote features, tri-state remote override support, DataStore-backed persistence, and a built-in Compose management screen. Feature type badge and filter support for granular feature browsing.</li>
+<li><code>devview-analytics</code>: in-app analytics log capture with typed log events, real-time Compose UI, highlighted log categories, and clear-log action support.</li>
+<li><code>devview-networkmock-core</code>: shared network mock engine with JSON configuration loading (<code>mocks.json</code>), endpoint/request matching (including path parameters), mock response discovery/loading, and persisted endpoint/global state.</li>
+<li><code>devview-networkmock</code>: DevView UI module for network mocking with host tabs, global mock toggle, endpoint state controls, and reset-to-network behavior.</li>
+<li><code>devview-networkmock-ktor</code>: Ktor client plugin that intercepts requests, resolves endpoint mock state, returns synthetic HTTP responses when configured, and falls back to real network calls on misses/errors.</li>
+<li><code>devview-utils</code>: shared multiplatform utilities for DataStore setup (<code>createDataStore</code>), reusable <code>DataStoreDelegate</code>, and <code>RequiresDataStore</code> initialization contract.</li>
+<li><code>devview-test</code>: shared multiplatform test utilities including <code>FakePreferencesDataStore</code> and Turbine-based Flow assertion helpers.</li>
+<li>Pre-commit hooks enforcing gitleaks secret scanning and Detekt static analysis on every commit.</li>
+</ul>
+<h3 id="changed_4">Changed</h3>
+<ul>
+<li>Refactored module architecture to support destination-level metadata (screen titles and action buttons) across DevView modules.</li>
+<li>Standardized DataStore initialization flow in <code>rememberModules</code>, allowing modules and plugin-facing components to share persistent state safely.</li>
+<li>Improved module UIs (home, analytics, feature flags, and network mock) with cleaner layouts and more actionable controls.</li>
+<li>Removed dead endpoint selection state from NetworkMock.</li>
+<li>Updated Kotlin to 2.4.10 and Compose Multiplatform to 2.11.0; bulk transitive dependency upgrades via Renovate.</li>
+<li>Migrated documentation site from MkDocs to Zensical.</li>
+</ul>
+<h3 id="fixed_4">Fixed</h3>
+<ul>
+<li>Resolved Dokka unresolved link warnings and broken KDoc links across all modules.</li>
+<li>Fixed Detekt <code>MaxLineLength</code> violations in KDoc link references.</li>
+<li>Fixed documentation site rendering issues and stale content.</li>
+<li>Fixed CI configuration to correctly handle Renovate dependency update branches.</li>
+</ul>
+<h3 id="documentation_2">Documentation</h3>
+<ul>
+<li>Rewrote README as an integrator quick-start guide; removed TODO.md.</li>
+<li>Added CLAUDE.md guidance files for root and all sub-modules.</li>
+<li>Documented git workflow conventions: branch naming, PR title format, and gitmoji commit style.</li>
+<li>Expanded Dokka API documentation and module samples for all public APIs.</li>
+<li>Added Renovate custom manager to keep documentation version badges in sync with dependency updates.</li>
+</ul>
+<h3 id="quality_1">Quality</h3>
+<ul>
+<li>Added and expanded unit test coverage for all primary <code>devview-*</code> modules.</li>
+<li>Added Konsist architecture enforcement tests and Kover coverage reporting across the module set.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../contributing/code-of-conduct/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Code of Conduct">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Code of Conduct
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../license/" class="md-footer__link md-footer__link--next" aria-label="Next: License">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                License
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Maxime Michel
+
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/worldline" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M216.5 362.5c-66-8-112.5-55.5-112.5-117 0-25 9-52 24-70-6.5-16.5-5.5-51.5 2-66 20-2.5 47 8 63 22.5 19-6 39-9 63.5-9s44.5 3 62.5 8.5c15.5-14 43-24.5 63-22 7 13.5 8 48.5 1.5 65.5 16 19 24.5 44.5 24.5 70.5 0 61.5-46.5 108-113.5 116.5 17 11 28.5 35 28.5 62.5v52c0 15 12.5 23.5 27.5 17.5C441 459.5 512 369 512 257 512 115.5 397 0 255.5 0S0 115.5 0 257c0 111 70.5 203 165.5 237.5 13.5 5 26.5-4 26.5-17.5v-40c-7 3-16 5-24 5-33 0-52.5-18-66.5-51.5-5.5-13.5-11.5-21.5-23-23-6-.5-8-3-8-6 0-6 10-10.5 20-10.5 14.5 0 27 9 40 27.5 10 14.5 20.5 21 33 21s20.5-4.5 32-16c8.5-8.5 15-16 21-21"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog" role="status" aria-atomic="true">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      
+      
+        
+        
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","navigation.tracking","search.highlight","toc.follow","toc.integrate"],"redirect":null,"search":"../assets/javascripts/workers/search.c47bb847.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","clipboard.error":"Could not copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":{"alias":true,"provider":"mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.a2388154.min.js"></script>
+      
+        <script src="../javascripts/branding-theme.js"></script>
+      
+    
+  </body>
+</html>
