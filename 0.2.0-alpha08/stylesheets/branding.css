@@ -1,0 +1,23 @@
+/* Heading typography override: keep body font from theme config. */
+@import url("https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@200..700&display=swap");
+
+:root {
+  --devview-headline-font: "Stack Sans Headline", "Inter", "Segoe UI", sans-serif;
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5,
+.md-typeset h6,
+.md-header__title,
+.md-nav__title {
+  font-family: var(--devview-headline-font);
+}
+
+/* Home page title is represented by the logo hero; hide the rendered H1 text. */
+.md-typeset h1#devview {
+  display: none;
+}
+
