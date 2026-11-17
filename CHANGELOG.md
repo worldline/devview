@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Console: new `devview-consolelogger` module captures Android logcat and iOS stdout/stderr on-device, with optional `DevViewLogWriter` integration for [Kermit](https://github.com/touchlab/Kermit), configurable severity colors, search/level filters, selectable expandable messages, Copy log and follow/pause inspection. Untethered iOS `NSLog`/`os_log` requires writer integration. ([#109](https://github.com/worldline/devview/pull/109), [#163](https://github.com/worldline/devview/pull/163))
+- NetworkMock: reload specs without restarting, lazily load response bodies, resolve chained/document-relative references with cycle and component-section validation, synthesize supported schema placeholders, and match required top-level request fields/discriminator values. Body matching only inspects already-buffered Ktor content; this is not full JSON Schema validation.
+- NetworkMock: serve declared headers/media types, retain distinct media variants, support bodyless responses and OpenAPI 3.1 type arrays/null enum values, and resolve wildcard media types to concrete Content-Type. ([#138](https://github.com/worldline/devview/pull/138), [#141](https://github.com/worldline/devview/pull/141), [#144](https://github.com/worldline/devview/pull/144))
+- NetworkMock: deterministic Timeout/Connection Refused, operation-level `x-devview.failureRate`, and persisted response sequences advancing per request and retaining the final step. Sequences support repeated steps, reorder/remove, editing/restart and at least two steps in the builder; `NetworkMockConfig.random` supports deterministic probability tests.
+- Analytics: string event parameters and details with millisecond timestamps/timezone, selectable text and Copy event. ([#161](https://github.com/worldline/devview/pull/161))
+- TimeCapsule: connected timeline, state-change summaries/highlighting, timestamps and owner subtitle; an additive `TimeCapsuleEffect` overload records detached `TextFieldState` text/selection and restores them alongside screen state. ([#111](https://github.com/worldline/devview/pull/111), [#146](https://github.com/worldline/devview/pull/146))
+- DevView: public UI kit in `com.worldline.devview.ui`, `Section.displayName` and labelled custom-module toolbar menus. ([#159](https://github.com/worldline/devview/pull/159))
+
+### Changed
+- **Breaking — NetworkMock configuration:** migrate `mocks.json` to OpenAPI 3.x JSON or best-effort YAML, one spec per group. Use `NetworkMock(resourceLoader = loader, specPaths = listOf(...))`. Environments/overrides are removed; `servers` supplies matching hosts, declared examples replace response-suffix probing, and delays use `x-devview.delayMs`. Follow the [migration guide](https://worldline.github.io/devview/0.2.0/guides/migrating-to-openapi/) and `scripts/mocks_json_to_openapi.py`; review converter warnings on ambiguous overrides/identifiers. ([#104](https://github.com/worldline/devview/pull/104), [#108](https://github.com/worldline/devview/pull/108))
+- **Breaking — NetworkMock runtime:** `ApiGroupConfig`/`Endpoint*` become `ApiSpec`/`Operation*`; keys drop environmentId, `Operation.method` is `HttpMethod`, and mock identity is `(statusCode, mediaType, exampleName)`, including `loadMockResponse(key, statusCode, mediaType, exampleName)`. Handle Failure/Sequence in exhaustive state branches. Legacy operation selections reset once at schema 2; the global toggle survives. ([#144](https://github.com/worldline/devview/pull/144))
+- NetworkMock: saved per-group search and State/Version/Method/Tag filters plus sorting (including Mocked first), active counts, wrapping paths, quiet Network labels, theme-aware status colors and animated lists. `Operation.version` is display-only; sorting now lives in the filter panel. ([#119](https://github.com/worldline/devview/pull/119), [#165](https://github.com/worldline/devview/pull/165))
+- NetworkMock: compact Responses/Failures operation sheets with direct network selection/search and inspect-without-selecting Details. Full-screen details provide Compare, Copy original body and Use/In use; full-screen sequence editing retains unresolved drafts. Reset all requires confirmation; configuration and recovery controls scroll at narrow sizes. ([#165](https://github.com/worldline/devview/pull/165), [#167](https://github.com/worldline/devview/pull/167))
+- Console: read-only history with fresh recording identities; log through `ConsoleLogger.log()`. Persisted tag/message exclusions reject noise before buffering, merge device edits with host defaults and load before capture. Disabling rules admits future matches only, without deleting retained history; Clear filters disables rules and Reset restores current defaults. ([#163](https://github.com/worldline/devview/pull/163))
+- FeatureFlip: labelled Remote/Off/On overrides and separate remote value; local flags retain switches. Saved search/Type/State filters show counts and recovery actions; override writes persist in click order. ([#160](https://github.com/worldline/devview/pull/160))
+- DevView: destination-owned top bars transition with content, labelled accessible actions/tooltips and measured bottom insets. Animated home tiles use host-theme colors with explicit overrides supported; headings/subtitles, names/icons and dividers are clearer. ([#159](https://github.com/worldline/devview/pull/159))
+- NetworkMock diagnostics use gated [Kermit](https://github.com/touchlab/Kermit), tag `DevViewNetworkMock`, without response bodies. Runtime dependencies include Ktor 3.6.0 and Kermit 2.2.0. ([#71](https://github.com/worldline/devview/pull/71), by [Renovate](https://github.com/apps/renovate))
+
+### Removed
+- **Breaking — built-in UI:** Analytics/FeatureFlip/NetworkMock/TimeCapsule screens and built-in NetworkMock view models are internal or removed; ConsoleScreen is also internal. Register modules with `rememberModules` and render `DevView`, not standalone built-in screens. `NetworkMockDestination.Endpoint` and endpoint UI types are removed; use core repositories for runtime configuration. `MockHttpClientCall` is internal.
+- **Breaking — logger/custom-module API:** removed `LocalAnalytics`, prerelease `LocalConsoleLogs` and mutable history writes; submit through `AnalyticsLogger.log()`/`ConsoleLogger.log()`. Analytics copies parameters and assigns recording UUIDs without changing value equality. Toolbar action/menu require `label`, action callbacks receive displayed `NavKey`; fixed `Section.containerColor`/`contentColor` and `ModulePosition` are removed, with module defaults now `Color.Unspecified`.
+- **Breaking — TimeCapsule:** `subtitle` is inserted between `label` and `maxEntries`; migrate positional calls to named `maxEntries`.
+
+### Fixed
+- NetworkMock: retained module sessions serialize writes and preserve selections/drafts across overlay hiding/host recreation. Failed writes offer Retry/Cancel and block conflicting actions. Revisions prevent stale sequence writes across repositories; concurrent consumption follows commit order, cancellation leaves uncommitted steps unconsumed and retries apply probability/delay at most once. Selected-mock/state-persistence failures do not fall back to real networking; superseded loads retry fresh state. Unmatched requests, Network selections and unavailable configurations still pass through. ([#167](https://github.com/worldline/devview/pull/167))
+- NetworkMock: pretty-print valid JSON for preview/diff without changing served/copied bodies; malformed/non-JSON bodies stay unchanged. Lazy unwrapped panes scroll as a whole; wide Unicode lines remain reachable, diff caches survive recomposition and recovery remains reachable with long errors. ([#157](https://github.com/worldline/devview/pull/157), [#167](https://github.com/worldline/devview/pull/167))
+- DevView: navigation uses the intended entry view model. Initialization effects remain after once-only DataStore setup, cancel on removal and restart on re-entry. Filtering out a displayed module returns Home/discards its entry draft, not its registered session; navigation checks pending writes at action time. ([#113](https://github.com/worldline/devview/pull/113))
+- Analytics/Console: saved search, filters and inspection survive navigation; stable recording IDs prevent stale detail/anchor matches. Analytics counts use filtered results, empty searches remain recoverable and time windows refresh every five seconds. Console follows arrivals at capacity, restores paused row offsets after exclusions load, serializes clear/reconfiguration/capture lifetimes and cancels idle native readers cleanly. Both themes have improved severity/status label contrast. ([#161](https://github.com/worldline/devview/pull/161), [#163](https://github.com/worldline/devview/pull/163), [#167](https://github.com/worldline/devview/pull/167))
+- FeatureFlip: independent per-feature retry preserves previous values after failure; newer choices supersede old failures and stale retries cannot overwrite them. Restored type filters remain active when registered types change. ([#167](https://github.com/worldline/devview/pull/167))
+- TimeCapsule: only earlier entries offer Restore; expand controls have 48dp targets and saved expansion IDs prune on eviction/Clear. Selection-only restore avoids replacing text; bare-label quotes survive. ([#164](https://github.com/worldline/devview/pull/164), [#146](https://github.com/worldline/devview/pull/146), [#167](https://github.com/worldline/devview/pull/167))
+- Sample: accessible labelled/inset-safe sections, theme-correct Android system bars, once-per-composition analytics seeding and cancellation-safe network results. ([#166](https://github.com/worldline/devview/pull/166))
+
+<details>
+<summary>Prerelease history</summary>
+
 ## [0.2.0-alpha08] - 2026-11-17
 
 ### Added
@@ -409,6 +445,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Callers passing `maxEntries` positionally must switch to a named argument.
   (`devview-timecapsule`)
 
+</details>
+
 ## [0.1.5] - 2026-09-08
 
 ### Added
@@ -517,7 +555,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added and expanded unit test coverage for all primary `devview-*` modules.
 - Added Konsist architecture enforcement tests and Kover coverage reporting across the module set.
 
-[Unreleased]: https://github.com/worldline/DevView/compare/0.2.0-alpha08...HEAD
+[Unreleased]: https://github.com/worldline/DevView/compare/0.2.0...HEAD
+[0.2.0]: https://github.com/worldline/DevView/compare/0.1.5...0.2.0
 [0.2.0-alpha08]: https://github.com/worldline/DevView/compare/0.2.0-alpha07...0.2.0-alpha08
 [0.2.0-alpha07]: https://github.com/worldline/DevView/compare/0.2.0-alpha06...0.2.0-alpha07
 [0.2.0-alpha06]: https://github.com/worldline/DevView/compare/0.2.0-alpha05...0.2.0-alpha06

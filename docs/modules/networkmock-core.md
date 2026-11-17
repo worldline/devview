@@ -195,9 +195,9 @@ media type key under `responses.<code>.content` (e.g. `application/json`) become
 ```
 
 Like [query parameters](#request-matching), a header's literal `example` value is the only field
-read — no `schema` resolution. `Content-Type` defaults to `application/json` when a response
-declares no content at all; a spec can still override it explicitly by declaring its own
-`Content-Type` entry under `headers`, which wins over the media-type-derived default.
+read — no `schema` resolution. A response without `content` exposes an empty-body `default`
+variant and omits the media-type-derived `Content-Type`. Declared headers are retained; an
+explicit `Content-Type` entry under `headers` overrides any media-type-derived value.
 
 ### `$ref` resolution
 

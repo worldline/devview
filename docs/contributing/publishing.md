@@ -11,7 +11,10 @@ The publish pipeline is already wired:
 - **Signing**: all artifacts are GPG-signed before upload (`RELEASE_SIGNING_ENABLED=true` in `gradle.properties`)
 - **Target**: the new [Maven Central Portal](https://central.sonatype.com) (`SONATYPE_HOST=CENTRAL_PORTAL`)
 
-You need to complete the five setup steps below once, then publishing is a single script call.
+Complete the five setup steps below once. Releases are then prepared with the
+[release-kotlin-library agent skill](https://github.com/chrisbanes/skills/tree/main/skills/release-kotlin-library)
+and published through the existing tag-triggered workflow. Main-branch deployment
+publishes only `-SNAPSHOT` versions.
 
 ---
 
@@ -129,26 +132,48 @@ The `publish.yml` workflow passes these to Gradle as `ORG_GRADLE_PROJECT_*` envi
 
 ---
 
-## Step 6: Run the Release
+## Step 6: Prepare and Approve the Release
 
-Ensure you are on `main` with a clean working tree, then run:
+Use `main` with a clean working tree and confirm the release version and next
+development version explicitly. In Pi, install the skill collection once:
 
-```bash
-python3 scripts/release.py 0.1.1 0.2.0-SNAPSHOT
+```powershell
+pi install git:github.com/chrisbanes/skills
 ```
 
-Works on any platform (Windows, macOS, Linux) — no bash required.
+Run `/reload`, then request preparation without publication, for example:
 
-The script does the following automatically:
+```text
+/skill:release-kotlin-library Prepare DevView 0.2.0 with next development version 0.3.0-SNAPSHOT. Do not push or publish.
+```
 
-1. Replaces `VERSION_NAME` in `gradle.properties` with `0.1.1`
-2. Snapshots each published module's `api/api.txt` to `api/0.1.1.txt`
-3. Inserts `## [0.1.1] - <today>` in `CHANGELOG.md` under `## Unreleased`
-4. Commits: `Prepare for release 0.1.1`
-5. Creates tag `0.1.1` — **this tag push triggers the publish workflow**
-6. Replaces `VERSION_NAME` with `0.2.0-SNAPSHOT`
-7. Commits: `Prepare next development version`
-8. Pushes both commits and the tag
+Preparation must cover the following repository-specific requirements:
+
+1. Reconcile root `CHANGELOG.md` against Git history. Stable notes cover all
+   surviving consumer-visible changes since the previous stable release, not
+   just the last alpha, beta or RC. Preserve original prerelease entries beneath
+   the stable summary in a `Prerelease history` details block.
+2. Run candidate-specific build, tests, Detekt and Konsist checks. Metalava
+   signature generation **and** compatibility must both pass before copying
+   each published module's `api/api.txt` to `api/<release-version>.txt`. Refresh
+   changed signatures before invoking the skill's preparation helper.
+3. Set `VERSION_NAME` to the release version and finalize the changelog heading.
+   Update `[Unreleased]` to compare the release tag with `HEAD`; a stable release
+   link compares the previous stable tag with the new stable tag.
+4. Update `docs/index.md`'s What's New summary from the stable notes, without
+   including prerelease history. Do not edit generated `docs/changelog.md`.
+5. Prepare a release commit and local bare version tag (for example `0.2.0`).
+   Keep helper configuration and verification adapters outside tracked files.
+   The helper does not update comparison links or the docs homepage for us.
+
+Review the actual notes or diff, release commit/tag, next development version,
+artifact coordinates and destination, publishing route and validation evidence.
+**Publication requires explicit approval of those prepared details.** Only then
+push the approved release commit and tag using the skill's tag-CI route.
+
+Pushing the tag starts publication; do not run `gradlew publish` locally as well.
+Keep the release state until the workflow, Maven artifacts and remote tag have
+been verified. Only then commit and push the agreed next `-SNAPSHOT` version.
 
 ---
 
@@ -158,7 +183,12 @@ The script does the following automatically:
 2. The jobs run in order: `build`, `detekt`, `konsist` (parallel) → `publish` → `github-release`
 3. When `publish` succeeds, open [https://central.sonatype.com](https://central.sonatype.com) → **Deployments** — your deployment appears there
 4. Artifacts propagate to the public Maven Central search at [https://central.sonatype.com/search](https://central.sonatype.com/search) within 15–30 minutes
-5. The `github-release` job automatically creates a GitHub Release with generated release notes
+5. Verify the remote tag resolves to the approved release commit and every expected
+   artifact/version is available from Maven Central, including platform publications.
+   A successful upload alone is not proof that artifacts are available.
+6. The `github-release` job automatically creates a GitHub Release with generated
+   notes. Read it back and align its body with the curated changelog release notes.
+   An unknown or partial publication result requires inspection, not a blind retry.
 
 ---
 

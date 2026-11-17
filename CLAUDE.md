@@ -135,7 +135,7 @@ Individual commits use **gitmoji** format: `:emoji: message` (e.g. `:fire: Remov
 
 ## Publishing
 
-Library group: `com.worldline.devview`. Version and Sonatype config are in `gradle.properties`. Publishing is handled by the `publish.yml` GitHub Actions workflow and `scripts/release.py`.
+Library group: `com.worldline.devview`. Version and Sonatype config are in `gradle.properties`. Prepare releases with the `release-kotlin-library` agent skill; see `docs/contributing/publishing.md`. Publishing remains tag-driven through `publish.yml`. Do not push a release tag before approval of the prepared release, or advance the next development version before verifying publication.
 
 ## Changelog
 

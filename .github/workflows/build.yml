@@ -322,7 +322,12 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Publish snapshot to Maven Central
-        run: ./gradlew publish --no-configuration-cache
+        run: |
+          if grep -Eq '^VERSION_NAME=.+-SNAPSHOT$' gradle.properties; then
+            ./gradlew publish --no-configuration-cache
+          else
+            echo "Skipping snapshot publication: VERSION_NAME is not a snapshot."
+          fi
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
