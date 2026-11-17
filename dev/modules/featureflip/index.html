@@ -999,6 +999,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#module-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Module identity
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#controls-and-filters" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2361,6 +2372,10 @@
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="p">)</span>
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">}</span>
 </span></code></pre></div>
+<h2 id="module-identity">Module identity</h2>
+<p><code>FeatureFlip</code> supplies its built-in <code>moduleName</code>, <code>subtitle</code> and <code>icon</code> for Home. Register the module
+and provide <code>LocalFeatureHandler</code>; its screen is internal. See the <a href="../../guides/theming/">theming guide</a>
+for shared appearance and custom-module identity.</p>
 <h2 id="controls-and-filters">Controls and filters</h2>
 <p>Local flags use a named on/off switch. Remote flags use Material3 segmented buttons
 labelled <strong>Remote</strong>, <strong>Off</strong> and <strong>On</strong>, with supporting text showing the remote value.
@@ -2374,7 +2389,9 @@ collapsed. <strong>Clear filters</strong> resets the chips; the no-results actio
 search and filters. Search, chip choices and panel visibility survive saved-state
 restoration, including type filters when the registered flags change. Flag values continue to persist in DataStore.</p>
 <p>Changes are saved in click order. If a save fails, the persisted selection stays
-unchanged and the screen offers <strong>Retry</strong> instead of crashing the host app.</p>
+unchanged and the screen offers <strong>Retry</strong> for that feature instead of crashing the host app.
+Changing another feature does not discard the failed feature’s retry. A newer choice for
+the same feature supersedes its older failed choice; a stale Retry cannot overwrite it.</p>
 <h2 id="usage">Usage</h2>
 <ul>
 <li>Use <code>FeatureHandler</code> to manage features programmatically.</li>

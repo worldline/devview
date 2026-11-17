@@ -1015,6 +1015,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#module-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Module identity
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#consolelogger" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2362,6 +2373,10 @@ firehose can't grow memory unbounded.</p>
 </span></code></pre></div>
 <p>Set <code>captureNativeConsole = false</code> to disable the native tail and only show entries logged
 manually via <code>ConsoleLogger.log()</code> or <code>DevViewLogWriter</code>.</p>
+<h3 id="module-identity">Module identity</h3>
+<p><code>Console()</code> supplies its built-in <code>moduleName</code>, <code>subtitle</code> and <code>icon</code> for Home. Registration owns
+its internal screen and capture lifetime. See the <a href="../../guides/theming/">theming guide</a> for
+shared appearance and custom-module identity.</p>
 <h3 id="consolelogger"><code>ConsoleLogger</code></h3>
 <p>The log sink, in the same shape as <code>AnalyticsLogger</code>:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">public</span><span class="w"> </span><span class="kd">object</span><span class="w"> </span><span class="nc">ConsoleLogger</span><span class="w"> </span><span class="p">{</span>
@@ -2376,7 +2391,10 @@ inside <code>remember</code>. Submit new entries through <code>log()</code>; eac
 UUID, separate from value equality. <code>LocalConsoleLogs</code> has been removed.</p>
 <p>Console content is internal and supplied by module registration. Render <code>DevView</code> and open
 Console; do not call its screen directly. Search, levels, expanded rows and follow mode
-survive saved-state restoration. Eviction and Clear prune expansion; filtering does not.
+survive saved-state restoration. Paused inspection restores the retained row and its pixel
+offset after saved noise rules load, even when logs arrive while Console is closed. If the
+anchor has been evicted or filtered out, it starts at the newest matching row but remains
+paused until you choose Resume. Eviction and Clear prune expansion; filtering does not.
 Capacity must be between 1 and <code>Int.MAX_VALUE - 1</code>; <code>Int.MAX_VALUE</code> would create an
 unlimited channel and is rejected.</p>
 <h3 id="noise-exclusions">Noise exclusions</h3>

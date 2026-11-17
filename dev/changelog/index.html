@@ -2039,7 +2039,18 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Unreleased">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-alpha08-2026-11-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        0.2.0-alpha08 - 2026-11-17
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.0-alpha08 - 2026-11-17">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2686,7 +2697,8 @@
 <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>,
 and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
-<h2 id="unreleased"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha07...HEAD">Unreleased</a></h2>
+<h2 id="unreleased"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha08...HEAD">Unreleased</a></h2>
+<h2 id="020-alpha08-2026-11-17"><a href="https://github.com/worldline/DevView/compare/0.2.0-alpha07...0.2.0-alpha08">0.2.0-alpha08</a> - 2026-11-17</h2>
 <h3 id="added">Added</h3>
 <ul>
 <li>Analytics: event details with string parameters, millisecond timestamps with timezone,
@@ -2759,6 +2771,8 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 </ul>
 <h3 id="removed">Removed</h3>
 <ul>
+<li><strong>Breaking</strong> NetworkMock: <code>NetworkMockViewModel</code> is internal, matching the built-in screen
+  boundary. Use module registration for UI and the core repositories for runtime configuration.</li>
 <li><strong>Breaking</strong> DevView: built-in <code>AnalyticsScreen</code>, <code>ConsoleScreen</code>, <code>FeatureFlipScreen</code>,
   <code>NetworkMockScreen</code> and <code>TimeCapsuleScreen</code> are internal. Register modules through
   <code>rememberModules</code> and render <code>DevView</code>; module registration owns all tool content.</li>
@@ -2771,6 +2785,17 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 </ul>
 <h3 id="fixed">Fixed</h3>
 <ul>
+<li>Docs: analytics integration no longer uses the removed <code>LocalAnalytics</code> provider, and module
+  identity documentation covers built-in names, subtitles and icons.</li>
+<li>TimeCapsule: eviction and Clear prune saved expansion IDs during the same recording.</li>
+<li>Console: paused inspection restores its row and pixel offset after saved noise rules load;
+  a missing anchor falls back to the newest matching row without resuming follow mode.</li>
+<li>FeatureFlip: failed saves retain independent per-feature retries. Newer choices supersede
+  older failures for the same flag, and stale Retry callbacks cannot overwrite them.</li>
+<li>NetworkMock: superseded response-load failures retry the latest selection without real-network
+  fallback.</li>
+<li>NetworkMock: long errors keep recovery actions visible, wide Unicode preview lines remain
+  horizontally reachable, and response comparisons retain their diff cache across recompositions.</li>
 <li>Sample: Android status/navigation icon appearance follows the Dark Mode flag, including
   the navigation-bar background on API 26–28. Sample analytics seed once per composition
   instead of on every recomposition; cancelled requests are not displayed as errors.</li>

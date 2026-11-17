@@ -2349,7 +2349,11 @@ The old <code>Section.containerColor</code> and <code>Section.contentColor</code
 use module overrides rather than a fixed section palette.
 Section headings use <code>displayName</code> and the host primary colour. Home tile container and icon
 colours animate when their resolved values change; the surrounding host theme is not animated.</p>
-<p>Layout, filter bars and empty states are shared across modules through the <a href="../ui-components/">UI kit</a>.</p>
+<p>Layout, filter bars and empty states are shared across modules through the <a href="../ui-components/">UI kit</a>.
+Built-in modules supply their own <code>moduleName</code>, <code>subtitle</code> and <code>icon</code> for Home; they are not screen
+adapters. Custom modules define these identity properties through <code>Module</code>. Registered
+built-in screens and ViewModels stay internal; public loggers and runtime configuration
+remain usable without exposing their UI lifecycle.</p>
 <h2 id="console-log-level-colors">Console Log Level Colors</h2>
 <p>Unlike most of DevView, the Console Logger module's per-<a href="../../modules/consolelogger/"><code>LogLevel</code></a>
 colors (a debug teal, a warning yellow, an error red, etc.) are <strong>not</strong> derived from
