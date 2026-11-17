@@ -155,7 +155,7 @@ When the metalava `api.txt` diff in a PR is non-empty, the PR must include corre
 
 ## graphify
 
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+Graphify generates a local knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships. The entire output directory is ignored and must not be committed; a fresh clone may not have a graph yet.
 
 Rules:
 - For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.

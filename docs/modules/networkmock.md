@@ -45,9 +45,10 @@ DevView(
     modules = modules
 )
 ```
-Open DevView → Network Mock. Tap an operation for quick radio choices, open a response
-with its labelled chevron for details/Compare/Copy body, or open the full-screen sequence
-builder. The registered module owns these destinations and its operation sheet; there is
+Open DevView → Network Mock. Tap an operation to see its configured behaviour, browse
+Responses or Failures and search response variants. Selecting a radio choice saves it;
+**Details** opens inspection/Compare/Copy body without selecting it. Build or edit a sequence
+in the full-screen builder. The registered module owns these destinations and its operation sheet; there is
 no public screen composable to add to host navigation.
 
 Selected mocks that are unavailable fail the request without real-network fallback. Missing

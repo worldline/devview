@@ -188,6 +188,8 @@ public fun DevViewApp() {
         MaterialTheme(
             colorScheme = colorScheme
         ) {
+            SystemBarsAppearance(darkTheme = darkMode)
+
             // Chosen here, alongside the MaterialTheme colorScheme above, rather than as
             // a Console constructor param: this stays reactive to the darkMode toggle,
             // and rememberModules() (where Console is constructed) runs before darkMode

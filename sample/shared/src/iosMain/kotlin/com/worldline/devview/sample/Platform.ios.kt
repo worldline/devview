@@ -2,6 +2,7 @@
 
 package com.worldline.devview.sample
 
+import androidx.compose.runtime.Composable
 import platform.UIKit.UIDevice
 
 public class IOSPlatform : Platform {
@@ -10,3 +11,8 @@ public class IOSPlatform : Platform {
 }
 
 public actual fun getPlatform(): Platform = IOSPlatform()
+
+@Composable
+internal actual fun SystemBarsAppearance(darkTheme: Boolean) {
+    // shortcut: iOS bars stay host-owned; wire appearance when the sample controller handles themes.
+}
