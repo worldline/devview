@@ -4,17 +4,18 @@ import com.worldline.devview.consolelogger.model.ConsoleLog
 import com.worldline.devview.consolelogger.model.LogLevel
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import kotlin.test.AfterTest
 import kotlin.test.Test
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 
 class ConsoleLoggerTest {
-
     @AfterTest
     fun tearDown() {
         ConsoleLogger.clear()
@@ -22,63 +23,117 @@ class ConsoleLoggerTest {
     }
 
     @Test
-    fun `log entries are drained into logs in order`() = runTest {
-        ConsoleLogger.configure(maxEntries = 10)
-        val job = launch { ConsoleLogger.collectInto() }
-
-        ConsoleLogger.log(log = testLog(message = "first"))
-        ConsoleLogger.log(log = testLog(message = "second"))
+    fun `recording repeats gets fresh IDs without changing value equality and snapshots do not change`() = runTest {
+        val job = launch { ConsoleLogger.collectInto(maxEntries = 10) }
+        val entry = testLog(message = "same")
+        ConsoleLogger.log(log = entry)
         advanceUntilIdle()
-
-        ConsoleLogger.logs.map { it.message } shouldContainExactly listOf("first", "second")
-        ConsoleLogger.hasLogs shouldBe true
-
+        val before = ConsoleLogger.logs
+        ConsoleLogger.log(log = entry)
+        advanceUntilIdle()
+        ConsoleLogger.logs shouldContainExactly listOf(entry, entry)
+        ConsoleLogger.logs.map { it.id }.distinct().size shouldBe 2
+        before.size shouldBe 1
         job.cancelAndJoin()
     }
 
     @Test
-    fun `oldest entries are evicted past maxEntries`() = runTest {
-        ConsoleLogger.configure(maxEntries = 2)
-        val job = launch { ConsoleLogger.collectInto() }
-
+    fun `pending entries survive initial configuration and shrinking keeps newest entries`() = runTest {
+        ConsoleLogger.configure(maxEntries = ConsoleLogger.DEFAULT_MAX_ENTRIES)
         ConsoleLogger.log(log = testLog(message = "first"))
         ConsoleLogger.log(log = testLog(message = "second"))
         ConsoleLogger.log(log = testLog(message = "third"))
+        ConsoleLogger.configure(maxEntries = ConsoleLogger.DEFAULT_MAX_ENTRIES)
+        val job = launch { ConsoleLogger.collectInto(maxEntries = 2) }
         advanceUntilIdle()
-
-        ConsoleLogger.logs shouldHaveSize 2
         ConsoleLogger.logs.map { it.message } shouldContainExactly listOf("second", "third")
-
         job.cancelAndJoin()
     }
 
     @Test
-    fun `clear removes all logged entries`() = runTest {
-        ConsoleLogger.configure(maxEntries = 10)
+    fun `queue overflow and retained history eviction keep newest entries`() = runTest {
+        ConsoleLogger.configure(maxEntries = 2)
+        (1..3).forEach { ConsoleLogger.log(log = testLog(message = "$it")) }
         val job = launch { ConsoleLogger.collectInto() }
-
-        ConsoleLogger.log(log = testLog(message = "only"))
         advanceUntilIdle()
-
-        ConsoleLogger.clear()
-
-        ConsoleLogger.hasLogs shouldBe false
-        ConsoleLogger.logs shouldHaveSize 0
-
+        ConsoleLogger.logs.map { it.message } shouldContainExactly listOf("2", "3")
+        ConsoleLogger.log(log = testLog(message = "4"))
+        advanceUntilIdle()
+        ConsoleLogger.logs.map { it.message } shouldContainExactly listOf("3", "4")
         job.cancelAndJoin()
     }
 
     @Test
-    fun `configure rejects non-positive maxEntries`() {
-        shouldThrow<IllegalArgumentException> {
-            ConsoleLogger.configure(maxEntries = 0)
+    fun `clear discards pending entries and permits new entries`() = runTest {
+        ConsoleLogger.configure(maxEntries = 10)
+        ConsoleLogger.log(log = testLog(message = "pending"))
+        ConsoleLogger.clear()
+        val job = launch { ConsoleLogger.collectInto() }
+        advanceUntilIdle()
+        ConsoleLogger.hasLogs shouldBe false
+        ConsoleLogger.log(log = testLog(message = "retained"))
+        advanceUntilIdle()
+        ConsoleLogger.clear()
+        ConsoleLogger.log(log = testLog(message = "new"))
+        advanceUntilIdle()
+        ConsoleLogger.logs.map { it.message } shouldContainExactly listOf("new")
+        job.cancelAndJoin()
+    }
+
+    @Test
+    fun `cancellation preserves queue and next owner trims history with one capture active`() = runTest {
+        var activeCaptures = 0
+        var maximumCaptures = 0
+        val capture: suspend () -> Unit = {
+            activeCaptures++
+            maximumCaptures = maxOf(maximumCaptures, activeCaptures)
+            try {
+                awaitCancellation()
+            } finally {
+                activeCaptures--
+            }
+        }
+        val first = launch { ConsoleLogger.collectInto(maxEntries = 3, capture = capture) }
+        (1..3).forEach { ConsoleLogger.log(log = testLog(message = "$it")) }
+        advanceUntilIdle()
+        val second = launch { ConsoleLogger.collectInto(maxEntries = 2, capture = capture) }
+        advanceUntilIdle()
+        activeCaptures shouldBe 1
+        first.cancelAndJoin()
+        advanceUntilIdle()
+        ConsoleLogger.logs.map { it.message } shouldContainExactly listOf("2", "3")
+        second.cancelAndJoin()
+        ConsoleLogger.log(log = testLog(message = "between lifetimes"))
+        val third = launch { ConsoleLogger.collectInto(maxEntries = 2, capture = capture) }
+        advanceUntilIdle()
+        ConsoleLogger.logs.last().message shouldBe "between lifetimes"
+        maximumCaptures shouldBe 1
+        third.cancelAndJoin()
+        activeCaptures shouldBe 0
+    }
+
+    @Test
+    fun `configure rejects non-positive and unlimited maxEntries`() {
+        listOf(0, -1, Int.MAX_VALUE).forEach { capacity ->
+            shouldThrow<IllegalArgumentException> { ConsoleLogger.configure(maxEntries = capacity) }
         }
     }
 
+    @Test
+    fun `cancelled collector does not continue draining a nonempty queue`() = runTest {
+        lateinit var collector: Job
+        collector = launch(start = CoroutineStart.LAZY) {
+            ConsoleLogger.collectInto(capture = {
+                (1..10).forEach { ConsoleLogger.log(log = testLog(message = "$it")) }
+                collector.cancel()
+            })
+        }
+        collector.start()
+        collector.join()
+        ConsoleLogger.hasLogs shouldBe false
+    }
+
     private fun testLog(message: String): ConsoleLog = ConsoleLog(
-        level = LogLevel.INFO,
-        tag = "Test",
-        message = message,
-        timestamp = 1_700_000_000_000
+        level = LogLevel.INFO, tag = "Test", message = message, timestamp = 1_700_000_000_000
     )
 }

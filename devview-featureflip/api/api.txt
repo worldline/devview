@@ -27,10 +27,6 @@ package com.worldline.devview.featureflip {
     field public static final com.worldline.devview.featureflip.FeatureFlipDestination.Main INSTANCE;
   }
 
-  public final class FeatureFlipScreenKt {
-    method @KotlinOnly @androidx.compose.runtime.Composable public static void FeatureFlipScreen(optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding);
-  }
-
 }
 
 package com.worldline.devview.featureflip.model {

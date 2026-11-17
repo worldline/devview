@@ -1,126 +1,126 @@
 package com.worldline.devview.consolelogger
 
-import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.staticCompositionLocalOf
 import com.worldline.devview.consolelogger.model.ConsoleLog
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
- * Central sink for captured console log lines.
+ * Central sink for native console capture, manual entries and [DevViewLogWriter].
  *
- * Unlike [com.worldline.devview.analytics.AnalyticsLogger][analytics logger], which appends
- * hand-placed events directly to its backing list, [ConsoleLogger.log] writes into a
- * bounded, drop-oldest [Channel] instead. Native console capture (logcat on Android, a
- * stdout/stderr redirect on iOS) runs off the main thread and can emit far faster than the
- * UI can usefully render, so the channel both makes [log] safe to call from those capture
- * threads and lets the single collector in [collectInto] drain everything currently buffered
- * in one uninterrupted burst — Compose coalesces the resulting snapshot writes into a single
- * recomposition rather than one per line.
- *
- * The channel's capacity — and the retained history size — is configured once via
- * [configure], called by `Console.initModule()` before the collector starts.
+ * [log] enqueues into a bounded, drop-oldest channel from any thread. A single collector
+ * owned by [Console] drains that queue into bounded, observable history. Entries submitted
+ * before initialization or between collector lifetimes remain buffered within the limit.
  *
  * @see ConsoleLog
- * @see LocalConsoleLogs
  */
 public object ConsoleLogger {
-    /** Capacity used before [configure] has run, e.g. if [log] is called very early. */
+    /** Queue capacity before a [Console] module supplies its retained-history limit. */
     internal const val DEFAULT_MAX_ENTRIES: Int = 1_000
 
     private val consoleLogs = mutableStateListOf<ConsoleLog>()
-
+    private val lock = ConsoleLock()
+    private val collectorMutex = Mutex()
     private var maxEntries: Int = DEFAULT_MAX_ENTRIES
-    private var channel: Channel<ConsoleLog> = newChannel(capacity = DEFAULT_MAX_ENTRIES)
+    private var generation: Long = 0
+    private var channel = newChannel(capacity = DEFAULT_MAX_ENTRIES)
 
     /**
-     * Appends a new console log line.
+     * Records an entry with a fresh internal occurrence ID, even when submitted repeatedly.
      *
-     * Safe to call from any thread, including the background thread(s) driving native
-     * console capture. If the channel is full, the oldest buffered-but-not-yet-drained
-     * entry is dropped in favor of this one.
+     * Safe from any thread. If the pending queue is full, its oldest entry is dropped.
      *
-     * @param log The console log entry to append.
+     * @param log The console entry to record.
      */
     public fun log(log: ConsoleLog) {
-        channel.trySend(element = log)
+        val recorded = log.copy()
+        lock.withLock {
+            channel.trySend(
+                element = QueuedLog(log = recorded, generation = generation)
+            )
+        }
     }
 
-    /**
-     * Clears all stored console logs.
-     *
-     * This method is intended for internal use by the DevView framework.
-     */
+    /** Clears retained, pending and previously received entries; subsequent logs still arrive. */
     internal fun clear() {
-        consoleLogs.clear()
+        lock.withLock {
+            generation++
+            while (channel.tryReceive().isSuccess) { /* Discard pending entries. */ }
+            consoleLogs.clear()
+        }
     }
 
-    /**
-     * (Re)configures the retained history size and the drop-oldest channel capacity.
-     *
-     * Must be called before [collectInto] starts collecting; calling it afterwards has no
-     * effect on the already-running collector.
-     */
+    /** Reconfigures between collector lifetimes, preserving pending entries and trimming history. */
     internal fun configure(maxEntries: Int) {
-        require(value = maxEntries > 0) { "maxEntries must be > 0, was $maxEntries" }
-        this.maxEntries = maxEntries
-        channel = newChannel(capacity = maxEntries)
+        require(value = maxEntries in 1 until Channel.UNLIMITED) {
+            "maxEntries must be between 1 and ${Channel.UNLIMITED - 1}, was $maxEntries"
+        }
+        lock.withLock {
+            if (this.maxEntries != maxEntries) {
+                val replacement = newChannel(capacity = maxEntries)
+                while (true) {
+                    val pending = channel.tryReceive().getOrNull() ?: break
+                    replacement.trySend(element = pending)
+                }
+                channel = replacement
+                this.maxEntries = maxEntries
+            }
+            while (consoleLogs.size > maxEntries) consoleLogs.removeAt(index = 0)
+        }
     }
 
-    /**
-     * Drains [log] entries as they arrive, evicting from the head once [maxEntries] is
-     * exceeded. Suspends until cancelled.
-     */
-    internal suspend fun collectInto() {
-        for (first in channel) {
-            appendBounded(log = first)
-            while (true) {
-                val next = channel.tryReceive().getOrNull() ?: break
-                appendBounded(log = next)
+    /** Owns configuration, native capture and draining until both child jobs finish cancelling. */
+    internal suspend fun collectInto(maxEntries: Int? = null, capture: suspend () -> Unit = {}) {
+        collectorMutex.withLock {
+            if (maxEntries != null) configure(maxEntries = maxEntries)
+            val source = lock.withLock { channel }
+            coroutineScope {
+                launch { capture() }
+                for (first in source) {
+                    currentCoroutineContext().ensureActive()
+                    appendBounded(entry = first)
+                    while (true) {
+                        currentCoroutineContext().ensureActive()
+                        val next = source.tryReceive().getOrNull() ?: break
+                        appendBounded(entry = next)
+                    }
+                }
             }
         }
     }
 
-    private fun appendBounded(log: ConsoleLog) {
-        if (consoleLogs.size >= maxEntries) {
-            consoleLogs.removeAt(index = 0)
+    private fun appendBounded(entry: QueuedLog) {
+        lock.withLock {
+            // Clear can run after receive but before this append.
+            if (entry.generation == generation) {
+                if (consoleLogs.size >= maxEntries) consoleLogs.removeAt(index = 0)
+                consoleLogs.add(element = entry.log)
+            }
         }
-        consoleLogs.add(element = log)
     }
 
     /**
-     * Returns a snapshot state list of all retained console logs, oldest first.
+     * Read-only snapshot of retained entries, oldest first.
      *
-     * This property provides reactive access to the logs, meaning any Compose UI observing
-     * this property will automatically recompose when logs are added or removed.
+     * Reading this property in composition observes history changes. Do not remember the
+     * returned snapshot: read it again to obtain new entries. Record through [log] instead
+     * of mutating history.
      */
-    public val logs: SnapshotStateList<ConsoleLog>
-        get() = consoleLogs
+    public val logs: List<ConsoleLog>
+        get() = consoleLogs.toList()
 
-    /**
-     * Indicates whether any console logs have been recorded.
-     */
+    /** Whether retained history contains any entries. */
     public val hasLogs: Boolean
         get() = consoleLogs.isNotEmpty()
 
-    private fun newChannel(capacity: Int): Channel<ConsoleLog> =
+    private fun newChannel(capacity: Int): Channel<QueuedLog> =
         Channel(capacity = capacity, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-}
 
-/**
- * CompositionLocal for providing console logs to Compose UI components.
- *
- * The DevView host wraps module content with
- * `CompositionLocalProvider(LocalConsoleLogs provides ConsoleLogger.logs)` before rendering
- * module destinations.
- *
- * @throws IllegalStateException if accessed without being provided in the Compose tree.
- *
- * @see ConsoleLogger
- */
-public val LocalConsoleLogs: ProvidableCompositionLocal<List<ConsoleLog>> =
-    staticCompositionLocalOf {
-        error(message = "No console logs provided.")
-    }
+    private data class QueuedLog(val log: ConsoleLog, val generation: Long)
+}

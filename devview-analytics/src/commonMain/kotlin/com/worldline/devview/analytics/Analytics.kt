@@ -35,20 +35,7 @@ import kotlinx.serialization.modules.PolymorphicModuleBuilder
  * @see Analytics
  */
 public sealed interface AnalyticsDestination : NavKey {
-    /**
-     * Main analytics dashboard screen destination.
-     *
-     * This destination displays the [AnalyticsScreen] component, which shows
-     * a tabular view of all logged analytics events with filtering and
-     * search capabilities.
-     *
-     * ## Navigation Example
-     * ```kotlin
-     * navController.navigate(AnalyticsDestination.Main)
-     * ```
-     *
-     * @see AnalyticsScreen
-     */
+    /** Searchable event list destination, rendered by the registered module. */
     @Serializable
     public data object Main : AnalyticsDestination
 
@@ -66,8 +53,8 @@ public sealed interface AnalyticsDestination : NavKey {
  *
  * ## Features
  * - Real-time analytics event logging
- * - Tabular display of events with timestamps
- * - Multiple event type support (SCREEN, EVENT, CUSTOM)
+ * - Newest-first event rows with timestamps and selectable details
+ * - Screen, action, lifecycle, performance and user event categories
  * - Thread-safe in-memory storage
  * - Reactive UI updates
  *
@@ -79,12 +66,10 @@ public sealed interface AnalyticsDestination : NavKey {
  *
  * ### Module Configuration
  * ```kotlin
- * val devView = DevView(
- *     modules = listOf(
- *         Analytics,
- *         // other modules...
- *     )
- * )
+ * val modules = rememberModules {
+ *     module(Analytics())
+ * }
+ * // Pass modules to DevView; registration supplies the tool content.
  * ```
  *
  * ### Logging Events
@@ -94,7 +79,7 @@ public sealed interface AnalyticsDestination : NavKey {
  *         tag = "user_action",
  *         screenClass = "HomeScreen",
  *         timestamp = System.currentTimeMillis(),
- *         type = AnalyticsLogType.EVENT
+ *         type = AnalyticsLogCategory.Action.Click
  *     )
  * )
  * ```
@@ -102,7 +87,6 @@ public sealed interface AnalyticsDestination : NavKey {
  * @see Module
  * @see Section.LOGGING
  * @see AnalyticsLogger
- * @see AnalyticsScreen
  */
 public class Analytics(
     public val highlightedLogType1: AnalyticsLogType? = Click,
@@ -186,7 +170,7 @@ public class Analytics(
         bottomPadding: Dp
     ) {
         entry<AnalyticsDestination.Main> {
-            AnalyticsListScreen(
+            AnalyticsScreen(
                 onEventClick = { event -> onNavigate(AnalyticsDestination.Detail(id = event.id)) },
                 modifier = Modifier
                     .fillMaxSize(),

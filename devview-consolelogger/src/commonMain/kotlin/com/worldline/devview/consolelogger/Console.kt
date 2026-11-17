@@ -17,11 +17,12 @@ import com.worldline.devview.core.Module
 import com.worldline.devview.core.ModuleDestinationActionPopup
 import com.worldline.devview.core.Section
 import com.worldline.devview.core.withActions
+import com.worldline.devview.utils.DataStoreDelegate
+import com.worldline.devview.utils.RequiresDataStore
 import kotlin.reflect.KClass
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
 
@@ -31,11 +32,7 @@ import kotlinx.serialization.modules.PolymorphicModuleBuilder
  * @see Console
  */
 public sealed interface ConsoleDestination : NavKey {
-    /**
-     * Main console log screen destination.
-     *
-     * @see ConsoleScreen
-     */
+    /** Console log destination, rendered by the registered module. */
     @Serializable
     public data object Main : ConsoleDestination
 }
@@ -53,6 +50,7 @@ public sealed interface ConsoleDestination : NavKey {
  * - Bounded, drop-oldest history (default 1000 entries) so a logcat firehose can't OOM the
  *   host app
  * - Per-[com.worldline.devview.consolelogger.model.LogLevel] filter chips and a text filter
+ * - Case-insensitive noise exclusions with device-persisted additions, removals and enabled states
  * - Optional [DevViewLogWriter] for routing Kermit-based logging into the same view
  *
  * ## Integration
@@ -68,15 +66,33 @@ public sealed interface ConsoleDestination : NavKey {
  *           output. Set to `false` to only receive entries logged manually via
  *           [ConsoleLogger.log] or [DevViewLogWriter].
  *
+ * @param defaultExcludedPatterns Host defaults matched against tags or messages. Append to
+ *        [DEFAULT_EXCLUDED_PATTERNS], replace the list, or pass an empty list. Blank patterns
+ *        are ignored and duplicates are merged without regard to case. Device edits are
+ *        merged with current defaults after app updates; Reset to defaults clears those edits.
+ *
  * @see Module
  * @see Section.LOGGING
  * @see ConsoleLogger
- * @see ConsoleScreen
  */
 public class Console(
     public val maxEntries: Int = ConsoleLogger.DEFAULT_MAX_ENTRIES,
-    public val captureNativeConsole: Boolean = true
-) : Module {
+    public val captureNativeConsole: Boolean = true,
+    defaultExcludedPatterns: List<String> = DEFAULT_EXCLUDED_PATTERNS
+) : Module,
+    RequiresDataStore {
+    /** Normalized host defaults; device edits affect visibility, never captured history. */
+    public val defaultExcludedPatterns: List<String> = normalizeConsolePatterns(
+        patterns = defaultExcludedPatterns
+    )
+
+    /** Preferences file containing device-specific noise filter edits, not console logs. */
+    override val dataStoreName: String = "console_datastore.preferences_pb"
+
+    /** Shared persistence initialized by `rememberModules` before the module starts. */
+    override val dataStoreDelegate: DataStoreDelegate
+        get() = sharedDataStoreDelegate
+
     /** Name displayed on the home screen and default destination toolbar. */
     override val moduleName: String = "Console"
 
@@ -124,22 +140,28 @@ public class Console(
         entry<ConsoleDestination.Main> {
             ConsoleScreen(
                 modifier = Modifier.fillMaxSize(),
-                bottomPadding = bottomPadding
+                bottomPadding = bottomPadding,
+                defaults = defaultExcludedPatterns,
+                dataStore = dataStoreDelegate.get()
             )
         }
     }
 
+    public companion object {
+        /** Minimal built-in exclusions. Hosts can append to or replace this list. */
+        public val DEFAULT_EXCLUDED_PATTERNS: List<String> = listOf(
+            "setRequestedFrameRate",
+            "setFrameRateCategory"
+        )
+
+        private val sharedDataStoreDelegate = DataStoreDelegate()
+    }
+
     @Composable
     override fun initModule() {
-        ConsoleLogger.configure(maxEntries = maxEntries)
-
-        LaunchedEffect(key1 = Unit) {
-            launch { ConsoleLogger.collectInto() }
-            if (captureNativeConsole) {
-                launch {
-                    // Isolate native capture failures from the log-drain job above: a
-                    // crash here (e.g. an OEM ROM blocking logcat) must not take down the
-                    // whole console. Cancellation itself must still propagate normally.
+        LaunchedEffect(key1 = maxEntries, key2 = captureNativeConsole) {
+            ConsoleLogger.collectInto(maxEntries = maxEntries) {
+                if (captureNativeConsole) {
                     @Suppress("TooGenericExceptionCaught")
                     try {
                         tailNativeConsole()

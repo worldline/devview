@@ -436,8 +436,11 @@ public interface Module {
     )
 
     /**
-     * Called once when the module is first registered in a Composable context
-     * via [rememberModules].
+     * Composed while the module is registered via [rememberModules].
+     *
+     * Use keyed Compose effects for ongoing work and `remember` for once-per-composition
+     * setup. Effects remain active on recomposition and are cancelled when the module
+     * leaves composition; initialization must not perform repeated side effects directly.
      *
      * Override this function to perform any Composable-context initialisation
      * this module requires — for example, setting up repositories or initialising

@@ -37,9 +37,5 @@ package com.worldline.devview.timecapsule {
     property public abstract kotlinx.coroutines.flow.StateFlow<S> state;
   }
 
-  public final class TimeCapsuleScreenKt {
-    method @KotlinOnly @androidx.compose.runtime.Composable public static void TimeCapsuleScreen(optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding);
-  }
-
 }
 

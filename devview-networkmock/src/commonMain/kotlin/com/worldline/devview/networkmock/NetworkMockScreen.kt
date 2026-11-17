@@ -87,9 +87,8 @@ import kotlinx.coroutines.flow.SharedFlow
  *   "Reload Config" toolbar action. Collected here to call [NetworkMockViewModel.reloadConfiguration],
  *   picking up edits to a spec file without restarting the app.
  * @param sortSharedFlow Shared flow emitted by [NetworkMock] when the user picks an entry from
- *   the "Sort" toolbar dropdown — each emission is an [OperationSort.label] string, not the
- *   (internal) [OperationSort] itself, since this is a public composable's parameter; see
- *   [NetworkMock]'s `onSortSelected` for why. Collected in [ContentState] (not here — sort is
+ *   the "Sort" toolbar dropdown. Each emission is an [OperationSort.label] string.
+ *   Collected in [ContentState] (not here — sort is
  *   per-tab, client-side state, never round-tripped through [NetworkMockViewModel]) to set the
  *   [OperationSort] for the currently visible spec tab directly.
  * @param viewModel The [NetworkMockViewModel] instance. Constructed and provided by
@@ -100,7 +99,7 @@ import kotlinx.coroutines.flow.SharedFlow
  *   Applied to the operation list so the last item is not obscured by system navigation bars.
  */
 @Composable
-public fun NetworkMockScreen(
+internal fun NetworkMockScreen(
     resetToNetworkSharedFlow: SharedFlow<Unit>,
     reloadConfigSharedFlow: SharedFlow<Unit>,
     sortSharedFlow: SharedFlow<String>,

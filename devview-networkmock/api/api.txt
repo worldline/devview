@@ -28,10 +28,6 @@ package com.worldline.devview.networkmock {
     field public static final com.worldline.devview.networkmock.NetworkMockDestination.Main INSTANCE;
   }
 
-  public final class NetworkMockScreenKt {
-    method @KotlinOnly @androidx.compose.runtime.Composable public static void NetworkMockScreen(kotlinx.coroutines.flow.SharedFlow<kotlin.Unit> resetToNetworkSharedFlow, kotlinx.coroutines.flow.SharedFlow<kotlin.Unit> reloadConfigSharedFlow, kotlinx.coroutines.flow.SharedFlow<java.lang.String> sortSharedFlow, com.worldline.devview.networkmock.viewmodel.NetworkMockViewModel viewModel, optional androidx.compose.ui.Modifier modifier, optional androidx.compose.ui.unit.Dp bottomPadding);
-  }
-
 }
 
 package com.worldline.devview.networkmock.model {

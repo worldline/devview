@@ -56,39 +56,24 @@ val newCheckout = Feature.RemoteFeature(
 
 ### Using the UI
 
+Register the module before creating its handler, then provide the handler above DevView:
+
 ```kotlin
-import androidx.compose.runtime.CompositionLocalProvider
-import com.worldline.devview.featureflip.FeatureFlipScreen
-import com.worldline.devview.featureflip.LocalFeatures
-
-@Composable
-fun MyApp() {
-    val features = remember {
-        listOf(
-            Feature.LocalFeature(
-                name = "dark_mode",
-                description = "Enable dark theme",
-                isEnabled = false
-            ),
-            Feature.RemoteFeature(
-                name = "new_feature",
-                description = "Our awesome new feature",
-                defaultRemoteValue = true,
-                state = FeatureState.REMOTE
-            )
-        )
-    }
-
-    CompositionLocalProvider(LocalFeatures provides features) {
-        FeatureFlipScreen(
-            onStateChange = { featureName, newState ->
-                // Handle state change
-                println("Feature '$featureName' changed to $newState")
-            }
-        )
-    }
+val modules = rememberModules {
+    module(FeatureFlip)
+}
+val handler = rememberFeatureHandler(features)
+CompositionLocalProvider(LocalFeatureHandler provides handler) {
+    DevView(
+        devViewIsOpen = isDevViewOpen,
+        closeDevView = { isDevViewOpen = false },
+        modules = modules
+    )
 }
 ```
+
+Choose how to present DevView in the host app. Feature Flip content is internal and supplied
+by registration; direct screen calls are not supported.
 
 ## Feature States
 
@@ -168,7 +153,7 @@ The module uses Jetpack DataStore (preferences) for persisting feature states:
 
 ## UI Components
 
-### FeatureFlipScreen
+### Feature Flip module
 
 The main screen component that displays all features with search and filter capabilities.
 
@@ -180,13 +165,14 @@ The main screen component that displays all features with search and filter capa
 
 ### Feature Controls
 
-Each feature item displays a **type label** ("Local" or "Remote") so the feature's origin is visible at a glance without relying solely on the control widget.
+Local flags use a switch. Remote flags use labelled segmented buttons and supporting text
+showing the remote value; rows do not repeat Local/Remote badges.
 
 - **Local Features**: Display a standard Material Switch
 - **Remote Features**: Display a tri-state segmented button:
-  - 🌐 Remote (cloud icon) - Use remote configuration
-  - ❌ Off (cancel icon) - Force feature off
-  - ✅ On (check icon) - Force feature on
+  - Remote — use remote configuration
+  - Off — force the feature off
+  - On — force the feature on
 
 Filter chips use **OR within a dimension, AND across dimensions** — selecting both LOCAL and REMOTE shows all features, while selecting LOCAL and ON narrows to enabled local features only. The LOCAL/REMOTE chips are hidden automatically when all features are the same type.
 
@@ -210,8 +196,8 @@ Filter chips use **OR within a dimension, AND across dimensions** — selecting 
 
 ### Composables
 
-- **`FeatureFlipScreen(onStateChange: (String, FeatureState) -> Unit, modifier: Modifier)`**: Main UI
-- **`LocalFeatures`**: CompositionLocal for providing features to the screen
+- **`rememberFeatureHandler(features)`**: Creates the handler after module registration
+- **`LocalFeatureHandler`**: Provides that handler to DevView and host content
 
 ## Example: Integration with Remote Config
 

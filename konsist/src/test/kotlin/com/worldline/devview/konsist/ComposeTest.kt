@@ -13,6 +13,7 @@ import io.kotest.core.spec.style.FunSpec
  *
  * Conventions:
  *  - Composables in `components` packages are `internal`
+ *  - Module screen composables are `internal`; only DevView is an integration entry point
  *  - `@Preview` composable functions are `private`
  *  - `PreviewParameterProvider` subclasses are `internal` and live in a `preview` package
  */
@@ -26,6 +27,20 @@ class ComposeTest :
                 .withPackage("..components..")
                 .assertFalse(
                     additionalMessage = "Composables in a 'components' package must be 'internal'"
+                ) { function ->
+                    function.hasPublicOrDefaultModifier
+                }
+        }
+
+        test(name = "Module screens are not public integration entry points") {
+            Konsist
+                .scopeFromProject()
+                .functions()
+                .withAnnotationOf(androidx.compose.runtime.Composable::class)
+                .withNameEndingWith("Screen")
+                .withPackage("com.worldline.devview..")
+                .assertFalse(
+                    additionalMessage = "Module screens belong to module registration, not the public API"
                 ) { function ->
                     function.hasPublicOrDefaultModifier
                 }

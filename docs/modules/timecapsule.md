@@ -82,7 +82,9 @@ restore internally. The existing overload and `TimeCapsuleOwner` contract are un
 
 ### `TimeCapsule`
 
-The DevView module. Registered with no arguments, like `FeatureFlip`:
+The DevView module. Its screen is internal and supplied by registration; integrators
+control how `DevView` is presented rather than composing `TimeCapsuleScreen` directly.
+Registered with no arguments, like `FeatureFlip`:
 
 ```kotlin
 val modules = rememberModules {

@@ -21,7 +21,9 @@ rememberModules {
 
 **`NetworkMockDestination`** — sealed nav key interface with exactly one destination, `Main` (the operation list). Prior to the sheet-based redesign there was also an `Endpoint(operationKey: OperationKey)` destination pushing a full detail screen — removed as a breaking change; see the operation sheet section below.
 
-**Public composable**: `NetworkMockScreen` (the operation list; internally also hosts `NetworkMockOperationSheet` when one is open). `NetworkMockOperationSheet`, `MockResponsePreviewPage`, and every component in `components/` are `internal`.
+**Internal UI**: `NetworkMockScreen` hosts the operation list and sheet. Integrators render
+DevView with the registered module, not a separate network screen. `NetworkMockOperationSheet`,
+`MockResponsePreviewPage`, and every component in `components/` are also `internal`.
 
 **Public ViewModel**: `NetworkMockViewModel` (constructed by `NetworkMock.registerContent` via the `viewModel { }` factory, scoped to the navigation entry). Owns both the operation list (`uiState`) and the operation sheet (`sheetState`, `openOperation()`, `closeSheet()`) — there is no separate ViewModel per screen since there's no separate screen.
 
@@ -139,12 +141,11 @@ Mock, Failure, and Sequence precede Network, with stable spec order within both 
 items use `animateItem()` so filter and sort changes animate.
 
 The flow crossing `NetworkMock` → `NetworkMockScreen` carries an `OperationSort.label: String`,
-not `OperationSort` itself: `NetworkMockScreen` is public API but `OperationSort` is deliberately
-`internal` (see "Search and filters live in the composable, not the ViewModel" above), and a
-public composable can't expose an internal type in its signature. `ContentState` maps the label
+not `OperationSort` itself. Both the screen and sort enum are now internal; this string flow
+is retained until the filter-panel sort migration. `ContentState` maps the label
 back to the enum entry via `OperationSort.entries.firstOrNull { it.label == label }`; both ends of
 this flow live in this module and share the same `OperationSort.label` values, so the label is a
-safe, internal-only protocol despite the public parameter type. Sort selection itself is stored
+module-local protocol. Sort selection itself is stored
 the same way as the version/method/tag filters — plain `mutableStateMapOf<String, OperationSort>`
 in `ContentState`, keyed by spec ID, never round-tripped through `NetworkMockViewModel`.
 
