@@ -47,7 +47,7 @@ On Windows, use `.\gradlew.bat` instead of `./gradlew`. Always append `-Pandroid
 
 **Docs (local preview):**
 ```shell
-pip install zensical==0.0.60
+pip install -r pip-requirements.txt
 zensical serve
 ```
 

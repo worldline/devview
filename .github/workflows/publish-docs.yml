@@ -107,6 +107,9 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git fetch origin gh-pages --depth=1 || true
 
+      - name: Check docs release formatting and cleanup
+        run: python scripts/test_delete_old_version_docs.py
+
       - name: Build docs
         env:
           DEVVIEW_VERSION: ${{ steps.docs.outputs.version }}

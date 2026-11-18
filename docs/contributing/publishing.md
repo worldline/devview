@@ -152,7 +152,8 @@ Preparation must cover the following repository-specific requirements:
 1. Reconcile root `CHANGELOG.md` against Git history. Stable notes cover all
    surviving consumer-visible changes since the previous stable release, not
    just the last alpha, beta or RC. Preserve original prerelease entries beneath
-   the stable summary in a `Prerelease history` details block.
+   the stable summary in a `Prerelease history` details block. Use
+   `<details markdown="1">` so Zensical renders the nested Markdown.
 2. Run candidate-specific build, tests, Detekt and Konsist checks. Metalava
    signature generation **and** compatibility must both pass before copying
    each published module's `api/api.txt` to `api/<release-version>.txt`. Refresh
@@ -161,7 +162,10 @@ Preparation must cover the following repository-specific requirements:
    Update `[Unreleased]` to compare the release tag with `HEAD`; a stable release
    link compares the previous stable tag with the new stable tag.
 4. Update `docs/index.md`'s What's New summary from the stable notes, without
-   including prerelease history. Do not edit generated `docs/changelog.md`.
+   including prerelease history. Keep section labels as complete bold Markdown
+   (for example `**Added**`) followed by a blank line before the list. Run
+   `python scripts/test_delete_old_version_docs.py` and inspect the built homepage,
+   not just the build exit status. Do not edit generated `docs/changelog.md`.
 5. Prepare a release commit and local bare version tag (for example `0.2.0`).
    Keep helper configuration and verification adapters outside tracked files.
    The helper does not update comparison links or the docs homepage for us.
@@ -191,6 +195,22 @@ been verified. Only then commit and push the agreed next `-SNAPSHOT` version.
    An unknown or partial publication result requires inspection, not a blind retry.
 
 ---
+
+## Documentation Corrections After Tagging
+
+Docs publication is separate from Maven publication. Fix documentation on `main`
+without moving the release tag or advancing the development version while Maven
+publication is unresolved. To rebuild an existing documentation version from the
+corrected source, dispatch **Publish docs** on `main` with version `0.2.0`, aliases
+`latest` and **Delete old docs versions** enabled. This updates the site only; it
+must not trigger another Maven upload.
+
+Cleanup keeps the newest documentation per major/minor line, plus versions holding
+`latest` or `dev`. A final version supersedes prereleases with the same numeric
+version, including alpha, beta, `rc` and `RC`. Non-release names such as `dev` are
+preserved. Deleting prerelease documentation removes its old URLs, not Git tags or
+changelog history. Original prerelease changelog entries remain beneath the stable
+summary.
 
 ## Troubleshooting
 

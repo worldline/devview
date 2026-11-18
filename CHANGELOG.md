@@ -42,7 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - TimeCapsule: only earlier entries offer Restore; expand controls have 48dp targets and saved expansion IDs prune on eviction/Clear. Selection-only restore avoids replacing text; bare-label quotes survive. ([#164](https://github.com/worldline/devview/pull/164), [#146](https://github.com/worldline/devview/pull/146), [#167](https://github.com/worldline/devview/pull/167))
 - Sample: accessible labelled/inset-safe sections, theme-correct Android system bars, once-per-composition analytics seeding and cancellation-safe network results. ([#166](https://github.com/worldline/devview/pull/166))
 
-<details>
+<details markdown="1">
 <summary>Prerelease history</summary>
 
 ## [0.2.0-alpha08] - 2026-11-17
