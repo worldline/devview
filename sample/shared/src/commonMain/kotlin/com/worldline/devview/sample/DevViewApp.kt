@@ -1,17 +1,25 @@
 package com.worldline.devview.sample
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
 import co.touchlab.kermit.Logger
 import com.worldline.devview.DevView
 import com.worldline.devview.analytics.Analytics
@@ -29,9 +37,18 @@ import com.worldline.devview.featureflip.model.FeatureState
 import com.worldline.devview.featureflip.model.LocalFeatureHandler
 import com.worldline.devview.featureflip.model.rememberFeatureHandler
 import com.worldline.devview.networkmock.NetworkMock
+import com.worldline.devview.sample.onetimeflags.OneTimeFlag
+import com.worldline.devview.sample.onetimeflags.OneTimeFlags
 import com.worldline.devview.timecapsule.TimeCapsule
+import com.worldline.devview.utils.rememberDataStore
 import devview_root.sample.network.generated.resources.Res
 import kotlin.time.Clock
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.launch
+import okio.IOException
+
+// Keep the app store alive across Activity recreation: remember alone only survives recomposition.
+private var appPreferencesInstance: DataStore<Preferences>? = null
 
 /**
  * Main DevView-integrated app composable.
@@ -42,11 +59,17 @@ import kotlin.time.Clock
  * - Analytics logging (Analytics module)
  * - State history recording and restore (TimeCapsule module)
  * - Network mocking (NetworkMock module)
+ * - One-time UI flags (custom module using app preferences)
  * - Theme management
  * - DevView overlay
  */
 @Composable
 public fun DevViewApp() {
+    val appPreferences = appPreferencesInstance
+        ?: rememberDataStore(
+            dataStoreName = "sample_app.preferences_pb"
+        ).also { appPreferencesInstance = it }
+
     // DevView modules configuration
     val modules = rememberModules {
         module(module = FeatureFlip)
@@ -63,6 +86,7 @@ public fun DevViewApp() {
             )
         )
         module(module = TestModule)
+        module(module = OneTimeFlags(dataStore = appPreferences))
     }
 
     val darkTheme = isSystemInDarkTheme()
@@ -204,6 +228,8 @@ public fun DevViewApp() {
                 // Main app content
                 App(openDevView = { devViewOpen = it })
 
+                SampleRatingPrompt(dataStore = appPreferences, devViewOpen = devViewOpen)
+
                 // DevView overlay
                 DevView(
                     devViewIsOpen = devViewOpen,
@@ -212,6 +238,40 @@ public fun DevViewApp() {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun SampleRatingPrompt(dataStore: DataStore<Preferences>, devViewOpen: Boolean) {
+    val flow = remember(key1 = dataStore, key2 = devViewOpen) {
+        dataStore.data.catch { error ->
+            if (error !is IOException) throw error
+            Logger.e(throwable = error) { "Could not read rating prompt flag" }
+        }
+    }
+    val preferences by flow.collectAsState(initial = null)
+    var dismissed by remember(key1 = preferences?.get(key = OneTimeFlag.RATING_PROMPT_SHOWN.key)) {
+        mutableStateOf(value = false)
+    }
+    val scope = rememberCoroutineScope()
+    val dismiss: () -> Unit = {
+        dismissed = true
+        scope.launch {
+            try {
+                dataStore.edit { it[OneTimeFlag.RATING_PROMPT_SHOWN.key] = true }
+            } catch (error: IOException) {
+                Logger.e(throwable = error) { "Could not save rating prompt flag" }
+            }
+        }
+    }
+    val showPrompt = preferences?.let { it[OneTimeFlag.RATING_PROMPT_SHOWN.key] != true } == true
+    if (showPrompt && !devViewOpen && !dismissed) {
+        AlertDialog(
+            onDismissRequest = dismiss,
+            title = { Text(text = "Enjoying the app?") },
+            text = { Text(text = "This is a sample prompt, not the Play Store review API.") },
+            confirmButton = { TextButton(onClick = dismiss) { Text(text = "Not now") } }
+        )
     }
 }
 
