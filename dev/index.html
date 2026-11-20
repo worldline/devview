@@ -24,7 +24,7 @@
       
       
       <link rel="icon" href="./assets/branding/devview-icon-mono.svg">
-      <meta name="generator" content="zensical-0.0.70">
+      <meta name="generator" content="zensical-0.1.2">
     
     
       
@@ -35,7 +35,7 @@
       
         
       
-      <link rel="stylesheet" href="./assets/stylesheets/modern/main.e442bf79.min.css">
+      <link rel="stylesheet" href="./assets/stylesheets/modern/main.ebb7f775.min.css">
       
         
           
@@ -108,9 +108,10 @@
   <img src="./assets/branding/devview-icon-light.svg" alt="DevView">
 
     </a>
-    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+    <label class="md-header__button md-icon" for="__drawer">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+      <span class="md-visually-hidden">Navigation</span>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -172,9 +173,10 @@
     
       
       
-        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+        <label class="md-header__button md-icon" for="__search">
           
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+          <span class="md-visually-hidden">Search</span>
         </label>
         <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
   <button type="button" class="md-search__button">
@@ -598,10 +600,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#v020-alpha08" class="md-nav__link">
+  <a href="#v020" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        v0.2.0-alpha08
+        v0.2.0
       </span>
     </span>
   </a>
@@ -2333,52 +2335,43 @@
 </div>
 <hr />
 <h2 id="whats-new">What's New</h2>
-<h3 id="v020-alpha08">v0.2.0-alpha08</h3>
+<h3 id="v020">v0.2.0</h3>
 <p><strong>Added</strong></p>
 <ul>
-<li>Analytics: event details with string parameters, millisecond timestamps with timezone, selectable text and Copy event.</li>
-<li>DevView: public UI kit in <code>com.worldline.devview.ui</code> with section headings, grouped items, empty states, filter bars and a multiplatform copy callback; <code>Section.displayName</code> for headings.</li>
-<li>NetworkMock: "Mocked first" sort puts Mock, Failure, and Sequence operations before Network, preserving spec order within each group.</li>
+<li>Console: new <code>devview-consolelogger</code> module captures Android logcat and iOS stdout/stderr on-device, with optional <code>DevViewLogWriter</code> integration for <a href="https://github.com/touchlab/Kermit">Kermit</a>, configurable severity colors, search/level filters, selectable expandable messages, Copy log and follow/pause inspection. Untethered iOS <code>NSLog</code>/<code>os_log</code> requires writer integration. (<a href="https://github.com/worldline/devview/pull/109">#109</a>, <a href="https://github.com/worldline/devview/pull/163">#163</a>)</li>
+<li>NetworkMock: reload specs without restarting, lazily load response bodies, resolve chained/document-relative references with cycle and component-section validation, synthesize supported schema placeholders, and match required top-level request fields/discriminator values. Body matching only inspects already-buffered Ktor content; this is not full JSON Schema validation.</li>
+<li>NetworkMock: serve declared headers/media types, retain distinct media variants, support bodyless responses and OpenAPI 3.1 type arrays/null enum values, and resolve wildcard media types to concrete Content-Type. (<a href="https://github.com/worldline/devview/pull/138">#138</a>, <a href="https://github.com/worldline/devview/pull/141">#141</a>, <a href="https://github.com/worldline/devview/pull/144">#144</a>)</li>
+<li>NetworkMock: deterministic Timeout/Connection Refused, operation-level <code>x-devview.failureRate</code>, and persisted response sequences advancing per request and retaining the final step. Sequences support repeated steps, reorder/remove, editing/restart and at least two steps in the builder; <code>NetworkMockConfig.random</code> supports deterministic probability tests.</li>
+<li>Analytics: string event parameters and details with millisecond timestamps/timezone, selectable text and Copy event. (<a href="https://github.com/worldline/devview/pull/161">#161</a>)</li>
+<li>TimeCapsule: connected timeline, state-change summaries/highlighting, timestamps and owner subtitle; an additive <code>TimeCapsuleEffect</code> overload records detached <code>TextFieldState</code> text/selection and restores them alongside screen state. (<a href="https://github.com/worldline/devview/pull/111">#111</a>, <a href="https://github.com/worldline/devview/pull/146">#146</a>)</li>
+<li>DevView: public UI kit in <code>com.worldline.devview.ui</code>, <code>Section.displayName</code> and labelled custom-module toolbar menus. (<a href="https://github.com/worldline/devview/pull/159">#159</a>)</li>
 </ul>
 <p><strong>Changed</strong></p>
 <ul>
-<li>Sample: labelled Compose, TimeCapsule and Network sections use one primary Open DevView action, spaced secondary controls, scrollable inset-safe content and a monospace result card. Counter controls have explicit accessible names, and section titles expose heading semantics.</li>
-<li>NetworkMock: the shared search/filter bar includes per-API-group Sort, State, Version, Method, and Tag selections with saved UI state and an active count. Clear filters keeps search; empty results offer Clear search and filters. Network is quiet text, and dark status chips use deep containers with light labels; both built-in palettes pass 4.5:1 label contrast tests.</li>
-<li>TimeCapsule: only earlier entries offer Restore, expand controls have standard 48dp targets, expansion survives screen recreation during the same recording, and empty history uses the shared guidance component. The existing timeline rail and change highlighting are preserved.</li>
-<li>Console: compact severity/time/tag rows expand to selectable multiline messages with horizontal scrolling and Copy log. Search and collapsible level filters retain UI state; the badge counts hidden levels and enabled noise rules. Newest-first rows follow the latest matching entry’s start at the top; paused arrivals keep the inspected row in place. History is a read-only snapshot. Enabled noise exclusions discard tag/message matches before buffering so excluded bursts cannot evict useful logs. Disabling a rule admits only future matches; previously retained history is not deleted. Host defaults merge with device-persisted additions, removals and enabled states; Clear filters disables rules and Reset restores current host defaults. Native capture waits for saved rules to load.</li>
-<li>DevView: module initialization effects remain in composition after once-only DataStore setup, survive recomposition, cancel on removal and restart on re-entry.</li>
-<li>Analytics: compact counts reflect filtered results, rows open event details, and the shared collapsible filter panel preserves search, selection and scroll state. Logger history is a read-only snapshot; record through <code>AnalyticsLogger.log()</code>, which assigns a fresh internal UUID and copies parameters without changing event value equality.</li>
-<li>FeatureFlip: remote overrides use labelled Material3 Remote/Off/On segments with the remote value shown separately. Local flags keep their switch; type badges are removed. Search and collapsible Type/State filters expose active counts and recovery actions and retain UI state. Selections persist in click order; failed saves keep the previous value and offer Retry. Restored type filters remain active when the registered feature types change.</li>
-<li>DevView: home icon tiles animate section hues with host-theme tones; explicit module overrides remain supported. Home uses sentence-case headings, readable subtitles, aligned dividers and a faint watermark in both themes. Built-in names are spaced and module icons are distinct.</li>
-<li>DevView: each destination now owns its top bar so titles and actions transition with content. Home has Close DevView and module screens have Back. Toolbar actions and menus require a user-facing <code>label</code> for accessibility and tooltips; action callbacks now receive the displayed <code>NavKey</code>. Module registration remains unchanged and receives its entry's measured bottom inset.</li>
-<li>NetworkMock: Reset all to network now asks for confirmation before clearing mocks, failures and sequences.</li>
-<li>NetworkMock: operation sheets pair a compact configuration summary with direct actual-network selection, Responses/Failures browsing tabs and response search. Status badges match the list; labelled Details buttons inspect without selecting. Sequence next-step, Edit and Restart controls share a compact header that wraps at narrow widths. Controls scroll when necessary to keep choices reachable. Full-screen response details provide Compare, selectable content, Copy body and Use/In use. The sequence builder uses stable step identities, Move up/down and Remove, preserves unresolved drafts and requires at least two steps. Saving or restarting position returns to the operation list.</li>
-<li>NetworkMock: one retained module session serializes accepted writes. Failed saves retain the selection/draft and offer Retry or Cancel while conflicting actions stay disabled. Overlay hiding and host configuration changes retain the session and entry drafts; filtering out a displayed module returns Home and discards its entry draft, not its registered session.</li>
-<li>NetworkMock core/Ktor: additive state revisions prevent stale sequence writes across repository instances. Concurrent requests consume steps in commit order and keep the final step selected; retries apply probability and configured delay at most once per request. An unavailable selected mock or state-persistence failure now fails without real-network fallback. Cancellation propagates without consuming an uncommitted sequence step.</li>
-<li>DevView: added a divider below the shared top app bar; NetworkMock operation lists animate filter and sort changes. Navigation guards consult pending mutations at action time.</li>
+<li><strong>Breaking — NetworkMock configuration:</strong> migrate <code>mocks.json</code> to OpenAPI 3.x JSON or best-effort YAML, one spec per group. Use <code>NetworkMock(resourceLoader = loader, specPaths = listOf(...))</code>. Environments/overrides are removed; <code>servers</code> supplies matching hosts, declared examples replace response-suffix probing, and delays use <code>x-devview.delayMs</code>. Follow the <a href="https://worldline.github.io/devview/0.2.0/guides/migrating-to-openapi/">migration guide</a> and <code>scripts/mocks_json_to_openapi.py</code>; review converter warnings on ambiguous overrides/identifiers. (<a href="https://github.com/worldline/devview/pull/104">#104</a>, <a href="https://github.com/worldline/devview/pull/108">#108</a>)</li>
+<li><strong>Breaking — NetworkMock runtime:</strong> <code>ApiGroupConfig</code>/<code>Endpoint*</code> become <code>ApiSpec</code>/<code>Operation*</code>; keys drop environmentId, <code>Operation.method</code> is <code>HttpMethod</code>, and mock identity is <code>(statusCode, mediaType, exampleName)</code>, including <code>loadMockResponse(key, statusCode, mediaType, exampleName)</code>. Handle Failure/Sequence in exhaustive state branches. Legacy operation selections reset once at schema 2; the global toggle survives. (<a href="https://github.com/worldline/devview/pull/144">#144</a>)</li>
+<li>NetworkMock: saved per-group search and State/Version/Method/Tag filters plus sorting (including Mocked first), active counts, wrapping paths, quiet Network labels, theme-aware status colors and animated lists. <code>Operation.version</code> is display-only; sorting now lives in the filter panel. (<a href="https://github.com/worldline/devview/pull/119">#119</a>, <a href="https://github.com/worldline/devview/pull/165">#165</a>)</li>
+<li>NetworkMock: compact Responses/Failures operation sheets with direct network selection/search and inspect-without-selecting Details. Full-screen details provide Compare, Copy original body and Use/In use; full-screen sequence editing retains unresolved drafts. Reset all requires confirmation; configuration and recovery controls scroll at narrow sizes. (<a href="https://github.com/worldline/devview/pull/165">#165</a>, <a href="https://github.com/worldline/devview/pull/167">#167</a>)</li>
+<li>Console: read-only history with fresh recording identities; log through <code>ConsoleLogger.log()</code>. Persisted tag/message exclusions reject noise before buffering, merge device edits with host defaults and load before capture. Disabling rules admits future matches only, without deleting retained history; Clear filters disables rules and Reset restores current defaults. (<a href="https://github.com/worldline/devview/pull/163">#163</a>)</li>
+<li>FeatureFlip: labelled Remote/Off/On overrides and separate remote value; local flags retain switches. Saved search/Type/State filters show counts and recovery actions; override writes persist in click order. (<a href="https://github.com/worldline/devview/pull/160">#160</a>)</li>
+<li>DevView: destination-owned top bars transition with content, labelled accessible actions/tooltips and measured bottom insets. Animated home tiles use host-theme colors with explicit overrides supported; headings/subtitles, names/icons and dividers are clearer. (<a href="https://github.com/worldline/devview/pull/159">#159</a>)</li>
+<li>NetworkMock diagnostics use gated <a href="https://github.com/touchlab/Kermit">Kermit</a>, tag <code>DevViewNetworkMock</code>, without response bodies. Runtime dependencies include Ktor 3.6.0 and Kermit 2.2.0. (<a href="https://github.com/worldline/devview/pull/71">#71</a>, by <a href="https://github.com/apps/renovate">Renovate</a>)</li>
 </ul>
 <p><strong>Removed</strong></p>
 <ul>
-<li><strong>Breaking</strong> NetworkMock: <code>NetworkMockViewModel</code> is internal, matching the built-in screen boundary. Use module registration for UI and the core repositories for runtime configuration.</li>
-<li><strong>Breaking</strong> DevView: built-in <code>AnalyticsScreen</code>, <code>ConsoleScreen</code>, <code>FeatureFlipScreen</code>, <code>NetworkMockScreen</code> and <code>TimeCapsuleScreen</code> are internal. Register modules through <code>rememberModules</code> and render <code>DevView</code>; module registration owns all tool content.</li>
-<li>Console: <code>LocalConsoleLogs</code> and direct writes to <code>ConsoleLogger.logs</code>; submit entries through <code>ConsoleLogger.log()</code> instead. Each recording gets a fresh internal UUID.</li>
-<li>Analytics: <code>LocalAnalytics</code> and direct writes to <code>AnalyticsLogger.logs</code>. The module reads its logger directly; register <code>Analytics()</code> to inspect its events in DevView.</li>
-<li>DevView: fixed <code>Section.containerColor</code> / <code>Section.contentColor</code> extensions and the public <code>ModulePosition</code> enum. Module colour defaults are now <code>Color.Unspecified</code>.</li>
+<li><strong>Breaking — built-in UI:</strong> Analytics/FeatureFlip/NetworkMock/TimeCapsule screens and built-in NetworkMock view models are internal or removed; ConsoleScreen is also internal. Register modules with <code>rememberModules</code> and render <code>DevView</code>, not standalone built-in screens. <code>NetworkMockDestination.Endpoint</code> and endpoint UI types are removed; use core repositories for runtime configuration. <code>MockHttpClientCall</code> is internal.</li>
+<li><strong>Breaking — logger/custom-module API:</strong> removed <code>LocalAnalytics</code>, prerelease <code>LocalConsoleLogs</code> and mutable history writes; submit through <code>AnalyticsLogger.log()</code>/<code>ConsoleLogger.log()</code>. Analytics copies parameters and assigns recording UUIDs without changing value equality. Toolbar action/menu require <code>label</code>, action callbacks receive displayed <code>NavKey</code>; fixed <code>Section.containerColor</code>/<code>contentColor</code> and <code>ModulePosition</code> are removed, with module defaults now <code>Color.Unspecified</code>.</li>
+<li><strong>Breaking — TimeCapsule:</strong> <code>subtitle</code> is inserted between <code>label</code> and <code>maxEntries</code>; migrate positional calls to named <code>maxEntries</code>.</li>
 </ul>
 <p><strong>Fixed</strong></p>
 <ul>
-<li>Docs: analytics integration no longer uses the removed <code>LocalAnalytics</code> provider, and module identity documentation covers built-in names, subtitles and icons.</li>
-<li>TimeCapsule: eviction and Clear prune saved expansion IDs during the same recording.</li>
-<li>Console: paused inspection restores its row and pixel offset after saved noise rules load; a missing anchor falls back to the newest matching row without resuming follow mode.</li>
-<li>FeatureFlip: failed saves retain independent per-feature retries. Newer choices supersede older failures for the same flag, and stale Retry callbacks cannot overwrite them.</li>
-<li>NetworkMock: superseded response-load failures retry the latest selection without real-network fallback.</li>
-<li>NetworkMock: long errors keep recovery actions visible, wide Unicode preview lines remain horizontally reachable, and response comparisons retain their diff cache across recompositions.</li>
-<li>Sample: Android status/navigation icon appearance follows the Dark Mode flag, including the navigation-bar background on API 26–28. Sample analytics seed once per composition instead of on every recomposition; cancelled requests are not displayed as errors.</li>
-<li>Console: severity label contrast in both palettes, recoverable empty results when all levels are hidden, and following new entries at full history capacity. Reconfiguration preserves pending entries within the new limit and trims history immediately; Clear removes pending entries and rejects stale deliveries. Capture and collection lifetimes are serialized during cancellation and re-entry. Cancellation terminates an idle Android logcat reader; iOS idle reads suspend and restore output descriptors on cancellation.</li>
-<li>CI: allow 60 minutes for the iOS job instead of 30.</li>
-<li>Analytics: category/time-only searches show recoverable no-results states, and limited time windows refresh every five seconds without user input. Restored details cannot resolve to a different recording with identical data. Newest-first rows do not automatically follow arrivals; the inspected row and offset survive returning from details while new events arrive.</li>
-<li>Sample: analytics seed events are recorded once per composition lifecycle instead of during recomposition, preventing duplicates and a feedback loop when observing the logger.</li>
-<li>NetworkMock: valid JSON is pretty-printed before preview display and diffing, and long lines stay unwrapped with whole-pane horizontal scrolling and lazy vertical rows instead of per-line scrolling or eagerly composing entire previews. Malformed JSON and non-JSON bodies stay unchanged; formatting does not alter served response bodies.</li>
+<li>NetworkMock: retained module sessions serialize writes and preserve selections/drafts across overlay hiding/host recreation. Failed writes offer Retry/Cancel and block conflicting actions. Revisions prevent stale sequence writes across repositories; concurrent consumption follows commit order, cancellation leaves uncommitted steps unconsumed and retries apply probability/delay at most once. Selected-mock/state-persistence failures do not fall back to real networking; superseded loads retry fresh state. Unmatched requests, Network selections and unavailable configurations still pass through. (<a href="https://github.com/worldline/devview/pull/167">#167</a>)</li>
+<li>NetworkMock: pretty-print valid JSON for preview/diff without changing served/copied bodies; malformed/non-JSON bodies stay unchanged. Lazy unwrapped panes scroll as a whole; wide Unicode lines remain reachable, diff caches survive recomposition and recovery remains reachable with long errors. (<a href="https://github.com/worldline/devview/pull/157">#157</a>, <a href="https://github.com/worldline/devview/pull/167">#167</a>)</li>
+<li>DevView: navigation uses the intended entry view model. Initialization effects remain after once-only DataStore setup, cancel on removal and restart on re-entry. Filtering out a displayed module returns Home/discards its entry draft, not its registered session; navigation checks pending writes at action time. (<a href="https://github.com/worldline/devview/pull/113">#113</a>)</li>
+<li>Analytics/Console: saved search, filters and inspection survive navigation; stable recording IDs prevent stale detail/anchor matches. Analytics counts use filtered results, empty searches remain recoverable and time windows refresh every five seconds. Console follows arrivals at capacity, restores paused row offsets after exclusions load, serializes clear/reconfiguration/capture lifetimes and cancels idle native readers cleanly. Both themes have improved severity/status label contrast. (<a href="https://github.com/worldline/devview/pull/161">#161</a>, <a href="https://github.com/worldline/devview/pull/163">#163</a>, <a href="https://github.com/worldline/devview/pull/167">#167</a>)</li>
+<li>FeatureFlip: independent per-feature retry preserves previous values after failure; newer choices supersede old failures and stale retries cannot overwrite them. Restored type filters remain active when registered types change. (<a href="https://github.com/worldline/devview/pull/167">#167</a>)</li>
+<li>TimeCapsule: only earlier entries offer Restore; expand controls have 48dp targets and saved expansion IDs prune on eviction/Clear. Selection-only restore avoids replacing text; bare-label quotes survive. (<a href="https://github.com/worldline/devview/pull/164">#164</a>, <a href="https://github.com/worldline/devview/pull/146">#146</a>, <a href="https://github.com/worldline/devview/pull/167">#167</a>)</li>
+<li>Sample: accessible labelled/inset-safe sections, theme-correct Android system bars, once-per-composition analytics seeding and cancellation-safe network results. (<a href="https://github.com/worldline/devview/pull/166">#166</a>)</li>
 </ul>
 <hr />
 <h2 id="what-is-devview">What is DevView?</h2>
@@ -2691,10 +2684,10 @@
       
         
         
-      <script id="__config" type="application/json">{"annotate":null,"base":".","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","navigation.tracking","search.highlight","toc.follow","toc.integrate"],"redirect":null,"search":"./assets/javascripts/workers/search.c47bb847.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","clipboard.error":"Could not copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":{"alias":true,"provider":"mike"}}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":".","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","navigation.tracking","search.highlight","toc.follow","toc.integrate"],"redirect":null,"search":"./assets/javascripts/workers/search.719e0d91.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","clipboard.error":"Could not copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":{"alias":true,"provider":"mike"}}</script>
     
     
-      <script src="./assets/javascripts/bundle.a2388154.min.js"></script>
+      <script src="./assets/javascripts/bundle.3cb411a8.min.js"></script>
       
         <script src="./javascripts/branding-theme.js"></script>
       
