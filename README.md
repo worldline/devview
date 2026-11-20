@@ -1,64 +1,68 @@
-# DevView
-
 <p align="center">
   <img src="docs/assets/branding/devview-logo-light.svg#gh-light-mode-only" alt="DevView" width="420">
   <img src="docs/assets/branding/devview-logo-dark.svg#gh-dark-mode-only" alt="DevView" width="420">
 </p>
 
-A Kotlin Multiplatform library that adds an in-app developer overlay to Android and iOS apps. The overlay hosts pluggable modules for feature flags, analytics inspection, and network mocking.
+# DevView
 
-**Full documentation:** [worldline.github.io/devview](https://worldline.github.io/devview/)
+[![Maven Central](https://img.shields.io/maven-central/v/com.worldline.devview/devview)](https://central.sonatype.com/artifact/com.worldline.devview/devview) ![Build status](https://github.com/worldline/devview/actions/workflows/build.yml/badge.svg)
 
----
+In-app developer tools for Compose Multiplatform.
 
-## Requirements
+DevView brings feature flags, analytics events, console logs, screen-state history, and network mocks into your Android or iOS app. Register the modules you need and choose how to present the developer menu in your app.
 
-- Android minSdk 26
-- iOS 16+
-- Kotlin 2.x
-- Compose Multiplatform
+## Platforms
 
----
+| Platform | Minimum version |
+|---|---|
+| Android | API 26 |
+| iOS | 16.0 |
 
-## Installation
+Requires Kotlin 2.x and Compose Multiplatform.
 
-DevView is published to Maven Central. Add the modules you need to your shared KMP module:
+## Modules
+
+Add the core module and only the tools you use. Keep all DevView artifacts on the same version.
+
+| Artifact | Purpose |
+|---|---|
+| `devview` | Developer menu, module registry, and custom-module UI kit. |
+| `devview-featureflip` | Local and remote feature flags with persistent overrides. |
+| `devview-analytics` | Analytics event inspection, search, and filtering. |
+| `devview-consolelogger` | Native console logs with level filters and text search. |
+| `devview-timecapsule` | Per-screen state history and restoration. |
+| `devview-networkmock` | Network mock management UI. |
+| `devview-networkmock-core` | OpenAPI parsing, request matching, and persistent mock state without Compose UI. |
+| `devview-networkmock-ktor` | Ktor client plugin backed by the mock engine. |
+
+## Download
+
+DevView is available from [Maven Central](https://central.sonatype.com/artifact/com.worldline.devview/devview). Add dependencies to your shared module's `commonMain` source set:
 
 ```kotlin
-// build.gradle.kts (shared / commonMain)
-dependencies {
-    implementation("com.worldline.devview:devview:<version>")           // core — always required
-
-    implementation("com.worldline.devview:devview-featureflip:<version>")   // feature flags
-    implementation("com.worldline.devview:devview-analytics:<version>")     // analytics inspector
-    implementation("com.worldline.devview:devview-consolelogger:<version>") // native console log viewer
-    implementation("com.worldline.devview:devview-timecapsule:<version>")   // per-screen state history
-    implementation("com.worldline.devview:devview-networkmock:<version>")   // network mock UI
-
-    // Ktor plugin only (no UI — lightweight alternative for network-layer integration)
-    implementation("com.worldline.devview:devview-networkmock-core:<version>")
-    implementation("com.worldline.devview:devview-networkmock-ktor:<version>")
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation("com.worldline.devview:devview:<version>")
+            implementation("com.worldline.devview:devview-analytics:<version>")
+            implementation("com.worldline.devview:devview-consolelogger:<version>")
+        }
+    }
 }
 ```
 
----
+For network mocking, also add `devview-networkmock` and `devview-networkmock-ktor`. The mock engine is included transitively. If you only need client-side interception without the DevView UI, use `devview-networkmock-ktor` on its own.
 
-## Quick Setup
+See the [installation guide](https://worldline.github.io/devview/getting-started/installation/) for repository configuration and version-catalog examples.
 
-### 1. Register modules and render the overlay
+## Developer menu
 
 ```kotlin
 @Composable
 fun MyApp() {
     val modules = rememberModules {
-        module(module = FeatureFlip)
         module(module = Analytics())
-        module(
-            module = NetworkMock(
-                resourceLoader = { path -> Res.readBytes(path = path) },
-                specPaths = listOf("files/networkmocks/specs/my-backend.json")
-            )
-        )
+        module(module = Console())
     }
 
     var devViewOpen by remember { mutableStateOf(false) }
@@ -75,11 +79,11 @@ fun MyApp() {
 }
 ```
 
-`rememberModules` handles DataStore initialisation and module setup automatically. `DevView` renders as a transparent overlay on top of your content.
+`rememberModules` handles DataStore initialisation and module setup automatically. You control when the menu opens and how it is presented. Keep developer tools and captured logs out of production builds.
 
-### 2. Feature Flags
+## Feature flags
 
-Define flags and provide the handler to the composition:
+Add `devview-featureflip`, register `FeatureFlip` in `rememberModules`, and provide the handler around your app and DevView:
 
 ```kotlin
 val featureHandler = rememberFeatureHandler(
@@ -100,7 +104,7 @@ CompositionLocalProvider(LocalFeatureHandler provides featureHandler) {
 }
 ```
 
-### 3. Analytics
+## Analytics
 
 Forward events to `AnalyticsLogger` from your existing analytics layer:
 
@@ -118,7 +122,7 @@ AnalyticsLogger.log(
 Register `Analytics()` in `rememberModules` and render `DevView`; the module observes
 `AnalyticsLogger.logs` directly. No analytics composition-local provider or standalone screen is needed.
 
-### 4. Network Mocking (Ktor)
+## Network mocking (Ktor)
 
 Place an OpenAPI 3.x spec (JSON or YAML) at `composeResources/files/networkmocks/specs/my-backend.json` — one spec file per API group — and install the plugin:
 
@@ -128,11 +132,24 @@ val client = HttpClient(OkHttp) {
 }
 ```
 
-`rememberModules { }` must be called (and composed) before the first HTTP request reaches this client.
+Register the spec with the UI module:
 
-### 5. TimeCapsule
+```kotlin
+val modules = rememberModules {
+    module(
+        NetworkMock(
+            resourceLoader = { path -> Res.readBytes(path = path) },
+            specPaths = listOf("files/networkmocks/specs/my-backend.json")
+        )
+    )
+}
+```
 
-Implement `TimeCapsuleOwner` on a screen's state holder and record it with one call:
+This registry must be composed before the first HTTP request reaches the client. See the [network mocking guide](https://worldline.github.io/devview/modules/networkmock/) for headless configuration and request-matching behaviour.
+
+## TimeCapsule
+
+Add `devview-timecapsule` and register `TimeCapsule()` in `rememberModules`. Implement `TimeCapsuleOwner` on a screen's state holder and record it with one call:
 
 ```kotlin
 class CounterViewModel : ViewModel(), TimeCapsuleOwner<CounterState> {
@@ -148,7 +165,7 @@ fun CounterScreen(viewModel: CounterViewModel) {
 
 The recorded history resets automatically when the screen leaves composition.
 
-### 6. Console Logger
+## Console Logger
 
 Displays native console output (logcat on Android, a stdout/stderr redirect on iOS) inside
 DevView — works on an untethered device, no debugger required:
@@ -166,28 +183,20 @@ See the [Console Logger guide](https://worldline.github.io/devview/modules/conso
 for the exact per-platform capture matrix and its one limitation (`NSLog`/`os_log` on iOS
 with no debugger attached).
 
----
+## Learn more
 
-## Available Modules
-
-| Module | Artifact | Description |
-|---|---|---|
-| Core | `devview` | `DevView` composable + `rememberModules` DSL. Required by all modules. |
-| FeatureFlip | `devview-featureflip` | Runtime feature flag management with Compose UI. Supports local and remote-config flags with local overrides. |
-| Analytics | `devview-analytics` | Real-time analytics event inspector with filtering by type, category, and time range. |
-| Console Logger | `devview-consolelogger` | Native console log viewer (logcat/stdout), untethered, with level filters and text search. |
-| TimeCapsule | `devview-timecapsule` | Records the state history of the currently visible screen and lets you restore any earlier state back into it. |
-| NetworkMock (UI) | `devview-networkmock` | Full mock management UI: enable/disable endpoints, switch responses, preview and diff mock payloads. |
-| NetworkMock Core | `devview-networkmock-core` | Mock engine: OpenAPI 3.x spec parsing, request matching, DataStore state. No UI dependency. |
-| NetworkMock Ktor | `devview-networkmock-ktor` | Ktor `HttpClientPlugin` that intercepts requests and returns mock responses. |
-
----
+- [Documentation](https://worldline.github.io/devview/)
+- [Integration guide](https://worldline.github.io/devview/guides/integration-guide/)
+- [Feature flags](https://worldline.github.io/devview/modules/featureflip/)
+- [Analytics](https://worldline.github.io/devview/modules/analytics/)
+- [TimeCapsule](https://worldline.github.io/devview/modules/timecapsule/)
+- [Custom modules](https://worldline.github.io/devview/modules/custom-modules/)
+- [Sample app](sample/)
+- [Changelog](CHANGELOG.md)
 
 ## Acknowledgments
 
 DevView's build infrastructure, CI setup, and library conventions draw inspiration from [chrisbanes/haze](https://github.com/chrisbanes/haze). Many thanks to Chris Banes for open-sourcing that work.
-
----
 
 ## License
 
